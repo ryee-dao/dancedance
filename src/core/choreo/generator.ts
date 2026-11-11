@@ -286,7 +286,7 @@ export class Choreographer {
   private base: Float64Array;
   /** Phrase number each move was last used in. */
   private lastUsed = new Map<Move, number>();
-  private ornaments: ReadonlyMap<string, readonly Move[]>;
+  private ornaments: { get(base: string): readonly Move[] } | null;
 
   constructor(seedKey: string, intensity: Intensity, half: boolean, opts: RoutineOpts = {}) {
     this.intensity = intensity;
@@ -299,14 +299,20 @@ export class Choreographer {
     const useVars = opts.variations !== false;
     const { moves, isVar } = dancePool(useVars);
     this.pool = moves;
-    this.ornaments = useVars ? getPool().ornaments : new Map();
+    this.ornaments = useVars ? getPool().ornaments : null;
     // Variations as a share of the picks (there are many more of them than base moves).
-    let nb = 0, nv = 0;
-    for (let i = 0; i < moves.length; i++) if (intensityFactor(moves[i], intensity) > 0) isVar[i] ? nv++ : nb++;
-    const share = VARIATION_SHARE[intensity];
-    const vw = nv ? (share / (1 - share)) * (nb / nv) : 0;
+    // Variations get VARIATION_SHARE of the total (style x level) weight mass.
     this.base = new Float64Array(moves.length);
-    for (let i = 0; i < moves.length; i++) this.base[i] = styleFactor(moves[i], this.style) * (isVar[i] ? vw : 1);
+    let mb = 0, mv = 0;
+    for (let i = 0; i < moves.length; i++) {
+      this.base[i] = styleFactor(moves[i], this.style);
+      const w = this.base[i] * intensityFactor(moves[i], intensity);
+      if (isVar[i]) mv += w;
+      else mb += w;
+    }
+    const share = VARIATION_SHARE[intensity];
+    const vw = mv > 0 ? (share / (1 - share)) * (mb / mv) : 0;
+    for (let i = 0; i < moves.length; i++) if (isVar[i]) this.base[i] *= vw;
     // The chorus combo keeps the stable seed (same in 'fresh' mode).
     this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}|${sk}`)), intensity, this.style);
   }
@@ -429,7 +435,7 @@ export class Choreographer {
   /** An ornamented version of `m` of one of the given types, or null. */
   private ornament(m: Move, types: readonly string[], p: number): Move | null {
     if (p <= 0 || this.rng() >= p) return null;
-    const list = (this.ornaments.get(m.id) ?? []).filter((v) => types.includes(v.id.slice(v.id.lastIndexOf('~') + 1)) && intensityFactor(v, this.intensity) > 0);
+    const list = (this.ornaments?.get(m.id) ?? []).filter((v) => types.includes(v.id.slice(v.id.lastIndexOf('~') + 1)) && intensityFactor(v, this.intensity) > 0);
     return list.length ? list[Math.floor(this.rng() * list.length)] : null;
   }
 

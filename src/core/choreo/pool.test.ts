@@ -34,7 +34,7 @@ describe('move pool (pool.json)', () => {
   // pool.json; this re-checks a deterministic third of them at 120 BPM.
   it('variations and ornaments pass the validity checks (a third, 120 BPM, both sides)', { timeout: 120_000 }, () => {
     const bad: string[] = [];
-    const all = [...pool.variations, ...[...pool.ornaments.values()].flat()];
+    const all = [...pool.variations, ...pool.ornaments.all()];
     for (const m of all.filter((x) => hashString(x.id) % 3 === 0)) {
       const p = [...checkKeys(m), ...checkPlayback(m, { bpms: [120] }).problems];
       if (p.length) bad.push(`${m.id}: ${p.join('; ')}`);
