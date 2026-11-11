@@ -4,7 +4,7 @@
  * right away; Back / Escape cancels and returns focus to where it came from.
  * Values are the stored intensities ('chill' | 'cardio' | 'sweaty').
  */
-import type { Intensity } from '../store';
+import { store, type Intensity } from '../store';
 import { h } from './dom';
 import { focusEl, popScope, pushScope, type Scope } from './focusNav';
 
@@ -42,11 +42,25 @@ export function openLevelPicker(o: LevelPickerOptions): () => void {
       h('span', { class: 'level-hint' }, l.hint),
     ),
   );
+  // Two-player mode (ui/duoStage.ts): remembered in settings.players.
+  const players = ([1, 2] as const).map((n) =>
+    h('button', { class: 'btn btn-small players-btn', type: 'button', 'data-players': String(n), 'aria-pressed': 'false' }, n === 1 ? '1 Player' : '2 Players'),
+  );
+  const showPlayers = () => {
+    const cur = store.settings().players;
+    for (const b of players) {
+      const on = Number(b.dataset.players) === cur;
+      b.classList.toggle('players-on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+  };
+  showPlayers();
   const card = h(
     'div',
     { class: 'picker-card', role: 'dialog', 'aria-modal': 'true', 'aria-label': `Choose a level for ${o.title}` },
     h('p', { class: 'picker-kicker' }, 'Choose your level'),
     h('p', { class: 'picker-title' }, o.title),
+    h('div', { class: 'picker-players', role: 'group', 'aria-label': 'Players' }, ...players),
     h('div', { class: 'picker-levels' }, ...buttons),
     o.extra && h('div', { class: 'picker-extra' }, h('button', { class: 'btn btn-quiet btn-small', type: 'button', 'data-extra': '1' }, o.extra.label)),
   );
@@ -67,6 +81,12 @@ export function openLevelPicker(o: LevelPickerOptions): () => void {
   };
   root.addEventListener('click', (e) => {
     e.stopPropagation();
+    const pb = (e.target as HTMLElement).closest<HTMLElement>('[data-players]');
+    if (pb) {
+      store.updateSettings({ players: pb.dataset.players === '2' ? 2 : 1 });
+      showPlayers();
+      return;
+    }
     if ((e.target as HTMLElement).closest('[data-extra]')) {
       close(false);
       o.extra?.onSelect();

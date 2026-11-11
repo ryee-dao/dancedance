@@ -201,6 +201,7 @@ export function createPlay(
     const text: Record<StartStatus, string> = {
       loading: item.kind === 'file' ? 'Getting your file ready…' : 'Getting the video ready…',
       ad: 'An ad is playing with the sound off. Your song starts right after.',
+      'ad-long': 'Still in ads (sound off). Your song starts right after them.',
       'needs-gesture': 'Your browser is waiting for a press before it plays.',
       slow: item.kind === 'youtube' ? "YouTube isn't responding yet." : 'This is taking a long time.',
       playing: 'Getting the video ready…',
@@ -211,7 +212,9 @@ export function createPlay(
         ? [btn('start', 'Press OK to start', true), btn('retry', 'Try again'), skip]
         : status === 'slow'
           ? [btn('wait', 'Keep waiting', true), btn('retry', 'Try again'), skip]
-          : [];
+          : status === 'ad-long'
+            ? [btn('wait-ad', 'Keep waiting', true), skip]
+            : [];
     const syncLine = h('p', { class: 'overlay-sync' });
     const elapsedEl = h('span', { class: 'overlay-elapsed' });
     setOverlay(
@@ -400,6 +403,9 @@ export function createPlay(
         break;
       case 'wait':
         startingOverlay('loading');
+        break;
+      case 'wait-ad':
+        startingOverlay('ad');
         break;
       case 'dismiss':
         setOverlay('none', null);

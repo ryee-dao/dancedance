@@ -2,7 +2,7 @@
  * songs.json (songs added by search) and songs-status.json (requests that
  * could not be completed yet): deterministic rendering and planning. Pure.
  *
- *   songs.json         { updatedAt, songs: [{ videoId, title, artist, addedAt, durationSec, hasMap, note? }] }
+ *   songs.json         { updatedAt, songs: [{ videoId, title, artist, addedAt, durationSec, hasMap, note?, genre? }] }
  *                      oldest first; a song is listed as soon as its video is picked,
  *                      `hasMap` says whether beatmaps/<videoId>.json exists yet.
  *   songs-status.json  { updatedAt, requests: { [songKey]: { state, artist, title, durationSec?, videoId?, message?, attempts, lastTried } } }
@@ -41,6 +41,11 @@ export interface AddSkip {
   why: 'already added' | 'not found before' | 'waiting to retry';
 }
 
+/**
+ * The one field order written to songs.json, whatever order the input has:
+ * videoId, title, artist, addedAt, durationSec, hasMap (always written; a
+ * missing value reads as true), then note? and genre? only when set.
+ */
 function normSong(s: AddedSong): AddedSong {
   return {
     videoId: s.videoId,
@@ -50,6 +55,7 @@ function normSong(s: AddedSong): AddedSong {
     durationSec: s.durationSec,
     hasMap: s.hasMap !== false,
     ...(s.note ? { note: s.note } : {}),
+    ...(s.genre ? { genre: s.genre } : {}),
   };
 }
 

@@ -57,19 +57,31 @@ export const CH = {
   LFT_Z: 25,
   HAND_R: 26, // 0 = fist, 1 = open hand
   HAND_L: 27,
+  HIP_TILT: 28, // pelvis roll on top of the hip-shift roll, deg, + = user's right hip up
+  CHEST_X: 29, // rib-cage slide relative to the pelvis, units, + = toward screen right
+  SPIN: 30, // whole-body turn about the vertical axis, deg (0..360 wraps), + = front turns toward screen right
+  KNEE_R: 31, // knee / toe turn-out, + = out, - = in (knee pops, heel swivels)
+  KNEE_L: 32,
+  SLIDE_R: 33, // 1 = the foot slides to its next spot along the floor (no step arc)
+  SLIDE_L: 34,
+  FORM_R: 35, // hand form: 0 = plain (fist / open by HAND_R), 1 = pointing index finger, 2 = horns
+  FORM_L: 36,
 } as const;
 
-export const NUM_CHANNELS = 28;
+export const NUM_CHANNELS = 37;
+
+/** Hand forms (CH.FORM_R / FORM_L values). */
+export const HAND_FORM = { plain: 0, point: 1, horns: 2 } as const;
 
 /**
  * Channels that wrap and interpolate the short way round: only the swing
  * PLANES. Elevations are linear (0..~240 are distinct paths), so a sweep from
  * the hip to over the head always goes up the outside.
  */
-export const ANGULAR_CHANNELS: readonly number[] = [13, 15, 17, 19];
+export const ANGULAR_CHANNELS: readonly number[] = [13, 15, 17, 19, 30];
 
 /** Channels whose sign flips when mirroring (left/right swap handled separately). */
-const MIRROR_NEGATE: readonly number[] = [CH.X, CH.LEAN, CH.TWIST, CH.HIPS, CH.HIPTWIST, CH.HEAD_ROLL, CH.HEAD_TURN];
+const MIRROR_NEGATE: readonly number[] = [CH.X, CH.LEAN, CH.TWIST, CH.HIPS, CH.HIPTWIST, CH.HEAD_ROLL, CH.HEAD_TURN, CH.HIP_TILT, CH.CHEST_X, CH.SPIN];
 
 /** Pairs of channels swapped when mirroring: [right, left]. */
 const MIRROR_SWAP: readonly (readonly [number, number])[] = [
@@ -81,6 +93,9 @@ const MIRROR_SWAP: readonly (readonly [number, number])[] = [
   [CH.RFT_Y, CH.LFT_Y],
   [CH.RFT_Z, CH.LFT_Z],
   [CH.HAND_R, CH.HAND_L],
+  [CH.KNEE_R, CH.KNEE_L],
+  [CH.SLIDE_R, CH.SLIDE_L],
+  [CH.FORM_R, CH.FORM_L],
 ];
 
 export type Pose = Float64Array;
@@ -97,7 +112,7 @@ export function copyPose(src: Pose, out: Pose): Pose {
 /** Mirror left/right (screen x flips). `out` may be `src`. */
 export function mirrorPose(src: Pose, out: Pose): Pose {
   if (out !== src) out.set(src);
-  for (const c of MIRROR_NEGATE) out[c] = -out[c];
+  for (const c of MIRROR_NEGATE) out[c] = out[c] === 0 ? 0 : -out[c];
   for (const [r, l] of MIRROR_SWAP) {
     const t = out[r];
     out[r] = out[l];
@@ -169,12 +184,17 @@ export interface Skeleton {
   /** Hand openness 0..1. */
   handR: number;
   handL: number;
+  /** Hand forms (HAND_FORM), rounded. */
+  formR: number;
+  formL: number;
   /**
    * Torso and pelvis rotation matrices (row-major 3x3) from the last solve, for
    * renderers that hang body shapes off the torso / pelvis frames.
    */
   rt: Float64Array;
   rp: Float64Array;
+  /** Whole-body turn (deg) from the last solve; 180 = back to the viewer. */
+  spin: number;
 }
 
 export function createSkeleton(): Skeleton {
@@ -182,7 +202,7 @@ export function createSkeleton(): Skeleton {
   const rp = new Float64Array(9);
   rt[0] = rt[4] = rt[8] = 1;
   rp[0] = rp[4] = rp[8] = 1;
-  return { p: new Float64Array(NUM_JOINTS * 3), air: 0, handR: 0.5, handL: 0.5, rt, rp };
+  return { p: new Float64Array(NUM_JOINTS * 3), air: 0, handR: 0.5, handL: 0.5, formR: 0, formL: 0, rt, rp, spin: 0 };
 }
 
 const DEG = Math.PI / 180;
@@ -193,6 +213,7 @@ const RP = new Float64Array(9); // pelvis rotation
 const RH = new Float64Array(9); // head rotation
 const V = new Float64Array(3);
 const V2 = new Float64Array(3);
+const RY = new Float64Array([1, 0, 0, 0, 1, 0, 0, 0, 1]); // spin
 
 /** Build R = Rz(-roll) * Rx(pitch) * Ry(yaw): twist first, then bend, then lean. */
 function rotation(out: Float64Array, rollDeg: number, pitchDeg: number, yawDeg: number): void {
@@ -266,7 +287,7 @@ function arm(sk: Skeleton, pose: Pose, side: number, sh: number, el: number, ha:
 }
 
 /** Two-bone IK for a leg; hip joint already placed; ankle target in V2. */
-function leg(sk: Skeleton, side: number, hip: number, knee: number, ankle: number, toe: number): void {
+function leg(sk: Skeleton, side: number, hip: number, knee: number, ankle: number, toe: number, turn: number): void {
   const p = sk.p;
   const hx = p[hip * 3], hy = p[hip * 3 + 1], hz = p[hip * 3 + 2];
   let dx = V2[0] - hx, dy = V2[1] - hy, dz = V2[2] - hz;
@@ -287,7 +308,7 @@ function leg(sk: Skeleton, side: number, hip: number, knee: number, ankle: numbe
   const cosA = (a * a + d * d - b * b) / (2 * a * d);
   const sinA = Math.sqrt(Math.max(0, 1 - cosA * cosA));
   // Knee pole: forward and a little outward (knees track over the toes).
-  let nx = side * 0.38, ny = 0.0, nz = 1;
+  let nx = side * (0.38 + turn), ny = 0.0, nz = 1;
   const dot = nx * ux + ny * uy + nz * uz;
   nx -= dot * ux; ny -= dot * uy; nz -= dot * uz;
   let nl = Math.sqrt(nx * nx + ny * ny + nz * nz);
@@ -308,7 +329,7 @@ function leg(sk: Skeleton, side: number, hip: number, knee: number, ankle: numbe
   const sz = p[ankle * 3 + 2] - p[knee * 3 + 2];
   const sl = Math.sqrt(sx * sx + sy * sy + sz * sz) || 1;
   // Foot direction roughly perpendicular to the shin, pointing forward/out.
-  let fx = side * 0.35, fy = -0.15, fz = 1;
+  let fx = side * (0.35 + turn * 1.3), fy = -0.15, fz = 1;
   const fd = (fx * sx + fy * sy + fz * sz) / (sl * sl);
   fx -= fd * sx; fy -= fd * sy; fz -= fd * sz;
   const fl = Math.sqrt(fx * fx + fy * fy + fz * fz) || 1;
@@ -329,10 +350,12 @@ export function solveSkeleton(pose: Pose, sk: Skeleton): Skeleton {
   sk.air = air;
   sk.handR = pose[CH.HAND_R];
   sk.handL = pose[CH.HAND_L];
+  sk.formR = Math.round(pose[CH.FORM_R]);
+  sk.formL = Math.round(pose[CH.FORM_L]);
 
   // Pelvis rotation: yaw + a little roll from the hip shift (hip bump lifts that hip).
   const hips = pose[CH.HIPS];
-  rotation(RP, -hips * 140, 0, pose[CH.HIPTWIST]);
+  rotation(RP, -hips * 140 - pose[CH.HIP_TILT], 0, pose[CH.HIPTWIST]);
 
   const px = pose[CH.X] + hips;
   let py = BODY.hipY + rootY;
@@ -369,8 +392,10 @@ export function solveSkeleton(pose: Pose, sk: Skeleton): Skeleton {
   const lean = pose[CH.LEAN] - hips * 70;
   rotation(RT, lean, pose[CH.BEND], pose[CH.TWIST]);
 
-  place(p, J.WAIST, J.PELVIS, RT, 0, BODY.torso * 0.45, 0);
-  place(p, J.CHEST, J.PELVIS, RT, 0, BODY.torso, 0);
+  // Rib-cage isolation: the chest slides over the pelvis, shoulders level.
+  const cx = pose[CH.CHEST_X];
+  place(p, J.WAIST, J.PELVIS, RT, cx * 0.45, BODY.torso * 0.45, 0);
+  place(p, J.CHEST, J.PELVIS, RT, cx, BODY.torso, 0);
   place(p, J.NECK, J.CHEST, RT, 0, BODY.neck, 0);
 
   rotation(RLOC, pose[CH.HEAD_ROLL], pose[CH.HEAD_NOD], pose[CH.HEAD_TURN]);
@@ -389,11 +414,28 @@ export function solveSkeleton(pose: Pose, sk: Skeleton): Skeleton {
   place(p, J.HIP_R, J.PELVIS, RP, BODY.hipHalf, 0, 0);
   place(p, J.HIP_L, J.PELVIS, RP, -BODY.hipHalf, 0, 0);
   V2[0] = rax; V2[1] = ray; V2[2] = raz;
-  leg(sk, 1, J.HIP_R, J.KN_R, J.AN_R, J.TOE_R);
+  leg(sk, 1, J.HIP_R, J.KN_R, J.AN_R, J.TOE_R, pose[CH.KNEE_R]);
   V2[0] = lax; V2[1] = lay; V2[2] = laz;
-  leg(sk, -1, J.HIP_L, J.KN_L, J.AN_L, J.TOE_L);
-  sk.rt.set(RT);
-  sk.rp.set(RP);
+  leg(sk, -1, J.HIP_L, J.KN_L, J.AN_L, J.TOE_L, pose[CH.KNEE_L]);
+  sk.spin = pose[CH.SPIN];
+  // Turn: the whole solved body rotates about the vertical axis through the root.
+  const sp = pose[CH.SPIN];
+  if (sp !== 0) {
+    const a = sp * DEG;
+    const c = Math.cos(a), s = Math.sin(a);
+    const ox = pose[CH.X];
+    for (let j = 0; j < NUM_JOINTS; j++) {
+      const x = p[j * 3] - ox, z = p[j * 3 + 2];
+      p[j * 3] = ox + x * c + z * s;
+      p[j * 3 + 2] = -x * s + z * c;
+    }
+    RY[0] = c; RY[2] = s; RY[6] = -s; RY[8] = c;
+    mul(sk.rt, RY, RT);
+    mul(sk.rp, RY, RP);
+  } else {
+    sk.rt.set(RT);
+    sk.rp.set(RP);
+  }
   return sk;
 }
 

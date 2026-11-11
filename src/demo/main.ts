@@ -5,7 +5,9 @@
  *   song     (default) synthetic song with sections, driven by performance.now()
  *   gallery  one move looping with its name (?move=<id>), or every move in turn
  *   sheet    contact sheet: rows of moves x frames across a loop
- *            (?set=catalogue|foot|arms|accent&page=0&per=12&frames=10)
+ *            (?set=catalogue|foot|arms|accent&page=0&per=12&frames=10;
+ *            ?family=<file> = the moves of one family file, ?tag=<family> =
+ *            moves tagged with a family, ?moves=id1,id2 = those moves)
  *   bench    times the figure drawing of every style (results in __demo.result)
  *
  *   preview  the style-chooser preview cards (drawCoachPreview) side by side
@@ -23,6 +25,9 @@
 import type { Intensity } from '../core/choreo/generator';
 import { ACCENT, ARMS, FOOT } from '../core/choreo/layers';
 import { MOVES, composeMove, findMove, type Move } from '../core/choreo/moves';
+import { findPoolMove, getPool } from '../core/choreo/pool';
+import { FAMILIES } from '../core/choreo/families';
+import type { StyleOverride } from '../core/choreo/songStyle';
 import { PoseEvaluator } from '../core/coach/animator';
 import { loopPlan } from '../core/coach/loop';
 import { LOOKS } from '../core/coach/humanPainter';
@@ -164,9 +169,39 @@ function runSong(): void {
   document.body.prepend(host);
   const sim = new SimSource(bpm);
   sim.mode = (q.get('sim') ?? 'map') as SimMode;
-  const stage = createCoachStage({ getIntensity: () => level, isTV: q.get('tv') === '1', getStyle: () => style });
+  // Song style override (?family=latin&themes=hips,spin&sig=gallop,lasso), editable below.
+  let famSel = q.get('family') ?? '';
+  let themesIn = q.get('themes') ?? '';
+  let sigIn = q.get('sig') ?? '';
+  const styleOverride = (): StyleOverride | undefined =>
+    famSel || themesIn || sigIn
+      ? {
+          ...(famSel ? { families: { [famSel]: 1 } } : {}),
+          themes: themesIn.split(/[,\s]+/).filter(Boolean),
+          ...(sigIn ? { signature: sigIn.split(/[,\s]+/).filter(Boolean) } : {}),
+        }
+      : undefined;
+  const fresh = { mode: (q.get('routine') === 'fresh' ? 'fresh' : 'same') as 'same' | 'fresh', plays: 0 };
+  const stage = createCoachStage({
+    getIntensity: () => level,
+    isTV: q.get('tv') === '1',
+    getStyle: () => style,
+    getStyleOverride: styleOverride,
+    getRoutineMode: () => fresh.mode,
+    getPlayCount: () => fresh.plays,
+  });
   stage.mount(host);
   styleSwitcher();
+  select(['', ...FAMILIES], famSel, (v) => (famSel = v)).title = 'Song family (blank = from the title)';
+  const themesBox = el('input', { type: 'text', value: themesIn, placeholder: 'themes: hips,spin', style: 'width:9em' });
+  themesBox.onchange = () => (themesIn = themesBox.value);
+  const sigBox = el('input', { type: 'text', value: sigIn, placeholder: 'signature ids', style: 'width:9em' });
+  sigBox.onchange = () => (sigIn = sigBox.value);
+  panel.append(themesBox, sigBox);
+  button('New routine', () => {
+    fresh.mode = 'fresh';
+    fresh.plays++;
+  });
   let phase: FrameInfo['phase'] = (q.get('phase') as FrameInfo['phase']) ?? 'playing';
   const item = { kind: 'youtube' as const, videoId: 'demo-song', title: 'Demo song' };
 
@@ -244,25 +279,40 @@ function runSong(): void {
 }
 
 // ---------------------------------------------------------------------------
+/**
+ * Gallery list: ?family=<tag> filters by family, ?variations=1 adds the pool's
+ * counted variations (the variation browser), ?variations=all adds ornaments too.
+ */
+function galleryMoves(): Move[] {
+  const fam = q.get('family');
+  const vq = q.get('variations');
+  const pool = getPool();
+  let list: Move[] = vq === 'all' ? [...MOVES, ...pool.variations, ...[...pool.ornaments.values()].flat()] : vq ? [...pool.moves] : [...MOVES];
+  if (fam) list = list.filter((m) => (m.families as readonly string[]).includes(fam));
+  return list.length ? list : [...MOVES];
+}
+
 function runGallery(): void {
   const canvas = el('canvas', { style: 'position:fixed;inset:0;width:100%;height:100%;' });
   document.body.prepend(canvas);
+  const LIST = galleryMoves();
+  const label = (m: Move) => (m.base !== m.id ? `${m.name}  (variation of ${m.base})` : m.name);
   const r = new StageRenderer2D(canvas, style);
   styleListeners.push((s) => (r.style = s));
   const resize = () => r.resize(innerWidth * devicePixelRatio, innerHeight * devicePixelRatio, true);
   resize();
   addEventListener('resize', resize);
-  let idx = Math.max(0, MOVES.findIndex((m) => m.id === q.get('move')));
+  let idx = Math.max(0, LIST.findIndex((m) => m.id === q.get('move')));
   let auto = q.get('move') === null;
-  let move: Move = MOVES[idx];
+  let move: Move = LIST[idx];
   let plan = loopPlan(move, 60 / bpm);
   const ev = new PoseEvaluator();
   const pose = createPose();
   const sk = createSkeleton();
   const strip: StripInfo = { now: '', sig: false, progress: 0, beatsToChange: Infinity, next: null, after: null };
-  const sel = select(MOVES.map((m) => m.id), move.id, (v) => setMove(v));
-  button('Prev', () => setMove(MOVES[(idx - 1 + MOVES.length) % MOVES.length].id));
-  button('Next', () => setMove(MOVES[(idx + 1) % MOVES.length].id));
+  const sel = select(LIST.map((m) => m.id), move.id, (v) => setMove(v));
+  button('Prev', () => setMove(LIST[(idx - 1 + LIST.length) % LIST.length].id));
+  button('Next', () => setMove(LIST[(idx + 1) % LIST.length].id));
   button('Auto', () => (auto = !auto));
   button('Click', () => (clickOn = !clickOn));
   const bpmIn = el('input', { type: 'number', value: String(bpm), min: String(SYNTH_MIN_BPM), max: String(SYNTH_MAX_BPM), style: 'width:4em' });
@@ -275,10 +325,10 @@ function runGallery(): void {
   styleSwitcher();
   let started = clock.now();
   function setMove(id: string): void {
-    const m = findMove(id);
+    const m = LIST.find((x) => x.id === id) ?? findPoolMove(id);
     if (!m) return;
     move = m;
-    idx = MOVES.indexOf(m);
+    idx = LIST.indexOf(m);
     sel.value = id;
     plan = loopPlan(move, 60 / bpm);
     started = clock.now();
@@ -288,7 +338,7 @@ function runGallery(): void {
     requestAnimationFrame(frame);
     const t = clock.now() - started;
     const loopSec = plan.loopBeats * plan.period;
-    if (auto && t > loopSec * 2) setMove(MOVES[(idx + 1) % MOVES.length].id);
+    if (auto && t > loopSec * 2) setMove(LIST[(idx + 1) % LIST.length].id);
     const lt = ((t % loopSec) + loopSec) % loopSec;
     ev.evaluate(plan, lt, pose);
     solveSkeleton(pose, sk);
@@ -296,9 +346,10 @@ function runGallery(): void {
     if (bi !== lastBeat) click(bi % 4 === 0);
     lastBeat = bi;
     strip.now = move.name;
+    strip.style = move.families.join(' · ');
     strip.progress = lt / loopSec;
     r.render(sk, { t: clock.now(), beat: lt / plan.period, half: false, energy: 0.5, strip });
-    if (showUi) info.textContent = `${move.id}  ${move.beats} beats  ${move.level}  difficulty ${move.difficulty}  ${move.layered ? `layered: ${move.foot} + ${move.arms}${move.accent ? ' + ' + move.accent : ''}` : 'hand-authored'}${move.mirror ? '  (mirrors)' : ''}`;
+    if (showUi) info.textContent = `${label(move)}\n${move.id}  ${move.beats} beats  ${move.level}  difficulty ${move.difficulty}  ${move.layered ? `layered: ${move.foot} + ${move.arms}${move.accent ? ' + ' + move.accent : ''}` : 'hand-authored'}${move.mirror ? '  (mirrors)' : ''}`;
   }
   requestAnimationFrame(frame);
   window.__demo = { setMove, seek: (t: number) => clock.seek(t), pause: () => clock.pause(), setStyle: (s: CoachStyle) => setStyle(s) };
@@ -310,7 +361,19 @@ function sheetMoves(set: string): Move[] {
   if (set === 'arms') return Object.keys(ARMS).map((a) => composeMove('bounce', a));
   if (set === 'accent') return Object.keys(ACCENT).map((a) => composeMove('bounce', 'rest', { accent: a }));
   const ids = q.get('moves');
-  if (ids) return ids.split(',').map((id) => findMove(id)).filter((m): m is Move => !!m);
+  if (ids) return ids.split(',').map((id) => findMove(id) ?? findPoolMove(id)).filter((m): m is Move => !!m);
+  // ?variations=<base id | type>: the pool's variations of a base move, or of one type.
+  const vq = q.get('variations');
+  if (vq) {
+    const pool = getPool();
+    const all = [...pool.variations, ...[...pool.ornaments.values()].flat()];
+    return all.filter((m) => m.base === vq || m.id.split('~')[1] === vq);
+  }
+  // ?family=<file>: the moves a family file defines; ?tag=<family>: moves tagged with it.
+  const fam = q.get('family');
+  if (fam) return MOVES.filter((m) => m.file === fam);
+  const tag = q.get('tag');
+  if (tag) return MOVES.filter((m) => (m.families as readonly string[]).includes(tag));
   return MOVES.slice();
 }
 
@@ -353,6 +416,8 @@ function runSheet(): void {
     ctx.fillText(m.id, 10, y0 + 48);
     ctx.fillText(`${m.beats}b ${m.level} d${m.difficulty}${m.mirror ? ' mir' : ''}${m.travel ? ' trv' : ''}${m.jump ? ' jump' : ''}`, 10, y0 + 66);
     ctx.fillText(m.layered ? `${m.foot}+${m.arms}${m.accent ? '+' + m.accent : ''}` : 'hand-authored', 10, y0 + 84);
+    ctx.fillText(`${m.file}: ${m.families.join(' ')}`, 10, y0 + 102);
+    ctx.fillText(`${m.focus.join(' ')}${m.themes.length ? ' / ' + m.themes.join(' ') : ''}`, 10, y0 + 120);
     for (let f = 0; f < frames; f++) {
       const b = (f / frames) * span;
       ev.evaluate(plan, b * period, pose);

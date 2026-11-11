@@ -274,11 +274,24 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     return ranked;
   };
 
-  /** Which official length / names to use for a request (iTunes when missing). */
-  const resolveRequest = async (req: AddRequest) => {
-    if (req.durationSec !== undefined) return { artist: req.artist, title: req.title, durationSec: req.durationSec };
+  /**
+   * Which official length / names to use for a request (iTunes when missing).
+   * When the length is given, iTunes is still asked for the genre only
+   * (names and length stay as requested); a failed lookup just means no genre.
+   */
+  const resolveRequest = async (req: AddRequest): Promise<OfficialSong | null> => {
+    if (req.durationSec !== undefined) {
+      let genre: string | undefined;
+      try {
+        genre = deps.lookupOfficial ? (await deps.lookupOfficial(req))?.genre : undefined;
+      } catch {
+        genre = undefined;
+      }
+      if (genre) deps.log(`  iTunes genre: ${genre}`);
+      return { artist: req.artist, title: req.title, durationSec: req.durationSec, ...(genre ? { genre } : {}) };
+    }
     const off = deps.lookupOfficial ? await deps.lookupOfficial(req) : null;
-    if (off) deps.log(`  iTunes: ${off.artist} - ${off.title}, ${off.durationSec} s`);
+    if (off) deps.log(`  iTunes: ${off.artist} - ${off.title}, ${off.durationSec} s${off.genre ? `, ${off.genre}` : ''}`);
     return off;
   };
 
@@ -418,7 +431,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
         addResults.push({ ...base, kind: state, message, officialSeconds: durationSec, seconds: deps.clock() - t0 });
         deps.log(`  ${state}: ${message}`);
       };
-      let req: { artist: string; title: string; durationSec: number } | null;
+      let req: OfficialSong | null;
       try {
         req = await resolveRequest(item.req);
       } catch {
@@ -479,6 +492,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
             addedAt: nowIso(),
             durationSec: req.durationSec,
             ...(r.tier === 'music-video' ? { note: 'music-video' as const } : {}),
+            ...(req.genre ? { genre: req.genre } : {}),
           };
           songs.push(song);
           delete songsStatus[item.key];
@@ -498,6 +512,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
             durationSec: req.durationSec,
             hasMap: false,
             ...(r.tier === 'music-video' ? { note: 'music-video' as const } : {}),
+            ...(req.genre ? { genre: req.genre } : {}),
           });
           const prev = songsStatus[item.key];
           songsStatus[item.key] = {
@@ -559,7 +574,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     const now = nowIso();
     await mkdir(paths.beatmapsDir, { recursive: true });
     // Rebuilt from the map files on disk every run, so it cannot drift from them.
-    const idx = renderIndex(await readText(indexPath), ANALYZER_VERSION, await scanMaps(paths.beatmapsDir), now);
+    const idx = renderIndex(await readText(indexPath), ANALYZER_VERSION, await scanMaps(paths.beatmapsDir), now, songGenres(songs));
     if (await writeIfChanged(indexPath, idx)) written.push(indexPath);
     const st = renderStatus(prevStatusText, status, now);
     if (await writeIfChanged(statusPath, st)) written.push(statusPath);
@@ -626,6 +641,11 @@ async function writeSongFiles(
   }
 }
 
+/** index.json `genre` values: the iTunes genre of every song in songs.json that has one (with or without a map yet). */
+function songGenres(songs: AddedSong[]): Map<string, string> {
+  return new Map(songs.filter((x) => x.genre).map((x) => [x.videoId, x.genre!]));
+}
+
 /** Songs a contributed map may belong to: starter pack, songs.json and the published playlist. */
 export function knownSongs(starter: Candidate[], songs: AddedSong[], playlistText: string | undefined): KnownSongs {
   const ids = new Set<string>([...starter.map((c) => c.videoId), ...songs.map((s) => s.videoId)]);
@@ -668,7 +688,7 @@ async function runContribution(
     if (await writeIfChanged(out, `${serialize(map)}\n`)) written.push(out);
     const now = deps.now().toISOString();
     const maps = await scanMaps(paths.beatmapsDir);
-    const idx = renderIndex(await readText(st.indexPath), ANALYZER_VERSION, maps, now);
+    const idx = renderIndex(await readText(st.indexPath), ANALYZER_VERSION, maps, now, songGenres(st.songs));
     if (await writeIfChanged(st.indexPath, idx)) written.push(st.indexPath);
     await writeSongFiles(paths, { ...st, mapIds: new Set(maps.keys()), now, written });
   }

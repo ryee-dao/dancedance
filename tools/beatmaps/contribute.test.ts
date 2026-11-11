@@ -68,6 +68,15 @@ afterEach(async () => {
 });
 
 describe('contributed beat maps (map_json)', () => {
+  it('keeps the iTunes genre of an added song in songs.json and index.json', async () => {
+    const list = songsJson();
+    list.songs[0].genre = 'Pop';
+    await writeFile(paths.songsFile!, `${JSON.stringify(list, null, 2)}\n`);
+    expect((await runBeatmaps(paths, opts(asTab()), deps)).report.contribution?.outcome).toBe('accepted');
+    expect(songsJson().songs[0]).toMatchObject({ hasMap: true, genre: 'Pop' });
+    expect(JSON.parse(readFileSync(join(paths.beatmapsDir, 'index.json'), 'utf8')).songs[ADDED_ID].genre).toBe('Pop');
+  });
+
   it('accepts a valid tab map for a listed song without a map: writes it, indexes it, marks hasMap; deterministic', async () => {
     const out = await runBeatmaps(paths, opts(asTab()), deps);
     expect(out.exitCode).toBe(0);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseIndexSongs } from './bpmIndex';
-import { absoluteBase, beatmapUrl, describeCloudStatus, fetchCloudMap, parseStatus, statusUrl, type FetchLike } from './cloud';
+import { absoluteBase, beatmapUrl, describeCloudStatus, fetchCloudMap, parseSongsList, parseStatus, statusUrl, type FetchLike } from './cloud';
 import { mkMap } from './testMaps.testutil';
 
 const page = 'https://host.example/app/index.html';
@@ -52,5 +52,20 @@ describe('cloud beat maps', () => {
     expect(
       parseIndexSongs(JSON.stringify({ ids: ['a', 'b'], songs: { a: { bpm: 123.6, duration: 200 }, b: { bpm: 0 }, c: { duration: 3 } } })),
     ).toEqual({ a: { bpm: 123.6, duration: 200 } });
+  });
+  it('reads optional genres from index.json songs and songs.json', () => {
+    expect(
+      parseIndexSongs(JSON.stringify({ songs: { a: { bpm: 100, duration: 200, genre: ' Latin ' }, b: { bpm: 90, duration: 1, genre: 7 }, c: { bpm: 90, duration: 1, genre: '' } } })),
+    ).toEqual({ a: { bpm: 100, duration: 200, genre: 'Latin' }, b: { bpm: 90, duration: 1 }, c: { bpm: 90, duration: 1 } });
+    const songs = parseSongsList(
+      JSON.stringify({
+        songs: [
+          { videoId: 'aaaaaaaaaaa', title: 'T', artist: 'A', addedAt: 'x', durationSec: 200, genre: 'Hip-Hop/Rap' },
+          { videoId: 'bbbbbbbbbbb', title: 'T2', artist: 'A', addedAt: 'x', durationSec: 200, genre: 42 },
+        ],
+      }),
+    );
+    expect(songs[0].genre).toBe('Hip-Hop/Rap');
+    expect('genre' in songs[1]).toBe(false);
   });
 });

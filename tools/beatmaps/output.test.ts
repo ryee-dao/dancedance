@@ -45,6 +45,16 @@ describe('renderIndex', () => {
   it('rewrites an unreadable previous file', () => {
     expect(JSON.parse(renderIndex('{oops', '1.0.0', new Map(), T2)).generatedAt).toBe(T2);
   });
+  it('adds a genre only to songs that have one; without genres the file is exactly as before', () => {
+    const m = maps([['aaaaaaaaaaa', info(103.05, 229.6)], ['bbbbbbbbbbb', info(170.78, 263.4)]]);
+    const plain = renderIndex(undefined, '1.0.0', m, T1);
+    expect(renderIndex(undefined, '1.0.0', m, T1, new Map())).toBe(plain);
+    expect(renderIndex(undefined, '1.0.0', m, T1, new Map([['zzzzzzzzzzz', 'Pop']]))).toBe(plain);
+    const g = renderIndex(plain, '1.0.0', m, T2, new Map([['bbbbbbbbbbb', 'Latin']]));
+    expect(JSON.parse(g).generatedAt).toBe(T2);
+    expect(JSON.parse(g).songs).toEqual({ aaaaaaaaaaa: { bpm: 103.1, duration: 230 }, bbbbbbbbbbb: { bpm: 170.8, duration: 263, genre: 'Latin' } });
+    expect(renderIndex(g, '1.0.0', m, T1, new Map([['bbbbbbbbbbb', 'Latin']]))).toBe(g);
+  });
 });
 
 describe('renderStatus', () => {

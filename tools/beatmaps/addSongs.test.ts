@@ -37,7 +37,8 @@ interface World {
   search?: (q: string) => Promise<unknown>;
   embed?: Record<string, EmbedCheck>;
   download?: Record<string, 'ok' | 'unavailable' | 'blocked'>;
-  itunes?: { artist: string; title: string; durationSec: number } | null;
+  itunes?: { artist: string; title: string; durationSec: number; genre?: string } | null;
+  itunesThrows?: boolean;
 }
 
 function deps(w: World = {}): Deps {
@@ -74,7 +75,10 @@ function deps(w: World = {}): Deps {
       embedChecks.push(id);
       return w.embed?.[id] ?? 'ok';
     },
-    lookupOfficial: async () => (w.itunes === undefined ? { artist: 'Dua Lipa', title: 'Levitating', durationSec: 203 } : w.itunes),
+    lookupOfficial: async () => {
+      if (w.itunesThrows) throw new Error('offline');
+      return w.itunes === undefined ? { artist: 'Dua Lipa', title: 'Levitating', durationSec: 203 } : w.itunes;
+    },
   };
 }
 
@@ -217,6 +221,20 @@ describe('add a song by search', () => {
     expect(existsSync(join(paths.beatmapsDir, 'lyricvid001.json'))).toBe(true);
   });
 
+  it('a song listed without a map (download blocked) keeps its iTunes genre, and index.json gets it with the map', async () => {
+    const itunes = { artist: 'Dua Lipa', title: 'Levitating', durationSec: 203, genre: 'Pop' };
+    const out = await runBeatmaps(paths, opts({ stopAfter: 1 }), deps({ itunes, download: { lyricvid001: 'blocked' } }));
+    expect(out.report.adds?.[0]).toMatchObject({ kind: 'listed', videoId: 'lyricvid001' });
+    expect(JSON.parse(await readFile(paths.songsFile!, 'utf8')).songs).toEqual([
+      { videoId: 'lyricvid001', title: 'Levitating', artist: 'Dua Lipa', addedAt: NOW.toISOString(), durationSec: 203, hasMap: false, genre: 'Pop' },
+    ]);
+    // Two hours later the hourly run makes the map: hasMap flips, the genre stays and reaches index.json.
+    await runBeatmaps(paths, opts({ adds: [] }), { ...deps({ itunes }), now: () => new Date('2026-11-10T14:00:00Z') });
+    expect(JSON.parse(await readFile(paths.songsFile!, 'utf8')).songs).toMatchObject([{ videoId: 'lyricvid001', hasMap: true, genre: 'Pop' }]);
+    const index = JSON.parse(await readFile(join(paths.beatmapsDir, 'index.json'), 'utf8'));
+    expect(index.songs.lyricvid001.genre).toBe('Pop');
+  });
+
   it('looks up the official length on iTunes when it is missing, and uses the canonical names', async () => {
     const out = await runBeatmaps(
       paths,
@@ -251,6 +269,45 @@ describe('add a song by search', () => {
     expect(downloads).toContain('addedsong01');
   });
 
+  it('records the iTunes genre in songs.json and index.json (length looked up, or genre only when the length was given)', async () => {
+    const itunes = { artist: 'Dua Lipa', title: 'Levitating', durationSec: 999, genre: 'Pop' };
+    const out = await runBeatmaps(paths, opts(), deps({ itunes }));
+    expect(out.report.adds?.[0]).toMatchObject({ kind: 'added', officialSeconds: 203 });
+    // The requested names and length win; only the genre comes from iTunes.
+    expect(await songsOnDisk()).toEqual([
+      { videoId: 'lyricvid001', title: 'Levitating', artist: 'Dua Lipa', addedAt: NOW.toISOString(), durationSec: 203, genre: 'Pop' },
+    ]);
+    const songsText = await readFile(paths.songsFile!, 'utf8');
+    expect(songsText).toContain('"durationSec": 203,\n      "hasMap": true,\n      "genre": "Pop"\n');
+    const index = JSON.parse(await readFile(join(paths.beatmapsDir, 'index.json'), 'utf8'));
+    expect(index.songs.lyricvid001.genre).toBe('Pop');
+    // A later regular run (which also maps the starter song) keeps songs.json and the genre in index.json.
+    await runBeatmaps(paths, opts({ adds: [] }), deps({ itunes }));
+    expect(await readFile(paths.songsFile!, 'utf8')).toBe(songsText);
+    const index2 = JSON.parse(await readFile(join(paths.beatmapsDir, 'index.json'), 'utf8'));
+    expect(index2.songs.lyricvid001.genre).toBe('Pop');
+    expect('genre' in index2.songs.starter0001).toBe(false);
+  });
+
+  it('looks up the genre with the length when the request has no length', async () => {
+    await runBeatmaps(
+      paths,
+      opts({ adds: [{ artist: 'dua lipa', title: 'levitating', explicit: true }] }),
+      deps({ itunes: { artist: 'Dua Lipa', title: 'Levitating', durationSec: 203, genre: 'Dance' } }),
+    );
+    expect((await songsOnDisk())[0]).toMatchObject({ artist: 'Dua Lipa', durationSec: 203, genre: 'Dance' });
+  });
+
+  it('a failed or genre-less genre lookup still adds the song, with no genre field', async () => {
+    await runBeatmaps(paths, opts(), deps({ itunesThrows: true }));
+    const text = await readFile(paths.songsFile!, 'utf8');
+    expect(text).not.toContain('genre');
+    expect(text).toBe(
+      renderSongs(undefined, [{ videoId: 'lyricvid001', title: 'Levitating', artist: 'Dua Lipa', addedAt: NOW.toISOString(), durationSec: 203 }], NOW.toISOString()),
+    );
+    expect(await readFile(join(paths.beatmapsDir, 'index.json'), 'utf8')).not.toContain('genre');
+  });
+
   it('dry run searches and picks but downloads and writes nothing', async () => {
     const out = await runBeatmaps(paths, opts({ dryRun: true }), deps());
     expect(downloads).toEqual([]);
@@ -268,6 +325,23 @@ describe('songs.json and add planning', () => {
     expect(JSON.parse(t1).songs.map((s: { videoId: string }) => s.videoId)).toEqual(['bbbbbbbbbbb', 'aaaaaaaaaaa']);
     expect(t1.split('\n')[2]).toBe('  "songs": [');
     expect(renderSongs(t1, [b, a], '2026-11-04T00:00:00.000Z')).toBe(t1);
+  });
+
+  it('writes one field order (videoId, title, artist, addedAt, durationSec, hasMap, note?, genre?); no genre means no field', () => {
+    const a = { videoId: 'aaaaaaaaaaa', title: 'B', artist: 'X', addedAt: '2026-11-02T00:00:00Z', durationSec: 200 };
+    const t = '2026-11-03T00:00:00.000Z';
+    const plain = renderSongs(undefined, [a], t);
+    expect(plain).toBe(`{\n  "updatedAt": "${t}",\n  "songs": [\n    {\n      "videoId": "aaaaaaaaaaa",\n      "title": "B",\n      "artist": "X",\n      "addedAt": "2026-11-02T00:00:00Z",\n      "durationSec": 200,\n      "hasMap": true\n    }\n  ]\n}\n`);
+    expect(renderSongs(undefined, [{ ...a, genre: undefined }], t)).toBe(plain);
+    expect(renderSongs(undefined, [{ ...a, hasMap: true }], t)).toBe(plain);
+    const g = renderSongs(undefined, [{ ...a, note: 'music-video' as const, genre: 'Rock' }], t);
+    expect(Object.keys(JSON.parse(g).songs[0])).toEqual(['videoId', 'title', 'artist', 'addedAt', 'durationSec', 'hasMap', 'note', 'genre']);
+    expect(parseSongsList(g)[0].genre).toBe('Rock');
+    // Input key order doesn't matter, and a pending song keeps its genre.
+    const pending = renderSongs(undefined, [{ genre: 'Rock', hasMap: false, ...a }], t);
+    expect(Object.keys(JSON.parse(pending).songs[0])).toEqual(['videoId', 'title', 'artist', 'addedAt', 'durationSec', 'hasMap', 'genre']);
+    expect(parseSongsList(pending)[0]).toMatchObject({ hasMap: false, genre: 'Rock' });
+    expect(renderSongs(pending, parseSongsList(pending), '2026-11-04T00:00:00.000Z')).toBe(pending);
   });
 
   it('plans: dedupes, skips added songs, retries explicit ones, waits on backoff', () => {

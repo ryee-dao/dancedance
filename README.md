@@ -19,6 +19,10 @@ It runs as a website (hosted free on GitHub Pages) and as an Android TV app. Bot
 
 **Options.** The **Options** button at the top of the song list is where you choose the coach's look (each style has a moving preview), set the audio offset, choose how songs without a beat map find the beat (web only), change your playlist and, on the web, connect to GitHub for adding songs.
 
+**How a song's dance style is decided.** Each song gets a style (shown on the coach's NOW label, e.g. "Latin groove"): which move families it leans toward (Latin, disco, funk, hip-hop, pop, rock, K-pop, party, aerobics), which body parts to favour and a few themes. The first match wins: the song's own `style` in `src/data/starter.json`, then the artist (a built-in table in `src/core/choreo/songStyle.ts`), then the iTunes genre recorded when the song was added, and otherwise a balanced pop mix. Words in the title add themes ("Hips", "Jump", "Spin", "Clap", ...), and the tempo nudges the mix a little. About two thirds of the moves then come from the song's families. To override a song, add or edit its `style` in `starter.json`, e.g. `"style": { "families": { "latin": 1, "pop": 0.3 }, "themes": ["hips"], "focus": { "hips": 1.5 }, "signature": ["hip-sway", "hip-shake"] }`. `signature` names one or two moves (ids from `src/core/choreo/families/*.ts`) that open every chorus.
+
+**Same routine or a new one.** Under **Options → Routine**, "Same every time" (the default) gives a song the same routine on every play, so you can learn it. "New every time" changes the routine on each play; the chorus combo stays the same.
+
 **Your own MP3s.** Drag an MP3 or M4A file onto the page. It's analysed on your device in a few seconds and played directly, with no YouTube involved.
 
 ## Helper app (optional, for computers)
@@ -246,7 +250,7 @@ npm run beatmaps -- --add "a-ha - Take On Me" --dry-run   # just show which vide
 PLAYLIST_URL='https://www.youtube.com/playlist?list=…' npm run beatmaps
 ```
 
-Beat maps are written to `public/beatmaps/`; songs added by search are listed in `public/songs.json` (`hasMap: false` until their map exists), and ones that couldn't be added in `public/songs-status.json`. `npm run beatmaps:local` is the safe all-in-one version for your own computer (see "If YouTube blocks GitHub's servers"). Audio goes to a temporary folder and is deleted as soon as each song is analysed. `--force` redoes songs that already have a map.
+Beat maps are written to `public/beatmaps/`; songs added by search are listed in `public/songs.json` (fields in this order: `videoId`, `title`, `artist`, `addedAt`, `durationSec`, `hasMap` — `false` until their map exists — then `note` and `genre`, the iTunes genre, only when known; `public/beatmaps/index.json` repeats the genre for songs that have a map), and ones that couldn't be added in `public/songs-status.json`. `npm run beatmaps:local` is the safe all-in-one version for your own computer (see "If YouTube blocks GitHub's servers"). Audio goes to a temporary folder and is deleted as soon as each song is analysed. `--force` redoes songs that already have a map.
 
 ## A note on YouTube's terms
 

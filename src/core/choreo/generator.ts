@@ -22,11 +22,23 @@
  *
  * Live mode (no sections known) uses LivePlanner: the same unit logic with a
  * repeating verse / verse / chorus phrase cycle.
+ *
+ * Song style (songStyle.ts) weights the pick on top of section energy and
+ * level: moves of the song's families (~60-70 % of picks), its focus and its
+ * title themes are favoured, never to the point of emptying the pool. The
+ * pool is the catalogue plus validated variations (pool.ts): Easy sees few
+ * (simple ones), Hard the most. A move doesn't come back within
+ * NO_REPEAT_PHRASES phrases (section memos aside). The seed is
+ * videoId + level + style; 'fresh' routines add a play counter, but the
+ * chorus combo (signature) keeps the stable seed. Songs with a curated
+ * `signature` build the chorus combo from those moves.
  */
 
 import type { BeatMap, SectionType } from '../analysis/beatmap';
 import { CH, type Pose } from '../coach/skeleton';
 import { IDLE_MOVE, MOVES, keysOf, type Level, type Move } from './moves';
+import { getPool } from './pool';
+import { BALANCED_POP, styleKey, type SongStyle } from './songStyle';
 
 export type Intensity = 'chill' | 'cardio' | 'sweaty';
 
@@ -68,6 +80,47 @@ export interface Routine {
 export interface Bar {
   start: number;
   len: number;
+}
+
+/** How a routine is personalised. */
+export interface RoutineOpts {
+  /** The song's style (default: balanced pop). */
+  style?: SongStyle;
+  /** 'fresh' routines: the play number mixed into the seed (chorus combo excluded). */
+  fresh?: number;
+  /** Use the variation pool (default true). */
+  variations?: boolean;
+}
+
+/** Phrases a move stays out after it was used (section memos aside). */
+export const NO_REPEAT_PHRASES = 3;
+/** Share of picks that may be variations, per level. */
+const VARIATION_SHARE: Record<Intensity, number> = { chill: 0.06, cardio: 0.25, sweaty: 0.35 };
+/** Chance a unit's last 4 beats become a phrase-end flourish (last unit of a phrase). */
+const FLOURISH_P: Record<Intensity, number> = { chill: 0, cardio: 0.3, sweaty: 0.5 };
+/** Chance a unit plays an ornamented version of its move (hip sway, diagonal). */
+const ORNAMENT_P: Record<Intensity, number> = { chill: 0, cardio: 0.15, sweaty: 0.25 };
+
+/** Style factor of a move for a song: families, focus and themes. */
+export function styleFactor(m: Move, style: SongStyle): number {
+  // A move's first family counts fully, its secondary tags at 60 % (so a
+  // widely co-tagged family like pop doesn't swallow the mix).
+  let fam = 0;
+  m.families.forEach((f, i) => (fam = Math.max(fam, (style.families[f] ?? 0) * (i === 0 ? 1 : 0.6))));
+  // Per move, a top-family move (weight ~0.5-1) is ~15-30x a non-matching one;
+  // with every family in the pool that gives ~60-70 % of picks. Never 0.
+  let w = 0.15 + 5 * fam;
+  if (style.focus) {
+    let fo = 1;
+    for (const f of m.focus) fo = Math.max(fo, style.focus[f] ?? 1);
+    w *= fo;
+  }
+  if (style.themes.length) {
+    let n = 0;
+    for (const t of m.themes) if (style.themes.includes(t)) n++;
+    if (n) w *= n >= 2 ? 4 : 3;
+  }
+  return w;
 }
 
 // ---------------------------------------------------------------------------
@@ -152,15 +205,26 @@ export function unitBarsFor(intensity: Intensity, half: boolean): number {
 
 function intensityFactor(m: Move, intensity: Intensity): number {
   if (difficultyFactor(m, intensity) <= 0) return 0;
+  if (m.fastTurn && intensity === 'chill') return 0;
   if (m.jump) return intensity === 'chill' ? 0 : intensity === 'cardio' ? 0.7 : 1.5;
   const df = intensity === 'chill' ? 1 : difficultyFactor(m, intensity);
   if (m.impact) return (intensity === 'chill' ? 0.35 : intensity === 'cardio' ? 1 : 1.5) * df;
   return df;
 }
 
-/** Moves the generator may pick (idle and cooldown are special). */
+/** Catalogue moves the generator may pick (idle and cooldown are special). */
 const DANCE_MOVES = MOVES.filter((m) => !m.idle && !m.cooldown);
-const COOLDOWN_MOVES = MOVES.filter((m) => m.cooldown);
+/** The outro draws from the stretches plus the calm flows of the cooldown file (tai chi, yoga shapes). */
+const COOLDOWN_MOVES = MOVES.filter((m) => m.cooldown || (m.file === 'cooldown' && m.level === 'low' && !m.jump && !m.idle));
+
+/** Base moves + variations (variations get a per-level share). */
+function dancePool(useVariations: boolean): { moves: readonly Move[]; isVar: Uint8Array } {
+  const vars = useVariations ? getPool().variations : [];
+  const moves = [...DANCE_MOVES, ...vars];
+  const isVar = new Uint8Array(moves.length);
+  for (let i = DANCE_MOVES.length; i < moves.length; i++) isVar[i] = 1;
+  return { moves, isVar };
+}
 
 function partsOverlap(a: Move, b: Move): number {
   let inter = 0;
@@ -181,7 +245,10 @@ export function transitionCost(prev: Pose, next: Pose): number {
     Math.abs(next[CH.RFT_X] - prev[CH.RFT_X]) + Math.abs(next[CH.LFT_X] - prev[CH.LFT_X]) +
     Math.abs(next[CH.RFT_Y] - prev[CH.RFT_Y]) + Math.abs(next[CH.LFT_Y] - prev[CH.LFT_Y]);
   const vert = Math.abs(next[CH.Y] - prev[CH.Y]);
-  return (arms / 180) * 0.35 + feet * 4 + vert * 3;
+  // Facing: entering / leaving a turned key swings the whole body round.
+  let spin = Math.abs(next[CH.SPIN] - prev[CH.SPIN]) % 360;
+  if (spin > 180) spin = 360 - spin;
+  return (arms / 180) * 0.35 + feet * 4 + vert * 3 + (spin / 90) * 1.5;
 }
 
 // ---------------------------------------------------------------------------
@@ -213,13 +280,35 @@ export class Choreographer {
   private recent: Move[] = [];
   private memo = new Map<string, [Move, Move]>();
   private phraseNo = 0;
+  readonly style: SongStyle;
+  private pool: readonly Move[];
+  /** Per-move static weight: style x variation share (index-aligned with pool). */
+  private base: Float64Array;
+  /** Phrase number each move was last used in. */
+  private lastUsed = new Map<Move, number>();
+  private ornaments: ReadonlyMap<string, readonly Move[]>;
 
-  constructor(seedKey: string, intensity: Intensity, half: boolean) {
+  constructor(seedKey: string, intensity: Intensity, half: boolean, opts: RoutineOpts = {}) {
     this.intensity = intensity;
     this.half = half;
     this.unitBars = unitBarsFor(intensity, half);
-    this.rng = mulberry32(hashString(`${seedKey}|${intensity}`));
-    this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}`)), intensity);
+    this.style = opts.style ?? BALANCED_POP;
+    const sk = styleKey(this.style);
+    const fresh = opts.fresh !== undefined && opts.fresh > 0 ? `|play${opts.fresh}` : '';
+    this.rng = mulberry32(hashString(`${seedKey}|${intensity}|${sk}${fresh}`));
+    const useVars = opts.variations !== false;
+    const { moves, isVar } = dancePool(useVars);
+    this.pool = moves;
+    this.ornaments = useVars ? getPool().ornaments : new Map();
+    // Variations as a share of the picks (there are many more of them than base moves).
+    let nb = 0, nv = 0;
+    for (let i = 0; i < moves.length; i++) if (intensityFactor(moves[i], intensity) > 0) isVar[i] ? nv++ : nb++;
+    const share = VARIATION_SHARE[intensity];
+    const vw = nv ? (share / (1 - share)) * (nb / nv) : 0;
+    this.base = new Float64Array(moves.length);
+    for (let i = 0; i < moves.length; i++) this.base[i] = styleFactor(moves[i], this.style) * (isVar[i] ? vw : 1);
+    // The chorus combo keeps the stable seed (same in 'fresh' mode).
+    this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}|${sk}`)), intensity, this.style);
   }
 
   /** Fill `bars` (contiguous) with one phrase. */
@@ -272,12 +361,20 @@ export class Choreographer {
       }
     }
     for (let u = 0; u < n; u++) {
-      const choice = pattern[u % pattern.length] ?? pattern[0];
+      let choice = pattern[u % pattern.length] ?? pattern[0];
       const ub = units[u];
       const start = ub[0].start;
       const end = ub[ub.length - 1].start + ub[ub.length - 1].len;
-      this.fillUnit(out, start, end, choice, o.section, phraseNo);
+      let flourish: Move | null = null;
+      if (choice.kind === 'move' && !o.cooldown && !o.warmup) {
+        const orn = this.ornament(choice.move, ['hips', 'diag'], ORNAMENT_P[this.intensity]);
+        if (orn) choice = { kind: 'move', move: orn };
+        // Phrase end: the unit's last 4 beats spin out / hit a pose.
+        if (u === n - 1 && n > 1) flourish = this.ornament(pattern[u % pattern.length].kind === 'move' ? (pattern[u % pattern.length] as { move: Move }).move : choice.move, ['spin', 'hit4', 'clap4'], FLOURISH_P[this.intensity]);
+      }
+      this.fillUnit(out, start, end, choice, o.section, phraseNo, flourish);
     }
+    for (const c of pattern) if (c.kind === 'move') this.lastUsed.set(c.move, phraseNo);
   }
 
   /** Fill [start, end) with the groove (filler for pickups / leftovers). */
@@ -291,7 +388,7 @@ export class Choreographer {
   }
 
   private allowed(m: Move, o: PhraseOpts): boolean {
-    if (o.cooldown) return m.cooldown;
+    if (o.cooldown) return COOLDOWN_MOVES.includes(m) && (m.cooldown || intensityFactor(m, this.intensity) > 0);
     if (m.cooldown || m.idle) return false;
     if (intensityFactor(m, this.intensity) <= 0) return false;
     const lw = levelWeights(o.warmup ? 'warmup' : o.section, this.intensity, o.energy);
@@ -299,19 +396,27 @@ export class Choreographer {
   }
 
   private choose(o: PhraseOpts, avoid: Move | null): Move {
-    const pool = o.cooldown ? COOLDOWN_MOVES : DANCE_MOVES;
+    const pool = o.cooldown ? COOLDOWN_MOVES : this.pool;
     const lw = levelWeights(o.warmup ? 'warmup' : o.section, this.intensity, o.energy);
     const prev = this.lastMove;
     const prevPose = prev ? lastKeyPose(prev, this.lastMirror) : null;
-    const weights = pool.map((m) => {
+    const phrase = this.phraseNo;
+    const weights = pool.map((m, i) => {
       if (m === avoid) return 0;
       if (m === prev && !(this.intensity === 'chill' && o.memoKey)) return 0; // no repeat across a phrase boundary
-      let w = o.cooldown ? 1 : lw[m.level] * intensityFactor(m, this.intensity);
+      let w = o.cooldown ? (m.cooldown || intensityFactor(m, this.intensity) > 0 ? 1 : 0) : lw[m.level] * intensityFactor(m, this.intensity) * this.base[i];
       if (w <= 0) return 0;
+      // Not again within NO_REPEAT_PHRASES phrases; other versions of the same base move rarely.
+      const used = this.lastUsed.get(m);
+      if (!o.cooldown && used !== undefined && phrase - used <= NO_REPEAT_PHRASES) return 0;
+      // Calm flows (cooldown file) suit warm-ups, intros and quiet passages.
+      if (!o.cooldown && m.file === 'cooldown' && (o.warmup || o.energy < 0.35)) w *= 2.5;
+      if (avoid && m.base === avoid.base) w *= 0.1;
+      if (prev && m.base === prev.base) w *= 0.1;
       if (this.recent.includes(m)) w *= 0.15;
       if (prev && !prev.idle) w *= 1 - 0.6 * partsOverlap(prev, m);
       if (avoid) w *= 1 - 0.5 * partsOverlap(avoid, m);
-      if (prevPose) w *= Math.exp(-0.6 * transitionCost(prevPose, keysOf(m, false)[0].pose));
+      if (prevPose) w *= Math.exp(-0.9 * transitionCost(prevPose, keysOf(m, false)[0].pose));
       return w;
     });
     const picked = pickWeighted(this.rng, pool, weights);
@@ -321,7 +426,14 @@ export class Choreographer {
     return fallback.length ? fallback[Math.floor(this.rng() * fallback.length)] : pool[0];
   }
 
-  private fillUnit(out: MoveInstance[], start: number, end: number, choice: UnitChoice, section: SectionType, phrase: number): void {
+  /** An ornamented version of `m` of one of the given types, or null. */
+  private ornament(m: Move, types: readonly string[], p: number): Move | null {
+    if (p <= 0 || this.rng() >= p) return null;
+    const list = (this.ornaments.get(m.id) ?? []).filter((v) => types.includes(v.id.slice(v.id.lastIndexOf('~') + 1)) && intensityFactor(v, this.intensity) > 0);
+    return list.length ? list[Math.floor(this.rng() * list.length)] : null;
+  }
+
+  private fillUnit(out: MoveInstance[], start: number, end: number, choice: UnitChoice, section: SectionType, phrase: number, flourish: Move | null = null): void {
     const mult = this.half ? 2 : 1;
     let b = start;
     let first = true;
@@ -347,12 +459,16 @@ export class Choreographer {
       const span = m.beats * mult;
       let n = Math.floor((end - b) / span);
       if (m.travel !== 0 && n % 2 === 1) n -= 1;
+      // Phrase-end flourish: replace the last 4 move beats (an even number of instances).
+      let fl = flourish && m.travel === 0 && (4 / m.beats) % 1 === 0 ? 4 / m.beats : 0;
+      if (fl && (n <= fl || (n - fl) % (m.mirror ? 2 : 1) !== 0)) fl = 0;
       let origin = 0;
-      for (let i = 0; i < n; i++) {
+      for (let i = 0; i < n - fl; i++) {
         const mirror = m.mirror ? i % 2 === 1 : false;
         push(m, mirror, origin, false);
         origin += m.travel * (mirror ? -1 : 1);
       }
+      if (fl && flourish) push(flourish, false, origin, false);
     }
     if (b < end) {
       const wasFirst = first;
@@ -370,17 +486,21 @@ function lastKeyPose(m: Move, mirror: boolean): Pose {
   return k[k.length - 1].pose;
 }
 
-/** One 8-move-beat combo per song: two 4-beat blocks of different moves. */
-function pickSignature(rng: () => number, intensity: Intensity): SigStep[] {
-  const pool = DANCE_MOVES.filter(
-    (m) => m.beats <= 4 && intensityFactor(m, intensity) > 0 && (m.level !== 'low' || intensity === 'chill') && !(m.travel !== 0 && m.beats === 4),
-  );
+/**
+ * One 8-move-beat combo per song: two 4-beat blocks of different moves. A
+ * song's curated `signature` (move ids) supplies the blocks when those moves
+ * suit the level; otherwise they're picked with the song's style weights.
+ */
+function pickSignature(rng: () => number, intensity: Intensity, style: SongStyle = BALANCED_POP): SigStep[] {
+  const ok = (m: Move) => m.beats <= 4 && intensityFactor(m, intensity) > 0 && !(m.travel !== 0 && m.beats === 4);
+  const pool = DANCE_MOVES.filter((m) => ok(m) && (m.level !== 'low' || intensity === 'chill'));
   const weight = (m: Move) =>
-    (m.level === 'high' ? (intensity === 'chill' ? 0.3 : intensity === 'cardio' ? 1 : 1.8) : 1.2) * (m.beats === 2 ? 2 : 1) * intensityFactor(m, intensity);
-  const a = pickWeighted(rng, pool, pool.map(weight));
+    (m.level === 'high' ? (intensity === 'chill' ? 0.3 : intensity === 'cardio' ? 1 : 1.8) : 1.2) * (m.beats === 2 ? 2 : 1) * intensityFactor(m, intensity) * styleFactor(m, style);
+  const nods = (style.signature ?? []).map((id) => DANCE_MOVES.find((m) => m.id === id)).filter((m): m is Move => !!m && ok(m));
+  const a = nods[0] ?? pickWeighted(rng, pool, pool.map(weight));
   if (!a) return [];
   const rest = pool.filter((m) => m !== a);
-  const b = pickWeighted(rng, rest, rest.map((m) => weight(m) * (1 - 0.7 * partsOverlap(a, m)))) ?? rest[0];
+  const b = (nods[1] && nods[1] !== a ? nods[1] : null) ?? pickWeighted(rng, rest, rest.map((m) => weight(m) * (1 - 0.7 * partsOverlap(a, m)))) ?? rest[0];
   const steps: SigStep[] = [];
   for (const m of [a, b]) {
     const reps = 4 / m.beats;
@@ -525,12 +645,12 @@ function sectionRuns(map: BeatMap, bars: readonly Bar[]): Run[] {
 }
 
 /** Generate the full routine for a beat map. */
-export function generateRoutine(map: BeatMap, intensity: Intensity): Routine {
+export function generateRoutine(map: BeatMap, intensity: Intensity, opts: RoutineOpts = {}): Routine {
   // Bad data (absurd tempo, non-increasing or non-finite beats): no routine;
   // the conductor dances the idle groove instead.
   const N = isUsableBeatMap(map) ? map.beats.length : 0;
   const half = isHalfTime(mapTempo(map));
-  const ch = new Choreographer(map.videoId, intensity, half);
+  const ch = new Choreographer(map.videoId, intensity, half, opts);
   const out: MoveInstance[] = [];
   if (N === 0) return { instances: out, signature: ch.signature, half, beats: 0 };
 
@@ -611,11 +731,11 @@ export class LivePlanner {
   private nextBeat: number;
   private k = 0;
 
-  constructor(seedKey: string, intensity: Intensity, bpm: number, startBeat: number) {
+  constructor(seedKey: string, intensity: Intensity, bpm: number, startBeat: number, opts: RoutineOpts = {}) {
     this.half = isHalfTime(bpm);
     // The level still sets difficulty; the verse/verse/chorus cycle keeps the
     // exertion at a medium level with periodic bigger phrases.
-    this.ch = new Choreographer(`${seedKey}|live`, intensity, this.half);
+    this.ch = new Choreographer(`${seedKey}|live`, intensity, this.half, opts);
     this.nextBeat = startBeat;
   }
 

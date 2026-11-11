@@ -24,6 +24,7 @@ export const STORE_KEYS = {
   addPassphrase: 'dd.addPassphrase', // string: the relay's optional shared passphrase
   addPending: 'dd.addPending', // PendingAdd[]: songs sent to the cloud that haven't appeared in songs.json yet
   addedHidden: 'dd.addedHidden', // string[]: video IDs removed from "My added songs" on this device only
+  plays: 'dd.plays', // Record<videoId, number>: how many times each song has started playing (least recently played first)
 } as const;
 
 /** A song sent to the cloud job, waiting to show up in songs.json. */
@@ -82,6 +83,14 @@ export const INTENSITIES: readonly Intensity[] = ['chill', 'cardio', 'sweaty'];
  */
 export type LiveSyncPref = 'ask' | 'mic' | 'off';
 
+/** 'same': a song always gets the same routine; 'fresh': a new one each play. Same union as coachStage's RoutineMode. */
+export type RoutineMode = 'same' | 'fresh';
+export const ROUTINE_MODES: readonly RoutineMode[] = ['same', 'fresh'];
+
+/** At most this many songs keep a play count (the least recently played are dropped). */
+export const MAX_PLAY_COUNTS = 2000;
+const MAX_PLAYS = 1_000_000;
+
 export interface Settings {
   /**
    * Shifts everything synced to the music, ms, -500..500 in 10 ms steps.
@@ -93,9 +102,20 @@ export interface Settings {
   liveSync: LiveSyncPref;
   /** The coach's look (Options screen). A `?coach=` URL parameter overrides it. */
   coachStyle: CoachStyle;
+  /** Routine per play (Options screen). */
+  routineMode: RoutineMode;
+  /** Players dancing (level picker): 2 = two-player duo stage (ui/duoStage.ts). */
+  players: 1 | 2;
 }
 
-export const DEFAULT_SETTINGS: Settings = { audioOffsetMs: 0, intensity: 'cardio', liveSync: 'ask', coachStyle: DEFAULT_COACH_STYLE };
+export const DEFAULT_SETTINGS: Settings = {
+  audioOffsetMs: 0,
+  intensity: 'cardio',
+  liveSync: 'ask',
+  coachStyle: DEFAULT_COACH_STYLE,
+  routineMode: 'same',
+  players: 1,
+};
 
 /** Drop out-of-range or wrongly typed values (old versions, hand edits). */
 function sanitizeSettings(s: Partial<Record<keyof Settings, unknown>>): Settings {
@@ -109,6 +129,19 @@ function sanitizeSettings(s: Partial<Record<keyof Settings, unknown>>): Settings
   }
   if (s.liveSync === 'ask' || s.liveSync === 'mic' || s.liveSync === 'off') out.liveSync = s.liveSync;
   out.coachStyle = parseCoachStyle(s.coachStyle) ?? DEFAULT_COACH_STYLE;
+  if (s.routineMode === 'same' || s.routineMode === 'fresh') out.routineMode = s.routineMode;
+  if (s.players === 1 || s.players === 2) out.players = s.players;
+  return out;
+}
+
+/** Keep whole, non-negative, finite counts for string keys; at most MAX_PLAY_COUNTS (the last ones). */
+export function sanitizePlayCounts(v: unknown): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (!isObj(v)) return out;
+  const entries = Object.entries(v).filter(
+    (e): e is [string, number] => e[0].length > 0 && typeof e[1] === 'number' && Number.isFinite(e[1]) && e[1] >= 1,
+  );
+  for (const [k, n] of entries.slice(-MAX_PLAY_COUNTS)) out[k] = Math.min(MAX_PLAYS, Math.floor(n));
   return out;
 }
 
@@ -171,6 +204,7 @@ let titles: Record<string, TitleEntry> | null = null;
 let titlesFlushTimer: ReturnType<typeof setTimeout> | null = null;
 let levels: Record<string, Intensity> | null = null;
 let localBpm: Record<string, number> | null = null;
+let plays: Record<string, number> | null = null;
 
 function flushTitles(): void {
   if (titlesFlushTimer !== null) clearTimeout(titlesFlushTimer);
@@ -199,6 +233,23 @@ export const store = {
     if (s.has(videoId)) return;
     s.add(videoId);
     writeJson(STORE_KEYS.played, [...s]);
+  },
+
+  // --- play counts -------------------------------------------------------
+  /** How many times this song has started playing on this device. */
+  playCount(videoId: string): number {
+    if (!plays) plays = sanitizePlayCounts(readJson<unknown>(STORE_KEYS.plays, {}, isObj));
+    return plays[videoId] ?? 0;
+  },
+  /** One more play (moves the song to the most recently played end). */
+  bumpPlayCount(videoId: string): void {
+    if (!videoId) return;
+    const n = Math.min(MAX_PLAYS, this.playCount(videoId) + 1);
+    delete plays![videoId];
+    plays![videoId] = n;
+    const keys = Object.keys(plays!);
+    for (const k of keys.slice(0, Math.max(0, keys.length - MAX_PLAY_COUNTS))) delete plays![k];
+    writeJson(STORE_KEYS.plays, plays);
   },
 
   // --- blocked (from player errors) ---------------------------------------

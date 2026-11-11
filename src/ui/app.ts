@@ -10,7 +10,7 @@ import type { PlayItem } from '../player/types';
 import type { Nav, Screen } from './dom';
 import { initFocusNav, setScreenScope } from './focusNav';
 import { createHome } from './home';
-import { library } from './library';
+import { library, songGenre } from './library';
 import { createLinkPlaylist } from './linkPlaylist';
 import { createAddSong } from './addSong';
 import { createOptions } from './options';
@@ -30,7 +30,15 @@ export function startApp(root: HTMLElement): void {
     const isTV = getPlatform().isTV;
     // The stored look applies unless the URL says ?coach=<style> (the stage checks that).
     setStageRenderer(() =>
-      createCoachStage({ getIntensity: () => store.settings().intensity, isTV, getStyle: () => store.settings().coachStyle }),
+      createCoachStage({
+        getIntensity: () => store.settings().intensity,
+        isTV,
+        getStyle: () => store.settings().coachStyle,
+        getRoutineMode: () => store.settings().routineMode,
+        getPlayCount: (id) => store.playCount(id),
+        getGenre: (id) => songGenre(id),
+        getPlayers: () => store.settings().players,
+      }),
     );
   }
   initFocusNav();

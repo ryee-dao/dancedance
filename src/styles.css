@@ -1391,3 +1391,16 @@ body.dragging::after {
     font-size: 1.6rem;
   }
 }
+
+/* --- Players toggle in the level picker (two-player duo mode) --------------- */
+
+.picker-players {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: -0.6rem 0 1.4rem;
+}
+.players-btn.players-on {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}

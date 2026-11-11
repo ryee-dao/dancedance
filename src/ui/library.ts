@@ -6,7 +6,7 @@
  */
 
 import starterData from '../data/starter.json';
-import { reloadCloudIndex } from '../beat/bpmIndex';
+import { cloudGenre, reloadCloudIndex } from '../beat/bpmIndex';
 import type { AddedSong } from '../beat/cloud';
 import { getPlatform } from '../platform/platform';
 import { cleanTitle } from '../player/playlistReader';
@@ -23,6 +23,8 @@ export interface Song {
   artist: string | null;
   source: 'playlist' | 'starter' | 'added';
   era?: Era;
+  /** iTunes primary genre, when known (songs added by search). */
+  genre?: string;
 }
 
 export type PlaylistStatus =
@@ -232,7 +234,7 @@ class Library extends EventTarget {
       return { videoId, title: starter.title, artist: starter.artist, source, era: starter.era };
     }
     const added = addedSongs.find(videoId);
-    if (added) return { videoId, title: added.title, artist: added.artist, source };
+    if (added) return { videoId, title: added.title, artist: added.artist, source, ...(added.genre ? { genre: added.genre } : {}) };
     const enriched = this.enrichment.get(videoId);
     if (enriched) return { videoId, title: enriched.title, artist: enriched.artist ?? null, source };
     const cached = store.titles()[videoId];
@@ -260,7 +262,9 @@ class Library extends EventTarget {
     return !store.isPlayed(videoId);
   }
 
+  /** Fired once per play, once the song is really playing. */
   markPlayed(videoId: string): void {
+    store.bumpPlayCount(videoId);
     store.markPlayed(videoId);
     // It played, so whatever flagged it before was wrong or is fixed.
     store.setBlocked(videoId, null);
@@ -318,6 +322,14 @@ class Library extends EventTarget {
 }
 
 export const library = new Library();
+
+/**
+ * A song's iTunes genre, when known: from songs.json (added songs), else
+ * from the cloud index. Starter songs have curated styles instead.
+ */
+export function songGenre(videoId: string): string | undefined {
+  return addedSongs.find(videoId)?.genre ?? cloudGenre(videoId);
+}
 
 export function thumbnailUrl(videoId: string): string {
   return `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg`;

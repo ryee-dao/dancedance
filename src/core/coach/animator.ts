@@ -169,6 +169,9 @@ export class PoseEvaluator {
       mult = inst.half ? 2 : 1;
       k = keys.length - 1;
     }
+    // A late last key (quarter-beat grid, < half a beat before the move ends)
+    // would leave a quarter beat to reach a DIFFERENT next move: skip it there.
+    if (this.lateEnd(plan, i, inst, keys, k)) k--;
     const i0 = i;
     const inst0 = inst;
     const key0 = keys[k];
@@ -178,6 +181,7 @@ export class PoseEvaluator {
     let k1 = k + 1;
     let inst1 = inst0;
     let keys1 = keys;
+    if (k1 < keys1.length && this.lateEnd(plan, i0, inst0, keys, k1)) k1 = keys1.length;
     guard = 0;
     while (k1 >= keys1.length && guard++ < 8) {
       i1++;
@@ -209,6 +213,14 @@ export class PoseEvaluator {
     if (u < 0) u = 0;
     else if (u > 1) u = 1;
     interpolateGroup(g, this.pm1, this.p0, this.p1, u, out);
+  }
+
+  /** Key k is a late last key of `inst` and a different move follows (see evalGroup). */
+  private lateEnd(plan: PlanView, idx: number, inst: MoveInstance, keys: readonly MoveKey[], k: number): boolean {
+    if (k <= 0 || k !== keys.length - 1 || keys[k].at <= inst.move.beats - 0.5 + 1e-9) return false;
+    const n = plan.instances.length;
+    const next = idx + 1 >= 0 && idx + 1 < n ? plan.instances[idx + 1].move : IDLE_MOVE;
+    return next !== inst.move;
   }
 
   private load(key: MoveKey, inst: MoveInstance, g: number, dst: Pose): void {

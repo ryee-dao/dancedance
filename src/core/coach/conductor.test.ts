@@ -4,7 +4,7 @@ import type { BeatMap } from '../analysis/beatmap';
 import { songMap } from '../choreo/testutil';
 import { timeOfBeat } from './animator';
 import { Conductor } from './conductor';
-import { createPose, createSkeleton, solveSkeleton } from './skeleton';
+import { J, createPose, createSkeleton, solveSkeleton } from './skeleton';
 
 /** Simulated beat source: live tracker locks after `lockAt`, map arrives at `mapAt`. */
 class Sim {
@@ -51,7 +51,8 @@ function run(sim: Sim, until: number, onFrame?: (t: number, c: Conductor) => voi
     c.update(sim.at(t), 'sim-song', 'cardio', t);
     c.evaluate(t, pose);
     solveSkeleton(pose, sk);
-    if (f > 0) for (let j = 0; j < sk.p.length; j += 3) maxStep = Math.max(maxStep, Math.hypot(sk.p[j] - prev[j], sk.p[j + 1] - prev[j + 1], sk.p[j + 2] - prev[j + 2]));
+    // Real joints only (HEAD_UP / HEAD_FWD are orientation helpers a unit away; turns swing them).
+    if (f > 0) for (let j = 0; j < J.HEAD_UP * 3; j += 3) maxStep = Math.max(maxStep, Math.hypot(sk.p[j] - prev[j], sk.p[j + 1] - prev[j + 1], sk.p[j + 2] - prev[j + 2]));
     prev.set(sk.p);
     const k = c.plan!.kind;
     if (kinds[kinds.length - 1] !== k) kinds.push(k);
@@ -110,7 +111,8 @@ describe('Conductor', () => {
       }
     });
     expect(kinds[kinds.length - 1]).toBe('map');
-    expect(maxStep).toBeLessThan(0.1);
+    // Same bound as the routine continuity test (animator.test.ts) at 124 BPM.
+    expect(maxStep).toBeLessThan(0.095 * (124 / 100));
   });
 
   it('re-plans when the level changes, and is deterministic', () => {
