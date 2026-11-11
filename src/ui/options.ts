@@ -11,6 +11,9 @@ import { loopPlan, type LoopPlan } from '../core/coach/loop';
 import { FigurePainter } from '../core/coach/renderer';
 import { createPose, createSkeleton, solveSkeleton } from '../core/coach/skeleton';
 import { COACH_STYLES, type CoachStyle } from '../core/coach/styles';
+import { repoFromLocation } from '../platform/github';
+import { backgroundFill, describeFill } from '../beat/helperFill';
+import { helperDownloadUrl, setHelperOptIn, type HelperClient } from '../platform/helper';
 import { getPlatform } from '../platform/platform';
 import { store, type LiveSyncPref } from '../store';
 import { h, type Nav, type Screen } from './dom';
@@ -71,6 +74,56 @@ export function createOptions(nav: Nav): Screen {
     ),
   );
 
+  // --- helper app (web) ----------------------------------------------------------
+  const helper = platform.localHelper as HelperClient | undefined;
+  const helperStatus = h('span', { class: 'opt-status', 'aria-live': 'polite' });
+  const fillNote = h('p', { class: 'note', hidden: true });
+  const fill = backgroundFill();
+  const helperSection =
+    !!helper &&
+    !platform.isTV &&
+    h(
+      'section',
+      { class: 'opt-section' },
+      h('h2', { class: 'opt-title' }, 'Helper app'),
+      h('p', { class: 'note' }, 'A small free app for your computer. While it runs, songs without a beat map are downloaded on this computer so the beat is found automatically, without the microphone.'),
+      h(
+        'div',
+        { class: 'opt-row' },
+        helperStatus,
+        h('a', { class: 'btn btn-small', href: helperDownloadUrl(repoFromLocation(location)), target: '_blank', rel: 'noopener', 'data-action': 'helper-get' }, 'Get the helper'),
+        h('button', { class: 'btn btn-small btn-quiet', type: 'button', 'data-action': 'helper-check' }, 'Check again'),
+      ),
+      fillNote,
+      h(
+        'details',
+        { class: 'note' },
+        h('summary', {}, 'First-time steps'),
+        h('p', {}, 'Mac: download the macOS file (Apple chip = arm64, Intel = x64) and open the zip. Double-click “DanceDance Helper”. If macOS says it can’t check the app, open System Settings → Privacy & Security, scroll down and click “Open Anyway”, then open it again.'),
+        h('p', {}, 'Windows: download the .exe and open it. If Windows says it protected your PC, click “More info” → “Run anyway”.'),
+        h('p', {}, 'A window and a status page open: leave them open while you dance. If your browser asks whether this site may connect to apps on this device, choose Allow.'),
+      ),
+    );
+  function renderHelper(): void {
+    if (!helper) return;
+    const info = helper.info();
+    helperStatus.textContent = !helper.checked()
+      ? 'Not checked yet'
+      : !info
+        ? 'Not running'
+        : info.ready
+          ? `Running (version ${info.version})`
+          : info.state === 'error'
+            ? 'Running, but it couldn’t get ready (see its window)'
+            : 'Running · getting ready…';
+    const line = info && fill ? describeFill(fill.state()) : null;
+    fillNote.hidden = !line;
+    fillNote.textContent = line ?? '';
+  }
+  const onHelperChange = () => renderHelper();
+  helper?.addEventListener('change', onHelperChange);
+  fill?.addEventListener('change', onHelperChange);
+
   // --- links -------------------------------------------------------------------
   const ghLine = h('div', { class: 'opt-row' });
 
@@ -98,6 +151,7 @@ export function createOptions(nav: Nav): Screen {
         h('p', { class: 'note' }, 'How the app finds the beat for songs the cloud hasn’t analysed yet.'),
         h('div', { class: 'opt-row' }, ...syncButtons),
       ),
+    helperSection,
     section(
       'Songs',
       h(
@@ -140,6 +194,8 @@ export function createOptions(nav: Nav): Screen {
   }
 
   el.addEventListener('click', (e) => {
+    const a = (e.target as HTMLElement).closest<HTMLElement>('[data-action="helper-get"]');
+    if (a) setHelperOptIn(true); // the browser may now ask about apps on this device: that's expected
     const t = (e.target as HTMLElement).closest<HTMLElement>('button');
     if (!t || !el.contains(t) || t.closest('.picker-backdrop')) return;
     if (t.dataset.style) {
@@ -168,6 +224,11 @@ export function createOptions(nav: Nav): Screen {
         break;
       case 'link':
         nav.link();
+        return;
+      case 'helper-check':
+        setHelperOptIn(true);
+        helperStatus.textContent = 'Checking…';
+        void helper?.detect({ force: true }).then(renderHelper);
         return;
       case 'gh-pass':
         openConnectDialog({ parent: el, returnFocus: t, mode: 'passphrase', onConnected: () => toast('Passphrase saved in this browser.') });
@@ -231,6 +292,8 @@ export function createOptions(nav: Nav): Screen {
   };
 
   renderState();
+  renderHelper();
+  if (helper && !helper.checked()) void helper.detect().then(renderHelper);
 
   const scope: Scope = {
     root: el,
@@ -245,6 +308,8 @@ export function createOptions(nav: Nav): Screen {
       raf = requestAnimationFrame(draw);
     },
     destroy() {
+      helper?.removeEventListener('change', onHelperChange);
+      fill?.removeEventListener('change', onHelperChange);
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
     },

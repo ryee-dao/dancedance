@@ -185,17 +185,36 @@ describe('add a song by search', () => {
     expect(await songsOnDisk()).toHaveLength(1);
   });
 
-  it('a bot-blocked run records "blocked", fails the run, and a later regular run retries it', async () => {
+  it('a bot-blocked download still lists the song (no map yet); a later regular run makes its map', async () => {
     const out = await runBeatmaps(paths, opts({ stopAfter: 1 }), deps({ download: { lyricvid001: 'blocked' } }));
     expect(out.exitCode).toBe(1);
     expect(out.report.fatal).toBe('blocked');
-    expect((await statusOnDisk())['dua lipa - levitating']).toMatchObject({ state: 'blocked', attempts: 1 });
-    // Two hours later the hourly run (no adds) retries it on its own.
+    expect(out.report.adds?.[0]).toMatchObject({ kind: 'listed', videoId: 'lyricvid001' });
+    expect(renderSummary(out.report)).toContain('Listed (beat map pending)');
+    const listed = JSON.parse(await readFile(paths.songsFile!, 'utf8'));
+    expect(listed.songs).toEqual([
+      { videoId: 'lyricvid001', title: 'Levitating', artist: 'Dua Lipa', addedAt: NOW.toISOString(), durationSec: 203, hasMap: false },
+    ]);
+    expect(parseSongsList(JSON.stringify(listed))[0].hasMap).toBe(false);
+    expect((await statusOnDisk())['dua lipa - levitating']).toMatchObject({ state: 'map-pending', videoId: 'lyricvid001', attempts: 1 });
+    const vstat = JSON.parse(await readFile(join(paths.beatmapsDir, 'status.json'), 'utf8')).videos;
+    expect(vstat.lyricvid001).toMatchObject({ state: 'blocked', reason: 'blocked', attempts: 1 });
+    // The request is done: asking again doesn't search again.
+    searches = [];
+    await runBeatmaps(paths, opts(), deps());
+    expect(searches).toEqual([]);
+    // Within the backoff the hourly run leaves the video alone ...
+    downloads = [];
+    await runBeatmaps(paths, opts({ adds: [] }), { ...deps(), now: () => new Date('2026-11-10T12:30:00Z') });
+    expect(downloads).not.toContain('lyricvid001');
+    // ... two hours later it retries on its own and the song gets its map.
     const later = { ...deps(), now: () => new Date('2026-11-10T14:00:00Z') };
     const retry = await runBeatmaps(paths, opts({ adds: [] }), later);
     expect(retry.exitCode).toBe(0);
-    expect(await songsOnDisk()).toMatchObject([{ videoId: 'lyricvid001' }]);
+    expect(downloads).toContain('lyricvid001');
+    expect(JSON.parse(await readFile(paths.songsFile!, 'utf8')).songs).toMatchObject([{ videoId: 'lyricvid001', hasMap: true }]);
     expect(await statusOnDisk()).toEqual({});
+    expect(existsSync(join(paths.beatmapsDir, 'lyricvid001.json'))).toBe(true);
   });
 
   it('looks up the official length on iTunes when it is missing, and uses the canonical names', async () => {

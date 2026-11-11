@@ -232,8 +232,11 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
     const badges = btn.querySelector('.badges')!;
     const bpmBadge = btn.querySelector<HTMLElement>('.bpm-badge')!;
     const bpm = knownBpm(song.videoId);
-    bpmBadge.hidden = bpm === null;
-    bpmBadge.textContent = bpm === null ? '' : `${bpm} BPM`;
+    // Listed before the cloud could make its map: the coach learns the beat by listening the first time.
+    const learning = bpm === null && addedSongs.find(song.videoId)?.hasMap === false;
+    bpmBadge.hidden = bpm === null && !learning;
+    bpmBadge.textContent = bpm !== null ? `${bpm} BPM` : learning ? 'Learning the beat' : '';
+    bpmBadge.classList.toggle('bpm-learning', learning);
     title.textContent = song.title ?? 'Loading title…';
     title.classList.toggle('pending', song.title === null);
     artist.textContent = song.artist ?? '';
@@ -250,7 +253,7 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
       song.title ?? 'Untitled video',
       song.artist,
       blocked ? "can't play here" : isNew ? 'new' : null,
-      bpm !== null && !blocked ? `${bpm} BPM` : null,
+      bpm !== null && !blocked ? `${bpm} BPM` : learning && !blocked ? 'learning the beat' : null,
     ]
       .filter(Boolean)
       .join(', ');

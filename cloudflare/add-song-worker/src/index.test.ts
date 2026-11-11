@@ -70,7 +70,7 @@ describe('add-song relay', () => {
     });
     expect(f.calls.map((c) => c.url)).toEqual([
       'https://itunes.apple.com/lookup?id=1440936016,7&entity=song',
-      'https://api.github.com/repos/jo/dancedance/actions/workflows/beatmaps.yml/runs?event=workflow_dispatch&per_page=1&created=%3E%3D2026-11-09T12%3A00%3A00Z',
+      'https://api.github.com/repos/jo/dancedance/actions/workflows/beatmaps.yml/runs?event=workflow_dispatch&per_page=100&created=%3E%3D2026-11-09T12%3A00%3A00Z',
       'https://api.github.com/repos/jo/dancedance/actions/workflows/beatmaps.yml/dispatches',
     ]);
     const appleHeaders = f.calls[0].init?.headers as Record<string, string>;
@@ -281,7 +281,7 @@ describe('add-song relay', () => {
     const PROBE = { ...TRACK, trackId: PROBE_TRACK_ID };
     const ok = upstream({ lookup: { results: [PROBE] } });
     const h = await read(await handle(new Request('https://relay.example/health?probe=1', { headers: { Origin: ORIGIN } }), env, ok, NOW));
-    expect(h.body).toEqual({ ok: true, repo: 'jo/dancedance', passphrase: false, dailyLimit: 30, apple: 'ok' });
+    expect(h.body).toEqual({ ok: true, repo: 'jo/dancedance', passphrase: false, dailyLimit: 30, mapDailyLimit: 60, apple: 'ok' });
     expect(ok.calls.map((c) => c.url)).toEqual([`https://itunes.apple.com/lookup?id=${PROBE_TRACK_ID}&entity=song`]);
     expect((ok.calls[0].init?.headers as Record<string, string>).Authorization).toBeUndefined();
     const probe = async (f: ReturnType<typeof upstream>) =>
@@ -314,7 +314,7 @@ describe('add-song relay', () => {
 
   it('health shows the repo and whether a passphrase is needed, never secrets; missing config is reported', async () => {
     const h = await read(await handle(new Request('https://relay.example/health', { headers: { Origin: ORIGIN } }), { ...env, ADD_PASSPHRASE: 'p' }, upstream(), NOW));
-    expect(h).toEqual({ status: 200, cors: ORIGIN, body: { ok: true, repo: 'jo/dancedance', passphrase: true, dailyLimit: 30 } });
+    expect(h).toEqual({ status: 200, cors: ORIGIN, body: { ok: true, repo: 'jo/dancedance', passphrase: true, dailyLimit: 30, mapDailyLimit: 60 } });
     expect(JSON.stringify(h.body)).not.toContain('"p"');
     const bare = await read(await handle(add({ trackId: 1 }), { ALLOWED_ORIGINS: ORIGIN }, upstream(), NOW));
     expect(bare.body.error).toBe('not-configured');

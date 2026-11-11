@@ -46,6 +46,10 @@ export interface MapInfo {
   analyzerVersion: string;
   bpm: number;
   duration: number;
+  /** The map's `source` ('cloud' from this job; 'tab' / 'device' when contributed). */
+  source?: string;
+  /** Fraction of the song between its first and last beat. */
+  span?: number;
 }
 
 /**

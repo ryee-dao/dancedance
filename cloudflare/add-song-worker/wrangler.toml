@@ -12,6 +12,8 @@ GITHUB_REPO = "ryee-dao/dancedance"
 ALLOWED_ORIGINS = "https://ryee-dao.github.io,http://localhost:5173"
 # Soft cap on songs added per 24 hours (counts the workflow's manual runs).
 DAILY_LIMIT = "30"
+# Soft cap on shared beat maps (POST /map) per 24 hours (counts "Contributed beat map" runs).
+MAP_DAILY_LIMIT = "60"
 
 # Secrets (not in this file):
 #   npx wrangler secret put GITHUB_TOKEN     fine-grained token: this repository only, Actions: Read and write

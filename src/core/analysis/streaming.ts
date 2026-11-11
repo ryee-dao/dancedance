@@ -322,8 +322,15 @@ export class StreamingAnalyzer {
    * BeatMap in song time (times shifted by the current timeOffset and clipped
    * to [0, duration]). Marked partial when the recording misses more than 5 s
    * of the song. No pushes are accepted afterwards.
+   *
+   * `offsetAt` (input time -> offset), when given, replaces the single final
+   * offset: a long live capture can lose a few audio buffers or drift against
+   * the player's clock, so the input -> song offset of minute 1 is not that of
+   * minute 3 (measured: steps of ~90 ms and ~0.25 ms/s of drift in Chrome tab
+   * capture). Each beat and section boundary then gets the offset measured
+   * around its own time.
    */
-  finalize(videoId: string, duration: number, source: BeatMapSource): BeatMap {
+  finalize(videoId: string, duration: number, source: BeatMapSource, offsetAt?: (inputTime: number) => number): BeatMap {
     if (!this.finalized) {
       this.extractor.push(this.resampler.flush());
       this.extractor.flush();
@@ -333,7 +340,19 @@ export class StreamingAnalyzer {
     const recorded = this.inputSamples / this.sampleRate;
     const result = analyzeFeatures(this.store.view(), { duration: Math.max(0, duration - offset) });
     const covered = Math.max(0, Math.min(duration, offset + recorded) - Math.max(0, offset));
-    return toBeatMap(result, { videoId, duration, source, offset, partial: covered < duration - 5 });
+    const partial = covered < duration - 5;
+    if (offsetAt) {
+      const shift = (t: number) => {
+        const o = offsetAt(t);
+        return t + (Number.isFinite(o) ? o : offset);
+      };
+      const beats = result.beats.map(shift);
+      // Tempo from the song-time beats (lost buffers make input time run slightly short).
+      const bpm = beats.length >= 4 ? 60 / slopeOf(beats) : result.bpm;
+      const mapped = { ...result, bpm, beats, sections: result.sections.map((x) => ({ ...x, start: shift(x.start), end: shift(x.end) })) };
+      return toBeatMap(mapped, { videoId, duration, source, offset: 0, partial });
+    }
+    return toBeatMap(result, { videoId, duration, source, offset, partial });
   }
 }
 
@@ -359,4 +378,20 @@ function fitLine(t: number[]): { slope: number; icpt: number } {
   const keep = all.filter((i) => Math.abs(t[i] - (fit.icpt + fit.slope * i)) < 0.04);
   if (keep.length >= 3 && keep.length < all.length) fit = solve(keep);
   return fit;
+}
+
+/** Least-squares slope of t[i] against i (the average beat period). */
+function slopeOf(t: number[]): number {
+  const n = t.length;
+  let sx = 0;
+  let sy = 0;
+  let sxx = 0;
+  let sxy = 0;
+  for (let i = 0; i < n; i++) {
+    sx += i;
+    sy += t[i];
+    sxx += i * i;
+    sxy += i * t[i];
+  }
+  return (n * sxy - sx * sy) / (n * sxx - sx * sx);
 }

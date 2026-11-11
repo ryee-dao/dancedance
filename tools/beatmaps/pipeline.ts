@@ -8,7 +8,8 @@
  */
 import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { ANALYZER_VERSION, analyzeOffline, parse, serialize, type BeatMap } from '../../src/core/analysis';
+import { ANALYZER_VERSION, analyzeOffline, beatSpan, parse, serialize, type BeatMap } from '../../src/core/analysis';
+import { decideContribution, parseContribution, type KnownSongs } from './contribute';
 import type { Classification } from './classify';
 import { classifyYtDlpError } from './classify';
 import { parseFlatPlaylist, parseStatus, renderIndex, renderPlaylist, renderStatus, type MapInfo, type PlaylistInfo } from './output';
@@ -71,6 +72,14 @@ export interface RunOptions {
    * the starter pack wait for the next regular run.
    */
   adds?: AddRequest[];
+  /**
+   * A contributed beat map (JSON text, the workflow's `map_json`). When set,
+   * the run only decides on this map (see contribute.ts) and touches nothing
+   * on YouTube: no playlist, no downloads.
+   */
+  contributed?: string;
+  /** Retry songs that failed with 'blocked'/'outdated' now, ignoring their backoff (local sync). */
+  retryBlocked?: boolean;
 }
 
 export interface RunOutcome {
@@ -113,7 +122,7 @@ export async function scanMaps(dir: string, log?: (s: string) => void): Promise<
     try {
       const map = parse((await readText(join(dir, name))) ?? '');
       if (map.videoId !== id) throw new Error(`videoId ${map.videoId} does not match the file name`);
-      out.set(id, { analyzerVersion: map.analyzerVersion, bpm: map.bpm, duration: map.duration });
+      out.set(id, { analyzerVersion: map.analyzerVersion, bpm: map.bpm, duration: map.duration, source: map.source, span: beatSpan(map) });
     } catch (e) {
       log?.(`warning: ignoring ${name}: ${(e as Error).message}`);
     }
@@ -187,8 +196,11 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
   const prevSongsStatusText = paths.songsStatusFile ? await readText(paths.songsStatusFile) : undefined;
   const songs: AddedSong[] = prevSongsText ? parseSongsList(prevSongsText) : [];
   const songsStatus: Record<string, SongRequestStatus> = prevSongsStatusText ? parseSongsStatus(prevSongsStatusText) : {};
+  if (opts.contributed !== undefined) {
+    return runContribution(paths, opts, deps, { existing, songs, songsStatus, prevSongsText, prevSongsStatusText, starter, indexPath });
+  }
   const addMode = (opts.adds?.length ?? 0) > 0;
-  const addPlan = paths.songsFile ? planAdds(opts.adds ?? [], songs, songsStatus, deps.now()) : { todo: [], skipped: [] };
+  const addPlan = paths.songsFile ? planAdds(opts.adds ?? [], songs, songsStatus, deps.now(), opts.retryBlocked) : { todo: [], skipped: [] };
   const addResults: AddResult[] = [];
   for (const sk of addPlan.skipped) {
     deps.log(`add ${sk.req.artist} - ${sk.req.title}: ${sk.why}`);
@@ -197,6 +209,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     addResults.push({ artist: sk.req.artist, title: sk.req.title, kind, ...(song ? { videoId: song.videoId } : {}), message: sk.why });
   }
   if (addPlan.todo.length && (!deps.searchVideos || !deps.checkEmbed)) throw new Error('add requests need searchVideos and checkEmbed');
+
 
   // --- Playlist -----------------------------------------------------------
   let playlist: PlaylistInfo | undefined;
@@ -222,6 +235,8 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
   const plan = planWork({
     candidates,
     existing: new Map([...existing].map(([id, m]) => [id, m.analyzerVersion])),
+    sources: new Map([...existing].map(([id, m]) => [id, m.source ?? 'cloud'])),
+    retryBlocked: opts.retryBlocked,
     status,
     analyzerVersion: ANALYZER_VERSION,
     now: deps.now(),
@@ -353,7 +368,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
           const out = join(paths.beatmapsDir, `${c.videoId}.json`);
           await mkdir(paths.beatmapsDir, { recursive: true });
           if (await writeIfChanged(out, text)) written.push(out);
-          existing.set(c.videoId, { analyzerVersion: map.analyzerVersion, bpm: map.bpm, duration: map.duration });
+          existing.set(c.videoId, { analyzerVersion: map.analyzerVersion, bpm: map.bpm, duration: map.duration, source: map.source, span: beatSpan(map) });
           const tEnd = deps.clock();
           result = {
             ...base,
@@ -389,7 +404,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
       }
       deps.log(`add [${item.why}] ${label}`);
       const t0 = deps.clock();
-      const fail = (state: SongRequestStatus['state'], message: string, durationSec?: number) => {
+      const fail = (state: 'not-found' | 'blocked' | 'error', message: string, durationSec?: number) => {
         const prev = songsStatus[item.key];
         songsStatus[item.key] = {
           state,
@@ -432,7 +447,6 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
       let checks = 0;
       let analyses = 0;
       let outcome: AddResult | null = null;
-      let transient: SongResult | null = null;
       for (const r of ranked) {
         if (checks >= ADD_MAX_EMBED_CHECKS || analyses >= ADD_MAX_ANALYSES) break;
         const id = r.entry.id;
@@ -472,7 +486,31 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
           break;
         }
         if (res.kind === 'blocked' || res.kind === 'outdated') {
-          transient = res;
+          // The right video is known; only the download was refused. List the
+          // song now (the app finds its beat by listening) and keep trying to
+          // make its map on later runs, with the usual backoff in status.json.
+          status[id] = toStatus(res.kind, res.kind, res.message, status[id], nowIso());
+          songs.push({
+            videoId: id,
+            title: req.title,
+            artist: req.artist,
+            addedAt: nowIso(),
+            durationSec: req.durationSec,
+            hasMap: false,
+            ...(r.tier === 'music-video' ? { note: 'music-video' as const } : {}),
+          });
+          const prev = songsStatus[item.key];
+          songsStatus[item.key] = {
+            state: 'map-pending',
+            artist: req.artist,
+            title: req.title,
+            durationSec: req.durationSec,
+            videoId: id,
+            message: MAP_PENDING_MESSAGE,
+            attempts: (prev?.attempts ?? 0) + 1,
+            lastTried: nowIso(),
+          };
+          outcome = { ...base, kind: 'listed', ...pick, seconds: deps.clock() - t0, message: `listed; beat map pending (${res.kind}: ${res.message ?? ''})` };
           break;
         }
         deps.log(`    ${id}: ${res.kind}, trying the next one`);
@@ -480,8 +518,6 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
       if (outcome) {
         addResults.push(outcome);
         deps.log(`  ${outcome.kind}: ${outcome.videoId}${outcome.tier ? ` (${outcome.tier})` : ''}`);
-      } else if (transient) {
-        fail(transient.kind === 'blocked' ? 'blocked' : 'error', transient.message ?? 'YouTube refused the download', req.durationSec);
       } else {
         fail(
           'not-found',
@@ -531,14 +567,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
       const pl = renderPlaylist(await readText(paths.playlistFile), playlist.playlistId, playlist.videos, now);
       if (await writeIfChanged(paths.playlistFile, pl)) written.push(paths.playlistFile);
     }
-    // Created on the first add, so a repo that never adds songs gets no extra files.
-    if (paths.songsFile && (prevSongsText !== undefined || songs.length)) {
-      if (await writeIfChanged(paths.songsFile, renderSongs(prevSongsText, songs, now))) written.push(paths.songsFile);
-    }
-    if (paths.songsStatusFile && (prevSongsStatusText !== undefined || Object.keys(songsStatus).length)) {
-      const text = renderSongsStatus(prevSongsStatusText, songsStatus, now);
-      if (await writeIfChanged(paths.songsStatusFile, text)) written.push(paths.songsStatusFile);
-    }
+    await writeSongFiles(paths, { songs, songsStatus, prevSongsText, prevSongsStatusText, mapIds: new Set(existing.keys()), now, written });
   }
 
   if (!fatal && playlistError) {
@@ -561,4 +590,101 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     dryRun: opts.dryRun,
   };
   return { exitCode: fatal ? 1 : 0, report, written };
+}
+
+/** songs-status.json note for a song listed without a map (not a failure). */
+export const MAP_PENDING_MESSAGE =
+  'Listed. YouTube refused the cloud download, so there is no beat map yet: the app finds the beat by listening, and the job keeps trying.';
+
+/**
+ * songs.json and songs-status.json: `hasMap` follows the map files on disk,
+ * and a 'map-pending' note goes away once its song has a map.
+ */
+async function writeSongFiles(
+  paths: Paths,
+  o: {
+    songs: AddedSong[];
+    songsStatus: Record<string, SongRequestStatus>;
+    prevSongsText: string | undefined;
+    prevSongsStatusText: string | undefined;
+    mapIds: ReadonlySet<string>;
+    now: string;
+    written: string[];
+  },
+): Promise<void> {
+  for (const song of o.songs) song.hasMap = o.mapIds.has(song.videoId);
+  for (const [key, st] of Object.entries(o.songsStatus)) {
+    if (st.state === 'map-pending' && (!st.videoId || o.mapIds.has(st.videoId) || !o.songs.some((x) => x.videoId === st.videoId))) delete o.songsStatus[key];
+  }
+  // Created on the first add, so a repo that never adds songs gets no extra files.
+  if (paths.songsFile && (o.prevSongsText !== undefined || o.songs.length)) {
+    if (await writeIfChanged(paths.songsFile, renderSongs(o.prevSongsText, o.songs, o.now))) o.written.push(paths.songsFile);
+  }
+  if (paths.songsStatusFile && (o.prevSongsStatusText !== undefined || Object.keys(o.songsStatus).length)) {
+    const text = renderSongsStatus(o.prevSongsStatusText, o.songsStatus, o.now);
+    if (await writeIfChanged(paths.songsStatusFile, text)) o.written.push(paths.songsStatusFile);
+  }
+}
+
+/** Songs a contributed map may belong to: starter pack, songs.json and the published playlist. */
+export function knownSongs(starter: Candidate[], songs: AddedSong[], playlistText: string | undefined): KnownSongs {
+  const ids = new Set<string>([...starter.map((c) => c.videoId), ...songs.map((s) => s.videoId)]);
+  try {
+    const videos = (JSON.parse(playlistText ?? '{}') as { videos?: unknown }).videos;
+    if (Array.isArray(videos)) for (const v of videos) if (v && typeof (v as { videoId?: unknown }).videoId === 'string') ids.add((v as { videoId: string }).videoId);
+  } catch {
+    // no playlist.json
+  }
+  return { ids, durations: new Map(songs.filter((s) => s.durationSec > 0).map((s) => [s.videoId, s.durationSec])) };
+}
+
+/** Contributed-map mode (see contribute.ts): decide, write, and update index / songs files. No downloads. */
+async function runContribution(
+  paths: Paths,
+  opts: RunOptions,
+  deps: Deps,
+  st: {
+    existing: Map<string, MapInfo>;
+    songs: AddedSong[];
+    songsStatus: Record<string, SongRequestStatus>;
+    prevSongsText: string | undefined;
+    prevSongsStatusText: string | undefined;
+    starter: Candidate[];
+    indexPath: string;
+  },
+): Promise<RunOutcome> {
+  const written: string[] = [];
+  const known = knownSongs(st.starter, st.songs, await readText(paths.playlistFile));
+  const raw = parseContribution(opts.contributed ?? '');
+  const peekId = raw && typeof raw === 'object' && typeof (raw as { videoId?: unknown }).videoId === 'string' ? (raw as { videoId: string }).videoId : '';
+  const ex = /^[A-Za-z0-9_-]{11}$/.test(peekId) ? st.existing.get(peekId) : undefined;
+  const decision = decideContribution(raw, known, ex ? { source: ex.source ?? 'cloud', span: ex.span ?? 0 } : undefined);
+  const videoId = decision.kind === 'accept' ? decision.map.videoId : /^[A-Za-z0-9_-]{11}$/.test(peekId) ? peekId : undefined;
+  deps.log(`contributed map${videoId ? ` for ${videoId}` : ''}: ${decision.kind}${decision.kind === 'accept' ? (decision.replaces ? ` (replaces the ${decision.replaces} map)` : '') : ` - ${decision.message}`}`);
+  if (decision.kind === 'accept' && !opts.dryRun) {
+    const map = decision.map;
+    await mkdir(paths.beatmapsDir, { recursive: true });
+    const out = join(paths.beatmapsDir, `${map.videoId}.json`);
+    if (await writeIfChanged(out, `${serialize(map)}\n`)) written.push(out);
+    const now = deps.now().toISOString();
+    const maps = await scanMaps(paths.beatmapsDir);
+    const idx = renderIndex(await readText(st.indexPath), ANALYZER_VERSION, maps, now);
+    if (await writeIfChanged(st.indexPath, idx)) written.push(st.indexPath);
+    await writeSongFiles(paths, { ...st, mapIds: new Set(maps.keys()), now, written });
+  }
+  const report: RunReport = {
+    results: [],
+    plan: { todo: 0, done: 0, waiting: 0, deferred: 0 },
+    playlist: { configured: !!opts.playlistUrl, skipped: true },
+    contribution: {
+      ...(videoId ? { videoId } : {}),
+      outcome: decision.kind === 'accept' ? 'accepted' : decision.kind === 'reject' ? 'rejected' : 'ignored',
+      ...(decision.kind === 'accept' ? { source: decision.map.source, bpm: decision.map.bpm, ...(decision.replaces ? { replaces: decision.replaces } : {}) } : {}),
+      message: decision.kind === 'accept' ? `${decision.map.beats.length} beats, ${Math.round(decision.map.duration)} s` : decision.message,
+    },
+    fatal: null,
+    usedCookies: false,
+    dryRun: opts.dryRun,
+  };
+  return { exitCode: 0, report, written };
 }

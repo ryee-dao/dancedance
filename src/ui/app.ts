@@ -1,6 +1,7 @@
 /** App shell: screen switching, file picking and drag-and-drop. */
 
 import { loadCloudIndex } from '../beat/bpmIndex';
+import { createBackgroundFill, setBackgroundFill } from '../beat/helperFill';
 import { getPlatform, setPlatform } from '../platform/platform';
 import { createAndroidTvPlatform, hasTvBridge, shouldOfferTvLink } from '../platform/androidtv';
 import { createWebPlatform } from '../platform/web';
@@ -87,6 +88,13 @@ export function startApp(root: HTMLElement): void {
 
   void library.refresh();
   void loadCloudIndex(getPlatform().beatmapBase);
+  // Web + helper app: find beats of map-less songs in the background (see helperFill.ts).
+  const localHelper = getPlatform().localHelper;
+  if (localHelper) {
+    const fill = createBackgroundFill(getPlatform().beatmapBase, localHelper, () => library.playable().map((s) => s.videoId));
+    setBackgroundFill(fill);
+    fill.start();
+  }
   // TV, first run without a playlist: offer phone linking straight away.
   if (tv && shouldOfferTvLink()) nav.link();
   else nav.home();

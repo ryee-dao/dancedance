@@ -2,10 +2,13 @@
  * songs.json (songs added by search) and songs-status.json (requests that
  * could not be completed yet): deterministic rendering and planning. Pure.
  *
- *   songs.json         { updatedAt, songs: [{ videoId, title, artist, addedAt, durationSec, note? }] }
- *                      oldest first; a song is only listed once it has a beat map.
- *   songs-status.json  { updatedAt, requests: { [songKey]: { state, artist, title, durationSec?, message?, attempts, lastTried } } }
- *                      keys sorted; entries are removed when the song is added.
+ *   songs.json         { updatedAt, songs: [{ videoId, title, artist, addedAt, durationSec, hasMap, note? }] }
+ *                      oldest first; a song is listed as soon as its video is picked,
+ *                      `hasMap` says whether beatmaps/<videoId>.json exists yet.
+ *   songs-status.json  { updatedAt, requests: { [songKey]: { state, artist, title, durationSec?, videoId?, message?, attempts, lastTried } } }
+ *                      keys sorted; failed requests ('not-found', or 'blocked'/'error'
+ *                      while searching), plus a 'map-pending' note for listed songs
+ *                      whose download was refused; removed once the song has a map.
  */
 import { parseSongsList, parseSongsStatus, songKey, type AddedSong, type SongRequestStatus } from '../../src/beat/cloud';
 import { renderStable, toJsonText } from './output';
@@ -45,6 +48,7 @@ function normSong(s: AddedSong): AddedSong {
     artist: s.artist,
     addedAt: s.addedAt,
     durationSec: s.durationSec,
+    hasMap: s.hasMap !== false,
     ...(s.note ? { note: s.note } : {}),
   };
 }
@@ -67,6 +71,7 @@ function normRequest(r: SongRequestStatus): SongRequestStatus {
     artist: r.artist,
     title: r.title,
     ...(r.durationSec !== undefined ? { durationSec: r.durationSec } : {}),
+    ...(r.videoId !== undefined ? { videoId: r.videoId } : {}),
     ...(r.message !== undefined ? { message: r.message } : {}),
     attempts: r.attempts,
     lastTried: r.lastTried,
@@ -83,7 +88,7 @@ const HOUR = 3600_000;
 
 /** Backoff for automatic retries of blocked/error requests: 1 h, 2 h, 4 h ... capped at 24 h. */
 export function requestRetryDue(s: SongRequestStatus, now: Date): boolean {
-  if (s.state === 'not-found') return false;
+  if (s.state === 'not-found' || s.state === 'map-pending') return false;
   const last = Date.parse(s.lastTried);
   if (!Number.isFinite(last)) return true;
   const delay = Math.min(24 * HOUR, HOUR * 2 ** Math.max(0, s.attempts - 1));
@@ -99,7 +104,10 @@ export function planAdds(
   songs: AddedSong[],
   status: Readonly<Record<string, SongRequestStatus>>,
   now: Date,
+  /** Local sync: retry blocked/error requests now, ignoring their backoff. */
+  retryBlocked = false,
 ): { todo: AddPlanItem[]; skipped: AddSkip[] } {
+  const due = (st: SongRequestStatus) => (retryBlocked && (st.state === 'blocked' || st.state === 'error')) || requestRetryDue(st, now);
   const added = new Set(songs.map((s) => songKey(s.artist, s.title)));
   const byKey = new Map<string, AddRequest>();
   for (const r of requests) {
@@ -119,12 +127,12 @@ export function planAdds(
     else if (!st) todo.push({ key, req, why: 'new' });
     else if (req.explicit) todo.push({ key, req: { ...req, durationSec: req.durationSec ?? st.durationSec }, why: 'again' });
     else if (st.state === 'not-found') skipped.push({ key, req, why: 'not found before' });
-    else if (requestRetryDue(st, now)) todo.push({ key, req: { ...req, durationSec: req.durationSec ?? st.durationSec }, why: 'retry' });
+    else if (due(st)) todo.push({ key, req: { ...req, durationSec: req.durationSec ?? st.durationSec }, why: 'retry' });
     else skipped.push({ key, req, why: 'waiting to retry' });
   }
   // Automatic retries of earlier blocked/error requests nobody asked for again.
   for (const [key, st] of Object.entries(status).sort(([a], [b]) => a.localeCompare(b))) {
-    if (byKey.has(key) || added.has(key) || !requestRetryDue(st, now)) continue;
+    if (byKey.has(key) || added.has(key) || !due(st)) continue;
     todo.push({ key, req: { artist: st.artist, title: st.title, durationSec: st.durationSec, explicit: false }, why: 'retry' });
   }
   return { todo: todo.slice(0, MAX_ADDS), skipped };

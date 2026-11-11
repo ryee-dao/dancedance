@@ -241,7 +241,11 @@ export function createPlay(
     if (startingSync) {
       const st = session?.status();
       const txt =
-        st?.kind === 'analyzing' ? `Finding the beat… ${Math.round(st.progress * 100)}%` : (player?.loadingDetail?.() ?? '');
+        st?.kind === 'analyzing'
+          ? st.step === 'download'
+            ? `Getting the song…${st.progress > 0 ? ` ${Math.round(st.progress * 100)}%` : ''}`
+            : `Finding the beat… ${Math.round(st.progress * 100)}%`
+          : (player?.loadingDetail?.() ?? '');
       if (startingSync.textContent !== txt) startingSync.textContent = txt;
     }
   }
@@ -251,18 +255,40 @@ export function createPlay(
       'div',
       { class: 'overlay-card' },
       h('p', { class: 'overlay-title' }, 'Dance on the beat'),
-      h(
-        'p',
-        { class: 'overlay-status overlay-explain' },
-        "This song has no beat map yet, so the coach can listen through your microphone to find the beat. Nothing is recorded or sent anywhere: the sound is only used on this page, while you play.",
-      ),
-      h('p', { class: 'overlay-status' }, 'Your browser will ask once and remember your answer.'),
-      devices.tabSupported &&
-        h('p', { class: 'overlay-status overlay-tip' }, 'Tip: for tighter sync, pause and choose “Share this tab”.'),
-      h('div', { class: 'overlay-buttons' }, btn('mic-yes', 'Use microphone', true), btn('mic-no', 'Not now')),
+      ...(devices.tabSupported
+        ? [
+            // Tab audio is the better way in: one click, exact sync, and the result is shared.
+            h('p', { class: 'overlay-status overlay-explain' }, 'Share this tab so the coach can hear the song. You only need to do this the first time anyone plays it.'),
+            h(
+              'p',
+              { class: 'overlay-status' },
+              'Pick this tab and keep “Also share tab audio” on. The sound stays on this page; after the song has played through, only its beat timings are saved for everyone.',
+            ),
+          ]
+        : [
+            h(
+              'p',
+              { class: 'overlay-status overlay-explain' },
+              "This song has no beat map yet, so the coach can listen through your microphone to find the beat. Nothing is recorded or sent anywhere: the sound is only used on this page, while you play.",
+            ),
+            h('p', { class: 'overlay-status' }, 'Your browser will ask once and remember your answer.'),
+            h('p', { class: 'overlay-status overlay-tip' }, 'It will sync perfectly once someone has played it in Chrome or Edge on a computer.'),
+          ]),
+      platform.localHelper &&
+        !platform.localHelper.info() &&
+        h('p', { class: 'overlay-status overlay-tip' }, 'Or get the DanceDance helper app (see Options) to find the beat without listening.'),
+      devices.tabSupported
+        ? h(
+            'div',
+            { class: 'overlay-buttons' },
+            btn('tab-yes', 'Share this tab', true),
+            devices.micSupported && btn('mic-yes', 'Use microphone instead'),
+            btn('mic-no', 'Not now'),
+          )
+        : h('div', { class: 'overlay-buttons' }, btn('mic-yes', 'Use microphone', true), btn('mic-no', 'Not now')),
     );
     card.dataset.token = String(my);
-    setOverlay('sync-ask', card, 'mic-yes');
+    setOverlay('sync-ask', card, devices.tabSupported ? 'tab-yes' : 'mic-yes');
   }
 
   function answerMic(use: boolean): void {
@@ -398,6 +424,20 @@ export function createPlay(
       case 'mic-no':
         answerMic(false);
         break;
+      case 'tab-yes': {
+        const my = token;
+        const s = session;
+        if (!s) break;
+        // Called synchronously from the click so the browser sees the gesture.
+        const p = s.answerTab();
+        setOverlay('sync-wait', h('div', { class: 'overlay-card' }, h('p', { class: 'overlay-title' }, 'One moment…'), h('p', { class: 'overlay-status' }, 'Choose this tab in the box your browser shows.')));
+        void p.then((msg) => {
+          if (my !== token) return;
+          if (msg) toast(msg, 6000);
+          countdown(my);
+        });
+        break;
+      }
       case 'sync-mic': {
         const my = token;
         const s = session;

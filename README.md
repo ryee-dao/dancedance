@@ -12,14 +12,83 @@ It runs as a website (hosted free on GitHub Pages) and as an Android TV app. Bot
 
 1. **Cloud beat map.** Once an hour, a GitHub job downloads each new song in your playlist, finds its beats and publishes a small beat-map file with the site. Songs with a beat map are in sync from the first second and need nothing from you. A song you've just added gets its map within about an hour.
 2. **Live listening, for songs without a beat map yet.** The app listens while the song plays. The coach grooves gently for about 10 seconds until it locks onto the tempo, then starts dancing. What it learns is saved, so the next time you play that song it's in sync from the start.
-   - **Microphone** (the default): the app hears the song through your mic. It works anywhere, but a noisy room makes it less accurate. Your browser will ask for mic permission. The sound is analysed on your device and never recorded or sent anywhere.
-   - **Share this tab**: the browser lets the app hear the tab's own audio directly. This is more accurate than the mic. When the browser asks what to share, pick this tab and turn on "Share tab audio".
+   - **Share this tab** (offered first in Chrome and Edge on a computer): the browser lets the app hear the tab's own audio directly, which is as accurate as a cloud beat map. When the browser asks what to share, pick this tab and keep "Also share tab audio" on. If the song plays through to the end this way, the app sends its beat timings (never any sound) to your relay, and the song gets a beat map for everyone. See "If YouTube blocks GitHub's servers" below.
+   - **Microphone**: the app hears the song through your mic. It works anywhere, but a noisy room makes it less accurate. Your browser will ask for mic permission. The sound is analysed on your device and never recorded or sent anywhere, and mic results are never shared.
 
 **Audio offset.** If the coach looks early or late, which is common with Bluetooth speakers because they add a delay, adjust the audio offset. Press Left or Right during a song (10 ms per step, up to ±500 ms), or set it under **Options**. The setting is remembered.
 
 **Options.** The **Options** button at the top of the song list is where you choose the coach's look (each style has a moving preview), set the audio offset, choose how songs without a beat map find the beat (web only), change your playlist and, on the web, connect to GitHub for adding songs.
 
 **Your own MP3s.** Drag an MP3 or M4A file onto the page. It's analysed on your device in a few seconds and played directly, with no YouTube involved.
+
+## Helper app (optional, for computers)
+
+New songs often have no beat map yet, because YouTube blocks the cloud job. The **DanceDance helper** is a small free app you run on your Mac or Windows computer. While it is running, DanceDance uses your computer to download a song's audio and finds the beat right there, before the song starts. You don't need the microphone or tab sharing, and the map is shared so everyone else gets it too. It's optional: without it, DanceDance works as before.
+
+**Download** the one for your computer:
+
+- Mac with an Apple chip (M1 or newer): [dancedance-helper-macos-arm64.zip](https://github.com/ryee-dao/dancedance/releases/download/helper/dancedance-helper-macos-arm64.zip). To check your chip, open  → About This Mac.
+- Mac with an Intel chip: [dancedance-helper-macos-x64.zip](https://github.com/ryee-dao/dancedance/releases/download/helper/dancedance-helper-macos-x64.zip)
+- Windows (64-bit): [dancedance-helper-windows-x64.exe](https://github.com/ryee-dao/dancedance/releases/download/helper/dancedance-helper-windows-x64.exe)
+- Linux (x86-64): [dancedance-helper-linux-x64.tar.gz](https://github.com/ryee-dao/dancedance/releases/download/helper/dancedance-helper-linux-x64.tar.gz). Unpack it and run `./dancedance-helper`.
+
+All downloads, with their checksums, are on the [helper release page](https://github.com/ryee-dao/dancedance/releases/tag/helper).
+
+**First run on a Mac.** The app isn't signed by Apple, so macOS warns you the first time. This is expected.
+
+1. Open the downloaded zip. You get a file called **DanceDance Helper**. Move it somewhere permanent, for example your Applications folder.
+2. Double-click it. macOS says it "cannot be opened" or "could not verify" it. Click **Done** (not Move to Trash).
+3. Open **System Settings → Privacy & Security**. Scroll down to the message about "DanceDance Helper" and click **Open Anyway**, then enter your password. On older macOS you can instead right-click the file, choose **Open**, then **Open**.
+4. Double-click it again and choose **Open**. A Terminal window opens. That window *is* the helper.
+
+This allows only this one app. Don't turn off Gatekeeper or run commands that remove protections for everything.
+
+**First run on Windows.** Double-click the `.exe`. If Windows says "Windows protected your PC", click **More info → Run anyway**. Your browser may also warn that the file "isn't commonly downloaded": choose **Keep**. A black console window opens. That window is the helper.
+
+**Using it.** The first start takes a few seconds longer while the helper downloads the YouTube downloader it uses (yt-dlp, about 37 MB, checked against its published checksum). Then a page opens in your browser saying **DanceDance helper is running**. Click **Open DanceDance** there. The first time, Chrome and Edge ask whether DanceDance may connect to "apps on this device" (or "your local network"). Choose **Allow**, because that's how the page talks to the helper. Leave the helper window open while you dance. When a song has no beat map, "Starting soon" shows *Getting the song…* then *Finding the beat…*, and the song starts in sync. While DanceDance is open and no song is playing, the helper also quietly finds the beat of songs that have no map yet. It does one song about every 25 seconds, at most 20 each time you open the app, and pauses while you dance. **Options → Helper app** shows whether it's running and how far it has got.
+
+**Stopping it.** Close its window, press Ctrl+C in it, or click **Stop the helper** on its page.
+
+**Starting it automatically (optional).** You can do this yourself. The helper never changes these settings.
+- Mac: **System Settings → General → Login Items → Open at Login → +**, then choose DanceDance Helper.
+- Windows: press Win+R, type `shell:startup`, press Enter, and put a shortcut to the `.exe` in the folder that opens.
+
+**Which browsers.** It works in Chrome and Edge, and in Firefox, after you allow the browser's one-time question about connecting to apps on this device. Safari doesn't let secure websites talk to apps on the same computer, so the helper isn't expected to work in Safari. On a Mac, use Chrome, Edge or Firefox with it, or use the microphone and tab-sharing options in Safari.
+
+**Privacy.** The helper only talks to YouTube (to download songs and its downloader updates from GitHub) and to the DanceDance page on the same computer. Other websites are refused. The song's audio goes into a private temporary folder and is deleted as soon as the page has it. The page analyses it and keeps only the small beat map. Nothing is uploaded except that beat map, which is shared so others get the song in sync. The helper keeps only yt-dlp and a small log in its own folder (Mac: `~/Library/Application Support/DanceDance Helper`, Windows: `%LOCALAPPDATA%\DanceDance Helper`). Delete that folder and the app to remove it completely.
+
+**If it says YouTube blocked it.** YouTube sometimes asks a home connection to "prove it's not a bot". Wait an hour or so. If it says YouTube changed something, the helper updates yt-dlp by itself, at most once a day or sooner after a failure. If that doesn't help within a few days, download the helper again.
+
+### For the owner: publishing the helper
+
+The helper's code is in `helper/` (TypeScript for Deno, built into single files with `deno compile`, no installer). To publish a new version, raise `"version"` in `helper/deno.json`, commit, then:
+
+```sh
+git tag helper-v0.1.0 && git push origin helper-v0.1.0
+```
+
+Or use **Actions → Helper app → Run workflow**. The job tests, builds all four downloads and updates the release tagged **`helper`** in place, so the download links above never change. That release is never marked "Latest", so `releases/latest/download/dancedance.apk` keeps pointing at the TV app. TV tags start with `v`, helper tags with `helper-v`.
+
+The site address the helper trusts and opens is baked in from the repository name (`https://<owner>.github.io` and `https://<owner>.github.io/<repo>/`). For a custom domain or a fork, put a file named `dancedance-helper.json` next to the helper:
+
+```json
+{ "allowedOrigins": ["https://dance.example.com"], "siteUrl": "https://dance.example.com/", "allowLocalhost": true }
+```
+
+`allowLocalhost` (default `true`) lets `http://localhost:*` dev servers use it.
+
+How it works, for maintenance:
+
+- It listens on `127.0.0.1` only, on port 47800 (or 47801, 47802 if taken). `GET /health` returns `{ ok, app, version, ytdlp, platform, ready, state }`. `GET /status` adds current downloads and recent results. `POST /audio` with `{"videoId":"<11 characters>"}` returns the audio, with error codes `blocked`, `outdated`, `unavailable`, `network` and `error` (plus `not-ready`, `busy` and `rate-limited`). `GET /` is its status page.
+- Security:
+  - Every request must carry `Host: 127.0.0.1:<port>`, which blocks DNS rebinding.
+  - A request with an `Origin` must come from an allowed site. `POST /audio` requires one, plus JSON, so it always gets a CORS preflight. The preflight answers `Access-Control-Allow-Private-Network`.
+  - Only the video ID comes from the page. yt-dlp runs with a fixed argument list and no shell.
+  - At most 2 downloads run at once, 8 a minute. Audio is limited to 40 MB, 15 minutes, no live streams.
+- yt-dlp is the official release binary (`yt-dlp_macos`, `yt-dlp.exe`, `yt-dlp_linux`). It is verified against the release's `SHA2-256SUMS` when downloaded and again at every start, and updated when a newer release exists, checking at most daily.
+- yt-dlp needs a JavaScript runtime for YouTube. The helper is itself built on Deno, so it acts as that runtime (`--js-runtimes deno:<helper>`). It runs YouTube's challenge script in a worker with no permissions, so nothing else is downloaded. If a future yt-dlp changes how it calls Deno, songs fail as `outdated` until the helper is rebuilt.
+- It downloads audio-only Opus/WebM (or M4A if that's all there is), which the browser decodes, so no ffmpeg is needed. Beats found from Opus match the cloud maps. AAC came out about 30 ms late in Chrome.
+- Local checks: `cd helper && deno task test`, `deno task build` (all targets into `helper/dist/`, git-ignored) or `deno task build --target aarch64-apple-darwin`, and `deno task start` to run from source.
 
 ## One-time GitHub setup
 
@@ -37,7 +106,7 @@ You need a free GitHub account. You do this once.
 6. **Run the beat-map job once by hand.** **Actions → Beat maps → Run workflow**. Leave the boxes empty and click Run. The first run handles up to 25 songs, and later hourly runs pick up the rest. When it finishes, it redeploys the site automatically.
 7. If the deploy hasn't run yet, start it with **Actions → Deploy site → Run workflow**. Your site will be at `https://<your-username>.github.io/<your-repo>/`.
 
-The "Run workflow" button on **Beat maps** has a few optional fields. **video_id** processes just one video (the 11 characters after `v=` in its link). **force** redoes songs that already have a beat map. **add_artist**, **add_title** and **add_duration** add a song by search (see below); **add_queue** is filled in by the app, so leave it empty.
+The "Run workflow" button on **Beat maps** has a few optional fields. **video_id** processes just one video (the 11 characters after `v=` in its link). **force** redoes songs that already have a beat map. **add_artist**, **add_title** and **add_duration** add a song by search (see below); **add_queue** is filled in by the app and **map_json** by the relay, so leave them empty.
 
 ## Adding a song by search
 
@@ -58,7 +127,7 @@ Limits:
 
 - Songs must be in Apple's music catalogue (the search uses it to find the official title and length) and on YouTube, and at most 15 minutes long.
 - If you send several songs quickly while a job is running, GitHub keeps only the newest waiting job. The app re-sends songs it is still waiting for with each new request, and after 15 minutes offers **Send again**.
-- If YouTube blocks GitHub's servers, the song waits and the hourly job tries again by itself.
+- If YouTube blocks GitHub's servers, the song is still added: it shows up with "Learning the beat" instead of a tempo and plays straight away, finding the beat by listening. The hourly job keeps trying to make its beat map. See "If YouTube blocks GitHub's servers" below.
 - **Removing** an added song (choose it, then **Remove from My added songs**) hides it on that device only. It stays in `public/songs.json` in the repository; delete its entry there to remove it everywhere.
 - The site is cached for a few minutes, so a new song can take a little longer than the job itself to appear.
 
@@ -81,7 +150,44 @@ If you'd rather not paste a GitHub token into each browser, a tiny Cloudflare Wo
 
 The Worker only accepts requests from the addresses in `ALLOWED_ORIGINS`. The daily limit is a soft one: before starting a job, the Worker asks GitHub how many manual runs of the Beat maps job started in the last 24 hours. Check it's running with `https://<worker address>/health`.
 
+The same Worker also accepts **shared beat maps** (`POST /map`, see the next section) and starts a short "Contributed beat map" run for each. These have their own soft limit, `MAP_DAILY_LIMIT` (default 60 a day), and don't count against `DAILY_LIMIT`. If you set `ADD_PASSPHRASE`, only browsers that know the passphrase can share maps too.
+
 The Worker doesn't update itself: after pulling an update that changes anything in `cloudflare/add-song-worker`, run `npx wrangler deploy` again from that folder. If adding a song fails with a message about Apple's music catalogue, open `https://<worker address>/health?probe=1`: it looks up one well-known song with Apple and shows `"apple": "ok"`, or what went wrong (for example `apple-403` if Apple refuses the Worker, `apple-timeout` or `apple-bad-json`). Either way the Worker still adds songs using the details the app sends.
+
+## If YouTube blocks GitHub's servers
+
+YouTube sometimes refuses to let GitHub's servers download songs ("Sign in to confirm you're not a bot"). DanceDance keeps working anyway, in three layers:
+
+1. **Songs appear straight away and sync by listening.** When you add a song, the job finds the right YouTube video without downloading anything, so the song is listed at once, even if the download is then refused. Its tile says "Learning the beat" instead of a tempo. Playing it works like any song without a beat map: the coach listens (tab audio or microphone) and is on the beat within about 10 seconds. The hourly job keeps trying to make a proper beat map, with growing pauses between attempts. In `public/songs.json` such a song has `"hasMap": false`, and `public/songs-status.json` has a `"map-pending"` note for it (not an error).
+2. **Anyone's first full listen in Chrome or Edge fixes it for everyone.** For a song without a beat map, Chrome and Edge on a computer first offer "Share this tab so the coach can hear the song. You only need to do this the first time anyone plays it." If the song then plays to its end with tab audio covering at least 85% of it (in practice: from the start, without skipping) and the beat locked for most of it, the app quietly sends the finished beat map (about 10 KB of timings, no sound) to your relay and says "Saved this song's beat for everyone." The relay checks it and starts a quick "Contributed beat map" run, which checks it again and publishes it like a cloud map, usually within a few minutes. Microphone results are never sent, and nothing is sent without a relay. If sending fails (offline, limit reached), the app tries again next time it opens. On Safari, Firefox, phones and tablets the app explains that the song will sync perfectly once someone has played it in Chrome or Edge on a computer, and offers the microphone.
+   - Rules the job applies: the song must be in the starter pack, `songs.json` or your playlist; the map must look like a real song's beat map (one tempo between 60 and 220 BPM that matches the beats, beats covering most of the song, sections covering all of it, nothing extra). A song that already has a map from the cloud job is never touched; for the same song a later shared map only replaces an earlier one if it covers clearly more of the song. A map from the optional helper app (made from a downloaded copy) replaces one made by listening.
+   - If a shared map is ever wrong, delete `public/beatmaps/<videoId>.json` in the repository (the song goes back to listening), or run the local sync below, which replaces maps made by listening with real analyses. The cloud job does the same by itself whenever YouTube lets it download the song again.
+   - How good are these maps? Starter songs played start to end with real tab capture (in a test browser) gave the same tempo as the cloud map, with 94-98% of beats within 35 ms of it and no systematic offset. Recordings joined part-way through or interrupted were noticeably worse, which is why those are never shared.
+3. **The owner's computer can do the downloads.** Your home connection usually isn't blocked. From the project folder, with yt-dlp, ffmpeg and Deno installed (see "Local development"):
+   ```sh
+   npm run beatmaps:local            # pull, make every pending beat map, show what changed
+   npm run beatmaps:local -- --push  # ... and commit only the beat-map files and push them
+   ```
+   It handles songs added while YouTube was blocking (ignoring the usual waiting time), songs without a map and songs whose map came from listening. It refuses to run if you have other uncommitted changes (`--allow-dirty` runs anyway and still commits only beat-map files). Without `--push` it stops before committing and lists what it would commit. Pushing starts the site deploy as usual. Alternatively, give the cloud job cookies from a spare account (next section).
+
+   Optional, if you want your Mac to do this every 10 minutes while it's on: save the following as `~/Library/LaunchAgents/app.dancedance.localsync.plist` (change both paths), then run `launchctl load ~/Library/LaunchAgents/app.dancedance.localsync.plist`. Remove it with `launchctl unload` on the same file and deleting it. This is only an example; nothing installs it for you.
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+   <plist version="1.0">
+   <dict>
+     <key>Label</key><string>app.dancedance.localsync</string>
+     <key>ProgramArguments</key>
+     <array>
+       <string>/bin/zsh</string><string>-lc</string>
+       <string>cd "$HOME/path/to/dancedance" &amp;&amp; npm run --silent beatmaps:local -- --push</string>
+     </array>
+     <key>StartInterval</key><integer>600</integer>
+     <key>StandardOutPath</key><string>/tmp/dancedance-localsync.log</string>
+     <key>StandardErrorPath</key><string>/tmp/dancedance-localsync.log</string>
+   </dict>
+   </plist>
+   ```
 
 ## When the beat-map job goes red
 
@@ -89,7 +195,7 @@ A failed run shows a red ✗ under **Actions**. Open the run: the summary at the
 
 ### "YouTube is bot-blocking this runner"
 
-YouTube sometimes refuses requests from GitHub's servers and asks them to "sign in to confirm you're not a bot". The fix is to give the job cookies from a signed-in YouTube session.
+YouTube sometimes refuses requests from GitHub's servers and asks them to "sign in to confirm you're not a bot". Songs still get added and play (see "If YouTube blocks GitHub's servers" above). To let the cloud job download again, give it cookies from a signed-in YouTube session, or use the local sync.
 
 > **Warning: use a spare Google account, never your main one.** Google can flag or suspend accounts whose cookies are used by download tools. Create a new, throwaway Google account for this and use it for nothing else.
 
@@ -140,7 +246,7 @@ npm run beatmaps -- --add "a-ha - Take On Me" --dry-run   # just show which vide
 PLAYLIST_URL='https://www.youtube.com/playlist?list=…' npm run beatmaps
 ```
 
-Beat maps are written to `public/beatmaps/`; songs added by search are listed in `public/songs.json`, and ones that couldn't be added in `public/songs-status.json`. Audio goes to a temporary folder and is deleted as soon as each song is analysed. `--force` redoes songs that already have a map.
+Beat maps are written to `public/beatmaps/`; songs added by search are listed in `public/songs.json` (`hasMap: false` until their map exists), and ones that couldn't be added in `public/songs-status.json`. `npm run beatmaps:local` is the safe all-in-one version for your own computer (see "If YouTube blocks GitHub's servers"). Audio goes to a temporary folder and is deleted as soon as each song is analysed. `--force` redoes songs that already have a map.
 
 ## A note on YouTube's terms
 

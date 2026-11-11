@@ -871,6 +871,13 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
+/* Added song without a beat map yet: a quiet note instead of the tempo. */
+.bpm-badge.bpm-learning {
+  font-weight: 700;
+  color: var(--muted);
+  font-variant-numeric: normal;
+}
+
 /* --- My added songs (home) --------------------------------------------- */
 
 .shelf-foot {

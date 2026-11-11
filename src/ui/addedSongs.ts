@@ -50,7 +50,9 @@ export function reconcile(
   const appeared: { pending: PendingAdd; song: AddedSong }[] = [];
   const views: PendingView[] = [];
   for (const p of pending) {
-    const song = byKey.get(p.key);
+    const st0 = status[p.key];
+    // Listed under slightly different names than requested: the 'map-pending' note says which video.
+    const song = byKey.get(p.key) ?? (st0?.state === 'map-pending' && st0.videoId ? published.find((s) => s.videoId === st0.videoId) : undefined);
     if (song) {
       appeared.push({ pending: p, song });
       continue;

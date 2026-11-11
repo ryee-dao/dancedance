@@ -6,6 +6,7 @@ import {
   limitConcurrency,
   readPlaylistIds,
 } from '../player/playlistReader';
+import { webHelper } from './helper';
 import type { Platform } from './platform';
 
 const oembedSlot = limitConcurrency(4);
@@ -17,6 +18,7 @@ export function createWebPlatform(): Platform {
     canPlayFiles: true,
     beatmapBase: './',
     liveSync: true,
+    localHelper: webHelper(),
     async getPlaylist(listId) {
       const ids = await readPlaylistIds(listId);
       return ids.map((videoId) => ({ videoId }));

@@ -72,7 +72,14 @@ class Library extends EventTarget {
     addedSongs.addEventListener('appeared', (e) => {
       const song = (e as CustomEvent<AddedSong>).detail;
       const dup = this.playlistIds.includes(song.videoId) || STARTER.some((s) => s.videoId === song.videoId);
-      toast(dup ? `“${song.title}” is already in your songs.` : `“${song.title}” is ready to dance. It’s in My added songs.`, 6000);
+      toast(
+        dup
+          ? `“${song.title}” is already in your songs.`
+          : song.hasMap === false
+            ? `“${song.title}” is in My added songs. The coach learns its beat the first time it’s played.`
+            : `“${song.title}” is ready to dance. It’s in My added songs.`,
+        6000,
+      );
       void reloadCloudIndex(getPlatform().beatmapBase);
     });
     addedSongs.start(getPlatform().beatmapBase);

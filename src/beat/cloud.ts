@@ -125,6 +125,12 @@ export interface AddedSong {
   addedAt: string;
   /** Official length the video was matched against. */
   durationSec: number;
+  /**
+   * Whether `beatmaps/<videoId>.json` exists. A song is listed as soon as its
+   * video is picked; until a map exists (`false`) the app finds the beat by
+   * listening. Older files have no field, which means true.
+   */
+  hasMap?: boolean;
   /** 'music-video': no lyric/audio upload passed, so the official music video was used. */
   note?: 'music-video';
 }
@@ -135,13 +141,18 @@ export interface AddedSong {
  *   'not-found' - no suitable, embeddable YouTube video (final until asked again)
  *   'blocked'   - YouTube refused the runner; later runs retry automatically
  *   'error'     - something else went wrong; later runs retry automatically
+ *   'map-pending' - not a failure: the song is listed in songs.json (videoId)
+ *                 but YouTube refused the cloud download, so it has no beat map
+ *                 yet; removed once a map exists
  */
 export interface SongRequestStatus {
-  state: 'not-found' | 'blocked' | 'error';
+  state: 'not-found' | 'blocked' | 'error' | 'map-pending';
   artist: string;
   title: string;
   /** Official length that was requested (lets later runs retry on their own). */
   durationSec?: number;
+  /** 'map-pending': the listed video. */
+  videoId?: string;
   message?: string;
   attempts: number;
   /** ISO timestamp. */
@@ -197,6 +208,7 @@ export function parseSongsList(text: string): AddedSong[] {
       artist: s.artist.slice(0, 200),
       addedAt: typeof s.addedAt === 'string' ? s.addedAt : '',
       durationSec,
+      ...(s.hasMap === false ? { hasMap: false } : {}),
       ...(s.note === 'music-video' ? { note: 'music-video' as const } : {}),
     });
   }
@@ -216,13 +228,14 @@ export function parseSongsStatus(text: string): Record<string, SongRequestStatus
   if (!reqs || typeof reqs !== 'object' || Array.isArray(reqs)) return out;
   for (const [key, raw] of Object.entries(reqs as Record<string, unknown>)) {
     const r = (raw ?? {}) as Record<string, unknown>;
-    if (r.state !== 'not-found' && r.state !== 'blocked' && r.state !== 'error') continue;
+    if (r.state !== 'not-found' && r.state !== 'blocked' && r.state !== 'error' && r.state !== 'map-pending') continue;
     if (typeof r.artist !== 'string' || typeof r.title !== 'string') continue;
     out[key] = {
       state: r.state,
       artist: r.artist.slice(0, 200),
       title: r.title.slice(0, 200),
       ...(typeof r.durationSec === 'number' && Number.isFinite(r.durationSec) ? { durationSec: Math.round(r.durationSec) } : {}),
+      ...(typeof r.videoId === 'string' && VIDEO_ID.test(r.videoId) ? { videoId: r.videoId } : {}),
       ...(typeof r.message === 'string' ? { message: r.message.slice(0, 300) } : {}),
       attempts: typeof r.attempts === 'number' && r.attempts >= 0 ? Math.floor(r.attempts) : 0,
       lastTried: typeof r.lastTried === 'string' ? r.lastTried : '',

@@ -225,3 +225,36 @@ export async function relayHealth(
     return null;
   }
 }
+
+/**
+ * POST /map: hand a beat map heard or analysed in this browser to the relay
+ * (the body is the compact map JSON). `retry` says whether trying again later
+ * could help (network, rate limits, GitHub hiccups) or not (the relay or the
+ * job will never take this map).
+ */
+export async function relayShareMap(
+  relay: string,
+  mapJson: string,
+  passphrase: string | null,
+  fetchFn: FetchFn = (u, i) => fetch(u, i),
+): Promise<{ ok: true } | { ok: false; code: string; retry: boolean }> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (passphrase) headers[PASS_HEADER] = passphrase;
+  let res: Awaited<ReturnType<FetchFn>>;
+  try {
+    res = await fetchFn(`${relay}/map`, { method: 'POST', headers, body: mapJson, credentials: 'omit', cache: 'no-store', referrerPolicy: 'no-referrer' });
+  } catch {
+    return { ok: false, code: 'network', retry: true };
+  }
+  let body: { ok?: unknown; error?: unknown } = {};
+  try {
+    body = JSON.parse(await res.text()) as typeof body;
+  } catch {
+    /* not JSON */
+  }
+  if (res.ok && body && body.ok === true) return { ok: true };
+  const code = body && typeof body.error === 'string' ? body.error.slice(0, 40) : `http-${res.status}`;
+  // bad-map / bad-request / bad-origin / not-configured / 404 (an older relay without /map): this map won't get in.
+  const retry = !(code === 'bad-map' || code === 'bad-request' || code === 'bad-origin' || code === 'not-configured' || res.status === 404 || res.status === 413);
+  return { ok: false, code, retry };
+}

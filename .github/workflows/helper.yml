@@ -1,0 +1,113 @@
+# Build the DanceDance helper (helper/) for macOS, Windows and Linux and
+# publish it on the GitHub Release tagged `helper`, which is updated in place.
+#
+# Runs when you push a tag like `helper-v0.2.0`
+#   git tag helper-v0.2.0 && git push origin helper-v0.2.0
+# or by hand (Actions -> Helper app -> Run workflow).
+#
+# The asset names never change, so these addresses always give the newest helper:
+#   https://github.com/<owner>/<repo>/releases/download/helper/dancedance-helper-macos-arm64.zip
+#   https://github.com/<owner>/<repo>/releases/download/helper/dancedance-helper-macos-x64.zip
+#   https://github.com/<owner>/<repo>/releases/download/helper/dancedance-helper-windows-x64.exe
+#   https://github.com/<owner>/<repo>/releases/download/helper/dancedance-helper-linux-x64.tar.gz
+#
+# The `helper` release is never marked "Latest": releases/latest stays the
+# Android TV app (dancedance.apk). The Pages origin the helper trusts and the
+# site it opens are baked in from github.repository.
+name: Helper app
+
+on:
+  push:
+    tags: ['helper-v*']
+  workflow_dispatch:
+
+concurrency:
+  group: helper-release
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  release:
+    # macOS: the zip tool is there and the macOS binaries can be checked with codesign.
+    runs-on: macos-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write # update the `helper` release and move its tag
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: denoland/setup-deno@v2
+        with:
+          # The helper is also yt-dlp's JavaScript runtime (Deno >= 2.3 needed); keep this deliberate.
+          deno-version: 2.9.8
+
+      - name: Test
+        working-directory: helper
+        run: deno task test
+
+      - name: Build all targets
+        working-directory: helper
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          RUN_NUMBER: ${{ github.run_number }}
+          REPO: ${{ github.repository }}
+        run: |
+          base=$(deno eval 'console.log(JSON.parse(Deno.readTextFileSync("deno.json")).version)')
+          version="$base-build.$RUN_NUMBER"
+          if [ "$REF_TYPE" = "tag" ]; then
+            candidate=${REF_NAME#helper-v}
+            if printf '%s' "$candidate" | grep -Eq '^[0-9A-Za-z.+-]{1,40}$'; then version="$candidate"; fi
+          fi
+          echo "Helper $version for $REPO"
+          deno task build --version "$version" --repo "$REPO"
+          for f in dist/dancedance-helper-macos-arm64 dist/dancedance-helper-macos-x64; do
+            codesign --verify --verbose=1 "$f"
+          done
+          echo "HELPER_VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Publish on the `helper` release
+        working-directory: helper/dist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          tag=helper
+          dl="https://github.com/$REPO/releases/download/$tag"
+          {
+            echo "DanceDance helper $HELPER_VERSION (built from ${SHA:0:7})."
+            echo
+            echo "Download the one for your computer, then see the README section \"Helper app\" for the first-run steps:"
+            echo
+            echo "- Mac with Apple chip (M1 or newer): $dl/dancedance-helper-macos-arm64.zip"
+            echo "- Mac with Intel chip: $dl/dancedance-helper-macos-x64.zip"
+            echo "- Windows (64-bit): $dl/dancedance-helper-windows-x64.exe"
+            echo "- Linux (x86-64): $dl/dancedance-helper-linux-x64.tar.gz"
+            echo
+            echo "SHA-256:"
+            echo '```'
+            cat SHA256SUMS.txt
+            echo '```'
+          } > notes.md
+          assets=$(tr '\n' ' ' < assets.txt)
+          # shellcheck disable=SC2086 # asset names are fixed, space-free names from build.ts
+          if gh release view "$tag" --repo "$REPO" > /dev/null 2>&1; then
+            gh release upload "$tag" $assets SHA256SUMS.txt --repo "$REPO" --clobber
+            gh release edit "$tag" --repo "$REPO" --title "DanceDance helper $HELPER_VERSION" --notes-file notes.md --latest=false
+            # Point the tag at the commit these binaries were built from.
+            gh api --method PATCH "repos/$REPO/git/refs/tags/$tag" -f sha="$SHA" -F force=true > /dev/null
+          else
+            gh release create "$tag" $assets SHA256SUMS.txt --repo "$REPO" --target "$SHA" \
+              --title "DanceDance helper $HELPER_VERSION" --notes-file notes.md --latest=false
+          fi
+          {
+            echo "## DanceDance helper $HELPER_VERSION"
+            echo "Published on the \`$tag\` release (not marked Latest)."
+            echo '```'
+            cat SHA256SUMS.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

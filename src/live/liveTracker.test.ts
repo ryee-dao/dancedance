@@ -8,7 +8,7 @@ import { LiveTracker, MIN_SAVE_SECONDS } from './liveTracker';
  * `latency` seconds later and delivers 1024-sample chunks in real time. The
  * player clock and performance.now() are driven by the simulation.
  */
-function simulate(o: { bpm: number; seconds: number; latency: number; pauseAt?: number; pauseFor?: number; startSong?: number }) {
+function simulate(o: { bpm: number; seconds: number; latency: number; pauseAt?: number; pauseFor?: number; startSong?: number; dropAt?: number; dropChunks?: number }) {
   const sr = 48000;
   const s = synthClickTrack({ bpm: o.bpm, duration: o.seconds + 2, sampleRate: sr });
   let perf = 0; // ms
@@ -38,6 +38,11 @@ function simulate(o: { bpm: number; seconds: number; latency: number; pauseAt?: 
     heardSongTime += dt;
     const i0 = Math.round(Math.max(0, heardSongTime - dt) * sr);
     const pcm = heardSongTime - dt < 0 ? new Float32Array(CH) : s.pcm.slice(i0, i0 + CH);
+    // A capture glitch: a few buffers never arrive (the song goes on).
+    if (o.dropAt !== undefined && song >= o.dropAt && (o.dropChunks ?? 0) > 0) {
+      o.dropChunks = (o.dropChunks ?? 0) - 1;
+      continue;
+    }
     // Delivered a few ms after capture, with jitter.
     src.onChunk?.({ pcm: pcm.length === CH ? pcm : new Float32Array(CH), perfEnd: perf - 2 - (k % 5) });
   }
@@ -85,5 +90,16 @@ describe('LiveTracker (song-time mapping end to end)', () => {
     const errs = res.map.beats.filter((b) => b > 5 && b < 45).map((b) => nearestErr(b, truth));
     const meanAbs = errs.reduce((a, e) => a + Math.abs(e), 0) / errs.length;
     expect(meanAbs).toBeLessThan(0.025);
+  });
+
+  it('a few lost capture buffers mid-song do not shift the beats before them in the saved map', () => {
+    const { tracker, truth } = simulate({ bpm: 120, seconds: 80, latency: 0.04, dropAt: 40, dropChunks: 4 }); // ~85 ms lost at 40 s
+    const res = tracker.finalize('vid', 80)!;
+    const meanAbs = (lo: number, hi: number) => {
+      const errs = res.map.beats.filter((b) => b > lo && b < hi).map((b) => nearestErr(b, truth));
+      return errs.reduce((a, e) => a + Math.abs(e), 0) / errs.length;
+    };
+    expect(meanAbs(8, 38)).toBeLessThan(0.02);
+    expect(meanAbs(42, 78)).toBeLessThan(0.02);
   });
 });

@@ -21,6 +21,14 @@ describe('reconcile', () => {
     expect(reconcile([pend('ABBA', 'Waterloo')], [], st('not-found', '2026-11-09T12:00:00Z'), T).views[0].state).toBe('waiting');
     expect(reconcile([pend('ABBA', 'Waterloo')], [], {}, T + 16 * 60_000).views[0].state).toBe('slow');
   });
+  it('a song listed without a map appears at once (also under other names, via its map-pending note)', () => {
+    const listed = { ...song('abcdefghijk', 'Spice Girls', 'Wannabe'), hasMap: false };
+    expect(reconcile([pend('Spice Girls', 'Wannabe')], [listed], {}, T).appeared[0].song.hasMap).toBe(false);
+    const note = { [songKey('spice girls', 'wannabe (remastered)')]: { state: 'map-pending' as const, artist: 'Spice Girls', title: 'Wannabe', videoId: 'abcdefghijk', attempts: 1, lastTried: '2026-11-10T12:03:00Z' } };
+    const r = reconcile([pend('spice girls', 'wannabe (remastered)')], [listed], note, T);
+    expect(r.appeared.map((a) => a.song.videoId)).toEqual(['abcdefghijk']);
+    expect(r.views).toEqual([]);
+  });
   it('polls politely and busts the CDN cache once per interval', () => {
     expect([0, 9 * 60_000, 11 * 60_000, 31 * 60_000].map(pollDelayMs)).toEqual([30_000, 30_000, 60_000, 300_000]);
     expect(bust('https://jo.github.io/dd/songs.json', 61_000, 30_000)).toBe('https://jo.github.io/dd/songs.json?t=2');

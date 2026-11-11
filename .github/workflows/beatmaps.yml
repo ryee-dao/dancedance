@@ -16,13 +16,22 @@
 # find are reported in public/songs-status.json. Such a run skips the
 # playlist; the next hourly run reads it as usual.
 #
+# "Contributed beat map" (input map_json, sent by the relay's POST /map): a
+# beat map a player's browser made by listening to the song (source 'tab') or
+# by analysing a local download ('device'). The job validates it strictly,
+# publishes it only for a known song that has no better map, and never
+# downloads anything on such a run, so it is fast and can't be bot-blocked.
+# These runs are named "Contributed beat map". A wrong map can be fixed by
+# deleting public/beatmaps/<videoId>.json (or by running the tool locally,
+# which replaces 'tab' maps with real analyses).
+#
 # Settings used (all optional):
 #   vars.PLAYLIST_URL     playlist link (Public or Unlisted)
 #   vars.YTDLP_VERSION    pin yt-dlp to a release tag, e.g. 2026.10.26 (default: latest)
 #   secrets.YT_COOKIES    cookies.txt from a SPARE Google account, if YouTube bot-blocks the runner
 name: Beat maps
 # Runs started by the app show the song, so you can find them under Actions.
-run-name: "${{ inputs.add_title && format('Add song: {0} - {1}', inputs.add_artist, inputs.add_title) || 'Beat maps' }}"
+run-name: "${{ inputs.map_json && 'Contributed beat map' || inputs.add_title && format('Add song: {0} - {1}', inputs.add_artist, inputs.add_title) || 'Beat maps' }}"
 
 on:
   schedule:
@@ -59,10 +68,18 @@ on:
         type: string
         required: false
         default: ''
+      map_json:
+        description: Used by the relay (a contributed beat map, as JSON); leave empty
+        type: string
+        required: false
+        default: ''
 
 # Never run two of these at once; a new run waits for the current one.
+# Contributed-map runs get a group of their own each, so they never replace a
+# waiting add-a-song run (GitHub keeps only one waiting run per group); they
+# only write a few small files and redo their work if their push races another run.
 concurrency:
-  group: beatmaps
+  group: ${{ inputs.map_json && format('beatmaps-map-{0}', github.run_id) || 'beatmaps' }}
   cancel-in-progress: false
 
 permissions: {}
@@ -87,6 +104,7 @@ jobs:
       - run: npm ci
 
       - name: Install ffmpeg
+        if: ${{ !inputs.map_json }}
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq --no-install-recommends ffmpeg
@@ -95,10 +113,12 @@ jobs:
       # Current yt-dlp needs an external JavaScript runtime for YouTube; Deno is
       # the one it enables by default (https://github.com/yt-dlp/yt-dlp/wiki/EJS).
       - uses: denoland/setup-deno@v2
+        if: ${{ !inputs.map_json }}
         with:
           deno-version: v2.x
 
       - name: Install yt-dlp
+        if: ${{ !inputs.map_json }}
         env:
           YTDLP_VERSION: ${{ vars.YTDLP_VERSION }}
         run: |
@@ -126,6 +146,7 @@ jobs:
 
       - name: Make beat maps
         id: run
+        if: ${{ !inputs.map_json }}
         env:
           PLAYLIST_URL: ${{ vars.PLAYLIST_URL }}
           YT_COOKIES: ${{ secrets.YT_COOKIES }}
@@ -150,39 +171,65 @@ jobs:
 
       # Runs even when the previous step failed (e.g. bot-blocked), so that
       # status.json still records what happened and the app can show it.
+      # A contributed map (map_json) is handled here too: it needs no
+      # downloads, and if the push races another run it starts again from
+      # the newest commit instead of rebasing (the tool is quick and deterministic).
       - name: Commit beat maps
         id: commit
         if: ${{ !cancelled() }}
         env:
           BRANCH: ${{ github.ref_name }}
+          # Untrusted JSON from the relay: only ever read by the tool from the environment.
+          MAP_JSON: ${{ inputs.map_json }}
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          # Only JSON under public/ is ever staged: never audio, never anything else.
-          paths=(public/beatmaps)
-          for f in public/playlist.json public/songs.json public/songs-status.json; do
-            if [ -e "$f" ]; then paths+=("$f"); fi
-          done
-          git add -A -- "${paths[@]}"
-          if git diff --cached --name-only | grep -Ev '^public/(beatmaps/[A-Za-z0-9_-]+|playlist|songs|songs-status)\.json$'; then
-            echo "::error title=Unexpected files::Refusing to commit files other than beat-map JSON"
-            exit 1
+          stage() {
+            # Only JSON under public/ is ever staged: never audio, never anything else.
+            paths=(public/beatmaps)
+            for f in public/playlist.json public/songs.json public/songs-status.json; do
+              if [ -e "$f" ]; then paths+=("$f"); fi
+            done
+            git add -A -- "${paths[@]}"
+            if git diff --cached --name-only | grep -Ev '^public/(beatmaps/[A-Za-z0-9_-]+|playlist|songs|songs-status)\.json$'; then
+              echo "::error title=Unexpected files::Refusing to commit files other than beat-map JSON"
+              exit 1
+            fi
+          }
+          if [ -n "${MAP_JSON:-}" ]; then
+            for attempt in 1 2 3 4 5; do
+              npm run --silent beatmaps -- --contributed-map
+              stage
+              if git diff --cached --quiet; then
+                echo "No changes to commit."
+                echo "changed=false" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+              git commit -q -m "Contributed beat map (heard in a browser)"
+              if git push -q origin "HEAD:${BRANCH}"; then break; fi
+              if [ "$attempt" = 5 ]; then exit 1; fi
+              sleep $((attempt * 3))
+              git fetch -q origin "$BRANCH"
+              git reset -q --hard "origin/${BRANCH}"
+            done
+          else
+            stage
+            if git diff --cached --quiet; then
+              echo "No changes to commit."
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            count=$(git diff --cached --name-only -- 'public/beatmaps/*.json' | grep -Evc '/(index|status)\.json$' || true)
+            msg="Update beat maps (${count} map file(s) changed)"
+            if ! git diff --cached --quiet -- public/songs.json 2>/dev/null; then msg="Add song(s) by search; ${msg}"; fi
+            git commit -q -m "$msg"
+            for attempt in 1 2 3; do
+              if git push -q origin "HEAD:${BRANCH}"; then break; fi
+              if [ "$attempt" = 3 ]; then exit 1; fi
+              git pull -q --rebase origin "$BRANCH"
+            done
           fi
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          count=$(git diff --cached --name-only -- 'public/beatmaps/*.json' | grep -Evc '/(index|status)\.json$' || true)
-          msg="Update beat maps (${count} map file(s) changed)"
-          if ! git diff --cached --quiet -- public/songs.json 2>/dev/null; then msg="Add song(s) by search; ${msg}"; fi
-          git commit -q -m "$msg"
-          for attempt in 1 2 3; do
-            if git push -q origin "HEAD:${BRANCH}"; then break; fi
-            if [ "$attempt" = 3 ]; then exit 1; fi
-            git pull -q --rebase origin "$BRANCH"
-          done
           echo "changed=true" >> "$GITHUB_OUTPUT"
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 

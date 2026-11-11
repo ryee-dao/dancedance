@@ -3,8 +3,11 @@
  * and keeps the BeatSource up to date.
  *
  *  YouTube song: local cache -> cloud map (fetched in parallel with the
- *                player start) -> live fallback (tab audio if already shared,
- *                else the microphone, with a one-time explainer).
+ *                player start) -> the DanceDance helper app if it is running
+ *                on this computer (web only: it downloads the audio, which is
+ *                analysed here like the TV's, source 'device') -> live
+ *                fallback (tab audio if already shared, else the microphone,
+ *                with a one-time explainer).
  *  Dropped file: local cache -> whole-file analysis in a Worker (progress on
  *                the starting screen; first 30 s if it takes too long).
  *
@@ -12,6 +15,7 @@
  * rest. Live recordings covering >= 45 s are saved when the song ends.
  */
 import type { BeatMap, BeatMapSource } from '../core/analysis';
+import type { LocalHelper } from '../platform/helper';
 import type { Platform } from '../platform/platform';
 import type { PlayItem } from '../player/types';
 import { store } from '../store';
@@ -25,13 +29,16 @@ import { BeatHub } from './beatHub';
 import type { BeatSource } from './beatSource';
 import { beatCache, fileKey, isBetterMap, type BeatMapCache } from './cache';
 import { cloudStatus, describeCloudStatus, fetchCloudMap } from './cloud';
+import { holdBackgroundFill } from './helperFill';
 import { resolveBeatMap } from './resolve';
+import { queueMapUpload, tabCoverageGate } from './shareMap';
 
 export type NoSyncReason = 'off' | 'denied' | 'unsupported' | 'no-device' | 'no-beat' | 'error';
 
 export type SyncStatus =
   | { kind: 'resolving' }
-  | { kind: 'analyzing'; progress: number }
+  /** step 'download': the helper app is getting the song (progress of that); otherwise beat analysis. */
+  | { kind: 'analyzing'; progress: number; step?: 'download' | 'analyze' }
   | { kind: 'map'; source: BeatMapSource; partial: boolean; listening: 'mic' | 'tab' | null; refining: number | null }
   | { kind: 'live'; mode: 'mic' | 'tab'; locked: boolean; bpm: number }
   | { kind: 'none'; reason: NoSyncReason };
@@ -43,6 +50,8 @@ export interface SessionClock extends LiveClock {
 
 /** How long prepare() waits for the cache/cloud lookup before the countdown. */
 const RESOLVE_WAIT_MS = 1500;
+/** How long prepare() waits to learn whether the helper app is running. */
+const HELPER_CHECK_MS = 1500;
 
 export class BeatSession {
   readonly key: string;
@@ -52,9 +61,15 @@ export class BeatSession {
   private tracker: LiveTracker | null = null;
   private resolving = true;
   private progress: number | null = null; // file analysis before the first map
+  private fetching: number | null = null; // helper download before analysis
+  private readonly abort = new AbortController();
+  /** The helper's background fill pauses while a song is on screen. */
+  private readonly releaseFill = holdBackgroundFill();
   private refining: number | null = null; // full analysis after a partial map
   private noSync: NoSyncReason | null = null;
   private note: string | null = null;
+  /** Source of the song's cloud map, once fetched (null: none). */
+  private cloudSource: BeatMapSource | null = null;
   private disposed = false;
   private resolveP: Promise<unknown>;
 
@@ -62,7 +77,7 @@ export class BeatSession {
     private readonly item: PlayItem,
     private readonly clock: SessionClock,
     private readonly devices: LiveDevices,
-    private readonly platform: Pick<Platform, 'beatmapBase' | 'liveSync' | 'deviceAudio' | 'noteAnalysis'>,
+    private readonly platform: Pick<Platform, 'beatmapBase' | 'liveSync' | 'deviceAudio' | 'noteAnalysis' | 'localHelper'>,
     cache?: BeatMapCache,
   ) {
     this.cache = cache ?? beatCache();
@@ -73,7 +88,14 @@ export class BeatSession {
       this.resolveP = resolveBeatMap(
         this.key,
         this.videoId,
-        { cache: this.cache, fetchCloud: (id) => fetchCloudMap(base, id) },
+        {
+          cache: this.cache,
+          fetchCloud: (id) =>
+            fetchCloudMap(base, id).then((m) => {
+              this.cloudSource = m?.source ?? null;
+              return m;
+            }),
+        },
         (map) => this.useMap(map),
       ).finally(() => {
         this.resolving = false;
@@ -125,6 +147,18 @@ export class BeatSession {
       if (!map || map.partial) await this.prepareDevice(this.videoId);
       return 'ready';
     }
+    const helper = this.platform.localHelper;
+    if (helper && this.videoId) {
+      // Web with the helper app running: cache -> cloud -> helper -> live listening.
+      const info = await Promise.race([helper.available().catch(() => null), new Promise<null>((r) => setTimeout(() => r(null), HELPER_CHECK_MS))]);
+      if (info && !this.disposed) {
+        await this.resolveP;
+        if (this.disposed) return 'ready';
+        const map = this.hub.map();
+        if (!map || map.partial) await this.prepareHelper(this.videoId, helper);
+        if (this.disposed) return 'ready';
+      }
+    }
     await Promise.race([this.resolveP, new Promise((r) => setTimeout(r, RESOLVE_WAIT_MS))]);
     if (this.disposed) return 'ready';
     return this.decideLive();
@@ -139,8 +173,10 @@ export class BeatSession {
       this.attach(tab, 'tab');
       return 'ready';
     }
-    if (!this.devices.micSupported) return this.none('unsupported');
     const pref = store.settings().liveSync;
+    // Never answered and tab audio works here: offer "Share this tab" first (it needs a click each time).
+    if (pref === 'ask' && this.devices.tabSupported && this.item.kind === 'youtube') return 'ask-mic';
+    if (!this.devices.micSupported) return this.none('unsupported');
     if (pref === 'off') return this.none('off');
     const perm = await micPermission();
     if (this.disposed) return 'ready';
@@ -163,6 +199,20 @@ export class BeatSession {
       return;
     }
     await this.startMic();
+  }
+
+  /**
+   * The user chose "Share this tab" in the explainer (call from the click).
+   * Cancelling the browser's picker counts as "Not now", so it isn't asked again.
+   */
+  async answerTab(): Promise<string | null> {
+    const msg = await this.useTab();
+    if (!this.disposed && this.tracker?.source !== 'tab' && msg === 'Tab sharing was cancelled.') {
+      store.updateSettings({ liveSync: 'off' });
+      this.none('off');
+      return 'No beat sync for this song. You can turn it on from the pause menu.';
+    }
+    return msg;
   }
 
   /** Pause menu: "Sync: microphone". */
@@ -289,6 +339,70 @@ export class BeatSession {
     }
   }
 
+  /**
+   * Web + helper app: get the audio from the helper, then analyse it here
+   * (source 'device'), as on the TV. Any failure is quiet: prepare() goes on
+   * to live listening.
+   */
+  private async prepareHelper(videoId: string, helper: LocalHelper): Promise<void> {
+    let buf: ArrayBuffer;
+    const t0 = performance.now();
+    try {
+      this.fetching = 0;
+      buf = await helper.fetchAudio(videoId, {
+        signal: this.abort.signal,
+        onProgress: (p) => {
+          if (this.fetching !== null && p.phase === 'download' && p.fraction !== null) this.fetching = p.fraction * 0.95;
+          if (this.fetching !== null && p.phase === 'transfer' && p.fraction !== null) this.fetching = 0.95 + p.fraction * 0.05;
+        },
+      });
+    } catch (err) {
+      console.info('[dd:beats] helper could not get the song', (err as { code?: string }).code ?? err);
+      return;
+    } finally {
+      this.fetching = null;
+    }
+    if (this.disposed) return;
+    const fetchMs = Math.round(performance.now() - t0);
+    this.progress = 0;
+    try {
+      const a = analyzeAudio(buf, {
+        key: this.key,
+        source: 'device',
+        onProgress: (f) => {
+          if (this.progress !== null) this.progress = f;
+          else if (this.refining !== null) this.refining = f;
+        },
+      });
+      const first = await a.first;
+      this.progress = null;
+      console.info('[dd:beats] helper map', { fetchMs, analyzeMs: Math.round(performance.now() - t0) - fetchMs, partial: !!first.partial });
+      if (!this.hub.map() || isBetterMap(this.hub.map(), first)) this.useMap(first);
+      void this.cache.offer(this.key, first);
+      const done = (full: BeatMap) => {
+        void this.cache.offer(this.key, full);
+        shareDeviceMap(full, this.cloudSource);
+      };
+      if (!first.partial) done(first);
+      else {
+        this.refining = 0;
+        a.full.then(
+          (full) => {
+            done(full);
+            this.refining = null;
+            this.useMap(full);
+          },
+          () => {
+            this.refining = null;
+          },
+        );
+      }
+    } catch (err) {
+      this.progress = null;
+      console.warn('[dd:beats] analysis of the helper audio failed', err);
+    }
+  }
+
   private async prepareFile(file: File): Promise<void> {
     const cached = await this.cache.get(this.key);
     this.resolving = false;
@@ -339,6 +453,7 @@ export class BeatSession {
   }
 
   status(): SyncStatus {
+    if (this.fetching !== null) return { kind: 'analyzing', progress: this.fetching, step: 'download' };
     if (this.progress !== null) return { kind: 'analyzing', progress: this.progress };
     const map = this.hub.map();
     const listening = this.tracker?.source ?? null;
@@ -392,12 +507,29 @@ export class BeatSession {
     } else {
       console.info('[dd:beats]', `not saving ${t.source} recording (too short)`, info);
     }
+    // Listen-and-share: a whole song heard via tab audio becomes everyone's beat map.
+    if (res && t.source === 'tab' && this.videoId) {
+      const why = tabCoverageGate(res.map, { duration: this.clock.duration(), covered: res.covered, locked: res.locked, stoppedAt: this.clock.time() });
+      const shared = why ? `skipped:${why}` : queueMapUpload(res.map, { existingSource: this.cloudSource });
+      console.info('[dd:beats]', `share tab map: ${shared}`, { covered: Math.round(res.covered), locked: Math.round(res.locked) });
+    }
   }
 
   dispose(): void {
     if (this.disposed) return;
+    this.abort.abort(); // a helper download still running for this song
+    this.releaseFill();
     this.finish();
     // A running full analysis is left to finish: it caches its result.
     this.disposed = true;
   }
+}
+
+/**
+ * A complete map analysed from the helper's audio: hand it to the shared
+ * uploader (shareMap.ts) so everyone gets it as a cloud map.
+ */
+function shareDeviceMap(map: BeatMap, existingSource: BeatMapSource | null): void {
+  const shared = queueMapUpload(map, { existingSource });
+  console.info('[dd:beats]', `share device map: ${shared}`);
 }

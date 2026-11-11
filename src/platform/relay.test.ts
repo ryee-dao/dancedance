@@ -111,3 +111,20 @@ describe('relay client', () => {
     expect(await relayHealth('https://x.dev', fake(404, {}))).toBeNull();
   });
 });
+
+describe('relay POST /map client', () => {
+  it('posts the map JSON with the passphrase and reads the answer', async () => {
+    const { relayShareMap } = await import('./relay');
+    const ok = fake(200, { ok: true, videoId: 'abcdefghijk' });
+    expect(await relayShareMap('https://r.example', '{"v":1}', 'pw', ok)).toEqual({ ok: true });
+    expect(ok.calls[0].url).toBe('https://r.example/map');
+    expect(ok.calls[0].init.body).toBe('{"v":1}');
+    expect((ok.calls[0].init.headers as Record<string, string>)['X-Add-Passphrase']).toBe('pw');
+    expect(await relayShareMap('https://r.example', '{}', null, fake(400, { ok: false, error: 'bad-map', detail: 'bpm' }))).toEqual({ ok: false, code: 'bad-map', retry: false });
+    expect(await relayShareMap('https://r.example', '{}', null, fake(404, { ok: false, error: 'bad-request' }))).toMatchObject({ retry: false });
+    expect(await relayShareMap('https://r.example', '{}', null, fake(429, { ok: false, error: 'daily-limit' }))).toEqual({ ok: false, code: 'daily-limit', retry: true });
+    expect(await relayShareMap('https://r.example', '{}', null, fake(401, { ok: false, error: 'passphrase' }))).toMatchObject({ retry: true });
+    const down = async () => Promise.reject(new TypeError('offline'));
+    expect(await relayShareMap('https://r.example', '{}', null, down)).toEqual({ ok: false, code: 'network', retry: true });
+  });
+});

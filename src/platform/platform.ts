@@ -9,6 +9,7 @@
 
 import type { AddedSong } from '../beat/cloud';
 import type { MediaPlayer, PlayItem } from '../player/types';
+import type { LocalHelper } from './helper';
 
 export interface PlaylistEntry {
   videoId: string;
@@ -49,6 +50,11 @@ export interface Platform {
    * songs without a beat map. Android TV analyses downloaded audio instead.
    */
   readonly liveSync: boolean;
+  /**
+   * Web only: the optional DanceDance helper app on this computer (helper/),
+   * which downloads a song's audio for on-device analysis. Absent on TV.
+   */
+  readonly localHelper?: LocalHelper;
 
   // --- Android TV only (androidtv.ts); absent on web -----------------------
   /** A player for this item, or null for the default one. TV: audio only, no iframe. */

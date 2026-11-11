@@ -13,7 +13,7 @@
 import { StreamingAnalyzer, type BeatMap } from '../core/analysis';
 import type { LiveBeats } from '../beat/beatSource';
 import type { CaptureChunk, ChunkSource } from './capture';
-import { OffsetEstimator, rawOffset } from './timeMap';
+import { median, OffsetEstimator, rawOffset } from './timeMap';
 
 export interface LiveClock {
   /** Song time (s), NOT shifted by the audio offset. */
@@ -36,6 +36,8 @@ export interface LiveResult {
   map: BeatMap;
   /** Seconds of song covered by the recording. */
   covered: number;
+  /** Seconds of that recording during which the live tracker was locked. */
+  locked: number;
 }
 
 /** Minimum recording worth saving. */
@@ -46,7 +48,15 @@ const NEXT_COUNT = 8;
 interface Segment {
   an: StreamingAnalyzer;
   est: OffsetEstimator;
+  /** Seconds pushed while locked. */
+  locked: number;
+  /** Per chunk: input time at its end, and the raw offset measured for it (outliers left out). */
+  trackT: number[];
+  trackOff: number[];
 }
+
+/** Half-width (s) of the window whose median offset is used for a beat at a given input time. */
+const OFFSET_WINDOW = 1;
 
 const EMPTY: LiveBeats = Object.freeze({ locked: false, bpm: 0, beats: [], nextBeats: [] });
 
@@ -112,18 +122,25 @@ export class LiveTracker {
     let seg = this.seg!;
     const measure = (s: Segment) =>
       rawOffset({ songNow, perfNow, capturePerf: c.perfEnd, inputTime: s.an.state.time + dur, latency: this.opts.latency });
-    if (seg.est.push(measure(seg)) === 'jump') {
+    let raw = measure(seg);
+    if (seg.est.push(raw) === 'jump') {
       seg = this.newSegment();
-      seg.est.push(measure(seg));
+      raw = measure(seg);
+      seg.est.push(raw);
     }
     const off = seg.est.value;
+    if (off !== null && Math.abs(raw - off) <= 0.25) {
+      seg.trackT.push(seg.an.state.time + dur);
+      seg.trackOff.push(raw);
+    }
     if (off !== null) seg.an.setTimeOffset(off);
     seg.an.push(c.pcm);
+    if (seg.an.state.locked) seg.locked += dur;
     if (seg.an.state.locked && this.lockedAt < 0) this.lockedAt = songNow;
   }
 
   private newSegment(): Segment {
-    const s: Segment = { an: new StreamingAnalyzer({ sampleRate: this.cap.sampleRate }), est: new OffsetEstimator() };
+    const s: Segment = { an: new StreamingAnalyzer({ sampleRate: this.cap.sampleRate }), est: new OffsetEstimator(), locked: 0, trackT: [], trackOff: [] };
     this.segments.push(s);
     this.seg = s;
     return s;
@@ -163,11 +180,39 @@ export class LiveTracker {
     if (!best || best.an.state.time < 1) return null;
     const covered = best.an.state.time;
     try {
-      const map = best.an.finalize(videoId, Math.max(duration, best.an.state.timeOffset + covered), this.source);
+      const map = best.an.finalize(videoId, Math.max(duration, best.an.state.timeOffset + covered), this.source, offsetTrack(best));
       if (map.beats.length < 4) return null;
-      return { map, covered };
+      return { map, covered, locked: best.locked };
     } catch {
       return null;
     }
   }
+}
+
+/**
+ * Input time -> offset for finalize: the median of the offsets measured
+ * within OFFSET_WINDOW of that time (nearest measurement when none), so a
+ * dropped buffer or slow drift late in the song doesn't move earlier beats.
+ */
+function offsetTrack(seg: Segment): ((t: number) => number) | undefined {
+  const T = seg.trackT;
+  const O = seg.trackOff;
+  if (T.length < 8) return undefined;
+  const lowerBound = (x: number) => {
+    let lo = 0;
+    let hi = T.length;
+    while (lo < hi) {
+      const m = (lo + hi) >> 1;
+      if (T[m] < x) lo = m + 1;
+      else hi = m;
+    }
+    return lo;
+  };
+  return (t: number) => {
+    const a = lowerBound(t - OFFSET_WINDOW);
+    const b = lowerBound(t + OFFSET_WINDOW);
+    if (b > a) return median(O.slice(a, b));
+    const i = Math.min(T.length - 1, a);
+    return O[i];
+  };
 }

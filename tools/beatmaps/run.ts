@@ -10,7 +10,13 @@
  * unless given. The workflow passes --add-artist/--add-title/--add-duration
  * (separate values, so no splitting) and --add-queue (JSON from the app).
  *
+ * Contributed-map mode (a map a player's browser made, forwarded by the relay):
+ *   MAP_JSON='<json>' npm run beatmaps -- --contributed-map
+ * reads the map from $MAP_JSON (never from argv), validates it and publishes
+ * it if it is wanted; no YouTube access at all.
+ *
  * Environment:
+ *   MAP_JSON       contributed beat map (only with --contributed-map)
  *   PLAYLIST_URL   YouTube playlist link (optional; without it only the starter pack is processed)
  *   YT_COOKIES     Netscape cookies.txt content (optional; never printed)
  *   GITHUB_ACTIONS / GITHUB_STEP_SUMMARY   set by GitHub Actions
@@ -42,10 +48,14 @@ export interface CliArgs {
   help: boolean;
   /** Songs to add by search. */
   adds: AddRequest[];
+  /** Contributed-map mode: the map comes from $MAP_JSON. */
+  contributedMap: boolean;
+  /** Ignore the retry backoff of blocked songs (local sync). */
+  retryBlocked: boolean;
 }
 
 export function parseArgs(argv: string[]): CliArgs {
-  const a: CliArgs = { limit: DEFAULT_LIMIT, force: false, dryRun: false, help: false, adds: [] };
+  const a: CliArgs = { limit: DEFAULT_LIMIT, force: false, dryRun: false, help: false, adds: [], contributedMap: false, retryBlocked: false };
   let addArtist: string | undefined;
   let addTitle: string | undefined;
   let addDuration: string | undefined;
@@ -78,6 +88,12 @@ export function parseArgs(argv: string[]): CliArgs {
         break;
       case '--dry-run':
         a.dryRun = true;
+        break;
+      case '--contributed-map':
+        a.contributedMap = true;
+        break;
+      case '--retry-blocked':
+        a.retryBlocked = true;
         break;
       case '--add': {
         const v = val();
@@ -123,6 +139,7 @@ export function parseArgs(argv: string[]): CliArgs {
   a.adds.push(...queue);
   if (a.adds.length > MAX_ADDS) a.adds = a.adds.slice(0, MAX_ADDS);
   if (a.adds.length && a.only) throw new Error('--add and --only cannot be combined');
+  if (a.contributedMap && (a.adds.length || a.only || a.force)) throw new Error('--contributed-map cannot be combined with --add, --only or --force');
   if (a.only !== undefined && !VIDEO_ID_RE.test(a.only)) throw new Error('--only must be an 11-character YouTube video ID');
   return a;
 }
@@ -133,6 +150,8 @@ const USAGE = `Usage: npm run beatmaps -- [--only <videoId>] [--limit <n>] [--fo
   --force         re-analyse even if a current map exists, ignoring retry backoff
   --dry-run       show what would be processed; download and write nothing
   --playlist url  playlist link (default: $PLAYLIST_URL)
+  --retry-blocked retry songs YouTube blocked before right away (ignores their backoff)
+  --contributed-map  publish the contributed beat map in $MAP_JSON if it is valid and wanted (no downloads)
 
 Add a song by search (finds the YouTube video, makes its beat map, lists it in public/songs.json):
   npm run beatmaps -- --add "Artist - Title" [--duration <seconds>] [--dry-run]
@@ -157,7 +176,8 @@ async function main(): Promise<number> {
   const playlistUrl = (args.playlist ?? process.env.PLAYLIST_URL ?? '').trim() || undefined;
   const cookieText = process.env.YT_COOKIES ?? '';
 
-  if (!args.dryRun || playlistUrl || args.adds.length) {
+  const contributed = args.contributedMap ? (process.env.MAP_JSON ?? '') : undefined;
+  if (contributed === undefined && (!args.dryRun || playlistUrl || args.adds.length)) {
     const missing = ['yt-dlp', ...(args.dryRun ? [] : ['ffmpeg'])].filter((c) => !hasCommand(c));
     if (missing.length) {
       const msg = `Missing required tool(s): ${missing.join(', ')}. Install them (e.g. brew install yt-dlp ffmpeg deno) and try again.`;
@@ -241,6 +261,8 @@ async function main(): Promise<number> {
         dryRun: args.dryRun,
         usedCookies: !!ytOpts.cookiesFile,
         adds: args.adds,
+        retryBlocked: args.retryBlocked,
+        ...(contributed !== undefined ? { contributed } : {}),
       },
       deps,
     );

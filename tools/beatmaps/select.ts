@@ -25,8 +25,12 @@ export interface Candidate {
   origin: 'playlist' | 'starter' | 'added' | 'manual';
 }
 
-/** 'add': chosen for a song added by search (not produced by planWork). */
-export type WorkReason = 'new' | 'retry' | 'stale' | 'forced' | 'add';
+/**
+ * 'add': chosen for a song added by search (not produced by planWork).
+ * 'upgrade': the only map is a contributed listening ('tab') map; a real
+ * download + analysis replaces it ('cloud' outranks 'tab'). Lowest priority.
+ */
+export type WorkReason = 'new' | 'retry' | 'stale' | 'forced' | 'add' | 'upgrade';
 
 export interface WorkItem {
   candidate: Candidate;
@@ -42,7 +46,14 @@ export interface PlanInput {
   now: Date;
   limit: number;
   force?: boolean;
+  /** videoId -> `source` of the existing map; maps from listening ('tab'/'mic') are re-analysed when possible. */
+  sources?: ReadonlyMap<string, string>;
+  /** Ignore the backoff of songs that failed because YouTube blocked or yt-dlp broke (local sync). */
+  retryBlocked?: boolean;
 }
+
+/** Map sources that a real download + analysis should replace. */
+export const UPGRADABLE_SOURCES: ReadonlySet<string> = new Set(['tab', 'mic']);
 
 export interface Plan {
   todo: WorkItem[];
@@ -108,12 +119,15 @@ export function isDue(s: VideoStatus, now: Date): boolean {
 /**
  * Order: never-tried songs first (in candidate order: playlist, then starter
  * pack), then failed songs whose backoff has expired, then maps made by an
- * older analyser version. Capped at `limit`.
+ * older analyser version, then songs whose only map came from listening
+ * (contributed 'tab' maps). Capped at `limit`.
  */
 export function planWork(p: PlanInput): Plan {
-  const groups: Record<Exclude<WorkReason, 'add'>, WorkItem[]> = { forced: [], new: [], retry: [], stale: [] };
+  const groups: Record<Exclude<WorkReason, 'add'>, WorkItem[]> = { forced: [], new: [], retry: [], stale: [], upgrade: [] };
   let done = 0;
   let waiting = 0;
+  const due = (st: VideoStatus) =>
+    (p.retryBlocked && (st.state === 'blocked' || st.reason === 'blocked' || st.reason === 'outdated')) || isDue(st, p.now);
   for (const c of p.candidates) {
     const version = p.existing.get(c.videoId);
     const st = p.status[c.videoId];
@@ -121,19 +135,25 @@ export function planWork(p: PlanInput): Plan {
       groups.forced.push({ candidate: c, why: 'forced' });
       continue;
     }
+    if (version !== undefined && UPGRADABLE_SOURCES.has(p.sources?.get(c.videoId) ?? '')) {
+      // Playable already (a contributed listening map); try a real analysis last, with the usual backoff.
+      if (st && st.state !== 'ok' && !due(st)) waiting++;
+      else groups.upgrade.push({ candidate: c, why: 'upgrade' });
+      continue;
+    }
     if (version === p.analyzerVersion) {
       done++;
       continue;
     }
     if (st && st.state !== 'ok') {
-      if (isDue(st, p.now)) groups.retry.push({ candidate: c, why: 'retry' });
+      if (due(st)) groups.retry.push({ candidate: c, why: 'retry' });
       else waiting++;
       continue;
     }
     if (version !== undefined) groups.stale.push({ candidate: c, why: 'stale' });
     else groups.new.push({ candidate: c, why: 'new' });
   }
-  const all = [...groups.forced, ...groups.new, ...groups.retry, ...groups.stale];
+  const all = [...groups.forced, ...groups.new, ...groups.retry, ...groups.stale, ...groups.upgrade];
   const limit = Math.max(0, Math.floor(p.limit));
   return { todo: all.slice(0, limit), done, waiting, deferred: Math.max(0, all.length - limit) };
 }

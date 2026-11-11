@@ -24,7 +24,8 @@ export interface AddResult {
   artist: string;
   title: string;
   /** 'planned' = dry run; 'skipped' = not attempted this run. */
-  kind: 'added' | 'already' | 'not-found' | 'blocked' | 'error' | 'skipped' | 'planned';
+  /** 'listed': in songs.json without a beat map yet (the download was refused). */
+  kind: 'added' | 'listed' | 'already' | 'not-found' | 'blocked' | 'error' | 'skipped' | 'planned';
   videoId?: string;
   tier?: string;
   videoTitle?: string;
@@ -45,6 +46,8 @@ export interface RunReport {
   playlist: { configured: boolean; count?: number; error?: string; skipped?: boolean };
   /** Why the run stopped early, if it did. */
   stoppedEarly?: 'blocked' | 'outdated';
+  /** Contributed-map run (workflow input map_json). */
+  contribution?: { videoId?: string; outcome: 'accepted' | 'rejected' | 'ignored'; source?: string; bpm?: number; replaces?: string; message: string };
   fatal: Fatal;
   usedCookies: boolean;
   dryRun: boolean;
@@ -79,6 +82,7 @@ const KIND_LABEL: Record<ResultKind, string> = {
 
 const ADD_LABEL: Record<AddResult['kind'], string> = {
   added: 'Added',
+  listed: 'Listed (beat map pending)',
   already: 'Already added',
   'not-found': 'Not found',
   blocked: 'Blocked',
@@ -103,6 +107,15 @@ export function renderSummary(r: RunReport): string {
   const failed = r.results.length - ok;
   out.push(`## Beat maps${r.dryRun ? ' (dry run)' : ''}`);
   out.push('');
+  if (r.contribution) {
+    const c = r.contribution;
+    const label = c.outcome === 'accepted' ? 'Accepted' : c.outcome === 'rejected' ? 'Rejected' : 'Not needed';
+    out.push(`### Contributed beat map${c.videoId ? `: [${c.videoId}](https://www.youtube.com/watch?v=${c.videoId})` : ''}`);
+    out.push('');
+    out.push(`${label}${c.source ? ` (${c.source}${c.bpm !== undefined ? `, ${c.bpm.toFixed(1)} BPM` : ''}${c.replaces ? `, replaces the ${c.replaces} map` : ''})` : ''}: ${cell(c.message)}`);
+    out.push('');
+    return out.join('\n');
+  }
   if (r.fatal === 'blocked') {
     out.push(`> [!CAUTION]\n> **YouTube is bot-blocking this runner.** ${COOKIES_HELP}${r.usedCookies ? ' Cookies were used on this run, so they may have expired: export fresh ones.' : ''}`);
     out.push('');

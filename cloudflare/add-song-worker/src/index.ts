@@ -11,7 +11,16 @@
  *     200 { ok: true, source: 'apple' | 'client', song: { trackId, artist, title, durationSec?, artworkUrl }, detail? }
  *     4xx/5xx { ok: false, error: <code>, detail? }   codes: bad-origin, bad-request, passphrase,
  *         not-found, daily-limit, lookup-failed, not-configured, github-<status>
- *   GET /health           { ok, repo, passphrase: <required?>, dailyLimit }
+ *   POST /map      a beat map a player's browser made (source 'tab': heard via
+ *                  tab audio; 'device': analysed from a local download), as the
+ *                  JSON body itself (max MAP_MAX_BYTES). Same origin check and
+ *                  passphrase as /add. Validated strictly (validateSharedMap),
+ *                  then forwarded as the workflow input map_json; the job
+ *                  checks it again and decides whether the song needs it.
+ *     200 { ok: true, videoId }
+ *     4xx/5xx { ok: false, error, detail? }  codes as /add, plus bad-map (detail = the rule broken)
+ *                  and daily-limit (MAP_DAILY_LIMIT contributed maps per 24 h)
+ *   GET /health           { ok, repo, passphrase: <required?>, dailyLimit, mapDailyLimit }
  *   GET /health?probe=1   the same plus { apple: 'ok' | 'apple-<status>' | 'apple-timeout' | ... }
  *
  * Artist, title and length come from Apple's lookup of the track ID when
@@ -31,7 +40,9 @@
  * Settings (wrangler.toml [vars] / `wrangler secret put`):
  *   GITHUB_REPO      var     "owner/repo"
  *   ALLOWED_ORIGINS  var     comma-separated, e.g. "https://jo.github.io,http://localhost:5173"
- *   DAILY_LIMIT      var     optional, default 30 (soft: counts workflow_dispatch runs in the last 24 h)
+ *   DAILY_LIMIT      var     optional, default 30 (soft: counts workflow_dispatch runs in the last 24 h,
+ *                            other than contributed-map runs)
+ *   MAP_DAILY_LIMIT  var     optional, default 60 (soft: counts "Contributed beat map" runs in the last 24 h)
  *   GITHUB_TOKEN     secret  fine-grained token, this repository only, Actions: Read and write
  *   ADD_PASSPHRASE   secret  optional shared passphrase
  *
@@ -45,6 +56,7 @@ export interface Env {
   ALLOWED_ORIGINS?: string;
   ADD_PASSPHRASE?: string;
   DAILY_LIMIT?: string;
+  MAP_DAILY_LIMIT?: string;
 }
 
 type FetchFn = (input: string, init?: RequestInit) => Promise<Response>;
@@ -57,6 +69,9 @@ export interface HandleOptions {
 export const WORKFLOW_FILE = 'beatmaps.yml';
 export const WORKFLOW_REF = 'main';
 export const DEFAULT_DAILY_LIMIT = 30;
+export const DEFAULT_MAP_DAILY_LIMIT = 60;
+/** The run-name beatmaps.yml gives contributed-map runs (used to count them). */
+export const MAP_RUN_TITLE = 'Contributed beat map';
 export const MAX_BODY_BYTES = 2048;
 export const MAX_QUEUE = 9;
 export const APPLE_TIMEOUT_MS = 4000;
@@ -275,6 +290,169 @@ function githubHeaders(token: string): Record<string, string> {
   };
 }
 
+// ---------------------------------------------------------------------------
+// POST /map: strict validation of a contributed beat map. A compact copy of
+// validateBeatMap (src/core/analysis/beatmap.ts) plus the sharing rules
+// (src/core/analysis/shared.ts); a test checks both agree.
+
+export const MAP_MAX_BYTES = 40_000;
+const MAP_KEYS = new Set(['v', 'analyzerVersion', 'videoId', 'duration', 'bpm', 'beats', 'downbeats', 'sections', 'source', 'partial']);
+const SECTION_KEYS = new Set(['start', 'end', 'type', 'energy']);
+const SECTION_TYPES = ['intro', 'verse', 'chorus', 'drop', 'outro'];
+const MAP_SOURCES = ['tab', 'device'];
+const VIDEO_ID_RE = /^[A-Za-z0-9_-]{11}$/;
+const VERSION_RE = /^[0-9A-Za-z.+-]{1,32}$/;
+
+export interface SharedSection {
+  start: number;
+  end: number;
+  type: string;
+  energy: number;
+}
+
+export interface SharedMap {
+  v: 1;
+  analyzerVersion: string;
+  videoId: string;
+  duration: number;
+  bpm: number;
+  beats: number[];
+  downbeats: number[];
+  sections: SharedSection[];
+  source: 'tab' | 'device';
+}
+
+const ms = (t: number) => Math.round(t * 1000) / 1000;
+const fin = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
+const obj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
+
+/** The map normalised like validateBeatMap (times to ms), or the name of the first rule it breaks. */
+export function validateSharedMap(x: unknown): { ok: true; map: SharedMap } | { ok: false; rule: string } {
+  const no = (rule: string) => ({ ok: false as const, rule });
+  if (!obj(x)) return no('shape');
+  for (const k of Object.keys(x)) if (!MAP_KEYS.has(k)) return no('extra-field');
+  if (Array.isArray(x.sections)) {
+    for (const s of x.sections) {
+      if (!obj(s)) return no('sections');
+      for (const k of Object.keys(s)) if (!SECTION_KEYS.has(k)) return no('extra-field');
+    }
+  }
+  if (x.v !== 1) return no('version');
+  if (typeof x.analyzerVersion !== 'string' || !VERSION_RE.test(x.analyzerVersion)) return no('analyzer-version');
+  if (typeof x.videoId !== 'string' || !VIDEO_ID_RE.test(x.videoId)) return no('video-id');
+  if (typeof x.source !== 'string' || !MAP_SOURCES.includes(x.source)) return no('source');
+  if (x.partial !== undefined && typeof x.partial !== 'boolean') return no('invalid');
+  if (x.partial === true) return no('partial');
+  if (!fin(x.duration)) return no('invalid');
+  if (!fin(x.bpm)) return no('invalid');
+  const duration = ms(x.duration);
+  const bpm = Math.round(x.bpm * 100) / 100;
+  if (!(duration >= 30 && duration <= 900)) return no('duration');
+  if (!(bpm >= 60 && bpm <= 220)) return no('bpm');
+  if (!Array.isArray(x.beats) || !Array.isArray(x.downbeats) || !Array.isArray(x.sections)) return no('invalid');
+  const raw = x.beats as unknown[];
+  for (let i = 0; i < raw.length; i++) {
+    const t = raw[i];
+    if (!fin(t) || t < -0.0015 || t > x.duration + 0.0015 || (i > 0 && t <= (raw[i - 1] as number))) return no('invalid');
+  }
+  const beats = (raw as number[]).map(ms);
+  if (beats.length < 16) return no('beat-count');
+  for (let i = 0; i < beats.length; i++) if (beats[i] < 0 || beats[i] > duration + 0.002 || (i > 0 && !(beats[i] > beats[i - 1]))) return no('beats');
+  const span = beats[beats.length - 1] - beats[0];
+  if (span < 0.6 * duration) return no('beat-span');
+  const expected = (bpm * span) / 60;
+  if (Math.abs(beats.length - 1 - expected) > 0.1 * expected) return no('beat-count');
+  const iv = beats.slice(1).map((t, i) => t - beats[i]).sort((a, b) => a - b);
+  const med = iv.length % 2 ? iv[(iv.length - 1) / 2] : (iv[iv.length / 2 - 1] + iv[iv.length / 2]) / 2;
+  if (Math.abs(med - 60 / bpm) > 0.05 * (60 / bpm)) return no('beat-interval');
+  const downbeats: number[] = [];
+  for (const d of x.downbeats as unknown[]) {
+    if (typeof d !== 'number' || !Number.isInteger(d) || d < 0 || d >= beats.length || (downbeats.length && d <= downbeats[downbeats.length - 1])) return no('invalid');
+    downbeats.push(d);
+  }
+  const sections: SharedSection[] = [];
+  const rs = x.sections as Record<string, unknown>[];
+  if (!rs.length || rs.length > 64) return no(rs.length ? 'sections' : 'invalid');
+  for (const r of rs) {
+    if (!fin(r.start) || !fin(r.end) || !fin(r.energy) || typeof r.type !== 'string') return no('invalid');
+    if (!(r.end > r.start) || r.start < -0.0015 || r.end > x.duration + 0.0015) return no('invalid');
+    if (sections.length && r.start < sections[sections.length - 1].end - 0.0015) return no('invalid');
+    if (!SECTION_TYPES.includes(r.type) || r.energy < 0 || r.energy > 1) return no('invalid');
+    sections.push({ start: ms(r.start), end: ms(r.end), type: r.type, energy: Math.round(r.energy * 1000) / 1000 });
+  }
+  for (let i = 0; i < sections.length; i++) {
+    const prevEnd = i === 0 ? 0 : sections[i - 1].end;
+    if (Math.abs(sections[i].start - prevEnd) > 0.002) return no('sections');
+  }
+  if (Math.abs(sections[sections.length - 1].end - duration) > 0.002) return no('sections');
+  return {
+    ok: true,
+    map: { v: 1, analyzerVersion: x.analyzerVersion, videoId: x.videoId, duration, bpm, beats, downbeats, sections, source: x.source as 'tab' | 'device' },
+  };
+}
+
+/** The workflow_dispatch body for a contributed map (compact JSON in the map_json input). */
+export function mapDispatchBody(map: SharedMap): string {
+  return JSON.stringify({ ref: WORKFLOW_REF, inputs: { map_json: JSON.stringify(map) } });
+}
+
+/**
+ * workflow_dispatch runs of the Beat maps workflow in the last 24 h:
+ * contributed-map runs (by run name) and all others. Soft: runs beyond the
+ * first page of 100 count as add runs.
+ */
+async function countRuns(base: string, headers: Record<string, string>, fetchFn: FetchFn, now: Date): Promise<{ ok: true; adds: number; maps: number } | { ok: false; error: string }> {
+  const since = new Date(now.getTime() - 24 * 3600_000).toISOString().replace(/\.\d{3}Z$/, 'Z');
+  try {
+    const res = await fetchFn(`${base}/runs?event=workflow_dispatch&per_page=100&created=${encodeURIComponent(`>=${since}`)}`, { headers });
+    if (!res.ok) return { ok: false, error: `github-${res.status}` };
+    const body = (await res.json()) as { total_count?: unknown; workflow_runs?: unknown };
+    const total = Number(body.total_count);
+    if (!Number.isFinite(total)) return { ok: false, error: 'github-count' };
+    const runs = Array.isArray(body.workflow_runs) ? body.workflow_runs : [];
+    const maps = runs.filter((r) => typeof (r as { display_title?: unknown })?.display_title === 'string' && (r as { display_title: string }).display_title.startsWith(MAP_RUN_TITLE)).length;
+    return { ok: true, maps, adds: Math.max(0, total - maps) };
+  } catch {
+    return { ok: false, error: 'github-unreachable' };
+  }
+}
+
+async function handleMap(req: Request, env: Env, fetchFn: FetchFn, now: Date, cors: Record<string, string>, repo: string): Promise<Response> {
+  if (Number(req.headers.get('Content-Length') ?? '0') > MAP_MAX_BYTES) return fail(413, 'bad-request', cors, 'too-large');
+  let text: string;
+  try {
+    text = await req.text();
+  } catch {
+    return fail(400, 'bad-request', cors, 'body');
+  }
+  if (new TextEncoder().encode(text).length > MAP_MAX_BYTES) return fail(413, 'bad-request', cors, 'too-large');
+  let body: unknown;
+  try {
+    body = JSON.parse(text);
+  } catch {
+    return fail(400, 'bad-request', cors, 'json');
+  }
+  const checked = validateSharedMap(body);
+  if (!checked.ok) return fail(400, 'bad-map', cors, checked.rule);
+  const base = `${GITHUB_API}/repos/${repo}/actions/workflows/${WORKFLOW_FILE}`;
+  const headers = githubHeaders(env.GITHUB_TOKEN!);
+  const limit = Math.max(1, Math.floor(Number(env.MAP_DAILY_LIMIT) || DEFAULT_MAP_DAILY_LIMIT));
+  const count = await countRuns(base, headers, fetchFn, now);
+  if (!count.ok) return fail(502, count.error, cors);
+  if (count.maps >= limit) return fail(429, 'daily-limit', cors);
+  try {
+    const res = await fetchFn(`${base}/dispatches`, {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: mapDispatchBody(checked.map),
+    });
+    if (res.status !== 204 && !res.ok) return fail(502, `github-${res.status}`, cors);
+  } catch {
+    return fail(502, 'github-unreachable', cors);
+  }
+  return json(200, { ok: true, videoId: checked.map.videoId }, cors);
+}
+
 /** The same workflow inputs the web app's direct-token path sends (an empty length is looked up by the job). */
 export function dispatchBody(song: Song, queue: Song[]): string {
   const inputs: Record<string, string> = {
@@ -312,17 +490,24 @@ export async function handle(
   }
   if (url.pathname === '/health') {
     if (req.method !== 'GET') return fail(405, 'bad-request', cors);
-    const health: Record<string, unknown> = { ok: configured, repo: REPO_RE.test(repo) ? repo : null, passphrase: !!env.ADD_PASSPHRASE, dailyLimit: limit };
+    const health: Record<string, unknown> = {
+      ok: configured,
+      repo: REPO_RE.test(repo) ? repo : null,
+      passphrase: !!env.ADD_PASSPHRASE,
+      dailyLimit: limit,
+      mapDailyLimit: Math.max(1, Math.floor(Number(env.MAP_DAILY_LIMIT) || DEFAULT_MAP_DAILY_LIMIT)),
+    };
     if (url.searchParams.get('probe') === '1') health.apple = await probeApple(fetchFn, timeoutMs);
     return json(200, health, cors);
   }
-  if (url.pathname !== '/add') return fail(404, 'bad-request', cors);
+  if (url.pathname !== '/add' && url.pathname !== '/map') return fail(404, 'bad-request', cors);
   if (req.method !== 'POST') return fail(405, 'bad-request', cors);
   if (!originOk) return fail(403, 'bad-origin', {});
   if (!/^application\/json\b/i.test(req.headers.get('Content-Type') ?? '')) return fail(415, 'bad-request', cors, 'content-type');
-  if (Number(req.headers.get('Content-Length') ?? '0') > MAX_BODY_BYTES) return fail(413, 'bad-request', cors, 'too-large');
   if (env.ADD_PASSPHRASE && !safeEqual(req.headers.get(PASS_HEADER) ?? '', env.ADD_PASSPHRASE)) return fail(401, 'passphrase', cors);
   if (!configured) return fail(500, 'not-configured', cors);
+  if (url.pathname === '/map') return handleMap(req, env, fetchFn, now(), cors, repo);
+  if (Number(req.headers.get('Content-Length') ?? '0') > MAX_BODY_BYTES) return fail(413, 'bad-request', cors, 'too-large');
 
   let text: string;
   try {
@@ -378,17 +563,10 @@ export async function handle(
   const base = `${GITHUB_API}/repos/${repo}/actions/workflows/${WORKFLOW_FILE}`;
   const headers = githubHeaders(env.GITHUB_TOKEN!);
 
-  // Soft daily cap: workflow_dispatch runs of this workflow created in the last 24 h.
-  const since = new Date(now().getTime() - 24 * 3600_000).toISOString().replace(/\.\d{3}Z$/, 'Z');
-  try {
-    const res = await fetchFn(`${base}/runs?event=workflow_dispatch&per_page=1&created=${encodeURIComponent(`>=${since}`)}`, { headers });
-    if (!res.ok) return fail(502, `github-${res.status}`, cors);
-    const count = Number(((await res.json()) as { total_count?: unknown }).total_count);
-    if (!Number.isFinite(count)) return fail(502, 'github-count', cors);
-    if (count >= limit) return fail(429, 'daily-limit', cors);
-  } catch {
-    return fail(502, 'github-unreachable', cors);
-  }
+  // Soft daily cap: workflow_dispatch runs of this workflow created in the last 24 h (contributed-map runs have their own).
+  const count = await countRuns(base, headers, fetchFn, now());
+  if (!count.ok) return fail(502, count.error, cors);
+  if (count.adds >= limit) return fail(429, 'daily-limit', cors);
 
   try {
     const res = await fetchFn(`${base}/dispatches`, {
