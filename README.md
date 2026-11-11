@@ -252,6 +252,7 @@ The repository must be public for free GitHub Pages and unlimited Actions minute
 | `ADD_SONG_URL` | variable | Deploy site | The relay address, built into the site, e.g. `https://dancedance-add-song.ryee.workers.dev`. Keep it set: when it's empty, the deploy job builds with an empty value, which overrides the address in `.env`. |
 | `YTDLP_VERSION` | variable | Beat maps | Optional. Pins yt-dlp to a release, e.g. `2026.10.26`. Delete it to go back to the latest. |
 | `YT_COOKIES` | secret | Beat maps | Optional. YouTube cookies from a spare account, if runners are bot-blocked. |
+| `COOKIE_REFRESH_TOKEN` | secret | Beat maps | Optional. Token with only "Secrets: read and write" on this repo; lets the job keep `YT_COOKIES` fresh. |
 | `ANDROID_KEYSTORE_B64` | secret | Android TV app | Signing key, base64. |
 | `ANDROID_KEYSTORE_PASSWORD` | secret | Android TV app | Keystore password. |
 | `ANDROID_KEY_ALIAS` | secret | Android TV app | `dancedance`. |
@@ -438,6 +439,8 @@ A failed run shows a red ✗ under **Actions**. Open it: the summary at the top 
 7. Run **Beat maps** again by hand.
 
 Cookies expire after weeks to months. If the error returns, repeat and update the secret. The job never prints the cookies.
+
+**Optional: keep the session fresh automatically.** Add a second secret, `COOKIE_REFRESH_TOKEN`: a fine-grained GitHub token limited to this repository with only **Secrets: read and write** (github.com → Settings → Developer settings → Fine-grained tokens). With it, the job saves the cookies YouTube refreshes during each run back into `YT_COOKIES`, and once a day asks YouTube for the details of one published song (no download) so the session stays in use. This only stretches the life of a session: it cannot sign in again, so when YouTube ends the session you still export fresh cookies by hand. The token can overwrite this repository's secrets but cannot read them; it expires on the date you choose, and the job warns when saving fails.
 
 **"yt-dlp is out of date".** YouTube changed something and yt-dlp needs an update, which usually appears within days. The job installs the newest yt-dlp on every run, so it usually fixes itself; wait a day or two and run it again. If a new yt-dlp release is itself broken, pin an older one with the `YTDLP_VERSION` variable.
 

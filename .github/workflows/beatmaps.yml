@@ -29,6 +29,11 @@
 #   vars.PLAYLIST_URL     playlist link (Public or Unlisted)
 #   vars.YTDLP_VERSION    pin yt-dlp to a release tag, e.g. 2026.10.26 (default: latest)
 #   secrets.YT_COOKIES    cookies.txt from a SPARE Google account, if YouTube bot-blocks the runner
+#   secrets.COOKIE_REFRESH_TOKEN  fine-grained token for this repo with only "Secrets: read and
+#                         write". With it, the job saves the cookies YouTube refreshes during
+#                         a run back into YT_COOKIES, and makes one signed-in request a day,
+#                         so the session lasts longer. It cannot sign in again by itself:
+#                         when YouTube ends the session, export fresh cookies by hand.
 name: Beat maps
 # Runs started by the app show the song, so you can find them under Actions.
 run-name: "${{ inputs.map_json && 'Contributed beat map' || inputs.add_title && format('Add song: {0} - {1}', inputs.add_artist, inputs.add_title) || 'Beat maps' }}"
@@ -36,6 +41,9 @@ run-name: "${{ inputs.map_json && 'Contributed beat map' || inputs.add_title && 
 on:
   schedule:
     - cron: '23 * * * *'
+    # Once a day: also make one small signed-in request so the YT_COOKIES
+    # session stays in use (see "Keep the YouTube session fresh" below).
+    - cron: '47 9 * * *'
   workflow_dispatch:
     inputs:
       video_id:
@@ -150,6 +158,7 @@ jobs:
         env:
           PLAYLIST_URL: ${{ vars.PLAYLIST_URL }}
           YT_COOKIES: ${{ secrets.YT_COOKIES }}
+          YT_COOKIES_OUT: ${{ runner.temp }}/yt-cookies.txt
           ONLY_VIDEO: ${{ inputs.video_id }}
           FORCE: ${{ inputs.force }}
           # Free text from the app or the form: only ever used as quoted arguments.
@@ -168,6 +177,63 @@ jobs:
           fi
           if [ -n "${ADD_QUEUE:-}" ]; then args+=(--add-queue "$ADD_QUEUE"); fi
           npm run --silent beatmaps -- "${args[@]}"
+
+      # Optional (needs both YT_COOKIES and COOKIE_REFRESH_TOKEN). YouTube hands
+      # out refreshed cookies while a signed-in session is used, and yt-dlp writes
+      # them to its cookie file. This step stores that file as the new YT_COOKIES
+      # secret. On the daily run it first asks YouTube for the details of one
+      # already-published song (no audio is downloaded), so the session is used
+      # at least once a day. Cookies are never printed and the file is deleted.
+      - name: Keep the YouTube session fresh
+        if: ${{ !cancelled() && !inputs.map_json }}
+        env:
+          YT_COOKIES: ${{ secrets.YT_COOKIES }}
+          GH_TOKEN: ${{ secrets.COOKIE_REFRESH_TOKEN }}
+          DAILY: ${{ github.event.schedule == '47 9 * * *' }}
+          RUN_OUTCOME: ${{ steps.run.outcome }}
+        run: |
+          set -euo pipefail
+          jar="$RUNNER_TEMP/yt-cookies.txt"
+          trap 'rm -f "$jar"' EXIT
+          if [ -z "${YT_COOKIES:-}" ] || [ -z "${GH_TOKEN:-}" ]; then
+            echo "Cookie refresh is not set up (needs YT_COOKIES and COOKIE_REFRESH_TOKEN); skipping."
+            exit 0
+          fi
+          if [ ! -s "$jar" ]; then
+            (umask 077; printf '%s\n' "$YT_COOKIES" | tr -d '\r' > "$jar")
+          fi
+          if [ "$DAILY" = "true" ]; then
+            id=$(node -e 'const a=require("./public/beatmaps/index.json").ids||[];if(a.length)console.log(a[Math.floor(Math.random()*a.length)])')
+            if [ -z "$id" ]; then echo "No published song to ask about; skipping."; exit 0; fi
+            if yt-dlp --cookies "$jar" --skip-download --no-warnings --print id -- "$id" >/dev/null 2>&1; then
+              echo "Daily signed-in request succeeded."
+            else
+              echo "::warning title=YouTube session::The daily signed-in request failed. The YT_COOKIES session may have ended: export fresh cookies if downloads are blocked."
+              exit 0
+            fi
+          elif [ "$RUN_OUTCOME" != "success" ]; then
+            echo "The beat map step did not succeed; leaving the secret as it is."
+            exit 0
+          fi
+          # Compare cookie lines only (yt-dlp rewrites the header and the order).
+          lines() { tr -d '\r' | grep -Ev '^(# .*|#|[[:space:]]*)$' | sort | sha256sum; }
+          before=$(printf '%s\n' "$YT_COOKIES" | lines)
+          after=$(lines < "$jar")
+          if [ "$before" = "$after" ]; then echo "Cookies unchanged."; exit 0; fi
+          # Never replace the secret with something that is not a signed-in YouTube session.
+          if ! grep -Eq $'\t(SAPISID|__Secure-3PAPISID|LOGIN_INFO)\t' "$jar" || ! grep -q 'youtube\.com' "$jar"; then
+            echo "::warning title=YouTube session::The refreshed cookie file has no sign-in cookies; leaving the secret as it is."
+            exit 0
+          fi
+          if [ "$(wc -c < "$jar")" -gt 45000 ]; then
+            echo "::warning title=YouTube session::The refreshed cookie file is too large for a secret; leaving it as it is."
+            exit 0
+          fi
+          if gh secret set YT_COOKIES --repo "$GITHUB_REPOSITORY" < "$jar" >/dev/null 2>&1; then
+            echo "Saved the refreshed cookies to YT_COOKIES."
+          else
+            echo "::warning title=YouTube session::Could not save the refreshed cookies. Check that COOKIE_REFRESH_TOKEN has 'Secrets: read and write' on this repository and has not expired."
+          fi
 
       # Runs even when the previous step failed (e.g. bot-blocked), so that
       # status.json still records what happened and the app can show it.

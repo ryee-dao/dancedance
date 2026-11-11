@@ -19,12 +19,13 @@
  *   MAP_JSON       contributed beat map (only with --contributed-map)
  *   PLAYLIST_URL   YouTube playlist link (optional; without it only the starter pack is processed)
  *   YT_COOKIES     Netscape cookies.txt content (optional; never printed)
+ *   YT_COOKIES_OUT file to copy the cookies to after the run, as refreshed by yt-dlp (optional)
  *   GITHUB_ACTIONS / GITHUB_STEP_SUMMARY   set by GitHub Actions
  *
  * Needs `yt-dlp` and `ffmpeg` on PATH, plus Deno (or it falls back to this Node) for yt-dlp's YouTube support.
  */
 import { appendFileSync, rmSync } from 'node:fs';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -274,6 +275,17 @@ async function main(): Promise<number> {
     console.log(outcome.written.length ? `Changed ${outcome.written.length} file(s).` : 'No files changed.');
     return outcome.exitCode;
   } finally {
+    // yt-dlp writes the cookies YouTube refreshed during the run back to the
+    // file. YT_COOKIES_OUT hands that file to the workflow, which may store it
+    // as the new secret (see "Keep the YouTube session fresh" in beatmaps.yml).
+    const cookiesOut = (process.env.YT_COOKIES_OUT ?? '').trim();
+    if (cookieDir && cookiesOut) {
+      try {
+        await writeFile(cookiesOut, await readFile(join(cookieDir, 'cookies.txt')), { mode: 0o600 });
+      } catch {
+        // Not fatal: the secret simply stays as it was.
+      }
+    }
     if (cookieDir) await rm(cookieDir, { recursive: true, force: true });
     temps.delete(cookieDir ?? '');
     cleanupSync();
