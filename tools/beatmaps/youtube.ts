@@ -6,7 +6,7 @@
  * caller deletes in a `finally`. Nothing here prints cookies or full stderr.
  */
 import { spawn, spawnSync } from 'node:child_process';
-import { readdir } from 'node:fs/promises';
+import { readdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { classifyYtDlpError, type Classification } from './classify';
 import { MAX_DURATION_S } from './select';
@@ -107,10 +107,37 @@ export type DownloadResult = { kind: 'file'; path: string } | { kind: 'filtered'
 const MATCH_FILTER = `!is_live & duration<=?${MAX_DURATION_S}`;
 const AUDIO_EXT = /\.(?:m4a|webm|opus|mp4|mp3|ogg|aac|mka|weba|wav|flac)$/i;
 
+/**
+ * YouTube clients tried in turn when a signed-in download is refused. With
+ * account cookies yt-dlp's default clients can need a "PO token" for the media
+ * request and answer HTTP 403 without one; the `tv` client takes cookies and
+ * needs no such token, and `web_safari` offers HLS formats that don't either
+ * (https://github.com/yt-dlp/yt-dlp/wiki/PO-Token-Guide).
+ */
+export const COOKIE_CLIENT_FALLBACKS = ['tv', 'web_safari'] as const;
+
 /** Download the best audio-only stream of one video into `dir`. */
 export async function downloadAudio(videoId: string, dir: string, o: YtDlpOptions): Promise<DownloadResult> {
+  const clients: (string | undefined)[] = [undefined, ...(o.cookiesFile ? COOKIE_CLIENT_FALLBACKS : [])];
+  let last: unknown;
+  for (const client of clients) {
+    try {
+      return await downloadAudioOnce(videoId, dir, o, client);
+    } catch (e) {
+      last = e;
+      const kind = e instanceof ToolFailure ? e.classification.kind : undefined;
+      // Only "refused" outcomes are worth another client; a removed or private video is not.
+      if (kind !== 'outdated' && kind !== 'blocked') throw e;
+      for (const f of await readdir(dir)) await rm(join(dir, f), { force: true });
+    }
+  }
+  throw last;
+}
+
+async function downloadAudioOnce(videoId: string, dir: string, o: YtDlpOptions, client?: string): Promise<DownloadResult> {
   const args = [
     ...baseArgs(o),
+    ...(client ? ['--extractor-args', `youtube:player_client=${client}`] : []),
     '-f', 'bestaudio/best',
     '--no-playlist',
     '--no-part',
