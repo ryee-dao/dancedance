@@ -5,13 +5,9 @@ import levitatingMap from '../../../public/beatmaps/1j_XvebOg4c.json';
 import partyRockMap from '../../../public/beatmaps/zIh5AHxh-Ok.json';
 import onTheFloorMap from '../../../public/beatmaps/9lybsz-7TFM.json';
 import { generateDuoRoutine } from './duo';
-import {
-  LivePlanner, MAX_NAME, SPICE_ALLOWANCE, generateRoutine, shortName, specialtyFits, specialtyOf, styleTraditions,
-  type Intensity, type MoveInstance, type Routine,
-} from './generator';
-import { MOVES, findMove } from './moves';
+import { LivePlanner, MAX_NAME, generateRoutine, shortName, type Intensity, type MoveInstance, type Routine } from './generator';
+import { findMove } from './moves';
 import { getPool } from './pool';
-import { resolveSongStyle, type SongInfo, type SongStyle } from './songStyle';
 import { songMap } from './testutil';
 
 const LEVELS: Intensity[] = ['chill', 'cardio', 'sweaty'];
@@ -100,6 +96,8 @@ describe('generateRoutine', () => {
       let distinctPerMin = 0;
       let changesPerMin = 0;
       let maxD = 0;
+      let hard = 0;
+      let harder = 0;
       for (const s of songs) {
         const r = generateRoutine(s, lv);
         const mins = (s.beats[s.beats.length - 1] - s.beats[0]) / 60;
@@ -108,17 +106,22 @@ describe('generateRoutine', () => {
           dSum += i.move.difficulty * i.span;
           n += i.span;
           maxD = Math.max(maxD, i.move.difficulty);
+          if (i.move.difficulty > 1) hard += i.span;
+          if (i.move.difficulty > 2) harder += i.span;
         }
         distinctPerMin += new Set(dance.map((i) => i.move.id)).size / mins;
         let ch = 0;
         for (let k = 1; k < dance.length; k++) if (dance[k].move !== dance[k - 1].move) ch++;
         changesPerMin += ch / mins;
       }
-      return { meanD: dSum / n, distinct: distinctPerMin / songs.length, changes: changesPerMin / songs.length, maxD };
+      return { meanD: dSum / n, distinct: distinctPerMin / songs.length, changes: changesPerMin / songs.length, maxD, hard: hard / n, harder: harder / n };
     });
-    expect(stats[0].maxD).toBe(1);
-    expect(stats[1].maxD).toBeLessThanOrEqual(2);
+    // Difficulty is a weight, not a rule: Easy is nearly all simple moves,
+    // Medium rarely sees a hard one, Hard uses them all.
+    expect(stats[0].hard).toBeLessThan(0.12);
+    expect(stats[1].harder).toBeLessThan(0.12);
     expect(stats[2].maxD).toBe(3);
+    expect(stats[2].harder).toBeGreaterThan(stats[1].harder);
     expect(stats[0].meanD).toBeLessThan(stats[1].meanD);
     expect(stats[1].meanD).toBeLessThan(stats[2].meanD);
     expect(stats[0].distinct).toBeLessThan(stats[1].distinct);
@@ -253,106 +256,9 @@ describe('LivePlanner', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Specialty moves (tradition-specific steps) and gap fills
+// Gap fills (genre tiers: tiers.test.ts)
 
 const REAL_MAPS = [gangnamMap, levitatingMap, partyRockMap, onTheFloorMap] as unknown as BeatMap[];
-const styleOf = (info: SongInfo): SongStyle => resolveSongStyle(info);
-/** Mainstream styles: their routines draw from their own families, specialty moves only as Hard's spice. */
-const MAINSTREAM: [string, SongInfo][] = [
-  ['kpop/party', { videoId: 'iSF26HsmeRI', title: 'Gangnam Style', artist: 'PSY' }],
-  ['disco', { videoId: '-sVB91NTa4A', title: 'Dancing Queen', artist: 'ABBA' }],
-  ['rock', { videoId: '-qZxMY7FZf8', title: 'Numb', artist: 'Linkin Park' }],
-  ['funk', { videoId: '7CTJcHjkq0E', title: 'Billie Jean', artist: 'Michael Jackson' }],
-  ['pop fallback', { videoId: 'unknown-song', title: 'Some Song', artist: 'Nobody Known' }],
-];
-/** Tradition-led styles: their specialty moves must show up. */
-const TRADITIONAL: [string, SongInfo, string][] = [
-  ['latin', { videoId: 'latin-song', title: 'Hips', artist: 'Shakira', genre: 'Latin' }, 'latin'],
-  ['afro', { videoId: 'afro-song', title: 'Last Last', artist: 'Burna Boy', genre: 'Afrobeats' }, 'afro'],
-  ['country', { videoId: 'country-song', title: 'Any Man of Mine', artist: 'Shania Twain', genre: 'Country' }, 'country'],
-  ['swing', { videoId: 'swing-song', title: 'Johnny B. Goode', artist: 'Chuck Berry', genre: "Rock 'n' Roll" }, 'swing'],
-  ['bollywood', { videoId: 'bolly-song', title: 'Jai Ho', artist: 'A. R. Rahman', genre: 'Bollywood' }, 'bollywood'],
-];
-const mapsFor = (id: string): BeatMap[] => [songMap(122, id), songMap(96, `${id}-b`), { ...(REAL_MAPS[hashLen(id) % REAL_MAPS.length]), videoId: id }];
-const hashLen = (s: string) => [...s].reduce((t, c) => t + c.charCodeAt(0), 0);
-
-describe('specialty moves', () => {
-  it('are identified from tradition themes, the latin traditional subset and the world / retro / afro files', () => {
-    const sp = MOVES.filter((m) => specialtyOf(m).length > 0);
-    expect(sp.length).toBeGreaterThan(120);
-    for (const m of MOVES) if (['world', 'retro', 'afro'].includes(m.file)) expect(specialtyOf(m).length, m.id).toBeGreaterThan(0);
-    for (const id of ['kathak-tatkar', 'hat-dance-heels', 'pas-de-basque', 'chaffa', 'tango-walk', 'para-para-sweep', 'cumbia-step', 'horon-shimmy', 'clogging-basic', 'merengue-turn', 'side-salsa', 'sailor-step', 'gaze-afar', 'thumka', 'charleston']) {
-      expect(specialtyOf(findMove(id)!).length, id).toBeGreaterThan(0);
-    }
-    // Generic grooves that merely carry a secondary family tag stay ordinary.
-    for (const id of ['hip-sway', 'booty-shake', 'hip-shake', 'reggaeton-bounce', 'gallop', 'big-heart', 'hula-hoop', 'conga']) expect(specialtyOf(findMove(id)!), id).toEqual([]);
-    // Variations inherit their base move's traditions.
-    for (const v of getPool().variations) {
-      const base = findMove(v.base);
-      if (base) for (const t of specialtyOf(base)) expect(specialtyOf(v)).toContain(t);
-    }
-  });
-
-  it('opens traditions from style themes and a latin-led family mix only', () => {
-    expect([...styleTraditions(styleOf(MAINSTREAM[0][1]))]).toEqual([]);
-    expect(styleTraditions(styleOf(TRADITIONAL[0][1])).has('latin')).toBe(true);
-    expect(styleTraditions(styleOf(TRADITIONAL[1][1])).has('afro')).toBe(true);
-    // Afrobeats / dancehall use the latin family for hip grooves: no salsa or bachata steps.
-    expect(styleTraditions(styleOf(TRADITIONAL[1][1])).has('latin')).toBe(false);
-    expect(styleTraditions(styleOf(TRADITIONAL[2][1])).has('country')).toBe(true);
-    // A pop song with a latin tinge doesn't get salsa / merengue steps.
-    expect(styleTraditions(styleOf({ videoId: '_dK2tDK9grQ', title: 'Shape of You', artist: 'Ed Sheeran' })).has('latin')).toBe(false);
-  });
-
-  it('keeps non-matching traditions out of mainstream songs (Hard: at most the spice allowance, never in the chorus combo)', () => {
-    for (const [name, info] of MAINSTREAM) {
-      const style = styleOf(info);
-      const open = styleTraditions(style);
-      for (const map of mapsFor(info.videoId!)) {
-        for (const lv of LEVELS) {
-          const r = generateRoutine(map, lv, { style });
-          const out = r.instances.filter((i) => !specialtyFits(i.move, open));
-          const bases = new Set(out.map((i) => i.move.base));
-          expect(bases.size, `${name} ${lv}: ${[...bases].join(', ')}`).toBeLessThanOrEqual(SPICE_ALLOWANCE[lv]);
-          expect(out.some((i) => i.sig || i.section === 'outro')).toBe(false);
-          expect(r.signature.every((s) => specialtyFits(s.move, open))).toBe(true);
-          if (lv !== 'sweaty') expect(out.length).toBe(0);
-          // The two-player routine follows the same gating.
-          const duo = generateDuoRoutine(map, lv, { style });
-          const duoOut = new Set([...duo.p1, ...duo.p2].filter((i) => !specialtyFits(i.move, open)).map((i) => i.move.base));
-          expect(duoOut.size, `${name} duo ${lv}: ${[...duoOut].join(', ')}`).toBeLessThanOrEqual(SPICE_ALLOWANCE[lv]);
-        }
-      }
-    }
-  });
-
-  it('gives tradition-led songs their specialty moves prominently', () => {
-    for (const [name, info, tradition] of TRADITIONAL) {
-      const style = styleOf(info);
-      const open = styleTraditions(style);
-      expect(open.has(tradition as never), name).toBe(true);
-      for (const lv of ['cardio', 'sweaty'] as const) {
-        let match = 0, total = 0;
-        for (const map of mapsFor(info.videoId!)) {
-          const r = generateRoutine(map, lv, { style });
-          for (const i of r.instances) {
-            total += i.span;
-            if (specialtyOf(i.move).some((t) => t === tradition || open.has(t))) match += i.span;
-            expect(specialtyFits(i.move, open) || lv === 'sweaty', `${name} ${lv} ${i.move.id}`).toBe(true);
-          }
-        }
-        expect(match / total, `${name} ${lv}`).toBeGreaterThan(0.08);
-      }
-    }
-  });
-
-  it('keeps the fallback mix varied', () => {
-    const r = generateRoutine(songMap(120, 'fallback-variety'), 'cardio');
-    const dance = r.instances.filter((i) => !i.move.cooldown && !i.fill);
-    expect(new Set(dance.map((i) => i.move.base)).size).toBeGreaterThanOrEqual(10);
-    expect(new Set(dance.map((i) => i.move.families[0])).size).toBeGreaterThanOrEqual(4);
-  });
-});
 
 describe('gap fills', () => {
   it('never shows the idle groove inside a routine (odd bars, pickups, real beat maps)', () => {

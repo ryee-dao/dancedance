@@ -175,15 +175,21 @@ describe('duo routine', () => {
   it('applies the level rules to both tracks', () => {
     for (const vid of ['lv-a', 'lv-b', 'lv-c']) {
       const chill = generateDuoRoutine(songMap(118, vid), 'chill');
+      let n = 0, hard = 0;
       for (const i of [...chill.p1, ...chill.p2]) {
         if (i.move.idle || i.move.cooldown) continue;
         expect(i.move.jump, i.move.id).toBe(false);
-        expect(i.move.difficulty, i.move.id).toBe(1);
         expect(i.move.fastTurn, i.move.id).toBe(false);
+        n += i.span;
+        if (i.move.difficulty > 1) hard += i.span;
       }
+      // Difficulty is weighted (Easy: nearly all simple moves), jumps are ruled out.
+      expect(hard / n, vid).toBeLessThan(0.15);
       expect(chill.phrases.some((p) => p.kind === 'trade')).toBe(false);
       const cardio = generateDuoRoutine(songMap(118, vid), 'cardio');
-      for (const i of [...cardio.p1, ...cardio.p2]) expect(i.move.difficulty, i.move.id).toBeLessThanOrEqual(2);
+      const ins = [...cardio.p1, ...cardio.p2];
+      const d3 = ins.filter((i) => i.move.difficulty > 2).reduce((t, i) => t + i.span, 0) / ins.reduce((t, i) => t + i.span, 0);
+      expect(d3, vid).toBeLessThan(0.15);
     }
     // Sweaty uses more partner travel / jumps than cardio over a few songs.
     const travel = (lv: Intensity) =>

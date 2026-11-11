@@ -78,7 +78,8 @@ describe('music-driven phrasing', () => {
       for (const i of generateRoutine(m, 'chill').instances) {
         expect(i.move.jump, i.move.id).toBe(false);
         expect(i.move.fastTurn, i.move.id).toBe(false);
-        if (!i.move.cooldown && !i.move.idle) expect(i.move.difficulty, i.move.id).toBe(1);
+        // Squats / stomps stay rare (impact weight); jumps never.
+        if (!i.move.cooldown && !i.move.idle) expect(i.move.level, i.move.id).not.toBe('high');
       }
     }
   });

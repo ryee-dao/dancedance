@@ -22,11 +22,18 @@
  * bars. Each section type keeps a small palette of recurring moves.
  *
  * Levels (shown to the user as Easy / Medium / Hard):
- *   chill  (Easy):   difficulty-1 moves only, 4-bar units (a move lasts 4-8
- *                    bars), a palette of 2 moves per section type, no jumps.
- *   cardio (Medium): difficulty 1-2, 2-bar units, palettes of 3.
- *   sweaty (Hard):   all difficulties (favouring coordinated moves), shorter
- *                    holds on average, palettes of 4, more high-impact moves.
+ *   chill  (Easy):   low impact (never a jump or a fast turn: the one hard
+ *                    level rule), nearly all simple moves, 4-bar units (a
+ *                    move lasts 4-8 bars), a palette of 2 moves per section.
+ *   cardio (Medium): mostly easy / medium moves, 2-bar units, palettes of 3.
+ *   sweaty (Hard):   leans to hard, high-impact moves, shorter holds on
+ *                    average, palettes of 4.
+ * Difficulty, impact and tempo are soft weights (weights.ts, levelFactor):
+ * they multiply with the style and energy lean, never exclude.
+ *
+ * Tiers (genres.ts): genre-exclusive moves are used only when the song's
+ * style opens their genre, at about GENRE_SHARE of the picks; global moves
+ * everywhere. Signature nods open their own song's chorus regardless.
  *
  * Live mode (no sections known) uses LivePlanner: the same phrase logic with
  * a repeating verse / verse / chorus phrase cycle.
@@ -43,11 +50,15 @@
  */
 
 import type { BeatMap, SectionType } from '../analysis/beatmap';
-import { CH, type Pose } from '../coach/skeleton';
-import { FAMILIES, THEME_TRADITIONS, TRADITION_BY_ID, TRADITION_FILES, TRADITION_THEMES, type Theme, type Tradition } from './families';
-import { IDLE_MOVE, MOVES, findMove, keysOf, type Level, type Move } from './moves';
+import type { Pose } from '../coach/skeleton';
+import { FAMILIES } from './families';
+import { FAMILY_GENRE, THEME_GENRES, songGenres, type Genre } from './genres';
+import { IDLE_MOVE, MOVES, keysOf, type Level, type Move } from './moves';
 import { getPool } from './pool';
 import { BALANCED_POP, styleKey, type SongStyle } from './songStyle';
+import { difficultyFactor, impactFactor, moveVigour, poseStepCost, tempoFactor } from './weights';
+
+export { moveVigour, moveWeights, tempoFactor } from './weights';
 
 export type Intensity = 'chill' | 'cardio' | 'sweaty';
 
@@ -133,76 +144,45 @@ export function styleFactor(m: Move, style: SongStyle): number {
 }
 
 // ---------------------------------------------------------------------------
-// Specialty moves
+// Genre sets
 //
-// A specialty move's identity belongs to one dance tradition (a folk dance,
-// Bollywood, afrobeats, country, swing, salsa ...). It carries a tradition
-// theme (families.ts TRADITION_THEMES), is listed in TRADITION_BY_ID, or
-// comes from a tradition file (world / retro / afro). Its family tags only
-// say what it can sit next to, so they don't make it eligible: a specialty
-// move is used only when the song's style opens one of its traditions (a
-// matching theme, or for latin steps a latin-led family mix). Ordinary moves
-// that merely carry a secondary family tag are unaffected.
+// Every move is GLOBAL or exclusive to one GENRE set (genres.ts): headbangs
+// for rock, salsa steps for Latin, line-dance steps for country ... A
+// genre-exclusive move is only ever used on songs whose style opens its genre
+// (songGenres: the style's tradition themes, and its leading families); there
+// the genre sets take about GENRE_SHARE of the fresh picks' weight, so a rock
+// song feels like rock (the global rock-tagged moves are favoured by the
+// style weights too) without being all headbangs. Signature nods are the one
+// exception: they open their own song's chorus whatever their tier.
 
-/** Latin traditional steps open when latin is at least this share of the song's top family weight. */
-const LATIN_HOME_SHARE = 0.8;
-/** Distinct non-matching specialty moves a routine may still use ("spice"), per level. */
-export const SPICE_ALLOWANCE: Readonly<Record<Intensity, number>> = { chill: 0, cardio: 0, sweaty: 1 };
-/** Weight factor of a spice candidate (relative to its style weight). */
-const SPICE_WEIGHT = 0.3;
+/** Share of the pick weight the song's open genre sets get (split between them). */
+export const GENRE_SHARE = 0.32;
+/** Bounds of the factor that scales a genre set to its share (a tiny set isn't hammered). */
+const GENRE_SCALE_MIN = 0.5;
+const GENRE_SCALE_MAX = 4;
 
-const SPECIALTY = new Map<string, readonly Tradition[]>();
-
-/** Traditions of a move ([] = an ordinary move). Variations and ornaments share their base move's. */
-export function specialtyOf(m: Move): readonly Tradition[] {
-  const hit = SPECIALTY.get(m.id);
-  if (hit) return hit;
-  const base = m.base !== m.id ? findMove(m.base) : undefined;
-  const set = new Set<Tradition>();
-  for (const x of base ? [m, base] : [m]) {
-    for (const t of x.themes) if (TRADITION_THEMES.includes(t)) set.add(t as Tradition);
-    for (const t of TRADITION_BY_ID[x.id] ?? []) set.add(t);
-  }
-  if (set.size === 0 && TRADITION_FILES.has(base?.file ?? m.file)) set.add('folk');
-  const out = [...set].sort();
-  SPECIALTY.set(m.id, out);
-  return out;
+/** The genres a song's style opens. */
+export function styleGenres(style: SongStyle): ReadonlySet<Genre> {
+  return songGenres(style);
 }
 
-/**
- * Afro-Caribbean themes: their genre / artist styles use the latin family as
- * a stand-in for hip-led grooves, so it doesn't open salsa / bachata steps.
- */
-const LATIN_PROXY_THEMES: readonly Theme[] = ['afro', 'amapiano', 'dancehall', 'reggae', 'soca'];
+/** Whether a move may be used on a song with these open genres (global moves always may). */
+export function genreFits(m: Move, open: ReadonlySet<Genre>): boolean {
+  return !m.genre || open.has(m.genre);
+}
 
-/** Traditions a song's style opens: its tradition themes, plus latin steps for a latin-led mix. */
-export function styleTraditions(style: SongStyle): ReadonlySet<Tradition> {
-  const s = new Set<Tradition>();
-  for (const t of style.themes) for (const x of THEME_TRADITIONS[t] ?? []) s.add(x);
+/** How strongly a song opens each of its genres (theme genres fully, family genres by family weight). */
+function genreOpenness(style: SongStyle, open: ReadonlySet<Genre>): Map<Genre, number> {
+  const out = new Map<Genre, number>();
   let max = 0;
   for (const f of FAMILIES) max = Math.max(max, style.families[f] ?? 0);
-  const latinLed = max > 0 && (style.families.latin ?? 0) >= LATIN_HOME_SHARE * max;
-  if (latinLed && !style.themes.some((t) => LATIN_PROXY_THEMES.includes(t))) s.add('latin');
-  return s;
-}
-
-/** Whether a move suits a song with these open traditions (ordinary moves always do). */
-export function specialtyFits(m: Move, open: ReadonlySet<Tradition>): boolean {
-  const tr = specialtyOf(m);
-  return tr.length === 0 || tr.some((t) => open.has(t));
-}
-
-/** Weight factor of a specialty move whose tradition the song's themes ask for (so it shows prominently). */
-const THEME_MATCH_BOOST = 5;
-/** ... and of a latin traditional step in a latin-led song (plenty of latin grooves compete already). */
-const LATIN_MATCH_BOOST = 1.5;
-
-/** Extra weight of a matching specialty move (1 for ordinary or non-matching moves). */
-export function traditionBoost(m: Move, open: ReadonlySet<Tradition>): number {
-  const tr = specialtyOf(m);
-  if (tr.length === 0) return 1;
-  if (tr.some((t) => t !== 'latin' && open.has(t))) return THEME_MATCH_BOOST;
-  return tr.includes('latin') && open.has('latin') ? LATIN_MATCH_BOOST : 1;
+  for (const g of open) {
+    let w = 0;
+    for (const t of style.themes) if (THEME_GENRES[t] === g) w = 1;
+    for (const f of FAMILIES) if (FAMILY_GENRE[f] === g && max > 0) w = Math.max(w, (style.families[f] ?? 0) / max);
+    out.set(g, w || 1);
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -271,27 +251,20 @@ function levelWeights(section: SectionType | 'warmup', intensity: Intensity, ene
   return { low: w.low * (1.4 - 0.8 * e), mid: w.mid, high: w.high * (0.6 + 0.8 * e) };
 }
 
-/** Difficulty mix per level (0 = not allowed). */
-function difficultyFactor(m: Move, intensity: Intensity): number {
-  const d = m.difficulty;
-  if (intensity === 'chill') return d === 1 ? 1 : 0;
-  if (intensity === 'cardio') return d === 1 ? 0.8 : d === 2 ? 1.2 : 0;
-  return d === 1 ? 0.45 : d === 2 ? 1 : 1.6;
-}
-
 /** Bars per unit (one move repeated) for a level. */
 export function unitBarsFor(intensity: Intensity, half: boolean): number {
   const base = intensity === 'chill' ? 4 : 2;
   return half ? base * 2 : base;
 }
 
-function intensityFactor(m: Move, intensity: Intensity): number {
-  if (difficultyFactor(m, intensity) <= 0) return 0;
-  if (m.fastTurn && intensity === 'chill') return 0;
-  if (m.jump) return intensity === 'chill' ? 0 : intensity === 'cardio' ? 0.7 : 1.5;
-  const df = intensity === 'chill' ? 1 : difficultyFactor(m, intensity);
-  if (m.impact) return (intensity === 'chill' ? 0.35 : intensity === 'cardio' ? 1 : 1.5) * df;
-  return df;
+/**
+ * How well a move suits a level: its difficulty and impact weights
+ * (weights.ts), soft everywhere, plus the one hard rule: Easy (chill) is low
+ * impact, so it never jumps (and never turns fast). 0 = not allowed.
+ */
+export function levelFactor(m: Move, intensity: Intensity): number {
+  if (intensity === 'chill' && (m.jump || m.fastTurn)) return 0;
+  return difficultyFactor(m, intensity) * impactFactor(m, intensity);
 }
 
 /** Catalogue moves the generator may pick (idle and cooldown are special). */
@@ -357,20 +330,7 @@ function partsOverlap(a: Move, b: Move): number {
 
 /** How awkward is going from the end of `prev` into the start of `next`? */
 export function transitionCost(prev: Pose, next: Pose): number {
-  let arms = 0;
-  for (let c = CH.RA_E; c <= CH.LF_P; c++) {
-    let d = Math.abs(next[c] - prev[c]) % 360;
-    if (d > 180) d = 360 - d;
-    arms += d;
-  }
-  const feet =
-    Math.abs(next[CH.RFT_X] - prev[CH.RFT_X]) + Math.abs(next[CH.LFT_X] - prev[CH.LFT_X]) +
-    Math.abs(next[CH.RFT_Y] - prev[CH.RFT_Y]) + Math.abs(next[CH.LFT_Y] - prev[CH.LFT_Y]);
-  const vert = Math.abs(next[CH.Y] - prev[CH.Y]);
-  // Facing: entering / leaving a turned key swings the whole body round.
-  let spin = Math.abs(next[CH.SPIN] - prev[CH.SPIN]) % 360;
-  if (spin > 180) spin = 360 - spin;
-  return (arms / 180) * 0.35 + feet * 4 + vert * 3 + (spin / 90) * 1.5;
+  return poseStepCost(prev, next);
 }
 
 // ---------------------------------------------------------------------------
@@ -476,66 +436,6 @@ const REPEAT_VARIANT_P: Record<Intensity, number> = { chill: 0.1, cardio: 0.3, s
 /** Chance a long hold (a whole phrase) switches to a variation half-way. */
 const MID_VARIANT_P: Record<Intensity, number> = { chill: 0.3, cardio: 0.6, sweaty: 0.7 };
 
-const VIGOUR = new Map<Move, number>();
-let VIGOUR_REF: { motion: Float64Array; raw: Float64Array } | null = null;
-
-const angleDelta = (a: number, b: number) => {
-  let d = Math.abs(b - a) % 360;
-  return d > 180 ? 360 - d : d;
-};
-
-/** How much a move moves per beat: limbs, feet, bounce, torso and head over its loop. */
-function moveMotion(m: Move): number {
-  const keys = m.keys;
-  if (keys.length < 2) return 0;
-  let sum = 0;
-  for (let i = 0; i < keys.length; i++) {
-    const a = keys[i].pose;
-    const b = keys[(i + 1) % keys.length].pose;
-    sum += transitionCost(a, b);
-    sum += ((angleDelta(a[CH.LEAN], b[CH.LEAN]) + angleDelta(a[CH.TWIST], b[CH.TWIST]) + angleDelta(a[CH.BEND], b[CH.BEND]) +
-      angleDelta(a[CH.HEAD_NOD], b[CH.HEAD_NOD]) + angleDelta(a[CH.HEAD_ROLL], b[CH.HEAD_ROLL])) / 90) * 0.5;
-    sum += Math.abs(b[CH.HIPS] - a[CH.HIPS]) * 3;
-  }
-  return sum / m.beats;
-}
-
-function rawVigour(m: Move, motionPct: number): number {
-  const level = m.level === 'high' ? 1 : m.level === 'mid' ? 0.5 : 0;
-  return 0.45 * level + 0.35 * motionPct + 0.2 * (m.jump ? 1 : m.impact ? 0.6 : 0);
-}
-
-function rankIn(sorted: Float64Array, v: number): number {
-  let lo = 0;
-  let hi = sorted.length;
-  while (lo < hi) {
-    const mid = (lo + hi) >> 1;
-    if (sorted[mid] < v) lo = mid + 1;
-    else hi = mid;
-  }
-  let up = lo;
-  while (up < sorted.length && sorted[up] === v) up++;
-  return sorted.length > 1 ? (lo + up - 1) / 2 / (sorted.length - 1) : 0.5;
-}
-
-/**
- * How vigorous a move looks, 0 (gentle) .. 1 (all-out), as a percentile among
- * the catalogue's dance moves: its level, how much it moves per beat, and
- * jumps / squats.
- */
-export function moveVigour(m: Move): number {
-  const hit = VIGOUR.get(m);
-  if (hit !== undefined) return hit;
-  if (!VIGOUR_REF) {
-    const motion = Float64Array.from(DANCE_MOVES.map(moveMotion)).sort();
-    const raw = Float64Array.from(DANCE_MOVES.map((x) => rawVigour(x, rankIn(motion, moveMotion(x))))).sort();
-    VIGOUR_REF = { motion, raw };
-  }
-  const v = rankIn(VIGOUR_REF.raw, rawVigour(m, rankIn(VIGOUR_REF.motion, moveMotion(m))));
-  VIGOUR.set(m, v);
-  return v;
-}
-
 /** Weight factor leaning move choice toward the target vigour (1 at a neutral target). */
 export function vigourTilt(m: Move, target: number): number {
   return Math.exp(VIGOUR_TILT * (target - 0.5) * (moveVigour(m) - 0.5));
@@ -595,17 +495,20 @@ export class Choreographer {
   /** Phrase number each move was last used in. */
   private lastUsed = new Map<Move, number>();
   private ornaments: { get(base: string): readonly Move[] } | null;
-  /** Specialty moves of traditions the song doesn't open (excluded, spice aside). */
+  /** Genre-exclusive moves of genres the song doesn't open (never used). */
   private outside = new Set<Move>();
-  /** Base ids of the spice moves used so far. */
-  private spiced: string[] = [];
+  /** The genres the song opens. */
+  readonly genres: ReadonlySet<Genre>;
+  /** Song tempo (BPM) the tempo weights use (undefined: no tempo lean). */
+  readonly bpm: number | undefined;
   /** In-place 1- and 2-beat moves for gaps, with their style weights. */
   private gapMoves: Move[] = [];
   private gapW: number[] = [];
 
-  constructor(seedKey: string, intensity: Intensity, half: boolean, opts: RoutineOpts = {}) {
+  constructor(seedKey: string, intensity: Intensity, half: boolean, opts: RoutineOpts = {}, bpm?: number) {
     this.intensity = intensity;
     this.half = half;
+    this.bpm = bpm;
     this.unitBars = unitBarsFor(intensity, half);
     this.style = opts.style ?? BALANCED_POP;
     const sk = styleKey(this.style);
@@ -616,39 +519,46 @@ export class Choreographer {
     this.pool = moves;
     const orn = useVars ? getPool().ornaments : null;
     this.ornaments = orn ? { get: (id: string) => orn.get(id).map(withShortName) } : null;
-    // Variations as a share of the picks (there are many more of them than base moves).
-    // Variations get VARIATION_SHARE of the total (style x level) weight mass.
+    // Static weight: style x tempo, the genre sets scaled to their share,
+    // then the variations scaled to theirs (on the level-weighted mass).
     this.base = new Float64Array(moves.length);
-    const open = styleTraditions(this.style);
+    const open = styleGenres(this.style);
+    this.genres = open;
+    const genreK = genreScale(this.style, open, intensity, bpm);
     let mb = 0, mv = 0;
     for (let i = 0; i < moves.length; i++) {
-      this.base[i] = styleFactor(moves[i], this.style) * traditionBoost(moves[i], open);
-      if (!specialtyFits(moves[i], open)) {
-        this.outside.add(moves[i]);
+      const m = moves[i];
+      if (!genreFits(m, open)) {
+        this.outside.add(m);
         continue;
       }
-      const w = this.base[i] * intensityFactor(moves[i], intensity);
+      // Easy keeps to simple variations (base moves stay soft-weighted): hundreds of
+      // harder variations, each rare, would otherwise add up to a noticeable share.
+      if (isVar[i] && intensity === 'chill' && m.difficulty > 1) continue;
+      this.base[i] = staticWeight(m, this.style, bpm, genreK);
+      const w = this.base[i] * levelFactor(m, intensity);
       if (isVar[i]) mv += w;
       else mb += w;
     }
     const share = VARIATION_SHARE[intensity];
-    const vw = mv > 0 ? (share / (1 - share)) * (mb / mv) : 0;
+    // Capped at 1: when few variations suit the level (Easy), they are not blown up to fill the share.
+    const vw = mv > 0 ? Math.min(1, (share / (1 - share)) * (mb / mv)) : 0;
     for (let i = 0; i < moves.length; i++) {
       if (!isVar[i]) continue;
       this.base[i] *= vw;
       const m = moves[i];
-      if (this.outside.has(m) || intensityFactor(m, intensity) <= 0) continue;
+      if (this.outside.has(m) || this.base[i] <= 0 || levelFactor(m, intensity) <= 0) continue;
       const list = this.varsByBase.get(m.base);
       if (list) list.push(m);
       else this.varsByBase.set(m.base, [m]);
     }
     for (const m of DANCE_MOVES) {
-      if (m.beats > 2 || m.travel !== 0 || this.outside.has(m) || intensityFactor(m, intensity) <= 0) continue;
+      if (m.beats > 2 || m.travel !== 0 || this.outside.has(m) || levelFactor(m, intensity) <= 0) continue;
       this.gapMoves.push(m);
-      this.gapW.push(styleFactor(m, this.style) * traditionBoost(m, open) * intensityFactor(m, intensity) * (m.beats === 1 ? 2 : 1));
+      this.gapW.push(staticWeight(m, this.style, bpm, genreK) * levelFactor(m, intensity) * (m.beats === 1 ? 2 : 1));
     }
     // The chorus combo keeps the stable seed (same in 'fresh' mode).
-    this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}|${sk}`)), intensity, this.style, open);
+    this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}|${sk}`)), intensity, this.style, open, bpm, genreK);
   }
 
   /**
@@ -675,7 +585,7 @@ export class Choreographer {
       const hb = bars.slice(h.a, h.a + h.len);
       const hf = feels.slice(h.a, h.a + h.len);
       const t = targetVigour(hf, o.section, o.warmup);
-      const move = o.cooldown ? this.choose(o, null, false, t) : this.pickHold(o, t, hf);
+      const move = o.cooldown ? this.choose(o, null, t) : this.pickHold(o, t, hf);
       this.emitHold(out, hb, move, o, phraseNo, h.a + h.len === bars.length && !calm);
     }
   }
@@ -781,13 +691,13 @@ export class Choreographer {
     let oneOff = false;
     if (!grow && cands.length) {
       oneOff = this.rng() < ONE_OFF_P[this.intensity];
-      if (!oneOff) move = pickWeighted(this.rng, cands, cands.map((m) => vigourTilt(m, t) * (m === main ? MAIN_MOVE_BIAS : 1)));
+      if (!oneOff) move = pickWeighted(this.rng, cands, cands.map((m) => vigourTilt(m, t) * Math.sqrt(levelFactor(m, this.intensity)) * (m === main ? MAIN_MOVE_BIAS : 1)));
     }
     if (!move) {
       // Fresh pick, kept apart from the palette's moves.
       const n = this.recent.length;
       this.recent.push(...pal);
-      move = this.choose(o, prev, oneOff, t);
+      move = this.choose(o, prev, t);
       this.recent.length = n;
       if (!oneOff && pal.length < size && !pal.includes(move)) pal.push(move);
     }
@@ -800,15 +710,26 @@ export class Choreographer {
     return move;
   }
 
+  /**
+   * One of `list` (versions of `m`), picked evenly among those that suit the
+   * level at least half as well as `m` itself (a hard variation of an easy
+   * move doesn't slip into Easy through the back door), or null.
+   */
+  private suitedPick(m: Move, list: readonly Move[]): Move | null {
+    const min = 0.5 * levelFactor(m, this.intensity);
+    const ok = list.filter((v) => levelFactor(v, this.intensity) >= min);
+    return ok.length ? ok[Math.floor(this.rng() * ok.length)] : null;
+  }
+
   /** A variation of `m` (an ornamented version or a pool variation of its base) allowed here, or null. */
   private variantOf(m: Move, o: PhraseOpts): Move | null {
     const list: Move[] = [];
     for (const v of this.ornaments?.get(m.id) ?? []) {
       const type = v.id.slice(v.id.lastIndexOf('~') + 1);
-      if ((type === 'hips' || type === 'diag') && intensityFactor(v, this.intensity) > 0) list.push(v);
+      if ((type === 'hips' || type === 'diag') && levelFactor(v, this.intensity) > 0) list.push(v);
     }
     for (const v of this.varsByBase.get(m.base) ?? []) if (v !== m && this.allowed(v, o)) list.push(v);
-    return list.length ? list[Math.floor(this.rng() * list.length)] : null;
+    return this.suitedPick(m, list);
   }
 
   /**
@@ -905,27 +826,16 @@ export class Choreographer {
     return out;
   }
 
-  /**
-   * May a specialty move the song doesn't open be picked now, as the
-   * routine's spice? Only for Hard's one-off third move of a phrase (never
-   * the chorus combo, a section memo, the warm-up or the cool-down), and only
-   * SPICE_ALLOWANCE distinct moves per routine; a spice move is not reused.
-   */
-  private spiceOk(m: Move, o: PhraseOpts, slot: boolean): boolean {
-    if (!slot || o.cooldown || o.warmup) return false;
-    return !this.spiced.includes(m.base) && this.spiced.length < SPICE_ALLOWANCE[this.intensity];
-  }
-
   private allowed(m: Move, o: PhraseOpts): boolean {
-    if (o.cooldown) return COOLDOWN_MOVES.includes(m) && (m.cooldown || intensityFactor(m, this.intensity) > 0);
+    if (o.cooldown) return COOLDOWN_MOVES.includes(m) && (m.cooldown || levelFactor(m, this.intensity) > 0);
     if (m.cooldown || m.idle) return false;
     if (this.outside.has(m)) return false;
-    if (intensityFactor(m, this.intensity) <= 0) return false;
+    if (levelFactor(m, this.intensity) <= 0) return false;
     const lw = levelWeights(o.warmup ? 'warmup' : o.section, this.intensity, o.energy);
     return lw[m.level] > 0;
   }
 
-  private choose(o: PhraseOpts, avoid: Move | null, spiceSlot = false, target = o.energy): Move {
+  private choose(o: PhraseOpts, avoid: Move | null, target = o.energy): Move {
     const pool = o.cooldown ? COOLDOWN_MOVES : this.pool;
     const lw = levelWeights(o.warmup ? 'warmup' : o.section, this.intensity, target);
     const tilt = !o.cooldown && !o.warmup;
@@ -935,12 +845,9 @@ export class Choreographer {
     const weights = pool.map((m, i) => {
       if (m === avoid) return 0;
       if (m === prev) return 0; // no repeat across a hold boundary
-      let w = o.cooldown ? (m.cooldown || intensityFactor(m, this.intensity) > 0 ? 1 : 0) : lw[m.level] * intensityFactor(m, this.intensity) * this.base[i];
+      let w = o.cooldown ? (m.cooldown || levelFactor(m, this.intensity) > 0 ? 1 : 0) : lw[m.level] * levelFactor(m, this.intensity) * this.base[i];
       if (w <= 0) return 0;
-      if (!o.cooldown && this.outside.has(m)) {
-        if (!this.spiceOk(m, o, spiceSlot)) return 0;
-        w *= SPICE_WEIGHT;
-      }
+      if (!o.cooldown && this.outside.has(m)) return 0;
       // Not again within NO_REPEAT_PHRASES phrases; other versions of the same base move rarely.
       const used = this.lastUsed.get(m);
       if (!o.cooldown && used !== undefined && phrase - used <= NO_REPEAT_PHRASES) return 0;
@@ -959,20 +866,17 @@ export class Choreographer {
       return w;
     });
     const picked = pickWeighted(this.rng, pool, weights);
-    if (picked) {
-      if (!o.cooldown && this.outside.has(picked) && !this.spiced.includes(picked.base)) this.spiced.push(picked.base);
-      return picked;
-    }
+    if (picked) return picked;
     // Everything excluded (tiny pools): relax to anything allowed but `prev`.
-    const fallback = pool.filter((m) => m !== prev && m !== avoid && !this.outside.has(m) && (o.cooldown || intensityFactor(m, this.intensity) > 0));
+    const fallback = pool.filter((m) => m !== prev && m !== avoid && !this.outside.has(m) && (o.cooldown || levelFactor(m, this.intensity) > 0));
     return fallback.length ? fallback[Math.floor(this.rng() * fallback.length)] : pool[0];
   }
 
   /** An ornamented version of `m` of one of the given types, or null. */
   private ornament(m: Move, types: readonly string[], p: number): Move | null {
     if (p <= 0 || this.rng() >= p) return null;
-    const list = (this.ornaments?.get(m.id) ?? []).filter((v) => types.includes(v.id.slice(v.id.lastIndexOf('~') + 1)) && intensityFactor(v, this.intensity) > 0);
-    return list.length ? list[Math.floor(this.rng() * list.length)] : null;
+    const list = (this.ornaments?.get(m.id) ?? []).filter((v) => types.includes(v.id.slice(v.id.lastIndexOf('~') + 1)) && levelFactor(v, this.intensity) > 0);
+    return this.suitedPick(m, list);
   }
 
   private fillUnit(out: MoveInstance[], start: number, end: number, choice: UnitChoice, section: SectionType, phrase: number, flourish: Move | null = null, calm = false): void {
@@ -1032,17 +936,56 @@ function lastKeyPose(m: Move, mirror: boolean): Pose {
 }
 
 /**
+ * Per open genre, the factor that brings its moves to their share of the
+ * pick weight: GENRE_SHARE in all, split between the open genres by how
+ * strongly the song opens each, measured on the base moves' level-weighted
+ * mass (bounded, so a tiny set isn't repeated endlessly).
+ */
+function genreScale(style: SongStyle, open: ReadonlySet<Genre>, intensity: Intensity, bpm: number | undefined): Map<Genre, number> {
+  const out = new Map<Genre, number>();
+  if (open.size === 0) return out;
+  const mass = new Map<Genre, number>();
+  let global = 0;
+  for (const m of DANCE_MOVES) {
+    if (!genreFits(m, open)) continue;
+    const w = styleFactor(m, style) * tempoFactor(m, bpm) * levelFactor(m, intensity);
+    if (m.genre) mass.set(m.genre, (mass.get(m.genre) ?? 0) + w);
+    else global += w;
+  }
+  const openness = genreOpenness(style, open);
+  let sum = 0;
+  for (const g of open) if ((mass.get(g) ?? 0) > 0) sum += openness.get(g) ?? 1;
+  for (const g of open) {
+    const mg = mass.get(g) ?? 0;
+    if (mg <= 0 || sum <= 0) continue;
+    const share = (GENRE_SHARE * (openness.get(g) ?? 1)) / sum;
+    const k = (share / (1 - GENRE_SHARE)) * (global / mg);
+    out.set(g, Math.min(GENRE_SCALE_MAX, Math.max(GENRE_SCALE_MIN, k)));
+  }
+  return out;
+}
+
+/** A move's static weight for a song: style x tempo x its genre set's scale. */
+function staticWeight(m: Move, style: SongStyle, bpm: number | undefined, genreK: ReadonlyMap<Genre, number>): number {
+  return styleFactor(m, style) * tempoFactor(m, bpm) * (m.genre ? (genreK.get(m.genre) ?? 1) : 1);
+}
+
+/**
  * One 8-move-beat combo per song: two 4-beat blocks of different moves. A
  * song's curated `signature` (move ids) supplies the blocks when those moves
- * suit the level; otherwise they're picked with the song's style weights.
+ * suit the level (a signature nod belongs to its song, so its genre doesn't
+ * matter); otherwise they're picked with the song's style weights, from the
+ * moves its genres allow.
  */
-function pickSignature(rng: () => number, intensity: Intensity, style: SongStyle = BALANCED_POP, open: ReadonlySet<Tradition> = styleTraditions(style)): SigStep[] {
-  // Never a spice move: the chorus combo is the song's identity.
-  const ok = (m: Move) => m.beats <= 4 && intensityFactor(m, intensity) > 0 && !(m.travel !== 0 && m.beats === 4) && specialtyFits(m, open);
-  const pool = DANCE_MOVES.filter((m) => ok(m) && (m.level !== 'low' || intensity === 'chill'));
+function pickSignature(
+  rng: () => number, intensity: Intensity, style: SongStyle = BALANCED_POP, open: ReadonlySet<Genre> = styleGenres(style),
+  bpm?: number, genreK: ReadonlyMap<Genre, number> = new Map(),
+): SigStep[] {
+  const fits = (m: Move) => m.beats <= 4 && levelFactor(m, intensity) > 0 && !(m.travel !== 0 && m.beats === 4);
+  const pool = DANCE_MOVES.filter((m) => fits(m) && genreFits(m, open) && (m.level !== 'low' || intensity === 'chill'));
   const weight = (m: Move) =>
-    (m.level === 'high' ? (intensity === 'chill' ? 0.3 : intensity === 'cardio' ? 1 : 1.8) : 1.2) * (m.beats === 2 ? 2 : 1) * intensityFactor(m, intensity) * styleFactor(m, style) * traditionBoost(m, open);
-  const nods = (style.signature ?? []).map((id) => DANCE_MOVES.find((m) => m.id === id)).filter((m): m is Move => !!m && ok(m));
+    (m.level === 'high' ? (intensity === 'chill' ? 0.3 : intensity === 'cardio' ? 1 : 1.8) : 1.2) * (m.beats === 2 ? 2 : 1) * levelFactor(m, intensity) * staticWeight(m, style, bpm, genreK);
+  const nods = (style.signature ?? []).map((id) => DANCE_MOVES.find((m) => m.id === id)).filter((m): m is Move => !!m && fits(m));
   const a = nods[0] ?? pickWeighted(rng, pool, pool.map(weight));
   if (!a) return [];
   const rest = pool.filter((m) => m !== a);
@@ -1248,7 +1191,7 @@ export function generateRoutine(map: BeatMap, intensity: Intensity, opts: Routin
   // the conductor dances the idle groove instead.
   const N = isUsableBeatMap(map) ? map.beats.length : 0;
   const half = isHalfTime(mapTempo(map));
-  const ch = new Choreographer(map.videoId, intensity, half, opts);
+  const ch = new Choreographer(map.videoId, intensity, half, opts, mapTempo(map));
   const out: MoveInstance[] = [];
   if (N === 0) return { instances: out, signature: ch.signature, half, beats: 0 };
 
@@ -1353,7 +1296,7 @@ export class LivePlanner {
     this.half = isHalfTime(bpm);
     // The level still sets difficulty; the verse/verse/chorus cycle keeps the
     // exertion at a medium level with periodic bigger phrases.
-    this.ch = new Choreographer(`${seedKey}|live`, intensity, this.half, opts);
+    this.ch = new Choreographer(`${seedKey}|live`, intensity, this.half, opts, bpm);
     this.nextBeat = startBeat;
   }
 

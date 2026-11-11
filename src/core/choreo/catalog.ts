@@ -20,6 +20,7 @@
 import { GROUP_CHANNELS, NUM_GROUPS, NEUTRAL, interpolateGroup, mirrored, pose, type PoseSpec } from '../coach/poses';
 import { CH, createPose, mirrorPose, type Pose } from '../coach/skeleton';
 import { isFamily, isFocus, isTheme, type Family, type Focus, type Theme } from './families';
+import type { Genre } from './genres';
 
 export type Level = 'low' | 'mid' | 'high';
 export type Difficulty = 1 | 2 | 3;
@@ -120,6 +121,11 @@ export interface Move {
   focus: readonly Focus[];
   /** Theme keys it answers (a song's title can boost these). */
   themes: readonly Theme[];
+  /**
+   * The genre set it is exclusive to (genres.ts); undefined = a global move.
+   * Catalogue moves take it from GENRE_MOVES, variations from their layers / base.
+   */
+  genre?: Genre;
   beats: 1 | 2 | 4;
   /** Intensity: how hard it works you (the level mix picks by this). */
   level: Level;
@@ -338,6 +344,7 @@ export interface FinishOpts {
   difficulty: Difficulty;
   base?: string;
   variant?: string;
+  genre?: Genre;
   cooldown?: boolean;
   idle?: boolean;
   bounce?: number;
@@ -356,6 +363,7 @@ export function finish(c: FinishOpts, beats: 1 | 2 | 4, tracks: [Track, Track, T
     families: c.tags.families,
     focus: c.tags.focus,
     themes: c.tags.themes,
+    ...(c.genre ? { genre: c.genre } : {}),
     beats,
     level: c.level,
     difficulty: c.difficulty,

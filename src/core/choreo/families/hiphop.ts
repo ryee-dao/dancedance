@@ -42,6 +42,41 @@ const daddy = (k: number): PoseSpec => ({
   ...FIST,
 });
 
+
+// --- Party dances added Nov 2026 (sources: Steezy how-tos, Wikipedia; see AUTHORING.md) ---
+/** Wop: sway onto one side, that shoulder dropping; one hand by the ear, the other swung across to the far shoulder. */
+const wopA: PoseSpec = {
+  y: -0.08, x: 0.035, hips: 0.03, tilt: 4, lean: 9, head: 6, shR: 0, shL: 0.7, kneeR: 0.12, kneeL: 0.12,
+  rf: [0.11, 0, 0], lf: [-0.11, 0, 0],
+  r: at(1, 0.24, 0.98, 0.05, [1, -0.2, -0.4]), l: at(-1, 0.12, 0.76, 0.2, [0.5, -1, 0]), ...FIST,
+};
+/** Smurf arms: one fist drives forward up by the shoulder while the other pulls back low, like swimming. */
+const smurfA: PoseSpec = { twist: 10, r: at(1, 0.13, 0.86, 0.26, [1, -0.6, -0.2]), l: at(-1, -0.22, 0.56, -0.12, [1, 0, -0.5]), ...FIST };
+/** Bernie: head tipped back, chest lifted, leaning to one side with loose dangling arms. */
+const bernieA: PoseSpec = {
+  y: -0.04, x: 0.03, hips: 0.03, tilt: 4, lean: 9, bend: -7, nod: -16, head: 8,
+  rf: [0.12, 0, 0], lf: [-0.1, 0.03, 0.02],
+  r: at(1, 0.3, 0.44, 0.02, [1, 0, -0.3]), l: at(-1, -0.22, 0.47, 0.08, [1, 0, -0.3]), handR: 0.6, handL: 0.6,
+};
+const bernieFlail: PoseSpec = { ...bernieA, y: -0.07, r: at(1, 0.26, 0.5, 0.1, [1, 0, -0.3]), l: at(-1, -0.27, 0.43, -0.02, [1, 0, -0.3]) };
+/** Griddy: a heel dug in front (toes up), arms swinging opposite. */
+const griddyTap = (side: 1 | -1, wideArms = false): PoseSpec => {
+  const tap: [number, number, number] = [0.08 * side, 0, 0.15];
+  const base: [number, number, number] = [-0.09 * side, 0, -0.02];
+  const feet: PoseSpec = side > 0 ? { rf: tap, lf: base, pitchR: -22 } : { lf: tap, rf: base, pitchL: -22 };
+  const arms: PoseSpec = wideArms
+    ? { lean: 6 * side, r: at(1, 0.4, 0.82 + 0.06 * side, 0.02, [1, 0.2, -0.3]), l: at(-1, -0.4, 0.82 - 0.06 * side, 0.02, [1, 0.2, -0.3]), ...OPEN }
+    : side > 0
+      ? { r: at(1, 0.2, 0.52, -0.12, [1, 0, -0.5]), l: at(-1, -0.1, 0.72, 0.22, [1, -0.4, 0]), handR: 0.4, handL: 0.4 }
+      : { l: at(-1, -0.2, 0.52, -0.12, [1, 0, -0.5]), r: at(1, 0.1, 0.72, 0.22, [1, -0.4, 0]), handR: 0.4, handL: 0.4 };
+  return { y: -0.06, bend: 5, ...feet, ...arms };
+};
+/** Griddy "throw your Bs": hands circling the eyes like glasses. */
+const griddyGlasses: PoseSpec = {
+  y: -0.04, nod: -4, rf: [0.09, 0, 0], lf: [-0.09, 0, 0],
+  r: at(1, 0.07, 0.93, 0.17, [1, -0.4, -0.2]), l: at(-1, -0.07, 0.93, 0.17, [1, -0.4, -0.2]), handR: 0.5, handL: 0.5,
+};
+
 export const patterns: PatternSet = {
   foot: {
     twoStep: {
@@ -122,6 +157,8 @@ export const patterns: PatternSet = {
     hhMilly: { beats: 2, parts: ['arms', 'torso'], mirror: true, torso: true, keys: [[0, millyA], [1, millyLow]] },
     // Fists wheeling on one side, leaning into it (Cat Daddy).
     hhCatDaddy: { beats: 2, parts: ['arms'], mirror: true, torso: true, keys: [[0, daddy(0)], [0.5, daddy(1)], [1, daddy(2)], [1.5, daddy(3)]] },
+    // Fists swimming forward and back in turn (Smurf).
+    hhSmurf: { beats: 2, parts: ['arms', 'torso'], torso: true, label: 'smurf arms', keys: [[0, smurfA], [1, mir(smurfA)]] },
   },
 };
 
@@ -464,6 +501,78 @@ export const moves: MoveDef[] = [
     keys: [
       [0, wide(-0.05, { bend: -9, nod: -8, shR: 0.8, shL: 0.8, r: at(1, 0.32, 0.5, -0.1, [1, 0, -0.5]), l: at(-1, -0.32, 0.5, -0.1, [1, 0, -0.5]), ...OPEN })],
       [0.5, wide(-0.1, { bend: 8, nod: 6, r: at(1, 0.14, 0.62, 0.2, [1, -0.3, 0]), l: at(-1, -0.14, 0.62, 0.2, [1, -0.3, 0]), handR: 0.2, handL: 0.2 })],
+    ],
+  }),
+  // Party dances (added Nov 2026)
+  full({
+    id: 'the-wop', name: 'Wop', tags: 'hiphop | full |', beats: 2, level: 'mid', d: 2, parts: ['arms', 'torso', 'legs'],
+    desc: 'Sway onto one side on each beat, bending the knees and dropping that shoulder, as the arms trade across the chest: one hand from beside the ear over to the far shoulder.',
+    keys: [[0, wopA], [1, mir(wopA)]],
+  }),
+  combo('the-smurf', 'Smurf', 'bounce', 'hhSmurf', 'mid', 1, 'hiphop | arms |', {
+    desc: 'Bounce the knees to the beat while the fists swim: one drives forward up by the shoulder as the other pulls back, then they swap.',
+  }),
+  combo('smurf-two-step', 'Smurf Two-Step', 'twoStep', 'hhSmurf', 'mid', 2, 'hiphop | full | walk', {
+    desc: 'The Smurf\'s swimming fists over a two-step instead of the bounce.',
+  }),
+  full({
+    id: 'shmoney', name: 'Shmoney', tags: 'hiphop | full | hips twist', beats: 4, level: 'mid', d: 2, parts: ['arms', 'hips', 'torso'],
+    desc: 'Arms up and relaxed by the head, sway the hips on a loose two-step, then twist the back and arms from side to side.',
+    keys: [
+      [0, { y: -0.06, x: 0.03, hips: 0.045, tilt: 6, rf: [0.16, 0, 0], lf: [-0.09, 0, 0], r: at(1, 0.24, 1.05, 0.08, [1, 0.3, -0.3]), l: at(-1, -0.2, 1.0, 0.1, [1, 0.3, -0.3]), handR: 0.6, handL: 0.6 }],
+      [1, { y: -0.06, x: -0.03, hips: -0.045, tilt: -6, rf: [0.09, 0, 0], lf: [-0.16, 0, 0], r: at(1, 0.2, 1.0, 0.1, [1, 0.3, -0.3]), l: at(-1, -0.24, 1.05, 0.08, [1, 0.3, -0.3]), handR: 0.6, handL: 0.6 }],
+      [2, { y: -0.08, twist: 26, hipTwist: 8, lean: 3, rf: [0.11, 0, 0], lf: [-0.11, 0, 0], r: at(1, 0.3, 0.98, -0.02, [1, 0.3, -0.3]), l: at(-1, -0.06, 1.02, 0.16, [1, 0.3, -0.3]), handR: 0.6, handL: 0.6 }],
+      [3, { y: -0.08, twist: -26, hipTwist: -8, lean: -3, rf: [0.11, 0, 0], lf: [-0.11, 0, 0], r: at(1, 0.06, 1.02, 0.16, [1, 0.3, -0.3]), l: at(-1, -0.3, 0.98, -0.02, [1, 0.3, -0.3]), handR: 0.6, handL: 0.6 }],
+    ],
+  }),
+  full({
+    id: 'bernie', name: 'Bernie', tags: 'hiphop party | full |', beats: 2, level: 'low', d: 1, parts: ['torso', 'arms'],
+    desc: 'Head tipped back and chest up, lean from side to side on loose steps with the arms dangling and flopping.',
+    keys: [[0, bernieA], [0.5, bernieFlail], [1, mir(bernieA)], [1.5, mir(bernieFlail)]],
+  }),
+  full({
+    id: 'lean-back', name: 'Lean Back', tags: 'hiphop | full legs |', beats: 2, level: 'low', d: 1, parts: ['torso', 'legs'], mirror: true,
+    desc: 'Step one foot back and lean back off it, throwing that shoulder back on the beat, then roll it forward as you come back in.',
+    keys: [
+      [0, { y: -0.09, x: 0.03, bend: -10, twist: -30, lean: 9, nod: -8, head: 7, shR: 1.3, kneeR: 0.15, rf: [0.13, 0, -0.13], lf: [-0.09, 0, 0.02], r: at(1, 0.28, 0.5, -0.17, [1, 0, -0.5]), l: at(-1, -0.2, 0.52, 0.08, [1, 0, -0.3]), handR: 0.3, handL: 0.3 }],
+      [1, { y: -0.03, bend: 6, twist: 10, lean: -2, shR: 0.3, rf: [0.09, 0, 0], lf: [-0.09, 0, 0], r: at(1, 0.2, 0.55, 0.1, [1, 0, -0.3]), l: at(-1, -0.2, 0.55, 0.08, [1, 0, -0.3]), handR: 0.3, handL: 0.3 }],
+    ],
+  }),
+  full({
+    id: 'griddy', name: 'Griddy', tags: 'hiphop party | legs arms | walk', beats: 4, level: 'mid', d: 2, parts: ['legs', 'arms'],
+    desc: 'Tap the heels out in front, right, left, right, the arms swinging opposite, then throw the hands up round the eyes like glasses.',
+    keys: [[0, griddyTap(1)], [1, griddyTap(-1)], [2, griddyTap(1)], [3, griddyGlasses]],
+  }),
+  full({
+    id: 'jet-griddy', name: 'Jet Griddy', tags: 'hiphop party | legs arms | walk', beats: 4, level: 'mid', d: 2, parts: ['legs', 'arms'],
+    desc: 'The Griddy\'s heel taps with the arms held out wide like wings, tipping with the taps, then the glasses round the eyes.',
+    keys: [[0, griddyTap(1, true)], [1, griddyTap(-1, true)], [2, griddyTap(1, true)], [3, griddyGlasses]],
+  }),
+  full({
+    id: 'toprock-cross-step', name: 'Toprock Cross Step', tags: 'hiphop | legs arms |', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms'], mirror: true,
+    desc: 'B-boy toprock basic: bounce and cross one foot in front of the other as the fists cross in front, then step it back out wide and open the arms.',
+    keys: [
+      [0, { y: -0.07, bend: 7, nod: 4, twist: -8, rf: [-0.05, 0, 0.09], lf: [-0.1, 0, -0.02], r: at(1, -0.05, 0.7, 0.22, [0.6, -1, 0]), l: at(-1, 0.06, 0.66, 0.2, [0.6, -1, 0]), ...FIST }],
+      [1, { y: -0.04, bend: 2, rf: [0.2, 0, 0], lf: [-0.1, 0, 0], r: at(1, 0.34, 0.76, 0.06, [1, 0, -0.3]), l: at(-1, -0.32, 0.74, 0.06, [1, 0, -0.3]), ...FIST }],
+    ],
+  }),
+  full({
+    id: 'toprock-kick-step', name: 'Toprock Kick Step', tags: 'hiphop | legs | kick', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms'], mirror: true,
+    desc: 'Toprock kick step: cross one foot back behind the other, then kick it out to the side to uncross and step it down, arms opening with the kick.',
+    keys: [
+      [0, { y: -0.07, bend: 5, rf: [-0.05, 0, -0.08], lf: [-0.09, 0, 0.02], r: at(1, 0.14, 0.68, 0.18, [1, -0.3, 0]), l: at(-1, -0.14, 0.68, 0.18, [1, -0.3, 0]), ...FIST }],
+      [1, { y: -0.03, lean: -6, rf: [0.26, 0.12, 0.03], lf: [-0.09, 0, 0], r: at(1, 0.34, 0.8, 0.04, [1, 0, -0.3]), l: at(-1, -0.26, 0.7, 0.12, [1, 0, -0.3]), ...FIST }],
+      [1.5, { y: -0.05, rf: [0.12, 0, 0], lf: [-0.09, 0, 0], r: at(1, 0.2, 0.7, 0.14, [1, -0.3, 0]), l: at(-1, -0.18, 0.7, 0.14, [1, -0.3, 0]), ...FIST }],
+    ],
+  }),
+  full({
+    id: 'humpty-hop', name: 'Humpty Hop', tags: 'hiphop funk | legs | jump', beats: 2, level: 'high', d: 2, parts: ['legs', 'arms', 'jump'], mirror: true, jump: true, impact: true,
+    desc: 'From the Humpty Dance: hop and cross one leg in front, landing on the and, hop back out on the beat, the arms swinging back after each hop.',
+    keys: [
+      [0, { y: -0.08, bend: 6, rf: [0.11, 0, 0], lf: [-0.11, 0, 0], r: at(1, 0.22, 0.5, -0.12, [1, 0, -0.5]), l: at(-1, -0.22, 0.5, -0.12, [1, 0, -0.5]), handR: 0.3, handL: 0.3 }],
+      [0.5, { y: 0.035, rf: [0.03, 0.06, 0.06], lf: [-0.09, 0.05, 0], r: at(1, 0.2, 0.62, 0.12, [1, -0.3, 0]), l: at(-1, -0.2, 0.62, 0.12, [1, -0.3, 0]), handR: 0.3, handL: 0.3 }],
+      [1, { y: -0.08, bend: 6, lean: -4, rf: [-0.05, 0, 0.07], lf: [-0.1, 0, -0.02], r: at(1, 0.24, 0.5, -0.12, [1, 0, -0.5]), l: at(-1, -0.2, 0.5, -0.12, [1, 0, -0.5]), handR: 0.3, handL: 0.3 }],
+      [1.5, { y: 0.035, rf: [0.06, 0.06, 0.04], lf: [-0.1, 0.05, 0], r: at(1, 0.2, 0.62, 0.12, [1, -0.3, 0]), l: at(-1, -0.2, 0.62, 0.12, [1, -0.3, 0]), handR: 0.3, handL: 0.3 }],
     ],
   }),
 ];

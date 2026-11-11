@@ -7,6 +7,7 @@
  */
 
 import { buildMove, registerPatterns, type Move, type MoveDef, type PatternSet } from '../catalog';
+import { genreOfId } from '../genres';
 import * as shared from './shared';
 import * as aerobic from './aerobic';
 import * as cooldown from './cooldown';
@@ -21,6 +22,7 @@ import * as party from './party';
 import * as afro from './afro';
 import * as retro from './retro';
 import * as world from './world';
+import * as named from './named';
 
 export interface FamilyFile {
   patterns: PatternSet;
@@ -28,7 +30,7 @@ export interface FamilyFile {
 }
 
 /** Family files by name (the --family argument of tools/moves/check.ts). */
-export const FAMILY_FILES: Readonly<Record<string, FamilyFile>> = { shared, aerobic, cooldown, latin, disco, funk, hiphop, pop, rock, kpop, party, afro, retro, world };
+export const FAMILY_FILES: Readonly<Record<string, FamilyFile>> = { shared, aerobic, cooldown, latin, disco, funk, hiphop, pop, rock, kpop, party, afro, retro, world, named };
 
 /**
  * Definition errors (duplicate ids, unknown patterns, bad tags), by file. A
@@ -61,6 +63,8 @@ export const RETIRED: ReadonlyMap<string, string> = new Map([
   ['swing-your-partner', 'a partner figure; solo it is just a turn'],
   ['locomotion', "the train-wheel arms barely move on the figure; doesn't read"],
   ['roll-high', "the arms can't reach a roll above the head; it rolls across the face instead"],
+  ['the-stroll', 'a formation line dance (couples down the middle of two lines), not a single step; the footwork was not sourced'],
+  ['jig-walk', 'known only as a partnered Lindy step with no sourced description'],
 ]);
 
 /** Every catalogue move, in file order. */
@@ -76,7 +80,9 @@ export const CATALOGUE: readonly Move[] = (() => {
         continue;
       }
       try {
-        out.push(buildMove(d, name));
+        const m = buildMove(d, name);
+        const g = genreOfId(d.id);
+        out.push(g ? { ...m, genre: g } : m);
         seen.set(d.id, name);
       } catch (e) {
         CATALOGUE_ERRORS.push({ file: name, message: `${d.id}: ${(e as Error).message}` });
