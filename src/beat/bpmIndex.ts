@@ -2,7 +2,7 @@
  * Known tempos for song tiles ("124 BPM" badges): from beat maps cached on
  * this device (remembered in the store when cached), else from the cloud
  * index `<base>beatmaps/index.json`, whose optional `songs` field is
- * `{ [videoId]: { bpm, duration } }`. The index is fetched once per app open.
+ * `{ [videoId]: { bpm, duration, genre? } }`. The index is fetched once per app open.
  *
  * `bpmEvents` fires 'change' when either source learns something new.
  */
@@ -12,6 +12,8 @@ import { absoluteBase, type FetchLike } from './cloud';
 export interface IndexSong {
   bpm: number;
   duration: number;
+  /** iTunes primary genre (songs added by search), when known. */
+  genre?: string;
 }
 
 export const bpmEvents = new EventTarget();
@@ -34,7 +36,12 @@ export function parseIndexSongs(text: string): Record<string, IndexSong> {
     const bpm = (v as { bpm?: unknown } | null)?.bpm;
     const duration = (v as { duration?: unknown } | null)?.duration;
     if (typeof bpm !== 'number' || !Number.isFinite(bpm) || bpm <= 0 || bpm > 1000) continue;
-    out[id] = { bpm, duration: typeof duration === 'number' && Number.isFinite(duration) ? duration : 0 };
+    const genre = (v as { genre?: unknown }).genre;
+    out[id] = {
+      bpm,
+      duration: typeof duration === 'number' && Number.isFinite(duration) ? duration : 0,
+      ...(typeof genre === 'string' && genre.trim() ? { genre: genre.trim().slice(0, 60) } : {}),
+    };
   }
   return out;
 }
@@ -81,6 +88,11 @@ export function reloadCloudIndex(base: string, fetchFn: FetchLike = (u, i) => fe
 export function knownBpm(videoId: string): number | null {
   const bpm = store.localBpm(videoId) ?? cloudSongs[videoId]?.bpm ?? null;
   return bpm && bpm > 0 ? Math.round(bpm) : null;
+}
+
+/** The cloud index's genre for a song (songs added by search), when known. */
+export function cloudGenre(videoId: string): string | undefined {
+  return cloudSongs[videoId]?.genre;
 }
 
 /** Called by the beat-map cache after storing a map. */

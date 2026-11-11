@@ -2,7 +2,7 @@
  * songs.json (songs added by search) and songs-status.json (requests that
  * could not be completed yet): deterministic rendering and planning. Pure.
  *
- *   songs.json         { updatedAt, songs: [{ videoId, title, artist, addedAt, durationSec, note? }] }
+ *   songs.json         { updatedAt, songs: [{ videoId, title, artist, addedAt, durationSec, note?, genre? }] }
  *                      oldest first; a song is only listed once it has a beat map.
  *   songs-status.json  { updatedAt, requests: { [songKey]: { state, artist, title, durationSec?, message?, attempts, lastTried } } }
  *                      keys sorted; entries are removed when the song is added.
@@ -46,6 +46,7 @@ function normSong(s: AddedSong): AddedSong {
     addedAt: s.addedAt,
     durationSec: s.durationSec,
     ...(s.note ? { note: s.note } : {}),
+    ...(s.genre ? { genre: s.genre } : {}),
   };
 }
 

@@ -1,5 +1,6 @@
 /**
- * Options: the coach's look (live preview cards), audio offset, beat-sync
+ * Options: the coach's look (live preview cards), routine (same / new each
+ * play), audio offset, beat-sync
  * fallback (web), and links to playlist linking and the GitHub connection.
  * Everything applies as soon as it is chosen.
  */
@@ -12,7 +13,7 @@ import { FigurePainter } from '../core/coach/renderer';
 import { createPose, createSkeleton, solveSkeleton } from '../core/coach/skeleton';
 import { COACH_STYLES, type CoachStyle } from '../core/coach/styles';
 import { getPlatform } from '../platform/platform';
-import { store, type LiveSyncPref } from '../store';
+import { store, type LiveSyncPref, type RoutineMode } from '../store';
 import { h, type Nav, type Screen } from './dom';
 import { focusEl, type Scope } from './focusNav';
 import { connectionLabel, disconnectGithub, githubConnection, openConnectDialog } from './githubConnect';
@@ -26,6 +27,11 @@ const LIVE_SYNC: { value: LiveSyncPref; label: string; hint: string }[] = [
   { value: 'ask', label: 'Ask first', hint: 'Explain, then ask to use the microphone' },
   { value: 'mic', label: 'Microphone', hint: 'Listen straight away' },
   { value: 'off', label: 'Off', hint: 'No live listening' },
+];
+
+const ROUTINE: { value: RoutineMode; label: string; hint: string }[] = [
+  { value: 'same', label: 'Same every time', hint: 'Learn a song’s routine by heart' },
+  { value: 'fresh', label: 'New every time', hint: 'A different routine each play' },
 ];
 
 export function createOptions(nav: Nav): Screen {
@@ -71,6 +77,16 @@ export function createOptions(nav: Nav): Screen {
     ),
   );
 
+  // --- routine -------------------------------------------------------------------
+  const routineButtons = ROUTINE.map((o) =>
+    h(
+      'button',
+      { class: 'btn choice-btn', type: 'button', 'data-routine': o.value, 'aria-pressed': 'false' },
+      h('span', { class: 'choice-name' }, o.label),
+      h('span', { class: 'choice-hint' }, o.hint),
+    ),
+  );
+
   // --- links -------------------------------------------------------------------
   const ghLine = h('div', { class: 'opt-row' });
 
@@ -87,6 +103,11 @@ export function createOptions(nav: Nav): Screen {
       h('h1', { class: 'panel-title add-title' }, 'Options'),
     ),
     section('Coach', h('div', { class: 'style-grid' }, ...cards), styleNote),
+    section(
+      'Routine',
+      h('p', { class: 'note' }, 'Whether the coach dances the same moves each time you play a song, or makes up a new routine.'),
+      h('div', { class: 'opt-row' }, ...routineButtons),
+    ),
     section(
       'Audio offset',
       h('p', { class: 'note' }, 'If the coach looks early or late, which is common with Bluetooth speakers because they add a delay, nudge this. Positive makes the coach move later. You can also press Left or Right during a song.'),
@@ -122,6 +143,11 @@ export function createOptions(nav: Nav): Screen {
       b.classList.toggle('selected', on);
       b.setAttribute('aria-pressed', String(on));
     }
+    for (const b of routineButtons) {
+      const on = b.dataset.routine === s.routineMode;
+      b.classList.toggle('selected', on);
+      b.setAttribute('aria-pressed', String(on));
+    }
     const c = githubConnection();
     const label = connectionLabel(c);
     ghLine.replaceChildren(
@@ -149,6 +175,11 @@ export function createOptions(nav: Nav): Screen {
     }
     if (t.dataset.sync) {
       store.updateSettings({ liveSync: t.dataset.sync as LiveSyncPref });
+      renderState();
+      return;
+    }
+    if (t.dataset.routine) {
+      store.updateSettings({ routineMode: t.dataset.routine as RoutineMode });
       renderState();
       return;
     }

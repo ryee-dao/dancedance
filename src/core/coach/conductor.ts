@@ -23,7 +23,7 @@
 
 import type { BeatMap, SectionType } from '../analysis/beatmap';
 import type { BeatTimeline, LiveBeats } from '../../beat/beatSource';
-import { LivePlanner, generateRoutine, isHalfTime, isUsableBeatMap, mapTempo, usableBpm, type Intensity, type MoveInstance, type SigStep } from '../choreo/generator';
+import { LivePlanner, generateRoutine, isHalfTime, isUsableBeatMap, mapTempo, usableBpm, type Intensity, type MoveInstance, type RoutineOpts, type SigStep } from '../choreo/generator';
 import { IDLE_MOVE } from '../choreo/moves';
 import { PoseEvaluator, beatPosition, instanceIndexAt, timeOfBeat, type PlanView } from './animator';
 import { blendPose } from './poses';
@@ -64,12 +64,12 @@ export class Plan implements PlanView {
     return p;
   }
 
-  static fromMap(key: string, map: BeatMap, intensity: Intensity, live: LiveBeats | null): Plan {
+  static fromMap(key: string, map: BeatMap, intensity: Intensity, live: LiveBeats | null, opts: RoutineOpts = {}): Plan {
     const t = mapTempo(map);
     const bpm = usableBpm(t) ? t : 120;
     const p = new Plan('map', key, 60 / bpm);
     p.grid = map.beats.slice();
-    const r = generateRoutine(map, intensity);
+    const r = generateRoutine(map, intensity, opts);
     p.instances = r.instances;
     p.signature = r.signature;
     p.half = r.half;
@@ -77,12 +77,12 @@ export class Plan implements PlanView {
     if (map.partial) {
       p.liveFrom = p.grid.length;
       const end = p.instances.length ? p.instances[p.instances.length - 1].start + p.instances[p.instances.length - 1].span : p.grid.length;
-      p.planner = new LivePlanner(map.videoId, intensity, live && usableBpm(live.bpm) ? live.bpm : bpm, end);
+      p.planner = new LivePlanner(map.videoId, intensity, live && usableBpm(live.bpm) ? live.bpm : bpm, end, opts);
     }
     return p;
   }
 
-  static fromLive(key: string, live: LiveBeats, videoId: string, intensity: Intensity, t: number): Plan {
+  static fromLive(key: string, live: LiveBeats, videoId: string, intensity: Intensity, t: number, opts: RoutineOpts = {}): Plan {
     const p = new Plan('live', key, 60 / (usableBpm(live.bpm) ? live.bpm : 120));
     p.liveFrom = 0;
     p.extendGrid(live, t);
@@ -90,7 +90,7 @@ export class Plan implements PlanView {
     let start = 0;
     while (start < p.grid.length && p.grid[start] < t) start++;
     p.half = isHalfTime(live.bpm);
-    p.planner = new LivePlanner(videoId, intensity, live.bpm, start);
+    p.planner = new LivePlanner(videoId, intensity, live.bpm, start, opts);
     p.signature = p.planner.signature;
     for (let b = 0; b < start; b++) {
       p.instances.push({ move: IDLE_MOVE, mirror: (b & 1) === 1, start: b, span: 1, half: false, origin: 0, section: 'intro', sig: false, unitStart: false, phrase: -1 });
@@ -201,14 +201,18 @@ export class Conductor {
     return this.active;
   }
 
-  /** Feed the latest timeline; builds / switches plans as needed. */
-  update(tl: BeatTimeline | null, videoId: string, intensity: Intensity, t: number): void {
-    const key = desiredKey(tl, videoId, intensity);
+  /**
+   * Feed the latest timeline; builds / switches plans as needed. `opts`
+   * personalises the routine (song style, fresh play number); `optsKey` must
+   * change whenever `opts` does (it is part of the plan key).
+   */
+  update(tl: BeatTimeline | null, videoId: string, intensity: Intensity, t: number, opts: RoutineOpts = {}, optsKey = ''): void {
+    const key = desiredKey(tl, videoId, intensity) + (optsKey ? `|${optsKey}` : '');
     const songChanged = videoId !== this.videoId;
     this.videoId = videoId;
     const cur = this.pending?.plan ?? this.active;
     if (!cur || cur.key !== key) {
-      const plan = buildPlan(key, tl, videoId, intensity, t);
+      const plan = buildPlan(key, tl, videoId, intensity, t, opts);
       if (!this.active) {
         this.active = plan;
       } else if (songChanged) {
@@ -336,8 +340,8 @@ function desiredKey(tl: BeatTimeline | null, videoId: string, intensity: Intensi
   return `idle|${videoId}`;
 }
 
-function buildPlan(key: string, tl: BeatTimeline | null, videoId: string, intensity: Intensity, t: number): Plan {
-  if (key.startsWith('map|') && tl?.map) return Plan.fromMap(key, tl.map, intensity, tl.live);
-  if (key.startsWith('live|') && tl?.live) return Plan.fromLive(key, tl.live, videoId, intensity, t);
+function buildPlan(key: string, tl: BeatTimeline | null, videoId: string, intensity: Intensity, t: number, opts: RoutineOpts = {}): Plan {
+  if (key.startsWith('map|') && tl?.map) return Plan.fromMap(key, tl.map, intensity, tl.live, opts);
+  if (key.startsWith('live|') && tl?.live) return Plan.fromLive(key, tl.live, videoId, intensity, t, opts);
   return Plan.idle(key, t);
 }

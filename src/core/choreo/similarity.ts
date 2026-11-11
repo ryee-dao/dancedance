@@ -46,6 +46,13 @@ export const RHYTHM_WEIGHT = 0.03;
  * (see tools/moves/check.ts --pairs).
  */
 export const UNIQUE_THRESHOLD = 0.045;
+/**
+ * Stricter bar for VARIATIONS (they must look like a different move to copy,
+ * not a tweak): pairs around 0.07 still read as the same move when the arms
+ * match and only in-place footwork differs; above ~0.085 they read as
+ * different (contact sheets of distance bands, Nov 2026).
+ */
+export const VARIATION_THRESHOLD = 0.085;
 /** Added when one move jumps / turns and the other doesn't. */
 export const CATEGORY_GAP = 0.05;
 

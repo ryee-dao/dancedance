@@ -19,6 +19,10 @@ It runs as a website (hosted free on GitHub Pages) and as an Android TV app. Bot
 
 **Options.** The **Options** button at the top of the song list is where you choose the coach's look (each style has a moving preview), set the audio offset, choose how songs without a beat map find the beat (web only), change your playlist and, on the web, connect to GitHub for adding songs.
 
+**How a song's dance style is decided.** Each song gets a style (shown on the coach's NOW label, e.g. "Latin groove"): which move families it leans toward (Latin, disco, funk, hip-hop, pop, rock, K-pop, party, aerobics), which body parts to favour and a few themes. The first match wins: the song's own `style` in `src/data/starter.json`, then the artist (a built-in table in `src/core/choreo/songStyle.ts`), then the iTunes genre recorded when the song was added, and otherwise a balanced pop mix. Words in the title add themes ("Hips", "Jump", "Spin", "Clap", ...), and the tempo nudges the mix a little. About two thirds of the moves then come from the song's families. To override a song, add or edit its `style` in `starter.json`, e.g. `"style": { "families": { "latin": 1, "pop": 0.3 }, "themes": ["hips"], "focus": { "hips": 1.5 }, "signature": ["hip-sway", "hip-shake"] }`. `signature` names one or two moves (ids from `src/core/choreo/families/*.ts`) that open every chorus.
+
+**Same routine or a new one.** Under **Options → Routine**, "Same every time" (the default) gives a song the same routine on every play, so you can learn it. "New every time" changes the routine on each play; the chorus combo stays the same.
+
 **Your own MP3s.** Drag an MP3 or M4A file onto the page. It's analysed on your device in a few seconds and played directly, with no YouTube involved.
 
 ## One-time GitHub setup

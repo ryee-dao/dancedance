@@ -21,6 +21,7 @@
 import type { BeatSource } from '../beat/beatSource';
 import type { Intensity } from '../core/choreo/generator';
 import { READY_POSE, type Move } from '../core/choreo/moves';
+import { resolveSongStyle, styleKey, styleLabel, type SongStyle, type StyleOverride } from '../core/choreo/songStyle';
 import { PoseEvaluator } from '../core/coach/animator';
 import { Conductor } from '../core/coach/conductor';
 import { loopPlan, type LoopPlan } from '../core/coach/loop';
@@ -41,6 +42,8 @@ export interface CoachStageDeps {
   getPlayCount?: (videoId: string) => number;
   /** iTunes primary genre of a song, when known (added songs). Read once per song. */
   getGenre?: (videoId: string) => string | undefined;
+  /** Dev bench: force a song style (families / themes / signature). */
+  getStyleOverride?: () => StyleOverride | undefined;
 }
 
 export type RoutineMode = 'same' | 'fresh';
@@ -98,6 +101,9 @@ class CoachStageImpl implements CoachStage {
   private frameEma = 16.7;
   private drawEma = 1;
   private readonly urlStyle: CoachStyle | null = urlCoachStyle();
+  // Song style + routine personalisation, resolved once per song (again when its beat map arrives).
+  private songKey = '';
+  private routine: RoutineInfo | null = null;
 
   constructor(private deps: CoachStageDeps) {}
 
@@ -131,6 +137,23 @@ class CoachStageImpl implements CoachStage {
     this.canvas = null;
     this.r = null;
     this.host = null;
+  }
+
+  /** Routine personalisation, cached per song (and per beat-map arrival). */
+  private routineFor(item: FrameInfo['item'], videoId: string, map: { bpm: number; sections: readonly { energy: number }[] } | null): RoutineInfo {
+    const ov = this.deps.getStyleOverride?.();
+    const k = `${videoId}|${item.title}|${map ? 'map' : 'nomap'}${ov ? `|${JSON.stringify(ov)}` : ''}`;
+    if (this.routine && k === this.songKey) return this.routine;
+    // The play count / mode are read once per song: keep the earlier read when only the map arrived.
+    const sameSong = this.songKey.split('|')[0] === videoId && this.routine;
+    const r = routineInfo(item, map, this.deps);
+    if (sameSong) {
+      r.fresh = this.routine!.fresh;
+      r.key = `${styleKey(r.style)}${r.fresh ? `|play${r.fresh}` : ''}`;
+    }
+    this.songKey = k;
+    this.routine = r;
+    return r;
   }
 
   frameStats(): FrameStats {
@@ -181,7 +204,8 @@ class CoachStageImpl implements CoachStage {
     if (phase === 'playing' && this.lastPhase !== 'playing' && this.lastPhase !== 'paused') this.playStartWall = wall;
     this.lastPhase = phase;
 
-    this.conductor.update(tl, videoId, intensity, t);
+    const r = this.routineFor(item, videoId, tl?.map ?? null);
+    this.conductor.update(tl, videoId, intensity, t, { style: r.style, fresh: r.fresh }, r.key);
     const sec = this.conductor.sectionAt(t);
     const waiting = phase === 'loading' || phase === 'countdown';
 
@@ -221,6 +245,7 @@ class CoachStageImpl implements CoachStage {
       s.progress = Number.isFinite(span) && span > 0 ? (t - up.groupStart) / span : 0;
       s.beatsToChange = up.beatsToChange;
     }
+    s.style = waiting ? undefined : r.label;
     const next = waiting ? (up.next ?? up.current) : up.next;
     if (next && plan) {
       if (next.move !== this.nextMove || next.mirror !== this.nextMirror) {
@@ -270,6 +295,48 @@ class CoachStageImpl implements CoachStage {
     const dt = performance.now() - wall;
     this.drawEma += (dt - this.drawEma) * 0.05;
   }
+}
+
+export interface RoutineInfo {
+  style: SongStyle;
+  fresh?: number;
+  key: string;
+  label: string;
+}
+
+/**
+ * The routine personalisation for a song: its style (title / artist / genre,
+ * plus tempo / energy priors once the beat map is known) and, in 'fresh'
+ * mode, the play number. Pure apart from the deps it reads.
+ */
+export function routineInfo(
+  item: FrameInfo['item'],
+  map: { bpm: number; sections: readonly { energy: number }[] } | null,
+  deps: Pick<CoachStageDeps, 'getRoutineMode' | 'getPlayCount' | 'getGenre' | 'getStyleOverride'>,
+): RoutineInfo {
+  const videoId = item.kind === 'youtube' ? item.videoId : undefined;
+  const artist = item.kind === 'youtube' ? item.artist : undefined;
+  let genre: string | undefined;
+  try {
+    genre = videoId ? deps.getGenre?.(videoId) : undefined;
+  } catch {
+    genre = undefined;
+  }
+  const secs = map?.sections ?? [];
+  const energy = secs.length ? secs.reduce((a, s) => a + s.energy, 0) / secs.length : undefined;
+  const override = deps.getStyleOverride?.();
+  const style = resolveSongStyle({ videoId, title: item.title, artist, genre, ...(override ? { style: override } : {}) }, map ? { bpm: map.bpm, energy } : undefined);
+  let fresh: number | undefined;
+  if ((deps.getRoutineMode?.() ?? 'same') === 'fresh') {
+    let n = 0;
+    try {
+      n = videoId ? deps.getPlayCount?.(videoId) ?? 0 : 0;
+    } catch {
+      n = 0;
+    }
+    fresh = Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+  }
+  return { style, fresh, key: `${styleKey(style)}${fresh ? `|play${fresh}` : ''}`, label: styleLabel(style) };
 }
 
 /** `?coach=<style>` on the page URL, if valid. */

@@ -127,6 +127,8 @@ export interface AddedSong {
   durationSec: number;
   /** 'music-video': no lyric/audio upload passed, so the official music video was used. */
   note?: 'music-video';
+  /** iTunes primary genre ("Pop", "Latin", ...), when the cloud job learned it. */
+  genre?: string;
 }
 
 /**
@@ -198,6 +200,7 @@ export function parseSongsList(text: string): AddedSong[] {
       addedAt: typeof s.addedAt === 'string' ? s.addedAt : '',
       durationSec,
       ...(s.note === 'music-video' ? { note: 'music-video' as const } : {}),
+      ...(typeof s.genre === 'string' && s.genre.trim() ? { genre: s.genre.trim().slice(0, 60) } : {}),
     });
   }
   return out;

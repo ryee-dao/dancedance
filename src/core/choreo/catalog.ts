@@ -50,6 +50,8 @@ export interface Pattern {
   /** Leads the torso track (its lean/twist/head values are used). */
   torso?: boolean;
   parts: readonly BodyPart[];
+  /** Short lowercase name of the action ('rolling hands', 'step touch'), for variation names. */
+  label?: string;
 }
 
 export type PatternDef = Omit<Pattern, 'id'>;

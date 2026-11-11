@@ -514,6 +514,8 @@ export interface StripInfo {
   beatsToChange: number;
   next: StripCard | null;
   after: StripCard | null;
+  /** The song's resolved style ("Latin groove"), shown subtly on the NOW label. */
+  style?: string;
 }
 
 export interface SceneInfo {
@@ -726,7 +728,7 @@ export class StageRenderer2D {
       // NOW
       const nowH = S.h * 0.25;
       this.panel(S.x, S.y, S.w, nowH, rad, COLORS.panelLine);
-      this.text(s.sig ? 'NOW  ·  SONG COMBO' : 'NOW', S.x + pad, S.y + pad + H * 0.022, H * 0.024, 800, s.sig ? COLORS.band : COLORS.muted, S.w - pad * 2 - dotsW);
+      this.text(s.sig ? 'NOW  ·  SONG COMBO' : s.style ? `NOW  ·  ${s.style.toUpperCase()}` : 'NOW', S.x + pad, S.y + pad + H * 0.022, H * 0.024, 800, s.sig ? COLORS.band : COLORS.muted, S.w - pad * 2 - dotsW);
       this.text(s.now, S.x + pad, S.y + pad + H * 0.075, H * 0.048, 900, COLORS.ink, S.w - pad * 2);
       this.progress(S.x + pad, S.y + nowH - pad - H * 0.03, S.w - pad * 2, H * 0.022, s, soon, S.y + pad + H * 0.013);
       // NEXT (animated) and THEN (static) cards.
@@ -740,7 +742,7 @@ export class StageRenderer2D {
     } else {
       const wNow = S.w * 0.42;
       this.panel(S.x, S.y, wNow, S.h, rad, COLORS.panelLine);
-      this.text(s.sig ? 'NOW · COMBO' : 'NOW', S.x + pad, S.y + pad + H * 0.02, H * 0.022, 800, s.sig ? COLORS.band : COLORS.muted, wNow - pad * 2 - dotsW);
+      this.text(s.sig ? 'NOW · COMBO' : s.style ? `NOW · ${s.style.toUpperCase()}` : 'NOW', S.x + pad, S.y + pad + H * 0.02, H * 0.022, 800, s.sig ? COLORS.band : COLORS.muted, wNow - pad * 2 - dotsW);
       this.text(s.now, S.x + pad, S.y + pad + H * 0.065, H * 0.04, 900, COLORS.ink, wNow - pad * 2);
       this.progress(S.x + pad, S.y + S.h - pad - H * 0.03, wNow - pad * 2, H * 0.02, s, soon, S.y + pad + H * 0.012);
       const gap = S.w * 0.02;

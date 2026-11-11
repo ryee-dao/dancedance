@@ -70,6 +70,8 @@ foot: { myStep: { beats: 2, parts: ['legs'], mirror: true, travel: 0.16, keys: [
   torso when the move has no accent layer).
 - `parts`: which body parts it works (`arms legs torso hips jump turn`); the
   generator varies parts between consecutive moves.
+- `label` (optional): short lowercase name of the action ('rolling hands',
+  'step touch'), used to name variations ("Grapevine · rolling hands").
 - Foot patterns may key only body channels (x, y, hips, tilt, hipTwist, feet,
   knees, spin); arm patterns only arms / hands / shrugs; accents only torso /
   head. Values for other channels in a key are ignored unless the pattern
@@ -113,6 +115,18 @@ feet. Fast turns (>= 180 deg per beat) are flagged `fastTurn` and kept off
 Easy. The back view is drawn (hair, no face, colours swap sides truthfully);
 side-on frames are narrow, so don't hold a pose at 90 deg unless that's the
 point (quarter-profile moves like the Running Man hold ~55 deg).
+
+## Variations (automatic, not authored)
+
+`variations.ts` derives variations from the layered base moves: other arms
+over a move's footwork (and vice versa) when the families match, low / wide
+stance, double- and half-time arms, alternating single arm; plus ornaments
+(hip sway on idle hips, clap / pose hit on beat 4, diagonal facing, spin-out
+flourish). `npx tsx tools/moves/pool.ts` validates every candidate and keeps a
+counted variation only when it is at least `VARIATION_THRESHOLD` (0.085) from
+every other move, writing `pool.json` (the app builds that list, never
+validates at runtime). Re-run it after changing the catalogue (a test checks
+the catalogue hash).
 
 ## Checking and previewing
 

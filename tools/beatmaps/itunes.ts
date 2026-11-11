@@ -13,12 +13,16 @@ export interface ItunesTrack {
   collectionName?: string;
   trackTimeMillis?: number;
   releaseDate?: string;
+  /** e.g. "Pop", "Hip-Hop/Rap", "Latin". */
+  primaryGenreName?: string;
 }
 
 export interface OfficialSong {
   artist: string;
   title: string;
   durationSec: number;
+  /** iTunes primary genre, when known. */
+  genre?: string;
 }
 
 export function itunesSearchUrl(term: string, limit = 25): string {
@@ -29,6 +33,13 @@ export function itunesSearchUrl(term: string, limit = 25): string {
 /** Reject versions the request didn't ask for (in the track or the album name). */
 const NOT_ORIGINAL =
   /\b(?:live|remix|mix|acoustic|karaoke|instrumental|version|edit|demo|cover|tribute|sped|slowed|unplugged|stripped|extended|re-?recorded|kidz bop|in the style of|made famous|originally performed)\b/i;
+
+/** A usable genre name (trimmed, at most 60 characters), or undefined. */
+export function cleanGenre(g: unknown): string | undefined {
+  if (typeof g !== 'string') return undefined;
+  const t = g.replace(/\s+/g, ' ').trim();
+  return t && t.length <= 60 && !/[\u0000-\u001f]/.test(t) ? t : undefined;
+}
 
 export function parseItunes(json: unknown): ItunesTrack[] {
   const results = (json as { results?: unknown } | null)?.results;
@@ -76,7 +87,8 @@ export function pickOfficialLength(req: { artist: string; title: string }, track
     .filter(({ i }) => Math.abs(secs[i] - secs[best]) <= 2)
     .sort((x, y) => Number(plain[y.i]) - Number(plain[x.i]) || date(x.t) - date(y.t));
   const first = cluster[0].t;
-  return { artist: first.artistName, title: first.trackName, durationSec: Math.round(first.trackTimeMillis! / 1000) };
+  const genre = cleanGenre(first.primaryGenreName) ?? cluster.map((c) => cleanGenre(c.t.primaryGenreName)).find((g) => g !== undefined);
+  return { artist: first.artistName, title: first.trackName, durationSec: Math.round(first.trackTimeMillis! / 1000), ...(genre ? { genre } : {}) };
 }
 
 /** Look the song up on iTunes. Resolves null when not found or unreachable. */

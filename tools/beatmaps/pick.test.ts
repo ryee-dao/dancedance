@@ -12,7 +12,7 @@ import {
   type SearchEntry,
   type SongRequest,
 } from './pick';
-import { parseItunes, pickOfficialLength } from './itunes';
+import { cleanGenre, parseItunes, pickOfficialLength } from './itunes';
 import { embedFromStatus } from './youtube';
 
 const e = (o: Partial<SearchEntry> & Pick<SearchEntry, 'id' | 'title' | 'channel'>): SearchEntry => ({
@@ -255,5 +255,20 @@ describe('official length from iTunes', () => {
       ],
     });
     expect(pickOfficialLength({ artist: 'a-ha', title: 'Take On Me' }, t)).toEqual({ artist: 'a-ha', title: 'Take On Me', durationSec: 225 });
+  });
+  it('captures the primary genre when iTunes gives one', () => {
+    const t = parseItunes({
+      results: [
+        { artistName: 'Shakira', trackName: "Hips Don't Lie (feat. Wyclef Jean)", trackTimeMillis: 218000, releaseDate: '2006-02-28T00:00:00Z', primaryGenreName: 'Pop' },
+        { artistName: 'Shakira', trackName: "Hips Don't Lie", trackTimeMillis: 218100, releaseDate: '2006-02-28T00:00:00Z', primaryGenreName: ' Latin  Pop ' },
+      ],
+    });
+    expect(pickOfficialLength({ artist: 'Shakira', title: "Hips Don't Lie" }, t)).toEqual({ artist: 'Shakira', title: "Hips Don't Lie", durationSec: 218, genre: 'Latin Pop' });
+    // No genre on the chosen track: borrow one from the same cluster; none at all: no field.
+    const u = parseItunes({ results: [{ artistName: 'a-ha', trackName: 'Take On Me', trackTimeMillis: 225400 }, { artistName: 'a-ha', trackName: 'Take On Me', trackTimeMillis: 225000, primaryGenreName: 'Pop', releaseDate: '2000-01-01T00:00:00Z' }] });
+    expect(pickOfficialLength({ artist: 'a-ha', title: 'Take On Me' }, u)?.genre).toBe('Pop');
+    expect(cleanGenre(42)).toBeUndefined();
+    expect(cleanGenre('   ')).toBeUndefined();
+    expect(cleanGenre('x'.repeat(61))).toBeUndefined();
   });
 });
