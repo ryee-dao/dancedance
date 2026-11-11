@@ -47,16 +47,16 @@ const WIDE_LOW = { rf: [0.2, 0, 0], lf: [-0.2, 0, 0] } as const;
 const MIC_R = at(1, 0.03, 0.83, 0.18, [1, -0.6, -0.2]);
 const MIC_L = at(-1, -0.01, 0.79, 0.19, [1, -0.6, -0.2]);
 const hookWind: PoseSpec = { twist: 10, y: -0.06, ...STAGGER, r: at(1, 0.34, 0.84, 0.06, [0.2, 1, -0.3]), l: GUARD, ...FIST };
-const hookHit: PoseSpec = { twist: -28, turn: 10, y: -0.08, ...STAGGER, r: at(1, -0.02, 0.86, 0.24, [0.3, 1, 0]), l: GUARD, ...FIST };
+const hookHit: PoseSpec = { twist: -28, turn: 10, y: -0.08, ...STAGGER, r: at(1, 0.02, 0.8, 0.2, [1, 0, 0]), l: GUARD, ...FIST };
 const upDip: PoseSpec = { y: -0.13, twist: -10, bend: 6, lean: 4, rf: [0.15, 0, 0], lf: [-0.15, 0, 0], r: at(1, 0.12, 0.5, 0.18, [0.5, -1, -0.2]), l: GUARD, ...FIST };
-const upHit: PoseSpec = { y: -0.03, twist: -22, lean: -5, nod: -6, rf: [0.15, 0, 0], lf: [-0.15, 0, 0], r: at(1, 0.0, 0.95, 0.24, [0.3, -1, 0.3]), l: GUARD, ...FIST };
+const upHit: PoseSpec = { y: -0.03, twist: -12, lean: -5, nod: -6, rf: [0.15, 0, 0], lf: [-0.15, 0, 0], r: at(1, 0.06, 0.84, 0.18, [0.3, -1, 0.3]), l: GUARD, ...FIST };
 const hammerHit: PoseSpec = { y: -0.1, nod: 8, bend: 5, ...WIDE_LOW, r: at(1, 0.06, 0.62, 0.26, [1, -0.3, -0.2]), l: at(-1, -0.2, 1.1, 0.08, [1, 0.3, -0.2]), ...FIST };
 const sprintA: PoseSpec = { y: 0.03, x: -0.01, rf: [0.08, 0.2, 0.14], lf: [-0.08, 0, 0], r: at(1, 0.2, 0.5, -0.06, [0.1, -0.3, -1]), l: at(-1, -0.12, 0.88, 0.18, [0.1, -1, -0.2]), ...FIST };
 const skankA: PoseSpec = { y: -0.02, bend: 7, nod: 5, rf: [0.11, 0.12, 0.2], lf: [-0.08, 0, 0], kneeR: 0.15, r: at(1, 0.14, 0.5, 0.3, [0.5, -1, -0.1]), l: at(-1, -0.22, 0.86, -0.02, [0.3, 0.3, -1]), ...FIST };
 const skankDn: PoseSpec = { y: -0.07, bend: 4, rf: [0.08, 0, 0], lf: [-0.08, 0, 0], r: at(1, 0.16, 0.6, 0.14, [0.5, -1, -0.2]), l: at(-1, -0.16, 0.6, 0.14, [0.5, -1, -0.2]), ...FIST };
 const twoStepA: PoseSpec = { y: 0.04, lean: -7, bend: 5, rf: [0.24, 0.13, 0.12], lf: [-0.06, 0.02, 0], r: at(1, -0.12, 0.55, 0.22, [0.5, -1, 0]), l: at(-1, -0.34, 0.66, -0.04, [1, 0, -0.3]), ...FIST };
 const twoStepDn: PoseSpec = { y: -0.08, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], r: at(1, 0.14, 0.58, 0.16, [0.6, -1, -0.2]), l: at(-1, -0.14, 0.58, 0.16, [0.6, -1, -0.2]), ...FIST };
-const ropeHigh: PoseSpec = { y: -0.02, lean: 6, twist: -6, nod: -8, rf: [0.17, 0, 0], lf: [-0.17, 0, 0], r: at(1, 0.34, 1.1, 0.14, [1, 0.2, -0.2]), l: at(-1, 0.14, 0.98, 0.3, [0.3, -1, 0.2]), ...FIST };
+const ropeHigh: PoseSpec = { y: -0.02, lean: 6, twist: -6, nod: -8, rf: [0.17, 0, 0], lf: [-0.17, 0, 0], r: at(1, 0.34, 1.1, 0.14, [1, 0.2, -0.2]), l: at(-1, 0.1, 0.84, 0.2, [0.3, -1, 0.2]), ...FIST };
 const ropeLow: PoseSpec = { y: -0.14, lean: -5, twist: 14, bend: 8, nod: 4, rf: [0.17, 0, 0], lf: [-0.17, 0, 0], r: at(1, -0.06, 0.56, 0.22, [0.6, -1, -0.2]), l: at(-1, -0.2, 0.5, 0.14, [0.8, -0.6, -0.3]), ...FIST };
 const funkSwing: PoseSpec = { y: -0.08, x: 0.04, lean: 8, bend: 6, nod: 6, rf: [0.22, 0, 0.02], lf: [-0.1, 0.02, 0], r: at(1, 0.34, 0.5, 0.12, [1, -0.2, -0.3]), l: at(-1, 0.16, 0.52, 0.18, [0.6, -1, -0.2]), ...OPEN };
 const lighterA: PoseSpec = { r: [158, 12, 168, 30], l: ARM.rest, handR: 0, handL: 0.4 };
@@ -148,7 +148,7 @@ export const patterns: PatternSet = {
         [0, { r: [24, 0, 26, 0], l: ARM.hip, handR: 0, handL: 0 }],
         [0.5, { r: [104, 0, 106, 0], l: ARM.hip, handR: 0, handL: 0 }],
         [1, { r: [176, 0, 178, 0], l: ARM.hip, handR: 0, handL: 0, nod: -6 }],
-        [1.5, { r: [108, 135, 110, 140], l: ARM.hip, handR: 0, handL: 0 }],
+        [1.5, { r: [80, 60, 84, 70], l: ARM.hip, handR: 0, handL: 0 }],
       ],
     },
     airGuitar: { beats: 1, parts: ['arms'], torso: true, keys: [[0, guitarA(0.04)], [0.5, guitarA(-0.04)]] },
@@ -336,7 +336,7 @@ export const moves: MoveDef[] = [
     keys: [
       [0, { y: -0.08, twist: 10, turn: 14, ...WIDE_LOW, r: at(1, 0.42, 0.92, 0.18, [1, 0, -0.2]), l: ARM.hip, handR: 0.6, handL: 0 }],
       [1, { y: -0.05, twist: 0, turn: 0, ...WIDE_LOW, r: at(1, 0.14, 0.94, 0.32, [1, -0.3, -0.2]), l: ARM.hip, handR: 0.6, handL: 0 }],
-      [2, { y: -0.08, twist: -14, turn: -18, ...WIDE_LOW, r: at(1, -0.2, 0.92, 0.27, [1, -0.3, -0.2]), l: ARM.hip, handR: 0.6, handL: 0 }],
+      [2, { y: -0.08, twist: -14, turn: -18, ...WIDE_LOW, r: at(1, -0.2, 0.82, 0.27, [1, -0.3, -0.2]), l: ARM.hip, handR: 0.6, handL: 0 }],
       [3, { y: -0.05, twist: 0, turn: 0, ...WIDE_LOW, r: at(1, 0.14, 0.94, 0.32, [1, -0.3, -0.2]), l: ARM.hip, handR: 0.6, handL: 0 }],
     ],
   }),
@@ -427,8 +427,8 @@ export const moves: MoveDef[] = [
     id: 'jab-cross', name: 'Jab-Cross', tags: 'rock aerobic | arms | punch', beats: 2, level: 'mid', d: 2, parts: ['arms', 'torso'], mirror: true,
     desc: 'Boxer stance: snap the front jab and the rear cross on the half beats, then bounce back to guard.',
     keys: [
-      [0, { y: -0.06, twist: 12, turn: -6, ...STAGGER, l: at(-1, -0.04, 0.88, 0.32, [0.3, -1, 0]), r: GUARD, ...FIST }],
-      [0.5, { y: -0.07, twist: -26, turn: 10, ...STAGGER, r: at(1, -0.02, 0.88, 0.32, [0.3, -1, 0]), l: GUARD, ...FIST }],
+      [0, { y: -0.06, twist: 12, turn: -6, ...STAGGER, l: at(-1, -0.08, 0.8, 0.3, [0.3, -1, 0]), r: GUARD, ...FIST }],
+      [0.5, { y: -0.07, twist: -26, turn: 10, ...STAGGER, r: at(1, 0.0, 0.8, 0.3, [0.3, -1, 0]), l: GUARD, ...FIST }],
       [1, { y: -0.09, twist: 0, ...STAGGER, r: at(1, 0.08, 0.84, 0.2, [0.4, -1, -0.1]), l: at(-1, -0.08, 0.84, 0.2, [0.4, -1, -0.1]), ...FIST }],
       [1.5, { y: -0.04, twist: 0, ...STAGGER, r: at(1, 0.08, 0.84, 0.2, [0.4, -1, -0.1]), l: at(-1, -0.08, 0.84, 0.2, [0.4, -1, -0.1]), ...FIST }],
     ],

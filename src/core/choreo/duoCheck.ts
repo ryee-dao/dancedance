@@ -53,12 +53,15 @@ export function validatePartner(pm: PartnerMove, bpms: readonly number[] = [100,
   const fps = 60;
   for (const bpm of bpms) {
     for (const p of [1, 2] as const) {
-      const plan = partnerLoop(pm, p, 60 / bpm);
+      // One spare repetition after the checked window, so the check never
+      // runs into the groove after the plan's end (a partner move may start
+      // turned toward the partner, far from the groove's pose).
+      const plan = partnerLoop(pm, p, 60 / bpm, 3);
       const ev = new PoseEvaluator();
       const q = createPose();
       const sk = createSkeleton();
       const prev = new Float64Array(sk.p.length);
-      const dur = plan.loopBeats * plan.period;
+      const dur = 2 * pm.beats * plan.period;
       let maxStep = 0;
       const n = Math.ceil(dur * fps);
       for (let f = 0; f <= n; f++) {

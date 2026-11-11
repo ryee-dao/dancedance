@@ -69,7 +69,7 @@ The **Options** button on the home screen has:
 
 | Section | What it does |
 | --- | --- |
-| **Coach** | The coach's look: **Classic**, **Human** or **Sticker**. Each has a moving preview. |
+| **Coach** | The coach's look: **Classic**, **Human** or **Sticker**, each with a moving preview. Every look has a **Female** and a **Male** version: pick which one dances in single player (Female, the original figures, is the default). |
 | **Routine** | **Same every time** (the default) gives a song the same routine on every play, so you can learn it. **New every time** makes a different routine each play; the chorus combo stays the same. |
 | **Audio offset** | Moves the coach earlier or later (see below). |
 | **Songs without a beat map** | Website only. **Ask first** (explain, then ask), **Microphone** (listen straight away) or **Off** (no live listening). See [How the beat is found](#how-the-beat-is-found). |
@@ -84,7 +84,7 @@ If the coach looks early or late, adjust the audio offset. This is common with B
 
 ### Two players
 
-Choose **2 Players** in **Choose your level**. Two coaches dance side by side, as a pair: sometimes the same move, sometimes mirrored, one after the other, call and answer, or partner moves such as high fives and pat-a-cake. The level rules still apply (Chill has no jumps or crossing over). The choice is remembered until you switch back to **1 Player**.
+Choose **2 Players** in **Choose your level**. Two coaches dance side by side, as a pair: the female and the male version of the look chosen in **Options** (player 1 is the version chosen there, player 2 the other). Sometimes they do the same move, sometimes mirrored, one after the other, call and answer, or partner moves such as high fives, pat-a-cake, a do-si-do or an elbow swing (turned toward each other, right elbows hooked, skipping round the shared centre). The level rules still apply (Chill has no jumps or crossing over). The choice is remembered until you switch back to **1 Player**.
 
 ## How the beat is found
 
@@ -452,7 +452,7 @@ Cookies expire after weeks to months. If the error returns, repeat and update th
 
 ### The move library
 
-The coach picks from **658 base moves** in nine families (Latin, disco, funk, hip-hop, pop, rock, K-pop, party and aerobics), defined in `src/core/choreo/families/*.ts`, plus about 1,100 variations of them that are generated and checked automatically. Two-player mode adds 24 partner-only moves.
+The coach picks from **657 base moves** in nine families (Latin, disco, funk, hip-hop, pop, rock, K-pop, party and aerobics), defined in `src/core/choreo/families/*.ts`, plus about 1,100 variations of them that are generated and checked automatically. Two-player mode adds 24 partner-only moves.
 
 ### Levels
 
@@ -505,8 +505,8 @@ npm run build      # production build into dist/
 
 Demo benches, with the dev server running:
 
-- `http://localhost:5173/coach-demo.html`: the single coach. For example `?mode=gallery&move=<id>` loops one move, `?mode=sheet&family=rock` shows a contact sheet, `?style=classic|human|sticker` picks the look, `?compare=1` shows all three looks.
-- `http://localhost:5173/duo-demo.html`: two-player mode.
+- `http://localhost:5173/coach-demo.html`: the single coach. For example `?mode=gallery&move=<id>` loops one move, `?mode=sheet&family=rock` shows a contact sheet, `?style=classic|human|sticker` picks the look, `?build=female|male` the version, `?compare=1` shows all three looks.
+- `http://localhost:5173/duo-demo.html`: two-player mode (`?style=`, `?build=` for player 1; `?mode=sheet&moves=duo-elbow-swing&beats=0,1.5,3` shows partner moves at chosen beats).
 
 To add or change dance moves, read `src/core/choreo/AUTHORING.md` (where moves live, coordinates, checks with `tools/moves/check.ts`, and the quality bar).
 

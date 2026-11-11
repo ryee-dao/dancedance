@@ -22,8 +22,8 @@ import { DuoRenderer2D, type DuoCard, type DuoSceneInfo, type DuoStripInfo } fro
 import { DuoTracks, KIND_LABEL, type DuoCue } from '../core/coach/duoTracks';
 import { blendPose } from '../core/coach/poses';
 import { CH, createPose, createSkeleton, solveSkeleton, type Skeleton } from '../core/coach/skeleton';
-import { DEFAULT_COACH_STYLE, parseCoachStyle, type CoachStyle } from '../core/coach/styles';
-import { routineInfo, type CoachStage, type CoachStageDeps, type FrameStats, type RoutineInfo } from './coachStage';
+import { DEFAULT_COACH_STYLE, parseCoachStyle, type CoachBuild, type CoachStyle } from '../core/coach/styles';
+import { coachBuildOf, routineInfo, type CoachStage, type CoachStageDeps, type FrameStats, type RoutineInfo } from './coachStage';
 import type { FrameInfo } from './play';
 
 export type Players = 1 | 2;
@@ -150,6 +150,7 @@ class DuoStageImpl implements CoachStage {
   private strip: DuoStripInfo = { label: '', sig: false, now: this.nowCard, progress: 0, beatsToChange: Infinity, next: null, after: null };
   private scene: DuoSceneInfo = { t: 0, beat: 0, half: false, energy: 0.3, z1: 0, z2: 0, prop: null, strip: null };
   private prop: 'rope' | null = null;
+  private hook: 0 | 1 | -1 = 0;
   private lastWall = 0;
   private frameEma = 16.7;
   private drawEma = 1;
@@ -161,6 +162,11 @@ class DuoStageImpl implements CoachStage {
     return this.urlStyle ?? parseCoachStyle(this.deps.getStyle?.()) ?? DEFAULT_COACH_STYLE;
   }
 
+  /** P1's version (the chosen one); the renderer gives P2 the other. */
+  private build(): CoachBuild {
+    return coachBuildOf(this.deps);
+  }
+
   mount(stage: HTMLElement): void {
     this.host = stage;
     stage.classList.add('duo'); // play-screen CSS places DOM panels around the duo strip
@@ -170,7 +176,7 @@ class DuoStageImpl implements CoachStage {
     c.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;';
     stage.appendChild(c);
     this.canvas = c;
-    this.r = new DuoRenderer2D(c, this.style());
+    this.r = new DuoRenderer2D(c, this.style(), this.build());
     if (typeof ResizeObserver !== 'undefined') {
       this.ro = new ResizeObserver(() => (this.needResize = true));
       this.ro.observe(stage);
@@ -249,8 +255,10 @@ class DuoStageImpl implements CoachStage {
     }
     if (this.needResize) this.resize();
     const style = this.style();
-    if (style !== this.r.style) {
+    const build = this.build();
+    if (style !== this.r.style || build !== this.r.build) {
       this.r.style = style;
+      this.r.build = build;
       this.frozenDrawn = false;
     }
     const phase = info.phase;
@@ -286,6 +294,7 @@ class DuoStageImpl implements CoachStage {
     const v1 = this.tracks.v1, v2 = this.tracks.v2;
     this.depth[0] = this.depth[1] = 0;
     this.prop = null;
+    this.hook = 0;
     if (waiting || !v1 || !v2) {
       this.pose1.set(this.ready);
       this.pose2.set(this.ready);
@@ -310,6 +319,7 @@ class DuoStageImpl implements CoachStage {
       const own = partnerOf(i1.move);
       if (own) {
         this.prop = own.pm.prop;
+        this.hook = own.pm.hook;
         const mult = i1.half ? 2 : 1;
         const mb = own.part * 4 + (this.ev1.beat - i1.start) / mult;
         partnerDepth(own.pm, mb, this.pose1[CH.SPIN], this.pose2[CH.SPIN], this.depth);
@@ -329,6 +339,7 @@ class DuoStageImpl implements CoachStage {
     sc.z1 = this.depth[0];
     sc.z2 = this.depth[1];
     sc.prop = this.prop;
+    sc.hook = this.hook;
     sc.strip = this.strip;
     this.r.render(this.sk1, this.sk2, sc);
     this.frozenDrawn = phase === 'paused';

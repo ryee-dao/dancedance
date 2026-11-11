@@ -37,6 +37,22 @@ describe('settings.routineMode', () => {
   });
 });
 
+describe('settings.coachBuild', () => {
+  it("defaults to 'female' (today's figures), keeps a choice and persists it", async () => {
+    const { store, data } = await freshStore();
+    expect(store.settings().coachBuild).toBe('female');
+    expect(store.updateSettings({ coachBuild: 'male' }).coachBuild).toBe('male');
+    expect(JSON.parse(data.get('dd.settings') ?? '{}').coachBuild).toBe('male');
+    const again = await freshStore(Object.fromEntries(data));
+    expect(again.store.settings().coachBuild).toBe('male');
+  });
+
+  it('drops bad stored values without touching the other settings', async () => {
+    const { store } = await freshStore({ 'dd.settings': JSON.stringify({ coachBuild: 'robot', coachStyle: 'human' }) });
+    expect(store.settings()).toMatchObject({ coachBuild: 'female', coachStyle: 'human' });
+  });
+});
+
 describe('play counts', () => {
   it('start at 0, count up, and persist', async () => {
     const { store, data } = await freshStore();

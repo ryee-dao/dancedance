@@ -19,9 +19,10 @@
  */
 
 import { BODY, J, NUM_JOINTS, type Skeleton } from './skeleton';
-import { CAM, PIV_Y } from './styles';
+import { CAM, PIV_Y, type CoachBuild } from './styles';
 
-export type HairStyle = 'ponytail' | 'puff';
+/** ponytail / puff: the female looks; crop (short hair) / beanie (knit cap over short hair): the male looks. */
+export type HairStyle = 'ponytail' | 'puff' | 'crop' | 'beanie';
 
 /** [from, to] along a limb chain (0 = root joint, 1 = middle joint, 2 = end joint). */
 export type Span = readonly [number, number];
@@ -53,8 +54,12 @@ export interface HumanLook {
   skinLine: string;
   hair: string;
   hairStyle: HairStyle;
-  /** Hair band / tie colour (null = none). */
+  /** Hair band / tie colour, or the beanie's colour (null = none). */
   band: string | null;
+  /** Brow weight (1 = default). */
+  brow: number;
+  /** A sport stripe across the chest of the top (colour), or null. */
+  stripe: string | null;
   top: string;
   /** Shirt hem height in the pelvis frame (lower = longer top). */
   hemY: number;
@@ -565,7 +570,8 @@ export class HumanPainter {
     }
     this.paint(ctx, pass, L.top, true);
     if (pass !== PASS_FILL) return;
-    if (L.hood && sk.rt[8] < 0) {
+    if (L.stripe) this.chestStripe(ctx, sk, L.stripe);
+    if (L.hood && sk.rt[8] < -0.35) {
       // Back to the viewer: the hood lies on the back of the hoodie.
       ctx.beginPath();
       this.local(p, J.CHEST, sk.rt, 0, -0.005, -0.04);
@@ -615,6 +621,27 @@ export class HumanPainter {
     }
   }
 
+  /** A band across the chest, clipped to the top's outline (current path). */
+  private chestStripe(ctx: CanvasRenderingContext2D, sk: Skeleton, color: string): void {
+    const L = this.look;
+    const p = sk.p;
+    ctx.save();
+    ctx.clip();
+    ctx.beginPath();
+    for (let sd = -1; sd <= 1; sd += 2) {
+      this.torsoPt(p, sk.rt, J.CHEST, sd * (L.shoulderW + 0.04), -0.1, 0, L.depth);
+      this.proj(this.wx, this.wy, this.wz);
+      if (sd < 0) ctx.moveTo(this.qx, this.qy);
+      else ctx.lineTo(this.qx, this.qy);
+    }
+    ctx.strokeStyle = color;
+    ctx.lineCap = 'butt';
+    ctx.lineWidth = 0.034 * this.scale;
+    ctx.stroke();
+    ctx.restore();
+    ctx.lineCap = 'round';
+  }
+
   // -------------------------------------------------------------------------
   // Limbs
 
@@ -648,7 +675,17 @@ export class HumanPainter {
     }
   }
 
-  private arm(ctx: CanvasRenderingContext2D, sk: Skeleton, side: number, pass: number): void {
+  /**
+   * Redraw one forearm + hand (outline and fill) with the projection of the
+   * last draw(): a partner's hooked arm passing in front (see FigurePainter).
+   */
+  redrawForearm(ctx: CanvasRenderingContext2D, sk: Skeleton, side: number): void {
+    this.prepareHands(sk);
+    this.arm(ctx, sk, side, PASS_LINE, 0.9);
+    this.arm(ctx, sk, side, PASS_FILL, 0.9);
+  }
+
+  private arm(ctx: CanvasRenderingContext2D, sk: Skeleton, side: number, pass: number, from = 0): void {
     const L = this.look;
     const p = sk.p;
     const sh = side === 1 ? J.SH_R : J.SH_L;
@@ -665,17 +702,17 @@ export class HumanPainter {
     ctx.beginPath();
     if (!fill) {
       ctx.beginPath();
-      this.limb(ctx, p, sh, el, ha, k, 0, 2, g);
-      if (L.sleeve) this.limb(ctx, p, sh, el, ha, k, L.sleeve[0], L.sleeve[1] + 0.03, 0.004 + g, true);
-      if (L.cuff) this.limb(ctx, p, sh, el, ha, k, L.cuff[0] - 0.03, L.cuff[1] + 0.03, 0.006 + g, true);
+      this.limb(ctx, p, sh, el, ha, k, from, 2, g);
+      if (L.sleeve && L.sleeve[1] > from) this.limb(ctx, p, sh, el, ha, k, Math.max(from, L.sleeve[0]), L.sleeve[1] + 0.03, 0.004 + g, true, L.sleeve[0] >= from);
+      if (L.cuff && L.cuff[1] > from) this.limb(ctx, p, sh, el, ha, k, Math.max(from, L.cuff[0] - 0.03), L.cuff[1] + 0.03, 0.006 + g, true);
       this.paint(ctx, pass, L.skin, false);
       this.hand(ctx, p, ha, side, open, pass, side === 1 ? sk.formR : sk.formL);
       return;
     }
     // The hand covers the last bit of the forearm, so a sleeve to the wrist hides the skin.
-    this.skin(ctx, p, sh, el, ha, k, 0, L.sleeve, 0.07);
-    if (L.sleeve) this.cover(ctx, p, sh, el, ha, k, L.sleeve[0], L.sleeve[1], 0.004, col);
-    if (L.cuff) this.cover(ctx, p, sh, el, ha, k, L.cuff[0], L.cuff[1], 0.006, dark);
+    this.skin(ctx, p, sh, el, ha, k, from, L.sleeve, 0.07);
+    if (L.sleeve && L.sleeve[1] > from) this.cover(ctx, p, sh, el, ha, k, Math.max(from, L.sleeve[0]), L.sleeve[1], 0.004, col, L.sleeve[0] >= from);
+    if (L.cuff && L.cuff[1] > from) this.cover(ctx, p, sh, el, ha, k, Math.max(from, L.cuff[0]), L.cuff[1], 0.006, dark);
     this.hand(ctx, p, ha, side, open, pass, side === 1 ? sk.formR : sk.formL);
   }
 
@@ -1016,6 +1053,7 @@ export class HumanPainter {
         ctx.lineCap = 'round';
       }
       if (L.hairStyle === 'ponytail') this.backHair(ctx, pass, rx, ry, g, s, mini);
+      if (pass === PASS_FILL && L.hairStyle === 'beanie') this.beanie(ctx, rx, ry, 0, false);
       ctx.restore();
       return;
     }
@@ -1107,8 +1145,65 @@ export class HumanPainter {
         ctx.arc(bx, by, br, 0, Math.PI * 2);
       }
       this.flat(ctx, pass, L.hair);
+    } else if (L.hairStyle === 'crop') {
+      // Short crop: a little volume over the crown (the outline shows it).
+      ctx.beginPath();
+      ctx.ellipse(0, -ry * 0.42, rx * 1.05 + g, ry * 0.74 + g, 0, 0, Math.PI * 2);
+      this.flat(ctx, pass, L.hair);
+    } else if (L.hairStyle === 'beanie') {
+      // Knit cap: its silhouette (dome + pom-pom) behind the head; the front is drawn over the face.
+      ctx.beginPath();
+      this.beanieDome(ctx, rx + g, ry + g, 0);
+      ctx.moveTo(rx * 0.24 + g, -ry * 1.24);
+      ctx.arc(0, -ry * 1.24, rx * 0.24 + g, 0, Math.PI * 2);
+      this.flat(ctx, pass, L.band ?? L.hair);
     }
     void s;
+  }
+
+  /** Beanie dome outline (local head frame, y down), shifted by `f` toward where the face points. */
+  private beanieDome(ctx: CanvasRenderingContext2D, rx: number, ry: number, f: number): void {
+    ctx.moveTo(-rx * 1.07 + f * 0.3, -ry * 0.26);
+    ctx.bezierCurveTo(-rx * 1.14 + f, -ry * 1.45, rx * 1.14 + f, -ry * 1.45, rx * 1.07 + f * 0.3, -ry * 0.26);
+    ctx.closePath();
+  }
+
+  /** Beanie over the head: dome, folded cuff with ribs, pom-pom. */
+  private beanie(ctx: CanvasRenderingContext2D, rx: number, ry: number, fo: number, front: boolean): void {
+    const L = this.look;
+    const col = L.band ?? L.hair;
+    const f = front ? fo * 0.4 : 0;
+    ctx.beginPath();
+    this.beanieDome(ctx, rx, ry, f);
+    ctx.fillStyle = col;
+    ctx.fill();
+    // Cuff: a darker fold across the forehead.
+    ctx.beginPath();
+    ctx.moveTo(-rx * 1.09 + f * 0.3, -ry * 0.62);
+    ctx.quadraticCurveTo(f * 0.5, -ry * 0.76, rx * 1.09 + f * 0.3, -ry * 0.62);
+    ctx.lineTo(rx * 1.08 + f * 0.3, -ry * 0.24);
+    ctx.quadraticCurveTo(f * 0.5, -ry * 0.36, -rx * 1.08 + f * 0.3, -ry * 0.24);
+    ctx.closePath();
+    ctx.fillStyle = col;
+    ctx.fill();
+    ctx.strokeStyle = L.line;
+    ctx.lineWidth = this.lineW();
+    ctx.stroke();
+    ctx.beginPath();
+    for (let i = -3; i <= 3; i++) {
+      const x = i * rx * 0.27 + f * 0.35;
+      const bow = ry * 0.06 * (1 - (i * i) / 12);
+      ctx.moveTo(x, -ry * 0.62 - bow);
+      ctx.lineTo(x, -ry * 0.3 - bow);
+    }
+    ctx.globalAlpha *= 0.45;
+    ctx.stroke();
+    ctx.globalAlpha /= 0.45;
+    // Pom-pom.
+    ctx.beginPath();
+    ctx.arc(f, -ry * 1.24, rx * 0.24, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff7ea';
+    ctx.fill();
   }
 
   private flat(ctx: CanvasRenderingContext2D, pass: number, color: string): void {
@@ -1121,6 +1216,48 @@ export class HumanPainter {
     const L = this.look;
     ctx.beginPath();
     const f = fo * 0.5;
+    if (L.hairStyle === 'beanie') {
+      // Short sideburns under the cap, then the cap itself.
+      ctx.moveTo(-rx * 1.03, -ry * 0.02);
+      ctx.lineTo(-rx * 1.05, -ry * 0.4);
+      ctx.lineTo(-rx * 0.78, -ry * 0.4);
+      ctx.lineTo(-rx * 0.84, -ry * 0.02);
+      ctx.closePath();
+      ctx.moveTo(rx * 1.03, -ry * 0.02);
+      ctx.lineTo(rx * 1.05, -ry * 0.4);
+      ctx.lineTo(rx * 0.78, -ry * 0.4);
+      ctx.lineTo(rx * 0.84, -ry * 0.02);
+      ctx.closePath();
+      ctx.fillStyle = L.hair;
+      ctx.fill();
+      this.beanie(ctx, rx, ry, fo, true);
+      void s;
+      return;
+    }
+    if (L.hairStyle === 'crop') {
+      // Short crop with a side part and short sideburns; the hairline sits high.
+      ctx.moveTo(-rx * 1.03, -ry * 0.05);
+      ctx.bezierCurveTo(-rx * 1.12, -ry * 0.9, -rx * 0.6, -ry * 1.2, f, -ry * 1.2);
+      ctx.bezierCurveTo(rx * 0.62, -ry * 1.2, rx * 1.12, -ry * 0.9, rx * 1.03, -ry * 0.05);
+      ctx.lineTo(rx * 0.9, -ry * 0.08);
+      ctx.bezierCurveTo(rx * 0.86, -ry * 0.5, rx * 0.5 + f, -ry * 0.66, rx * 0.1 + f, -ry * 0.62);
+      ctx.quadraticCurveTo(-rx * 0.25 + f, -ry * 0.72, -rx * 0.55 + f, -ry * 0.6);
+      ctx.bezierCurveTo(-rx * 0.86, -ry * 0.52, -rx * 0.9, -ry * 0.3, -rx * 0.9, -ry * 0.08);
+      ctx.closePath();
+      ctx.fillStyle = L.hair;
+      ctx.fill();
+      // Side part.
+      ctx.strokeStyle = L.skinLine;
+      ctx.globalAlpha *= 0.5;
+      ctx.lineWidth = Math.max(1, this.olPx * 0.5);
+      ctx.beginPath();
+      ctx.moveTo(-rx * 0.38 + f, -ry * 0.66);
+      ctx.quadraticCurveTo(-rx * 0.32 + f, -ry * 0.95, -rx * 0.12 + f, -ry * 1.12);
+      ctx.stroke();
+      ctx.globalAlpha /= 0.5;
+      void s;
+      return;
+    }
     if (L.hairStyle === 'puff') {
       // Hairline under the puff.
       ctx.moveTo(-rx * 1.02, -ry * 0.05);
@@ -1166,7 +1303,7 @@ export class HumanPainter {
     ctx.fill();
     // Brows.
     ctx.strokeStyle = L.hair;
-    ctx.lineWidth = ry * 0.07;
+    ctx.lineWidth = ry * 0.07 * L.brow;
     ctx.beginPath();
     ctx.moveTo(ex - sp - rx * 0.17, ey - ry * 0.2);
     ctx.quadraticCurveTo(ex - sp, ey - ry * 0.28, ex - sp + rx * 0.16, ey - ry * 0.21);
@@ -1226,6 +1363,8 @@ export const LOOKS: Readonly<Record<'human' | 'sticker', HumanLook>> = {
     hair: '#3a2217',
     hairStyle: 'ponytail',
     band: '#ffd84a',
+    brow: 1,
+    stripe: null,
     top: '#f7f3ff',
     hemY: -0.004,
     neckDip: 0.004,
@@ -1264,6 +1403,8 @@ export const LOOKS: Readonly<Record<'human' | 'sticker', HumanLook>> = {
     hair: '#1c1311',
     hairStyle: 'puff',
     band: '#ffd84a',
+    brow: 1,
+    stripe: null,
     top: '#c3b2ff',
     hemY: -0.075,
     neckDip: 0.0,
@@ -1283,3 +1424,76 @@ export const LOOKS: Readonly<Record<'human' | 'sticker', HumanLook>> = {
     blush: '#c0566a',
   },
 };
+
+/**
+ * The male versions: the same drawing style as their look, with a broader,
+ * straighter build (shoulders wider than the hips, thicker limbs and neck),
+ * short hair, and their own outfit.
+ */
+export const MALE_LOOKS: Readonly<Record<'human' | 'sticker', HumanLook>> = {
+  /** Human, male: athletic build, short cropped hair, striped tee with elbow sleeves, long basketball shorts over two-tone tights. */
+  human: {
+    ...LOOKS.human,
+    neckW: 0.036,
+    neckR: 0.031,
+    shoulderW: 0.152,
+    chestW: 0.124,
+    waistW: 0.1,
+    hipW: 0.108,
+    depth: 0.06,
+    arm: [0.039, 0.03, 0.031, 0.022],
+    leg: [0.05, 0.037, 0.04, 0.024],
+    headRx: 0.062,
+    headRy: 0.074,
+    hand: 1.08,
+    shoe: [0.026, 0.03],
+    skin: '#d9a07a',
+    skinLine: '#9a5f42',
+    hair: '#241510',
+    hairStyle: 'crop',
+    band: null,
+    brow: 1.45,
+    top: '#f7f3ff',
+    stripe: '#ffd84a',
+    hemY: -0.03,
+    neckDip: 0.006,
+    sleeve: [0, 0.85],
+    cuff: [1.84, 1.97],
+    shorts: '#7a5cff',
+    shortsLen: 0.88,
+    legCover: [0, 1.96],
+  },
+  /** Sticker, male: broad soft build, knit beanie, crew sweatshirt with a chest band, joggers. */
+  sticker: {
+    ...LOOKS.sticker,
+    neckW: 0.04,
+    neckR: 0.034,
+    shoulderW: 0.158,
+    chestW: 0.142,
+    waistW: 0.134,
+    hipW: 0.126,
+    depth: 0.078,
+    arm: [0.045, 0.037, 0.038, 0.027],
+    leg: [0.064, 0.046, 0.048, 0.029],
+    headRx: 0.068,
+    headRy: 0.076,
+    hand: 1.18,
+    shoe: [0.028, 0.031],
+    skin: '#a8673f',
+    skinLine: '#5e321b',
+    hair: '#1c1311',
+    hairStyle: 'beanie',
+    band: '#ff9d3c',
+    brow: 1.5,
+    top: '#c3b2ff',
+    stripe: '#fff4e2',
+    hemY: -0.08,
+    hood: null,
+    blush: null,
+  },
+};
+
+/** The human look of a style ('human' | 'sticker') in a build. */
+export function humanLook(style: 'human' | 'sticker', build: CoachBuild): HumanLook {
+  return build === 'male' ? MALE_LOOKS[style] : LOOKS[style];
+}

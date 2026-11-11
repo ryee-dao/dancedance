@@ -1,104 +1,77 @@
 /**
  * Canvas 2D renderer for the two-player stage: two coaches side by side
- * (P1 left, P2 right), each with its own colour identity (floor ring, "P1" /
- * "P2" tag, tinted top) and look, plus a duo now / next strip that shows one
- * shared card when both do the same move and split P1 / P2 cards when they
- * differ. Left / right limb colours stay as in single player.
+ * (P1 left, P2 right) in the same look, as its female + male pair (P1 the
+ * version chosen in Options, P2 the other), each with its own colour
+ * identity (floor ring, "P1" / "P2" tag, tinted top), plus a duo now / next
+ * strip that shows one shared card when both do the same move and split
+ * P1 / P2 cards when they differ. Left / right limb colours stay as in
+ * single player.
  *
- * Uses the shared FigurePainter (classic look) or HumanPainter (human /
- * sticker looks, recoloured per player). The per-frame path allocates
- * nothing (gradients cached per resize).
+ * Uses the shared FigurePainter with a per-player tint. The per-frame path
+ * allocates nothing (gradients cached per resize).
  */
 
 import { DUO_HOME } from '../choreo/duoMoves';
 import { COLORS, FigurePainter, fitText } from './renderer';
-import { HumanPainter, LOOKS, type HumanLook } from './humanPainter';
-import { J, NUM_JOINTS, type Skeleton } from './skeleton';
-import { CAM, PIV_Y, type CoachStyle } from './styles';
+import { J, type Skeleton } from './skeleton';
+import { CAM, DEFAULT_COACH_BUILD, duoBuilds, type CoachBuild, type CoachStyle } from './styles';
 
 export const PLAYER_COLORS = {
   1: { main: '#ffb534', light: '#ffe2a6', dark: '#a86a00', top: '#ffe6ad', hood: '#ffd47a' },
   2: { main: '#4fc3ff', light: '#c4ecff', dark: '#1a77a8', top: '#bfe6ff', hood: '#8fd2ff' },
 } as const;
 
-/** Look of P2 for each P1 style (two different coaches). */
-export function partnerStyle(s: CoachStyle): 'human' | 'sticker' {
-  return s === 'sticker' ? 'human' : 'sticker';
-}
-
-function tinted(base: HumanLook, p: 1 | 2): HumanLook {
-  const c = PLAYER_COLORS[p];
-  return { ...base, top: c.top, ...(base.hood ? { hood: c.hood } : {}) };
-}
-
-/** One on-stage figure: classic via FigurePainter, human looks via a recoloured HumanPainter. */
+/**
+ * One on-stage figure: the shared FigurePainter in the pair's look, in its
+ * own build (P1 the chosen version, P2 the other), with its top tinted in
+ * the player's colour.
+ */
 export class DuoFigure {
   private fp = new FigurePainter();
-  private hp: HumanPainter | null = null;
-  private lookKey = '';
-  private readonly px = new Float64Array(NUM_JOINTS * 2);
-  private readonly ps = new Float64Array(NUM_JOINTS);
   style: CoachStyle = 'classic';
+  build: CoachBuild = 'female';
   /** Screen x / y of the head top after draw (tag placement). */
   headX = 0;
   headY = 0;
   /** Screen positions of the hands after draw: [rx, ry, lx, ly]. */
   readonly hands = new Float64Array(4);
+  private lastScale = 1;
+  private lastAlpha = 1;
 
-  constructor(private player: 1 | 2) {}
+  constructor(player: 1 | 2) {
+    const c = PLAYER_COLORS[player];
+    this.fp.tint = { top: c.top, hood: c.hood };
+  }
 
   draw(ctx: CanvasRenderingContext2D, sk: Skeleton, cx: number, floorY: number, scale: number, t: number, mini = false, alpha = 1): void {
-    if (this.style === 'classic') {
-      this.fp.style = 'classic';
-      this.fp.draw(ctx, sk, cx, floorY, scale, t, { mini, shadow: !mini, alpha });
-      this.headX = this.fp.jx(J.HEAD);
-      this.headY = this.fp.jy(J.HEAD) - 0.11 * scale;
-      this.hands[0] = this.fp.jx(J.HA_R);
-      this.hands[1] = this.fp.jy(J.HA_R);
-      this.hands[2] = this.fp.jx(J.HA_L);
-      this.hands[3] = this.fp.jy(J.HA_L);
-      return;
-    }
-    const key = `${this.style}`;
-    if (key !== this.lookKey || !this.hp) {
-      const look = tinted(LOOKS[this.style], this.player);
-      if (!this.hp) this.hp = new HumanPainter(look);
-      else this.hp.setLook(look);
-      this.lookKey = key;
-    }
-    const p = sk.p;
-    for (let j = 0; j < NUM_JOINTS; j++) {
-      const x = p[j * 3], y = p[j * 3 + 1], z = p[j * 3 + 2];
-      const s = CAM / (CAM - z);
-      this.ps[j] = s;
-      this.px[j * 2] = cx + x * s * scale;
-      this.px[j * 2 + 1] = floorY - (PIV_Y + (y - PIV_Y) * s) * scale;
-    }
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    if (!mini) {
-      const air = sk.air;
-      const x = cx + ((p[J.AN_L * 3] + p[J.AN_R * 3]) * 0.5) * scale;
-      const spread = Math.abs(p[J.AN_R * 3] - p[J.AN_L * 3]);
-      const k = Math.max(0.35, 1 - air * 3.2);
-      ctx.globalAlpha = alpha * 0.55 * k;
-      ctx.fillStyle = '#05040a';
-      ctx.beginPath();
-      ctx.ellipse(x, floorY + 0.01 * scale, (0.2 + spread * 0.5) * k * scale, 0.035 * k * scale, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = alpha;
-    }
-    this.hp.draw(ctx, sk, this.px, this.ps, cx, floorY, scale, t, mini);
-    ctx.restore();
-    this.headX = this.px[J.HEAD * 2];
-    this.headY = this.px[J.HEAD * 2 + 1] - 0.115 * scale * this.ps[J.HEAD];
-    this.hands[0] = this.px[J.HA_R * 2];
-    this.hands[1] = this.px[J.HA_R * 2 + 1];
-    this.hands[2] = this.px[J.HA_L * 2];
-    this.hands[3] = this.px[J.HA_L * 2 + 1];
+    this.lastScale = scale;
+    this.lastAlpha = alpha;
+    const fp = this.fp;
+    fp.style = this.style;
+    fp.build = this.build;
+    fp.draw(ctx, sk, cx, floorY, scale, t, { mini, shadow: !mini, alpha });
+    this.headX = fp.jx(J.HEAD);
+    this.headY = fp.jy(J.HEAD) - (this.style === 'classic' ? 0.11 : 0.115) * scale;
+    this.hands[0] = fp.jx(J.HA_R);
+    this.hands[1] = fp.jy(J.HA_R);
+    this.hands[2] = fp.jx(J.HA_L);
+    this.hands[3] = fp.jy(J.HA_L);
   }
+
+  /** Redraw one forearm + hand on top (projection of the last draw). */
+  redrawForearm(ctx: CanvasRenderingContext2D, sk: Skeleton, side: 1 | -1): void {
+    this.fp.redrawForearm(ctx, sk, side, this.lastScale, this.lastAlpha);
+  }
+}
+
+/**
+ * Partner moves whose arms link through each other (elbow swing): after both
+ * figures are drawn, the BACK figure's linking forearm is drawn again on top,
+ * so each arm passes in front of the other's upper arm (the crooks interlock)
+ * however the bodies are ordered.
+ */
+export function drawHook(c: CanvasRenderingContext2D, back: DuoFigure, sk: Skeleton, side: 1 | -1): void {
+  back.redrawForearm(c, sk, side);
 }
 
 export interface DuoCard {
@@ -133,6 +106,8 @@ export interface DuoSceneInfo {
   z2: number;
   /** Prop between the players (tug-of-war rope), or null. */
   prop: 'rope' | null;
+  /** Linked arms (elbow swing): which arm (1 = right, -1 = left) hooks through the partner's, or 0. */
+  hook?: 0 | 1 | -1;
   strip: DuoStripInfo | null;
 }
 
@@ -149,6 +124,13 @@ export interface DuoLayout {
 const LABEL_SIZE = 0.065;
 const LABEL_Y = 0.105;
 const LABEL_BOTTOM = LABEL_Y + LABEL_SIZE * 0.6;
+
+/**
+ * How far a player's floor point moves down per unit of depth toward the
+ * viewer (× scale): a slightly raised camera, so a partner passing behind
+ * stands visibly higher and stays readable over the front one's shoulder.
+ */
+export const DEPTH_RISE = 0.5;
 
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
 
@@ -167,22 +149,35 @@ export class DuoRenderer2D {
   private fontCache = new Map<string, { size: number; text: string }>();
   layout: DuoLayout = { w: 1, h: 1, cx: 0, floorY: 0, scale: 1, strip: null };
   private _style: CoachStyle = 'classic';
+  private _build: CoachBuild = DEFAULT_COACH_BUILD;
 
-  constructor(readonly canvas: HTMLCanvasElement, style: CoachStyle = 'classic') {
+  constructor(readonly canvas: HTMLCanvasElement, style: CoachStyle = 'classic', build: CoachBuild = DEFAULT_COACH_BUILD) {
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw new Error('Canvas 2D unavailable');
     this.ctx = ctx;
+    this._build = build;
     this.style = style;
   }
 
+  /** The pair's look: both players dance in it. */
   get style(): CoachStyle {
     return this._style;
   }
   set style(s: CoachStyle) {
     this._style = s;
-    const p2 = partnerStyle(s);
-    this.fig1.style = this.mini1.style = this.mini3.style = s;
-    this.fig2.style = this.mini2.style = this.mini4.style = p2;
+    for (const f of [this.fig1, this.fig2, this.mini1, this.mini2, this.mini3, this.mini4]) f.style = s;
+    this.build = this._build;
+  }
+
+  /** The chosen version: P1 dances it, P2 the other one (a female + male pair). */
+  get build(): CoachBuild {
+    return this._build;
+  }
+  set build(b: CoachBuild) {
+    this._build = b;
+    const [b1, b2] = duoBuilds(b);
+    this.fig1.build = this.mini1.build = this.mini3.build = b1;
+    this.fig2.build = this.mini2.build = this.mini4.build = b2;
   }
 
   /**
@@ -253,8 +248,9 @@ export class DuoRenderer2D {
       const k = CAM / (CAM - z);
       const fig = p === 1 ? this.fig1 : this.fig2;
       const hx = this.homeX(p);
-      fig.draw(c, sk, L.cx + (hx - L.cx) * k, L.floorY + z * L.scale * 0.28, L.scale * k, scene.t);
+      fig.draw(c, sk, L.cx + (hx - L.cx) * k, L.floorY + z * L.scale * DEPTH_RISE, L.scale * k, scene.t);
     }
+    if (scene.hook) drawHook(c, order[0] === 1 ? this.fig1 : this.fig2, order[0] === 1 ? sk1 : sk2, scene.hook);
     if (scene.prop === 'rope') drawRope(c, this.fig1, this.fig2, L.scale);
     for (const p of order) this.tag(p);
     if (scene.strip && L.strip) this.strip(scene.strip, scene.t);

@@ -138,7 +138,7 @@ export const ARM = {
   /** Hands meeting in front of the chest (clap). */
   clap: hand(-0.115, -0.11, 0.17, [0.5, -1, -0.2]),
   /** Hands meeting overhead (clap up high). */
-  clapHigh: [176, 0, 230, 0] as ArmAngles,
+  clapHigh: [178, 0, 214, 0] as ArmAngles,
   /** Bent arm forward, swinging (march / jog). */
   swingFwd: hand(0.02, -0.12, 0.2, [0.1, -1, -0.2]),
   swingBack: hand(0.04, -0.27, -0.1, [0.1, -0.2, -1]),

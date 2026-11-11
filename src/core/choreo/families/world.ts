@@ -131,7 +131,7 @@ const ribbon = (i: number): PoseSpec => ({ r: at(1, EIGHT[i][0], EIGHT[i][1], 0.
 // Balinese agem: elbows lifted to shoulder height, hands flexed up.
 const agem: PoseSpec = { r: at(1, 0.33, 0.9, 0.08, [1, -0.1, -0.2]), l: at(-1, -0.33, 0.9, 0.08, [1, -0.1, -0.2]), ...OPEN };
 // Lezginka: one arm straight out to the side, the other fist in front of the chest.
-const lezgR: PoseSpec = { r: [92, 2, 92, 2], l: at(-1, 0.03, 0.82, 0.22, ACROSS), ...FIST };
+const lezgR: PoseSpec = { r: [92, 2, 92, 2], l: at(-1, 0.02, 0.68, 0.22, ACROSS), ...FIST };
 
 export const patterns: PatternSet = {
   foot: {},

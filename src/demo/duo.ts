@@ -3,9 +3,11 @@
  *
  *   ?mode=song   (default) the two-player stage dancing the synthetic song
  *                (level=chill|cardio|sweaty, bpm, style=classic|human|sticker,
+ *                build=female|male (P1's version; P2 dances the other),
  *                t=<sec>, freeze=1, sig=gallop,lasso to force a signature)
  *   ?mode=sheet  contact sheet of the partner moves: rows of moves x frames,
- *                both figures per cell (&moves=id1,id2, &page, &per, &frames)
+ *                both figures per cell (&moves=id1,id2, &page, &per, &frames,
+ *                &beats=0,1.5,3 for chosen beats, &cw / &ch cell size)
  *   ?mode=bench  times single vs duo stage frames (results in __demo.result)
  *
  * Debug API: window.__demo.
@@ -16,8 +18,8 @@ import { partnerFrame, contactReport } from '../core/choreo/duoCheck';
 import { DUO_HOME } from '../core/choreo/duoMoves';
 import type { Intensity } from '../core/choreo/generator';
 import { COLORS } from '../core/coach/renderer';
-import { DuoFigure, drawRope, partnerStyle, PLAYER_COLORS } from '../core/coach/duoRenderer';
-import { CAM, parseCoachStyle, type CoachStyle } from '../core/coach/styles';
+import { DEPTH_RISE, DuoFigure, drawHook, drawRope, PLAYER_COLORS } from '../core/coach/duoRenderer';
+import { CAM, DEFAULT_COACH_BUILD, duoBuilds, parseCoachBuild, parseCoachStyle, type CoachStyle } from '../core/coach/styles';
 import { createCoachStage } from '../ui/coachStage';
 import { createDuoStage } from '../ui/duoStage';
 import type { FrameInfo, StageRenderer } from '../ui/play';
@@ -30,6 +32,8 @@ const expose = (o: Record<string, unknown>): void => {
 const q = new URLSearchParams(location.search);
 const mode = q.get('mode') ?? 'song';
 const style: CoachStyle = parseCoachStyle(q.get('style')) ?? 'human';
+/** ?build=female|male: the chosen version (P1); P2 dances the other one. */
+const build = parseCoachBuild(q.get('build')) ?? DEFAULT_COACH_BUILD;
 const level = (q.get('level') ?? 'cardio') as Intensity;
 const bpm = Number(q.get('bpm') ?? 120);
 
@@ -46,6 +50,7 @@ function runSong(): void {
     getIntensity: () => level,
     isTV: q.get('tv') === '1',
     getStyle: () => style,
+    getBuild: () => build,
     ...(sig ? { getStyleOverride: () => ({ signature: sig.split(',') }) } : {}),
   });
   stage.mount(host);
@@ -77,7 +82,9 @@ function runSheet(): void {
   const list = PARTNER_MOVES.filter((m) => !ids || ids.includes(m.id));
   const per = Number(q.get('per') ?? 6);
   const page = Number(q.get('page') ?? 0);
-  const frames = Number(q.get('frames') ?? 8);
+  // &beats=0,1.5,3 picks the beats shown (default: `frames` evenly over the move).
+  const beatList = q.get('beats')?.split(',').map(Number).filter((b) => Number.isFinite(b));
+  const frames = beatList?.length ?? Number(q.get('frames') ?? 8);
   const rows = list.slice(page * per, page * per + per);
   const cw = Number(q.get('cw') ?? 230), ch = Number(q.get('ch') ?? 210);
   const labelW = 210;
@@ -89,8 +96,8 @@ function runSheet(): void {
   ctx.fillStyle = COLORS.bg1;
   ctx.fillRect(0, 0, c.width, c.height);
   const f1 = new DuoFigure(1), f2 = new DuoFigure(2);
-  f1.style = style;
-  f2.style = partnerStyle(style);
+  f1.style = f2.style = style;
+  [f1.build, f2.build] = duoBuilds(build);
   rows.forEach((pm: PartnerMove, r) => {
     const y0 = r * ch;
     ctx.fillStyle = r % 2 ? '#191329' : '#1d1730';
@@ -111,7 +118,7 @@ function runSheet(): void {
       ctx.fillText(`P2: ${pm.p2.map((m) => m.name).join(' → ')}`, 10, y0 + 122);
     }
     for (let k = 0; k < frames; k++) {
-      const b = (k / frames) * pm.beats;
+      const b = beatList ? beatList[k] : (k / frames) * pm.beats;
       const fr = partnerFrame(pm, b, bpm);
       const x0 = labelW + k * cw;
       ctx.strokeStyle = '#2b2440';
@@ -131,7 +138,15 @@ function runSheet(): void {
         ctx.beginPath();
         ctx.rect(x0 + 1, y0 + 1, cw - 2, ch - 2);
         ctx.clip();
-        (p === 1 ? f1 : f2).draw(ctx, fr.sk[p - 1], mid + hx * kk, floor + z * scale * 0.28, scale * kk, b * 0.5, false);
+        (p === 1 ? f1 : f2).draw(ctx, fr.sk[p - 1], mid + hx * kk, floor + z * scale * DEPTH_RISE, scale * kk, b * 0.5, false);
+        ctx.restore();
+      }
+      if (pm.hook) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x0 + 1, y0 + 1, cw - 2, ch - 2);
+        ctx.clip();
+        drawHook(ctx, order[0] === 1 ? f1 : f2, fr.sk[order[0] - 1], pm.hook);
         ctx.restore();
       }
       if (pm.prop === 'rope') drawRope(ctx, f1, f2, scale);
@@ -162,7 +177,7 @@ function runBench(): void {
     stage.unmount();
     return ms;
   };
-  const deps = { getIntensity: () => level, isTV: false, getStyle: () => style };
+  const deps = { getIntensity: () => level, isTV: false, getStyle: () => style, getBuild: () => build };
   const result: Record<string, number> = {};
   for (let rep = 0; rep < 2; rep++) {
     result.single = time(createCoachStage(deps), 300);

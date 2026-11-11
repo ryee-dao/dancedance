@@ -60,6 +60,7 @@ export const RETIRED: ReadonlyMap<string, string> = new Map([
   ['do-si-do', 'a partner figure; solo it reads as folded arms walking'],
   ['swing-your-partner', 'a partner figure; solo it is just a turn'],
   ['locomotion', "the train-wheel arms barely move on the figure; doesn't read"],
+  ['roll-high', "the arms can't reach a roll above the head; it rolls across the face instead"],
 ]);
 
 /** Every catalogue move, in file order. */

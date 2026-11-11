@@ -1,5 +1,6 @@
 /**
- * Options: the coach's look (live preview cards), routine (same / new each
+ * Options: the coach's look (live preview cards) and which version of it
+ * dances (female / male; two players get both), routine (same / new each
  * play), audio offset, beat-sync
  * fallback (web), and links to playlist linking and the GitHub connection.
  * Everything applies as soon as it is chosen.
@@ -11,7 +12,7 @@ import { PoseEvaluator } from '../core/coach/animator';
 import { loopPlan, type LoopPlan } from '../core/coach/loop';
 import { FigurePainter } from '../core/coach/renderer';
 import { createPose, createSkeleton, solveSkeleton } from '../core/coach/skeleton';
-import { COACH_STYLES, type CoachStyle } from '../core/coach/styles';
+import { COACH_BUILDS, COACH_STYLES, type CoachBuild, type CoachStyle } from '../core/coach/styles';
 import { repoFromLocation } from '../platform/github';
 import { backgroundFill, describeFill } from '../beat/helperFill';
 import { helperDownloadUrl, setHelperOptIn, type HelperClient } from '../platform/helper';
@@ -53,6 +54,15 @@ export function createOptions(nav: Nav): Screen {
         h('span', { class: 'style-name' }, info.name, h('span', { class: 'style-check', 'aria-hidden': 'true' }, '✓ In use')),
         h('span', { class: 'style-blurb' }, info.description),
       ),
+    ),
+  );
+  // --- which version dances (single player; two players dance as the pair) ----
+  const buildButtons = COACH_BUILDS.map((b) =>
+    h(
+      'button',
+      { class: 'btn choice-btn', type: 'button', 'data-build': b.id, 'aria-pressed': 'false' },
+      h('span', { class: 'choice-name' }, b.name),
+      h('span', { class: 'choice-hint' }, b.description),
     ),
   );
   const styleNote = urlStyle
@@ -155,7 +165,13 @@ export function createOptions(nav: Nav): Screen {
       h('button', { class: 'btn btn-small', type: 'button', 'data-action': 'back' }, '← Back'),
       h('h1', { class: 'panel-title add-title' }, 'Options'),
     ),
-    section('Coach', h('div', { class: 'style-grid' }, ...cards), styleNote),
+    section(
+      'Coach',
+      h('div', { class: 'style-grid' }, ...cards),
+      styleNote,
+      h('p', { class: 'note build-note' }, 'Who dances in single player. With two players, both dance together: player 1 is this one, player 2 the other.'),
+      h('div', { class: 'opt-row' }, ...buildButtons),
+    ),
     section(
       'Routine',
       h('p', { class: 'note' }, 'Whether the coach dances the same moves each time you play a song, or makes up a new routine.'),
@@ -190,6 +206,11 @@ export function createOptions(nav: Nav): Screen {
       const on = c.dataset.style === s.coachStyle;
       c.classList.toggle('selected', on);
       c.setAttribute('aria-pressed', String(on));
+    }
+    for (const b of buildButtons) {
+      const on = b.dataset.build === s.coachBuild;
+      b.classList.toggle('selected', on);
+      b.setAttribute('aria-pressed', String(on));
     }
     offsetValue.textContent = formatOffset(s.audioOffsetMs);
     for (const b of syncButtons) {
@@ -227,6 +248,12 @@ export function createOptions(nav: Nav): Screen {
     if (t.dataset.style) {
       store.updateSettings({ coachStyle: t.dataset.style as CoachStyle });
       renderState();
+      return;
+    }
+    if (t.dataset.build) {
+      store.updateSettings({ coachBuild: t.dataset.build as CoachBuild });
+      renderState();
+      if (!raf) raf = requestAnimationFrame(draw); // a still preview (reduced motion) redraws once
       return;
     }
     if (t.dataset.sync) {
@@ -310,7 +337,9 @@ export function createOptions(nav: Nav): Screen {
       const t = reduced ? plan.period * 0.5 : (performance.now() - t0) / 1000;
       const loopSec = plan.loopBeats * plan.period;
       const lt = ((t % loopSec) + loopSec) % loopSec;
+      const build = store.settings().coachBuild;
       for (const p of previews) {
+        p.painter.build = build;
         if (!p.ctx) continue;
         const { width: w, height: hh } = p.canvas;
         p.ctx.clearRect(0, 0, w, hh);
