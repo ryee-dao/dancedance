@@ -155,14 +155,16 @@ describe('generateRoutine', () => {
       const r = generateRoutine(map, lv);
       const outro = r.instances.filter((i) => i.section === 'outro' && !i.move.idle);
       expect(outro.length).toBeGreaterThan(0);
-      for (const i of outro) expect(i.move.cooldown).toBe(true);
+      // Stretches, or the calm flows of the cooldown file (low intensity).
+      for (const i of outro) expect(i.move.cooldown || (i.move.file === 'cooldown' && i.move.level === 'low')).toBe(true);
       const firstBars = r.instances.filter((i) => i.start < 32);
       for (const i of firstBars) expect(i.move.level).not.toBe('high');
     }
     // A song without an outro still ends with a cooldown.
     const noOutro = songMap(118, 'no-outro', [['verse', 16, 0.5], ['chorus', 16, 0.8], ['verse', 8, 0.5]]);
     const r = generateRoutine(noOutro, 'cardio');
-    expect(r.instances[r.instances.length - 1].move.cooldown || r.instances[r.instances.length - 1].move.idle).toBe(true);
+    const last = r.instances[r.instances.length - 1].move;
+    expect(last.cooldown || last.idle || (last.file === 'cooldown' && last.level === 'low')).toBe(true);
   });
 
   it('is deterministic per (song, level) and differs between songs', () => {

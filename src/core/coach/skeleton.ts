@@ -62,9 +62,16 @@ export const CH = {
   SPIN: 30, // whole-body turn about the vertical axis, deg (0..360 wraps), + = front turns toward screen right
   KNEE_R: 31, // knee / toe turn-out, + = out, - = in (knee pops, heel swivels)
   KNEE_L: 32,
+  SLIDE_R: 33, // 1 = the foot slides to its next spot along the floor (no step arc)
+  SLIDE_L: 34,
+  FORM_R: 35, // hand form: 0 = plain (fist / open by HAND_R), 1 = pointing index finger, 2 = horns
+  FORM_L: 36,
 } as const;
 
-export const NUM_CHANNELS = 33;
+export const NUM_CHANNELS = 37;
+
+/** Hand forms (CH.FORM_R / FORM_L values). */
+export const HAND_FORM = { plain: 0, point: 1, horns: 2 } as const;
 
 /**
  * Channels that wrap and interpolate the short way round: only the swing
@@ -87,6 +94,8 @@ const MIRROR_SWAP: readonly (readonly [number, number])[] = [
   [CH.RFT_Z, CH.LFT_Z],
   [CH.HAND_R, CH.HAND_L],
   [CH.KNEE_R, CH.KNEE_L],
+  [CH.SLIDE_R, CH.SLIDE_L],
+  [CH.FORM_R, CH.FORM_L],
 ];
 
 export type Pose = Float64Array;
@@ -175,6 +184,9 @@ export interface Skeleton {
   /** Hand openness 0..1. */
   handR: number;
   handL: number;
+  /** Hand forms (HAND_FORM), rounded. */
+  formR: number;
+  formL: number;
   /**
    * Torso and pelvis rotation matrices (row-major 3x3) from the last solve, for
    * renderers that hang body shapes off the torso / pelvis frames.
@@ -190,7 +202,7 @@ export function createSkeleton(): Skeleton {
   const rp = new Float64Array(9);
   rt[0] = rt[4] = rt[8] = 1;
   rp[0] = rp[4] = rp[8] = 1;
-  return { p: new Float64Array(NUM_JOINTS * 3), air: 0, handR: 0.5, handL: 0.5, rt, rp, spin: 0 };
+  return { p: new Float64Array(NUM_JOINTS * 3), air: 0, handR: 0.5, handL: 0.5, formR: 0, formL: 0, rt, rp, spin: 0 };
 }
 
 const DEG = Math.PI / 180;
@@ -338,6 +350,8 @@ export function solveSkeleton(pose: Pose, sk: Skeleton): Skeleton {
   sk.air = air;
   sk.handR = pose[CH.HAND_R];
   sk.handL = pose[CH.HAND_L];
+  sk.formR = Math.round(pose[CH.FORM_R]);
+  sk.formL = Math.round(pose[CH.FORM_L]);
 
   // Pelvis rotation: yaw + a little roll from the hip shift (hip bump lifts that hip).
   const hips = pose[CH.HIPS];

@@ -51,6 +51,13 @@ across all files. A broken definition is skipped and reported in
     hips move; a foot that changes spot steps on an arc automatically.
   - `kneeR` / `kneeL` knee / toe turn-out (+ out, - in): knee pops, heel swivels.
   - `spin` whole-body turn (deg): see Turns.
+  - `slideR` / `slideL: true` on a key: that foot GLIDES to the key's spot
+    (no step arc) - slides, swivels, glides.
+  - `formR` / `formL: 'point' | 'horns'`: a pointing index finger or rock
+    horns (drawn in all three looks; otherwise `handR` 0 = fist, 1 = open).
+  - Reach: a hand is at most 0.315 from its shoulder (upper arm 0.165 +
+    forearm 0.15); `at()` / `hand()` clamp targets beyond that onto the sphere,
+    so a far target silently becomes a straight arm.
   - `handR` / `handL` 0 = fist, 1 = open hand.
 - `mir(spec)` mirrors a spec (left/right swapped). `wide(y, extra)` = wide stance.
 
@@ -59,7 +66,8 @@ across all files. A broken definition is skipped and reported in
 ```ts
 foot: { myStep: { beats: 2, parts: ['legs'], mirror: true, travel: 0.16, keys: [[0, {...}], [1, {...}]] } }
 ```
-- `beats`: 1, 2 or 4. Keys at whole or half beats in `[0, beats)`; each key is
+- `beats`: 1, 2 or 4. Keys on a quarter-beat grid in `[0, beats)` (whole and
+  half beats normally; 0.25 / 0.75 for skips and swung rhythms); each key is
   HIT exactly on its beat (the motion settles after a hit, anticipates, then
   travels). The loop wraps: after the last key comes the first.
 - `mirror: true` = written for the user's RIGHT side; repeats alternate sides.
@@ -107,8 +115,9 @@ full({ id, name, tags, beats, level, d, parts, mirror?, travel?, jump?, impact?,
 
 ## Turns
 
-`spin` is a whole-body turn in degrees, interpolated LINEARLY and the SHORT
-way round, so consecutive keys must be < 180 deg apart (a 360 = 0, 60, 165,
+`spin` is a whole-body turn in degrees; + = the front (face, chest) turns
+toward screen right; mirroring a move negates it. It is interpolated
+LINEARLY and the SHORT way round, so consecutive keys must be < 180 deg apart (a 360 = 0, 60, 165,
 270, then back to 0 at the next key; see `spinKeys` in shared.ts). Keep the
 feet close (`rf: [0.055,0,0], lf: [-0.055,0,0]`) and on the balls of the
 feet. Fast turns (>= 180 deg per beat) are flagged `fastTurn` and kept off

@@ -30,6 +30,7 @@ import { StageRenderer2D, type SceneInfo, type StripInfo } from '../core/coach/r
 import { CH, createPose, createSkeleton, solveSkeleton } from '../core/coach/skeleton';
 import { DEFAULT_COACH_STYLE, parseCoachStyle, type CoachStyle } from '../core/coach/styles';
 import type { FrameInfo, StageRenderer } from './play';
+import { createPlayersStage, urlPlayers } from './duoStage'; // two-player mode (duo agent)
 
 export interface CoachStageDeps {
   getIntensity(): Intensity;
@@ -44,6 +45,8 @@ export interface CoachStageDeps {
   getGenre?: (videoId: string) => string | undefined;
   /** Dev bench: force a song style (families / themes / signature). */
   getStyleOverride?: () => StyleOverride | undefined;
+  /** Two-player mode (duoStage.ts): 1 or 2 players, read every frame. `?players=2` wins. */
+  getPlayers?: () => 1 | 2;
 }
 
 export type RoutineMode = 'same' | 'fresh';
@@ -66,6 +69,8 @@ type InfoWithBeats = FrameInfo & { beats?: BeatSource | null };
 const READY_FADE_SEC = 0.6;
 
 export function createCoachStage(deps: CoachStageDeps): CoachStage {
+  // Two-player mode (duo agent): switches between this stage and the duo stage per frame.
+  if (deps.getPlayers || urlPlayers()) return createPlayersStage(deps, () => new CoachStageImpl(deps));
   return new CoachStageImpl(deps);
 }
 

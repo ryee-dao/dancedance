@@ -36,6 +36,7 @@ export function startApp(root: HTMLElement): void {
         getRoutineMode: () => store.settings().routineMode,
         getPlayCount: (id) => store.playCount(id),
         getGenre: (id) => songGenre(id),
+        getPlayers: () => store.settings().players,
       }),
     );
   }

@@ -165,10 +165,10 @@ export class FigurePainter {
           this.head(ctx, scale, ol, t, mini);
           break;
         case 4:
-          this.arm(ctx, J.SH_L, J.EL_L, J.HA_L, COLORS.left, COLORS.leftLight, sk.handL, scale, ol);
+          this.arm(ctx, J.SH_L, J.EL_L, J.HA_L, COLORS.left, COLORS.leftLight, sk.handL, scale, ol, sk.formL);
           break;
         case 5:
-          this.arm(ctx, J.SH_R, J.EL_R, J.HA_R, COLORS.right, COLORS.rightLight, sk.handR, scale, ol);
+          this.arm(ctx, J.SH_R, J.EL_R, J.HA_R, COLORS.right, COLORS.rightLight, sk.handR, scale, ol, sk.formR);
           break;
       }
     }
@@ -217,12 +217,34 @@ export class FigurePainter {
     ctx.stroke();
   }
 
-  private arm(ctx: CanvasRenderingContext2D, sh: number, el: number, ha: number, color: string, light: string, open: number, scale: number, ol: number): void {
+  private arm(ctx: CanvasRenderingContext2D, sh: number, el: number, ha: number, color: string, light: string, open: number, scale: number, ol: number, form = 0): void {
     this.seg2(ctx, sh, el, ha, W_UPPER, W_FORE, color, ol, scale);
     // Hand: a round mitt, bigger when open.
     const px = this.px;
+    if (form > 0) open = 0;
     const r = BODY.handR * this.ps[ha] * scale * (0.92 + 0.22 * (open < 0 ? 0 : open > 1 ? 1 : open));
     const x = px[ha * 2], y = px[ha * 2 + 1];
+    if (form > 0) {
+      // Pointing index finger / rock horns, out along the forearm.
+      let dx = x - px[el * 2], dy = y - px[el * 2 + 1];
+      const dl = Math.sqrt(dx * dx + dy * dy) || 1;
+      dx /= dl;
+      dy /= dl;
+      const spread = form === 2 ? [0.42, -0.42] : [0];
+      for (const pass of [0, 1]) {
+        ctx.strokeStyle = pass === 0 ? COLORS.outline : light;
+        ctx.lineWidth = r * 0.62 + (pass === 0 ? ol * 3.2 : 0);
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        for (const a of spread) {
+          const c = Math.cos(a), s = Math.sin(a);
+          const fx = dx * c - dy * s, fy = dx * s + dy * c;
+          ctx.moveTo(x + fx * r * 0.4, y + fy * r * 0.4);
+          ctx.lineTo(x + fx * r * (form === 2 ? 1.95 : 2.25), y + fy * r * (form === 2 ? 1.95 : 2.25));
+        }
+        ctx.stroke();
+      }
+    }
     ctx.fillStyle = light;
     ctx.strokeStyle = COLORS.outline;
     ctx.lineWidth = ol * 1.6;

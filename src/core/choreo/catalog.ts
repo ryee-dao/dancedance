@@ -93,7 +93,7 @@ export function registerPatterns(file: string, set: PatternSet): string[] {
 // Moves
 
 export interface MoveKey {
-  /** Position in move beats (0 <= at < beats); a whole or half beat. */
+  /** Position in move beats (0 <= at < beats); on a quarter-beat grid (0.75 for swung / skipped rhythms). */
   at: number;
   pose: Pose;
 }

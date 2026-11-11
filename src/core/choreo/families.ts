@@ -16,8 +16,19 @@ export const FOCI: readonly Focus[] = ['hips', 'arms', 'legs', 'full', 'turn'];
  * Theme keys: a song's title/artist can suggest one (see songStyle.ts) and
  * moves carrying it are boosted.
  */
-export type Theme = 'hips' | 'shake' | 'jump' | 'clap' | 'hands' | 'twist' | 'spin' | 'walk' | 'stomp' | 'point' | 'punch' | 'wave' | 'kick';
-export const THEMES: readonly Theme[] = ['hips', 'shake', 'jump', 'clap', 'hands', 'twist', 'spin', 'walk', 'stomp', 'point', 'punch', 'wave', 'kick'];
+export type Theme =
+  | 'hips' | 'shake' | 'jump' | 'clap' | 'hands' | 'twist' | 'spin' | 'walk' | 'stomp' | 'point' | 'punch' | 'wave' | 'kick'
+  // Style themes (set by genre / artist, not by title words).
+  | 'afro' | 'dancehall' | 'soca' | 'amapiano' | 'reggae' | 'swing' | 'country' | 'folk' | 'bollywood' | 'bhangra'
+  // Party mimes a title can call for.
+  | 'sport' | 'animal'
+  // World dance styles.
+  | 'garba' | 'bellydance' | 'hula' | 'capoeira';
+export const THEMES: readonly Theme[] = [
+  'hips', 'shake', 'jump', 'clap', 'hands', 'twist', 'spin', 'walk', 'stomp', 'point', 'punch', 'wave', 'kick',
+  'afro', 'dancehall', 'soca', 'amapiano', 'reggae', 'swing', 'country', 'folk', 'bollywood', 'bhangra',
+  'sport', 'animal', 'garba', 'bellydance', 'hula', 'capoeira',
+];
 
 export const FAMILY_LABEL: Readonly<Record<Family, string>> = {
   latin: 'Latin groove',

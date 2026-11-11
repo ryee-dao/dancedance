@@ -669,14 +669,14 @@ export class HumanPainter {
       if (L.sleeve) this.limb(ctx, p, sh, el, ha, k, L.sleeve[0], L.sleeve[1] + 0.03, 0.004 + g, true);
       if (L.cuff) this.limb(ctx, p, sh, el, ha, k, L.cuff[0] - 0.03, L.cuff[1] + 0.03, 0.006 + g, true);
       this.paint(ctx, pass, L.skin, false);
-      this.hand(ctx, p, ha, side, open, pass);
+      this.hand(ctx, p, ha, side, open, pass, side === 1 ? sk.formR : sk.formL);
       return;
     }
     // The hand covers the last bit of the forearm, so a sleeve to the wrist hides the skin.
     this.skin(ctx, p, sh, el, ha, k, 0, L.sleeve, 0.07);
     if (L.sleeve) this.cover(ctx, p, sh, el, ha, k, L.sleeve[0], L.sleeve[1], 0.004, col);
     if (L.cuff) this.cover(ctx, p, sh, el, ha, k, L.cuff[0], L.cuff[1], 0.006, dark);
-    this.hand(ctx, p, ha, side, open, pass);
+    this.hand(ctx, p, ha, side, open, pass, side === 1 ? sk.formR : sk.formL);
   }
 
   /** A side-colour cover on a limb, with a thin line across each hem. */
@@ -715,9 +715,9 @@ export class HumanPainter {
   }
 
 
-  private hand(ctx: CanvasRenderingContext2D, p: Float64Array, ha: number, side: number, open: number, pass: number): void {
+  private hand(ctx: CanvasRenderingContext2D, p: Float64Array, ha: number, side: number, open: number, pass: number, form = 0): void {
     const L = this.look;
-    const o = open < 0 ? 0 : open > 1 ? 1 : open;
+    const o = form > 0 ? 0 : open < 0 ? 0 : open > 1 ? 1 : open;
     const hs = L.hand;
     const d = this.handDir;
     const b = side === 1 ? 0 : 5;
@@ -742,8 +742,15 @@ export class HumanPainter {
       ctx.beginPath();
       this.cap(ctx, px0, py0, (r0 + g) * s0, px1, py1, (r1 + g) * s1);
       this.cap(ctx, tx0, ty0, (tr + g) * ts0, tx1, ty1, (tr * 0.9 + g) * ts1);
+      if (form > 0) this.fingers(ctx, ax, ay, az, hx, hy, hz, tx, ty, d1, hs, form, g);
       this.paint(ctx, pass, L.skin, false);
       return;
+    }
+    if (form > 0) {
+      ctx.beginPath();
+      this.fingers(ctx, ax, ay, az, hx, hy, hz, tx, ty, d1, hs, form, 0);
+      ctx.fillStyle = L.skin;
+      ctx.fill();
     }
     const fist = o < 0.45;
     if (!fist) this.thumb(ctx, tx0, ty0, tr * ts0, tx1, ty1, tr * 0.9 * ts1);
@@ -762,6 +769,21 @@ export class HumanPainter {
         ctx.lineTo(tx1 + (px1 - tx1) * 0.35, ty1 + (py1 - ty1) * 0.35);
         ctx.stroke();
       }
+    }
+  }
+
+  /** Pointing index finger (form 1) or index + pinky horns (form 2), out of the fist along the hand. */
+  private fingers(ctx: CanvasRenderingContext2D, ax: number, ay: number, az: number, hx: number, hy: number, hz: number, tx: number, ty: number, d1: number, hs: number, form: number, g: number): void {
+    const list = form === 2 ? [[0.012, 0.3], [-0.012, -0.3]] : [[0.006, 0]];
+    const len = (form === 2 ? 0.04 : 0.05) * hs, fr = 0.0085 * hs;
+    for (const [off, spread] of list) {
+      const bx = ax + hx * d1 + tx * off * hs, by = ay + hy * d1 + ty * off * hs, bz = az + hz * d1;
+      const dx = hx + tx * spread, dy = hy + ty * spread, dz = hz;
+      const dl = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+      this.proj(bx, by, bz);
+      const x0 = this.qx, y0 = this.qy, s0 = this.qs;
+      this.proj(bx + (dx / dl) * len, by + (dy / dl) * len, bz + (dz / dl) * len);
+      this.cap(ctx, x0, y0, (fr + g) * s0, this.qx, this.qy, (fr * 0.85 + g) * this.qs);
     }
   }
 

@@ -53,6 +53,12 @@ export interface PoseSpec {
   /** Knee / toe turn-out per leg (+ out, - in). */
   kneeR?: number;
   kneeL?: number;
+  /** The foot glides to this key's spot (no step arc): slides, swivels. */
+  slideR?: boolean;
+  slideL?: boolean;
+  /** Hand form: a pointing index finger or rock horns (else fist / open by handR). */
+  formR?: 'point' | 'horns';
+  formL?: 'point' | 'horns';
 }
 
 const RAD = 180 / Math.PI;
@@ -190,6 +196,10 @@ export function pose(spec: PoseSpec): Pose {
   if (spec.spin !== undefined) p[CH.SPIN] = spec.spin;
   if (spec.kneeR !== undefined) p[CH.KNEE_R] = spec.kneeR;
   if (spec.kneeL !== undefined) p[CH.KNEE_L] = spec.kneeL;
+  if (spec.slideR) p[CH.SLIDE_R] = 1;
+  if (spec.slideL) p[CH.SLIDE_L] = 1;
+  if (spec.formR) p[CH.FORM_R] = spec.formR === 'point' ? 1 : 2;
+  if (spec.formL) p[CH.FORM_L] = spec.formL === 'point' ? 1 : 2;
   return p;
 }
 
@@ -239,6 +249,9 @@ for (const c of [
 /** Channels interpolated at constant speed between keys (turns: no stop at every key). */
 const LINEAR = new Uint8Array(NUM_CHANNELS);
 LINEAR[CH.SPIN] = 1;
+/** Channels that switch (no blend) late in the travel: hand forms, slide flags. */
+const STEP = new Uint8Array(NUM_CHANNELS);
+for (const c of [CH.SLIDE_R, CH.SLIDE_L, CH.FORM_R, CH.FORM_L]) STEP[c] = 1;
 const ANGULAR = new Uint8Array(NUM_CHANNELS);
 for (const c of ANGULAR_CHANNELS) ANGULAR[c] = 1;
 
@@ -269,6 +282,7 @@ export function interpolateKeys(pm1: Pose, p0: Pose, p1: Pose, u: number, out: P
     if (SNAPPY[c]) {
       v += channelDelta(c, pm1[c], a) * ov - d * an;
     }
+    if (STEP[c]) v = u >= 0.6 ? p1[c] : a;
     out[c] = v;
   }
   // Feet: step on an arc when a planted foot moves to a new planted spot.
@@ -282,6 +296,13 @@ function footArc(p0: Pose, p1: Pose, u: number, out: Pose, cx: number): void {
   const dz = p1[cx + 2] - p0[cx + 2];
   const dist = Math.sqrt(dx * dx + dz * dz);
   if (dist < 0.015) return;
+  // A sliding foot glides: the same timing, no lift.
+  if (p1[cx === CH.RFT_X ? CH.SLIDE_R : CH.SLIDE_L] > 0.5) {
+    const w = stepCurve(u);
+    out[cx] = p0[cx] + dx * w;
+    out[cx + 2] = p0[cx + 2] + dz * w;
+    return;
+  }
   // A foot lifts most of the way in the middle of the step; feet move a
   // little faster than the body so they land before the hit.
   const lift = Math.min(0.09, 0.02 + dist * 0.45);
@@ -317,8 +338,8 @@ export const G_TORSO = 2;
 export const NUM_GROUPS = 3;
 
 export const GROUP_CHANNELS: readonly (readonly number[])[] = [
-  [CH.X, CH.Y, CH.HIPS, CH.HIPTWIST, CH.RFT_X, CH.RFT_Y, CH.RFT_Z, CH.LFT_X, CH.LFT_Y, CH.LFT_Z, CH.HIP_TILT, CH.SPIN, CH.KNEE_R, CH.KNEE_L],
-  [CH.SH_R, CH.SH_L, CH.RA_E, CH.RA_P, CH.RF_E, CH.RF_P, CH.LA_E, CH.LA_P, CH.LF_E, CH.LF_P, CH.HAND_R, CH.HAND_L],
+  [CH.X, CH.Y, CH.HIPS, CH.HIPTWIST, CH.RFT_X, CH.RFT_Y, CH.RFT_Z, CH.LFT_X, CH.LFT_Y, CH.LFT_Z, CH.HIP_TILT, CH.SPIN, CH.KNEE_R, CH.KNEE_L, CH.SLIDE_R, CH.SLIDE_L],
+  [CH.SH_R, CH.SH_L, CH.RA_E, CH.RA_P, CH.RF_E, CH.RF_P, CH.LA_E, CH.LA_P, CH.LF_E, CH.LF_P, CH.HAND_R, CH.HAND_L, CH.FORM_R, CH.FORM_L],
   [CH.LEAN, CH.TWIST, CH.BEND, CH.HEAD_ROLL, CH.HEAD_NOD, CH.HEAD_TURN, CH.CHEST_X],
 ];
 
@@ -344,6 +365,7 @@ export function interpolateGroup(g: number, pm1: Pose, p0: Pose, p1: Pose, u: nu
     const d = channelDelta(c, a, p1[c]);
     let v = a + d * (LINEAR[c] ? u : w);
     if (SNAPPY[c]) v += channelDelta(c, pm1[c], a) * ov - d * an;
+    if (STEP[c]) v = u >= 0.6 ? p1[c] : a;
     out[c] = v;
   }
   if (g === G_BODY) {

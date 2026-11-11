@@ -85,5 +85,15 @@ export function specFromPose(q: Pose, like: PoseSpec): PoseSpec {
     o.kneeR = q[CH.KNEE_R];
     o.kneeL = q[CH.KNEE_L];
   }
+  if (hasPair('slideR', 'slideL')) {
+    if (q[CH.SLIDE_R] > 0.5) o.slideR = true;
+    if (q[CH.SLIDE_L] > 0.5) o.slideL = true;
+  }
+  if (hasPair('formR', 'formL')) {
+    const f = (v: number) => (v > 1.5 ? 'horns' : v > 0.5 ? 'point' : undefined);
+    const fr = f(q[CH.FORM_R]), fl = f(q[CH.FORM_L]);
+    if (fr) o.formR = fr;
+    if (fl) o.formL = fl;
+  }
   return o;
 }

@@ -95,7 +95,7 @@ export interface RoutineOpts {
 /** Phrases a move stays out after it was used (section memos aside). */
 export const NO_REPEAT_PHRASES = 3;
 /** Share of picks that may be variations, per level. */
-const VARIATION_SHARE: Record<Intensity, number> = { chill: 0.12, cardio: 0.4, sweaty: 0.55 };
+const VARIATION_SHARE: Record<Intensity, number> = { chill: 0.06, cardio: 0.25, sweaty: 0.35 };
 /** Chance a unit's last 4 beats become a phrase-end flourish (last unit of a phrase). */
 const FLOURISH_P: Record<Intensity, number> = { chill: 0, cardio: 0.3, sweaty: 0.5 };
 /** Chance a unit plays an ornamented version of its move (hip sway, diagonal). */
@@ -103,10 +103,13 @@ const ORNAMENT_P: Record<Intensity, number> = { chill: 0, cardio: 0.15, sweaty: 
 
 /** Style factor of a move for a song: families, focus and themes. */
 export function styleFactor(m: Move, style: SongStyle): number {
+  // A move's first family counts fully, its secondary tags at 60 % (so a
+  // widely co-tagged family like pop doesn't swallow the mix).
   let fam = 0;
-  for (const f of m.families) fam = Math.max(fam, style.families[f] ?? 0);
-  // Top family (~0.5-1) -> ~3-5x a non-matching move; never 0.
-  let w = 0.2 + 4.5 * fam;
+  m.families.forEach((f, i) => (fam = Math.max(fam, (style.families[f] ?? 0) * (i === 0 ? 1 : 0.6))));
+  // Per move, a top-family move (weight ~0.5-1) is ~15-30x a non-matching one;
+  // with every family in the pool that gives ~60-70 % of picks. Never 0.
+  let w = 0.15 + 5 * fam;
   if (style.focus) {
     let fo = 1;
     for (const f of m.focus) fo = Math.max(fo, style.focus[f] ?? 1);
@@ -211,7 +214,8 @@ function intensityFactor(m: Move, intensity: Intensity): number {
 
 /** Catalogue moves the generator may pick (idle and cooldown are special). */
 const DANCE_MOVES = MOVES.filter((m) => !m.idle && !m.cooldown);
-const COOLDOWN_MOVES = MOVES.filter((m) => m.cooldown);
+/** The outro draws from the stretches plus the calm flows of the cooldown file (tai chi, yoga shapes). */
+const COOLDOWN_MOVES = MOVES.filter((m) => m.cooldown || (m.file === 'cooldown' && m.level === 'low' && !m.jump && !m.idle));
 
 /** Base moves + variations (variations get a per-level share). */
 function dancePool(useVariations: boolean): { moves: readonly Move[]; isVar: Uint8Array } {
@@ -241,7 +245,10 @@ export function transitionCost(prev: Pose, next: Pose): number {
     Math.abs(next[CH.RFT_X] - prev[CH.RFT_X]) + Math.abs(next[CH.LFT_X] - prev[CH.LFT_X]) +
     Math.abs(next[CH.RFT_Y] - prev[CH.RFT_Y]) + Math.abs(next[CH.LFT_Y] - prev[CH.LFT_Y]);
   const vert = Math.abs(next[CH.Y] - prev[CH.Y]);
-  return (arms / 180) * 0.35 + feet * 4 + vert * 3;
+  // Facing: entering / leaving a turned key swings the whole body round.
+  let spin = Math.abs(next[CH.SPIN] - prev[CH.SPIN]) % 360;
+  if (spin > 180) spin = 360 - spin;
+  return (arms / 180) * 0.35 + feet * 4 + vert * 3 + (spin / 90) * 1.5;
 }
 
 // ---------------------------------------------------------------------------
@@ -381,7 +388,7 @@ export class Choreographer {
   }
 
   private allowed(m: Move, o: PhraseOpts): boolean {
-    if (o.cooldown) return m.cooldown;
+    if (o.cooldown) return COOLDOWN_MOVES.includes(m) && (m.cooldown || intensityFactor(m, this.intensity) > 0);
     if (m.cooldown || m.idle) return false;
     if (intensityFactor(m, this.intensity) <= 0) return false;
     const lw = levelWeights(o.warmup ? 'warmup' : o.section, this.intensity, o.energy);
@@ -397,17 +404,19 @@ export class Choreographer {
     const weights = pool.map((m, i) => {
       if (m === avoid) return 0;
       if (m === prev && !(this.intensity === 'chill' && o.memoKey)) return 0; // no repeat across a phrase boundary
-      let w = o.cooldown ? 1 : lw[m.level] * intensityFactor(m, this.intensity) * this.base[i];
+      let w = o.cooldown ? (m.cooldown || intensityFactor(m, this.intensity) > 0 ? 1 : 0) : lw[m.level] * intensityFactor(m, this.intensity) * this.base[i];
       if (w <= 0) return 0;
       // Not again within NO_REPEAT_PHRASES phrases; other versions of the same base move rarely.
       const used = this.lastUsed.get(m);
       if (!o.cooldown && used !== undefined && phrase - used <= NO_REPEAT_PHRASES) return 0;
+      // Calm flows (cooldown file) suit warm-ups, intros and quiet passages.
+      if (!o.cooldown && m.file === 'cooldown' && (o.warmup || o.energy < 0.35)) w *= 2.5;
       if (avoid && m.base === avoid.base) w *= 0.1;
       if (prev && m.base === prev.base) w *= 0.1;
       if (this.recent.includes(m)) w *= 0.15;
       if (prev && !prev.idle) w *= 1 - 0.6 * partsOverlap(prev, m);
       if (avoid) w *= 1 - 0.5 * partsOverlap(avoid, m);
-      if (prevPose) w *= Math.exp(-0.6 * transitionCost(prevPose, keysOf(m, false)[0].pose));
+      if (prevPose) w *= Math.exp(-0.9 * transitionCost(prevPose, keysOf(m, false)[0].pose));
       return w;
     });
     const picked = pickWeighted(this.rng, pool, weights);

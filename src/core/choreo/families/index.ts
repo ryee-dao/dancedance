@@ -18,6 +18,9 @@ import * as pop from './pop';
 import * as rock from './rock';
 import * as kpop from './kpop';
 import * as party from './party';
+import * as afro from './afro';
+import * as retro from './retro';
+import * as world from './world';
 
 export interface FamilyFile {
   patterns: PatternSet;
@@ -25,7 +28,7 @@ export interface FamilyFile {
 }
 
 /** Family files by name (the --family argument of tools/moves/check.ts). */
-export const FAMILY_FILES: Readonly<Record<string, FamilyFile>> = { shared, aerobic, cooldown, latin, disco, funk, hiphop, pop, rock, kpop, party };
+export const FAMILY_FILES: Readonly<Record<string, FamilyFile>> = { shared, aerobic, cooldown, latin, disco, funk, hiphop, pop, rock, kpop, party, afro, retro, world };
 
 /**
  * Definition errors (duplicate ids, unknown patterns, bad tags), by file. A
@@ -38,12 +41,34 @@ for (const [name, f] of Object.entries(FAMILY_FILES)) {
   for (const message of registerPatterns(name, f.patterns ?? {})) CATALOGUE_ERRORS.push({ file: name, message });
 }
 
+/**
+ * Moves retired at integration review (kept in their files for reference):
+ * they didn't read well enough on the figure, or sat too close to a routine.
+ */
+export const RETIRED: ReadonlyMap<string, string> = new Map([
+  ['backslide', 'reads as heel-up steps in quarter profile, not a glide'],
+  ['zombie-shuffle', "author's cut: weak identity from the front"],
+  ['rowing', "author's cut: the rowing arms stay by the sides, doesn't read"],
+  ['jelly-legs', "author's cut: knee wobble too subtle at tempo"],
+  ['hokey-pokey', 'evokes a participation-song sequence; kept out under the sourcing policy'],
+  ['carlton', "same move as hiphop's the-carlton (kept that one)"],
+  ['back-kick', "author's suggested cut: the heel kick behind reads weakly from the front"],
+  ['rocking-chair', "author's suggested cut (written from memory; weak match to the step)"],
+  ['time-step', "author's suggested cut: a tap time-step needs sound and fast feet; doesn't read"],
+  ['ramwong-hands', "author's suggested cut: the hand motif is too fine for the figure"],
+  ['belly-hip-twist', "author's suggested cut: hip twist too subtle from the front"],
+  ['do-si-do', 'a partner figure; solo it reads as folded arms walking'],
+  ['swing-your-partner', 'a partner figure; solo it is just a turn'],
+  ['locomotion', "the train-wheel arms barely move on the figure; doesn't read"],
+]);
+
 /** Every catalogue move, in file order. */
 export const CATALOGUE: readonly Move[] = (() => {
   const out: Move[] = [];
   const seen = new Map<string, string>();
   for (const [name, f] of Object.entries(FAMILY_FILES)) {
     for (const d of f.moves ?? []) {
+      if (RETIRED.has(d.id)) continue;
       const prev = seen.get(d.id);
       if (prev) {
         CATALOGUE_ERRORS.push({ file: name, message: `Duplicate move id "${d.id}" (first defined in ${prev})` });

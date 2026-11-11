@@ -3,7 +3,7 @@
  * Pure TypeScript (no DOM). Used by the tests and by tools/moves/check.ts.
  *
  * A move is valid when:
- *   - format: 1/2/4 beats, keys on whole/half beats inside the loop, finite,
+ *   - format: 1/2/4 beats, keys on a quarter-beat grid inside the loop, finite,
  *     mirror tracks are exact mirror images, travel => mirror, jump => impact;
  *   - joint limits at every key: elbow bend <= 165, lean <= 30, twist <= 45,
  *     root height in [-0.26, 0.15], feet never below the floor, gentle head
@@ -95,7 +95,7 @@ export function checkKeys(m: Move): string[] {
       const key = t.keys[k];
       if (!(key.at > last)) out.push(`track ${g} keys not increasing at ${key.at}`);
       if (key.at < 0 || key.at >= m.beats) out.push(`track ${g} key at ${key.at} outside the loop`);
-      if (!Number.isInteger(key.at * 2)) out.push(`track ${g} key at ${key.at} not on a whole / half beat`);
+      if (!Number.isInteger(key.at * 4)) out.push(`track ${g} key at ${key.at} not on a quarter-beat grid`);
       last = key.at;
       for (let c = 0; c < NUM_CHANNELS; c++) if (!Number.isFinite(key.pose[c])) out.push(`track ${g} key ${key.at} channel ${c} not finite`);
       const mk = t.mirrorKeys[k];

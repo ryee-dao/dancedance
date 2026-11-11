@@ -104,6 +104,8 @@ export interface Settings {
   coachStyle: CoachStyle;
   /** Routine per play (Options screen). */
   routineMode: RoutineMode;
+  /** Players dancing (level picker): 2 = two-player duo stage (ui/duoStage.ts). */
+  players: 1 | 2;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -112,6 +114,7 @@ export const DEFAULT_SETTINGS: Settings = {
   liveSync: 'ask',
   coachStyle: DEFAULT_COACH_STYLE,
   routineMode: 'same',
+  players: 1,
 };
 
 /** Drop out-of-range or wrongly typed values (old versions, hand edits). */
@@ -127,6 +130,7 @@ function sanitizeSettings(s: Partial<Record<keyof Settings, unknown>>): Settings
   if (s.liveSync === 'ask' || s.liveSync === 'mic' || s.liveSync === 'off') out.liveSync = s.liveSync;
   out.coachStyle = parseCoachStyle(s.coachStyle) ?? DEFAULT_COACH_STYLE;
   if (s.routineMode === 'same' || s.routineMode === 'fresh') out.routineMode = s.routineMode;
+  if (s.players === 1 || s.players === 2) out.players = s.players;
   return out;
 }
 

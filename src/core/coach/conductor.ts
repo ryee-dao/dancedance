@@ -26,8 +26,7 @@ import type { BeatTimeline, LiveBeats } from '../../beat/beatSource';
 import { LivePlanner, generateRoutine, isHalfTime, isUsableBeatMap, mapTempo, usableBpm, type Intensity, type MoveInstance, type RoutineOpts, type SigStep } from '../choreo/generator';
 import { IDLE_MOVE } from '../choreo/moves';
 import { PoseEvaluator, beatPosition, instanceIndexAt, timeOfBeat, type PlanView } from './animator';
-import { blendPose } from './poses';
-import { createPose, type Pose } from './skeleton';
+import { ANGULAR_CHANNELS, NUM_CHANNELS, createPose, type Pose } from './skeleton';
 
 export const IDLE_BPM = 100;
 const LOOKAHEAD_SEC = 14;
@@ -194,6 +193,8 @@ export class Conductor {
   private readonly ev = new PoseEvaluator();
   private readonly ev2 = new PoseEvaluator();
   private readonly tmp = createPose();
+  private readonly fadeK = new Float64Array(NUM_CHANNELS);
+  private fadeKSet = false;
   private videoId = '';
   readonly up: Upcoming = { current: null, next: null, after: null, groupStart: 0, changeAt: 0, beatsToChange: 0, beat: 0 };
 
@@ -242,7 +243,28 @@ export class Conductor {
     this.videoId = '';
   }
 
+  /**
+   * Crossfade old -> new pose. Angles (arm planes, spin) blend along the
+   * branch chosen on the fade's first frame and then follow the raw values,
+   * which are continuous: re-picking the shortest way every frame would flip
+   * direction (a 180 deg jump) when the two poses are half a turn apart.
+   */
+  private crossfade(from: Pose, to: Pose, s: number, out: Pose): void {
+    const k = this.fadeK;
+    if (!this.fadeKSet) {
+      for (const c of ANGULAR_CHANNELS) {
+        const raw = to[c] - from[c];
+        const short = ((raw + 180) % 360 + 360) % 360 - 180;
+        k[c] = Math.round((short - raw) / 360);
+      }
+      this.fadeKSet = true;
+    }
+    for (let c = 0; c < NUM_CHANNELS; c++) out[c] = from[c] + (to[c] - from[c] + 360 * k[c]) * s;
+  }
+
   private beginFade(t: number): void {
+    this.fadeKSet = false;
+    this.fadeK.fill(0);
     if (this.active) this.fading = { plan: this.active, start: t };
   }
 
@@ -266,7 +288,7 @@ export class Conductor {
       if (w >= 0 && w < 1) {
         this.ev2.evaluate(this.fading.plan, t, this.tmp, { energy });
         const s = w * w * (3 - 2 * w);
-        blendPose(this.tmp, out, s, out);
+        this.crossfade(this.tmp, out, s, out);
       }
     }
     return out;

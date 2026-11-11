@@ -132,7 +132,7 @@ export function variationCandidates(): VariationSpec[] {
       if (!ap || !isActiveArms(ap) || COMBOS.has(`${fId}|${aId}`)) continue;
       if (ai.moves.every((m) => m.parts.includes('turn'))) continue; // arms made for a turn
       // Torso-led arms written for one particular footwork (crunch: elbow to the rising knee).
-      if (ap.torso && !ai.moves.some((m) => NEUTRAL_FEET.has(m.foot!))) continue;
+      if ((ap.torso || handsLow(ap)) && !ai.moves.some((m) => NEUTRAL_FEET.has(m.foot!))) continue;
       if (fp.torso && ap.torso) continue; // both want the torso
       const neutral = NEUTRAL_FEET.has(fId);
       if (!neutral && ![...fi.families].some((f) => ai.families.has(f))) continue;
@@ -161,9 +161,9 @@ function applicable(m: Move, t: VariationType): boolean {
       return minY > -0.09;
     }
     case 'double':
-      return !turn && !ap.torso && isActiveArms(ap) && ap.beats >= 2 && ap.keys.every(([at]) => Number.isInteger(at)) && ap.keys.length >= 2;
+      return !turn && !ap.torso && !GAIT_ARMS.test(ap.id) && isActiveArms(ap) && ap.beats >= 2 && ap.keys.every(([at]) => Number.isInteger(at)) && ap.keys.length >= 2;
     case 'half':
-      return !turn && !ap.torso && isActiveArms(ap) && ap.beats <= 2 && ap.keys.length >= 2 && Math.max(fp.beats, ap.beats * 2) <= 4;
+      return !turn && !ap.torso && !GAIT_ARMS.test(ap.id) && isActiveArms(ap) && ap.beats <= 2 && ap.keys.length >= 2 && Math.max(fp.beats, ap.beats * 2) <= 4;
     case 'alt':
       return !turn && !fp.jump && isActiveArms(ap) && !ap.mirror && symmetricArms(ap) && !handsMeet(ap);
     case 'hips':
@@ -189,6 +189,17 @@ function handsMeet(p: Pattern): boolean {
     return Math.hypot(SK.p[a] - SK.p[b], SK.p[a + 1] - SK.p[b + 1], SK.p[a + 2] - SK.p[b + 2]) < 0.12;
   });
 }
+
+/** A hand goes below the hips (pushing a knee or thigh): arms written for one footwork. */
+function handsLow(p: Pattern): boolean {
+  return p.keys.some(([, s]) => {
+    solveSkeleton(pose(s), SK);
+    return SK.p[J.HA_R * 3 + 1] < 0.42 || SK.p[J.HA_L * 3 + 1] < 0.42;
+  });
+}
+
+/** Arm swings coupled to a gait (march / jog arms): double / half time breaks the walk. */
+const GAIT_ARMS = /march|jog|run|walk|swing/i;
 
 function symmetricArms(p: Pattern): boolean {
   return p.keys.every(([, s]) => {

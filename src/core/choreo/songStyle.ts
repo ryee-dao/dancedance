@@ -410,6 +410,31 @@ export function genreFamilies(genre: string | undefined): Weights | null {
   return g ? normWeights(g.families) : null;
 }
 
+/** Style themes implied by a genre (afro, dancehall, soca, swing, country, folk ...). */
+const GENRE_THEMES: [RegExp, Theme[]][] = [
+  [/afro|highlife|naija|amapiano/, ['afro']],
+  [/amapiano/, ['amapiano']],
+  [/dancehall/, ['dancehall']],
+  [/reggae(?!ton)/, ['reggae']],
+  [/soca|calypso/, ['soca']],
+  [/jazz|swing|big band|blues/, ['swing']],
+  [/country|bluegrass|americana/, ['country']],
+  [/folk/, ['folk']],
+  [/bollywood|indian|hindi|filmi|desi/, ['bollywood']],
+  [/punjabi|bhangra/, ['bhangra', 'bollywood']],
+  [/arab|middle east|turk|khaleeji|raqs|belly/, ['bellydance']],
+  [/hawai/, ['hula']],
+  [/gujarat|garba|dandiya/, ['garba']],
+];
+
+export function genreThemes(genre: string | undefined): Theme[] {
+  if (!genre) return [];
+  const f = fold(genre);
+  const out = new Set<Theme>();
+  for (const [re, th] of GENRE_THEMES) if (re.test(f)) for (const t of th) out.add(t);
+  return THEMES.filter((t) => out.has(t));
+}
+
 // ---------------------------------------------------------------------------
 // (c) Title / artist keywords -> themes
 
@@ -428,6 +453,14 @@ const KEYWORDS: [RegExp, Theme[]][] = [
   [word("punch|punches|punching|fight|fights|fighting|fighter"), ['punch']],
   [word("wave|waves|waving|wavin'?"), ['wave']],
   [word("kick|kicks|kicking|kickin'?"), ['kick']],
+  [word("ball|ballin'?|game|games|champion|champions|winner|winners|olympic|olympics|basketball|football|soccer|goal|goals|knockout|slam dunk"), ['sport']],
+  [word("tiger|tigers|lion|lions|dog|dogs|cat|cats|bird|birds|chicken|chickens|horse|horses|pony|monkey|monkeys|bear|bears|wolf|wolves|shark|sharks|bee|bees|duck|ducks|penguin|penguins|bunny|frog|frogs|snake|snakes|elephant|gorilla|kangaroo|zebra|panda|dinosaur"), ['animal']],
+  [word("bhangra"), ['bhangra', 'bollywood']],
+  [word("bollywood"), ['bollywood']],
+  [word("garba|dandiya"), ['garba']],
+  [word("hula|aloha|hawaii|hawaiian"), ['hula']],
+  [word("capoeira"), ['capoeira']],
+  [word("bellydance|belly dance|habibi|shimmy"), ['bellydance']],
 ];
 
 /** Themes suggested by words in a title or artist name (whole words only). */
@@ -502,10 +535,24 @@ const SONG_SIGNATURES: readonly (readonly [string, string, readonly string[]])[]
   ['nightfever', 'beegees', ['disco-point']],
   ['lefreak', 'chic', ['disco-point']],
   ['thehustle', 'vanmccoy', ['hustle-tap']],
-  ['billiejean', 'michaeljackson', ['heel-swivel', 'kick-point']],
+  ['billiejean', 'michaeljackson', ['heel-swivel', 'spin-pose']],
   ['beatit', 'michaeljackson', ['kick-point', 'heel-swivel']],
-  ['dontstoptilyougetenough', 'michaeljackson', ['heel-swivel']],
-  ['partyrockanthem', 'lmfao', ['running-man']],
+  ['dontstoptilyougetenough', 'michaeljackson', ['heel-swivel', 'spin-pose']],
+  ['smoothcriminal', 'michaeljackson', ['spin-pose']],
+  ['getup', 'jamesbrown', ['jb-slide']],
+  ['getupsexmachine', 'jamesbrown', ['jb-slide']],
+  ['partyrockanthem', 'lmfao', ['running-man-shuffle']],
+  ['watchmewhipnaenae', 'silento', ['the-whip', 'nae-nae']],
+  ['watchme', 'silento', ['the-whip', 'nae-nae']],
+  ['stankylegg', 'gsboyz', ['stanky-leg']],
+  ['ucanttouchthis', 'mchammer', ['hammer-dance']],
+  ['canttouchthis', 'mchammer', ['hammer-dance']],
+  ['teachmehowtodougie', 'caliswagdistrict', ['dougie']],
+  ['tootseeroll', '69boyz', ['tootsie-roll']],
+  ['walkitout', 'unk', ['walk-it-out']],
+  ['millyrock', '2milly', ['milly-rock']],
+  ['shoot', 'blocboyjb', ['the-shoot']],
+  ['swagsurfin', 'fastlifeyungstaz', ['swag-surf']],
   ['jumparound', 'houseofpain', ['jump-around']],
   ['mambono5', 'loubega', ['mambo-rock']],
   ['september', 'earthwindfire', ['disco-point']],
@@ -568,7 +615,7 @@ export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyl
     families = normWeights(mixed) ?? families;
   }
 
-  const themeSet = new Set<Theme>([...themesOf(curated?.themes), ...(artist?.themes ?? []), ...keywordThemes(song.title, song.artist)]);
+  const themeSet = new Set<Theme>([...themesOf(curated?.themes), ...(artist?.themes ?? []), ...genreThemes(song.genre), ...keywordThemes(song.title, song.artist)]);
   const themes = THEMES.filter((t) => themeSet.has(t));
 
   let focus = normFocus(curated?.focus) ?? normFocus(artist?.focus) ?? normFocus(genre?.focus);
