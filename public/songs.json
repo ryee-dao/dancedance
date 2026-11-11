@@ -1,19 +1,21 @@
 {
-  "updatedAt": "2026-11-11T05:44:26.169Z",
+  "updatedAt": "2026-11-11T06:59:15.429Z",
   "songs": [
     {
       "videoId": "_Vj092UgKwQ",
       "title": "Stayin' Alive",
       "artist": "Bee Gees",
       "addedAt": "2026-11-11T04:49:10.285Z",
-      "durationSec": 283
+      "durationSec": 283,
+      "hasMap": true
     },
     {
       "videoId": "fw-QRyQcFH8",
       "title": "Wannabe",
       "artist": "Spice Girls",
       "addedAt": "2026-11-11T05:44:26.169Z",
-      "durationSec": 176
+      "durationSec": 176,
+      "hasMap": true
     }
   ]
 }

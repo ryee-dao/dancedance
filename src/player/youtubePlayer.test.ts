@@ -22,7 +22,19 @@ interface Script {
   duration?: number;
   /** loadVideoById does nothing at all (no state events ever). */
   silent?: boolean;
+  /**
+   * Prerolls as real Chrome reports them (2026-11): state stays UNSTARTED
+   * while getCurrentTime() climbs through each ad (ms lengths here) and
+   * resets to 0 for the next one; video_id and duration already report the
+   * song. Then BUFFERING, then PLAYING from 0.
+   */
+  realAds?: number[];
+  /** The first N players created get stuck in BUFFERING at 0 with no duration. */
+  stuckPlayers?: number;
 }
+
+/** How many fake players have been created (fresh-player checks). */
+let created = 0;
 
 /** Scripted stand-in for YT.Player. Time advances via a 50 ms interval. */
 class FakeYT {
@@ -35,9 +47,16 @@ class FakeYT {
   private target = '';
   private adLeft = 0;
   private playing = false;
+  private realAds: number[] = [];
+  private realAdT = 0;
+  private bufferLeft = 0;
+  readonly stuck: boolean;
+  destroyed = false;
   events: YTPlayerOptions['events'] = {};
 
   constructor(private script: Script) {
+    created++;
+    this.stuck = created <= (script.stuckPlayers ?? 0);
     setInterval(() => this.tick(50), 50);
   }
   private emitState(s: number) {
@@ -45,7 +64,27 @@ class FakeYT {
     this.events?.onStateChange?.({ target: this as never, data: s } as YTEvent<number>);
   }
   private tick(ms: number) {
-    if (!this.playing) return;
+    if (!this.playing || this.destroyed) return;
+    if (this.realAds.length > 0) {
+      if (!this.muted) this.heardAd = true;
+      this.realAdT += ms;
+      this.t = this.realAdT / 1000;
+      if (this.realAdT >= this.realAds[0]) {
+        this.realAds.shift();
+        this.realAdT = 0;
+        this.t = 0;
+        if (this.realAds.length === 0) {
+          this.bufferLeft = 400;
+          this.emitState(S.BUFFERING);
+        }
+      }
+      return;
+    }
+    if (this.bufferLeft > 0) {
+      this.bufferLeft -= ms;
+      if (this.bufferLeft <= 0) this.emitState(S.PLAYING);
+      return;
+    }
     if (this.adLeft > 0) {
       this.adLeft -= ms;
       if (!this.muted) this.heardAd = true;
@@ -81,6 +120,12 @@ class FakeYT {
     this.target = videoId;
     this.t = 0;
     this.vid = '';
+    if (this.stuck) {
+      this.vid = videoId;
+      this.emitState(S.UNSTARTED);
+      this.emitState(S.BUFFERING);
+      return;
+    }
     if (this.script.errorCode) {
       setTimeout(() => this.events?.onError?.({ target: this as never, data: this.script.errorCode! }), 300);
       return;
@@ -94,6 +139,13 @@ class FakeYT {
   private start() {
     this.adLeft = this.script.adMs ?? 0;
     this.playing = true;
+    if (this.script.realAds?.length) {
+      this.realAds = [...this.script.realAds];
+      this.realAdT = 0;
+      this.vid = this.target; // real prerolls already report the song's ID
+      this.emitState(S.UNSTARTED);
+      return;
+    }
     if (this.adLeft > 0) {
       this.vid = this.script.adVideoId ?? '';
       this.emitState(this.script.adState ?? S.PLAYING);
@@ -125,7 +177,7 @@ class FakeYT {
     return this.adLeft > 0 ? 0 : this.t;
   }
   getDuration() {
-    return this.script.duration ?? 200;
+    return this.stuck ? 0 : (this.script.duration ?? 200);
   }
   getVideoData() {
     return { video_id: this.vid };
@@ -138,7 +190,9 @@ class FakeYT {
   getIframe() {
     return null as never;
   }
-  destroy() {}
+  destroy() {
+    this.destroyed = true;
+  }
 }
 
 let fake: FakeYT;
@@ -251,6 +305,109 @@ describe('YouTubePlayer start sequence', () => {
     await run(46000);
     expect(statuses).toContain('slow');
     p.destroy();
+  });
+
+  it('real preroll pattern (UNSTARTED with advancing time, x2): reports the ad, never "not responding"', async () => {
+    script = { realAds: [15000, 15500], duration: 200 };
+    const p = new YouTubePlayer();
+    const statuses: string[] = [];
+    p.onStatus = (s) => statuses.push(s);
+    let done = false;
+    void p.load(ITEM).then(() => (done = true));
+    await run(3000);
+    expect(statuses).toEqual(['loading', 'ad']);
+    expect(p.loadingDetail()).toMatch(/^Ad playing: \d+ s so far$/);
+    await run(14000); // into the second ad: time reset to 0 without a seek
+    expect(done).toBe(false);
+    expect(p.loadingDetail()).toMatch(/^Ad 2: ads for \d+ s so far$/);
+    await run(14000); // 31 s in: past the 30 s "slow" budget, still in ads
+    expect(done).toBe(false);
+    expect(statuses).not.toContain('slow');
+    await run(4000); // ads over: BUFFERING, then PLAYING from 0, confirmed
+    expect(done).toBe(true);
+    expect(statuses).toEqual(['loading', 'ad']);
+    expect(fake.heardAd).toBe(false);
+    expect(fake.muted).toBe(false);
+    expect(fake.t).toBe(0);
+    expect(fake.state).toBe(S.PAUSED);
+    p.destroy();
+  });
+
+  it('after 90 s of ads says "still in ads" (skip offered), still no "slow", then starts', async () => {
+    script = { realAds: [50000, 50000] };
+    const p = new YouTubePlayer();
+    const statuses: string[] = [];
+    p.onStatus = (s) => statuses.push(s);
+    let done = false;
+    void p.load(ITEM).then(() => (done = true));
+    await run(80000);
+    expect(statuses).toEqual(['loading', 'ad']);
+    await run(15000);
+    expect(statuses).toEqual(['loading', 'ad', 'ad-long']);
+    expect(done).toBe(false);
+    await run(10000);
+    expect(done).toBe(true);
+    expect(statuses).not.toContain('slow');
+    p.destroy();
+  });
+
+  it('a true stall (no state change, no time movement) still gets "slow" after 30 s', async () => {
+    script = { adMs: 120000, adState: S.BUFFERING };
+    const p = new YouTubePlayer();
+    const statuses: string[] = [];
+    p.onStatus = (s) => statuses.push(s);
+    void p.load(ITEM).catch(() => {});
+    await run(28000);
+    expect(statuses).not.toContain('slow');
+    await run(4000);
+    expect(statuses).toContain('slow');
+    p.destroy();
+  });
+
+  it('stuck in BUFFERING with no duration: retries once with a brand-new player, which plays', async () => {
+    created = 0;
+    script = { stuckPlayers: 1 };
+    const p = new YouTubePlayer();
+    const statuses: string[] = [];
+    p.onStatus = (s) => statuses.push(s);
+    let done = false;
+    void p.load(ITEM).then(() => (done = true));
+    await run(9000);
+    expect(created).toBe(1);
+    await run(5000);
+    expect(created).toBe(2);
+    expect(done).toBe(true);
+    expect(statuses).not.toContain('slow');
+    p.destroy();
+  });
+
+  it('stuck again after the retry: offers the escape options ~30 s after the start', async () => {
+    created = 0;
+    script = { stuckPlayers: 5 };
+    const p = new YouTubePlayer();
+    const statuses: string[] = [];
+    p.onStatus = (s) => statuses.push(s);
+    void p.load(ITEM).catch(() => {});
+    await run(28000);
+    expect(statuses).not.toContain('slow');
+    await run(5000);
+    expect(statuses).toContain('slow');
+    expect(created).toBe(2); // exactly one retry
+    p.destroy();
+  });
+
+  it('every load() gets a brand-new IFrame player and destroys the old one', async () => {
+    created = 0;
+    script = {};
+    const p = new YouTubePlayer();
+    await Promise.all([p.load(ITEM), run(3000)]);
+    const first = fake;
+    await Promise.all([p.load({ ...ITEM, videoId: 'zyxwvutsrqp' }), run(3000)]);
+    expect(created).toBe(2);
+    expect(first.destroyed).toBe(true);
+    expect(fake).not.toBe(first);
+    p.destroy();
+    expect(fake.destroyed).toBe(true);
   });
 
   it('rejects load() with an embed-blocked error for 150', async () => {

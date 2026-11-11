@@ -10,6 +10,9 @@ export type PlayItem =
  *  - 'loading':       waiting for the video to start
  *  - 'ad':            the player is busy but our song isn't advancing (likely
  *                     a muted preroll ad)
+ *  - 'ad-long':       ads have been running for a long time (~90 s); the UI
+ *                     should say "still in ads" and offer skip (loading keeps
+ *                     going)
  *  - 'needs-gesture': the browser blocked autoplay; call play() from a user
  *                     action (button / OK key) to continue
  *  - 'slow':          nothing has started after a timeout (or the player went
@@ -20,7 +23,7 @@ export type PlayItem =
  * After play(), 'ad' means the player reports PLAYING but the song time
  * stands still (an ad mid-song).
  */
-export type StartStatus = 'loading' | 'ad' | 'needs-gesture' | 'slow' | 'playing';
+export type StartStatus = 'loading' | 'ad' | 'ad-long' | 'needs-gesture' | 'slow' | 'playing';
 
 /**
  * Player error. `code` is the YouTube IFrame error number where there is one

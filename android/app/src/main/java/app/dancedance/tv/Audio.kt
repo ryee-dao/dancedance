@@ -38,8 +38,9 @@ class AudioCache(val dir: File, val capBytes: Long) {
         dir.listFiles { f -> f.name.endsWith(".part") }?.forEach { it.delete() }
     }
 
-    fun find(videoId: String): File? =
-        listOf("m4a", "webm").map { dir.resolve("$videoId.$it") }.firstOrNull { it.isFile && it.length() > 0 }
+    /** The cached file of the first of [formats] ("webm" / "m4a") present. The extension is the format. */
+    fun find(videoId: String, formats: List<String>): File? =
+        formats.map { dir.resolve("$videoId.$it") }.firstOrNull { it.isFile && it.length() > 0 }
 
     /** A cache file by its served name ("<videoId>.<ext>"), or null if unknown / malformed. */
     fun byName(name: String): File? {
@@ -86,6 +87,8 @@ data class PreparedAudio(
     val durationSec: Long?,
     val fromCache: Boolean,
     val downloadMs: Long,
+    /** Encoder priming at the start of the file that Chromium plays and decodes (see [Mp4Priming]). */
+    val primingSec: Double,
 )
 
 /** Progress reports while preparing (sent to the page as `audioProgress` events). */
@@ -108,19 +111,39 @@ class AudioRepository(
     @Volatile var lastDownload: String? = null
         private set
 
+    /**
+     * Formats in order of preference ("webm", "m4a"); the page sets it once at startup from its
+     * Opus playback/decode probe ([AudioPick] explains why WebM/Opus comes first).
+     */
+    @Volatile var formats: List<String> = AudioPick.DEFAULT_ORDER
+
     suspend fun prepare(videoId: String, progress: (AudioProgress) -> Unit): PreparedAudio {
-        cache.find(videoId)?.let {
-            cache.touch(it)
-            return PreparedAudio(videoId, it, mimeFor(it), null, fromCache = true, downloadMs = 0)
-        }
+        val order = formats
+        // Only the preferred format counts as a hit, so a format switch re-downloads instead of
+        // serving the old file (which the LRU then evicts).
+        cache.find(videoId, order.take(1))?.let { return cached(videoId, it) }
         val job = synchronized(jobs) {
-            jobs[videoId]?.takeIf { it.isActive } ?: scope.async { slots.withPermit { download(videoId, progress) } }
+            jobs[videoId]?.takeIf { it.isActive } ?: scope.async { slots.withPermit { download(videoId, order, progress) } }
                 .also { d ->
                     jobs[videoId] = d
                     d.invokeOnCompletion { synchronized(jobs) { if (jobs[videoId] === d) jobs.remove(videoId) } }
                 }
         }
-        return job.await()
+        return try {
+            job.await()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (t: Throwable) {
+            // Offline or YouTube trouble: an earlier download in another playable format still works.
+            val fallback = cache.find(videoId, order) ?: throw t
+            Log.w(TAG, "Audio $videoId: download failed (${t.message}); using cached ${fallback.name}")
+            cached(videoId, fallback)
+        }
+    }
+
+    private fun cached(videoId: String, f: File): PreparedAudio {
+        cache.touch(f)
+        return PreparedAudio(videoId, f, mimeFor(f), null, fromCache = true, downloadMs = 0, primingSec = Mp4Priming.primingSec(f))
     }
 
     fun cancel(videoId: String) {
@@ -131,11 +154,13 @@ class AudioRepository(
         synchronized(jobs) { jobs.values.toList() }.forEach { it.cancel() }
     }
 
-    private suspend fun download(videoId: String, progress: (AudioProgress) -> Unit): PreparedAudio {
+    private suspend fun download(videoId: String, order: List<String>, progress: (AudioProgress) -> Unit): PreparedAudio {
         val started = SystemClock.elapsedRealtime()
         progress(AudioProgress(videoId, "resolving", 0, -1, 1))
-        var source = resolve(videoId, null)
+        var source = resolve(videoId, null, order)
         Log.i(TAG, "Audio $videoId: itag ${source.itag} ${source.ext} ${source.bitrate / 1000} kbps, ${source.contentLength} bytes")
+        // The preferred format isn't offered for this video and we already have the one that is.
+        cache.find(videoId, listOf(source.ext))?.let { return cached(videoId, it) }
         val part = cache.partFile(videoId, source.ext)
         part.delete()
         var received = 0L
@@ -176,7 +201,7 @@ class AudioRepository(
             val ms = SystemClock.elapsedRealtime() - started
             lastDownload = "$videoId: ${received / 1024} KB in ${ms} ms"
             Log.i(TAG, "Audio $videoId: downloaded ${received / 1024} KB in $ms ms")
-            return PreparedAudio(videoId, dest, source.mimeType, source.durationSec, fromCache = false, downloadMs = ms)
+            return PreparedAudio(videoId, dest, source.mimeType, source.durationSec, fromCache = false, downloadMs = ms, primingSec = Mp4Priming.primingSec(dest))
         } catch (t: Throwable) {
             part.delete()
             throw t
@@ -240,8 +265,8 @@ class AudioRepository(
         }
     }
 
-    private suspend fun resolve(videoId: String, preferItag: Int?): YouTube.AudioSource = try {
-        runInterruptible { youtube.audio(videoId, preferItag) }
+    private suspend fun resolve(videoId: String, preferItag: Int?, order: List<String> = formats): YouTube.AudioSource = try {
+        runInterruptible { youtube.audio(videoId, preferItag, order) }
     } catch (e: CancellationException) {
         throw e
     } catch (t: Throwable) {
@@ -290,6 +315,103 @@ class AudioRepository(
         private val POST_BODY = byteArrayOf(0x78, 0)
 
         fun mimeFor(f: File) = if (f.name.endsWith(".webm")) "audio/webm" else "audio/mp4"
+    }
+}
+
+/**
+ * AAC encoder priming in YouTube's M4A (itag 140) streams. The encoder puts 1600 samples
+ * (36.3 ms at 44.1 kHz) of priming before the music. Newer uploads declare it in an edit list
+ * (`elst` media_time = 1600), which Chromium honours, so it is trimmed; most files have no edit
+ * list, and then Chromium decodes AND plays the priming (WebView 113, measured against the Opus
+ * stream the cloud maps are made from). The page subtracts [primingSec] from the playback clock
+ * and from the decoded audio before on-device analysis, so both kinds of map line up.
+ * WebM/Opus has none of this (Opus pre-skip is always honoured): 0.
+ */
+object Mp4Priming {
+    const val YOUTUBE_AAC_PRIMING_SAMPLES = 1600L
+
+    data class Info(val timescale: Long?, val editMediaTime: Long?)
+
+    fun primingSec(f: File): Double {
+        if (!f.name.endsWith(".m4a")) return 0.0
+        val head = runCatching {
+            FileInputStream(f).use { input ->
+                val buf = ByteArray(minOf(f.length(), 512L * 1024).toInt())
+                var n = 0
+                while (n < buf.size) {
+                    val r = input.read(buf, n, buf.size - n)
+                    if (r < 0) break
+                    n += r
+                }
+                buf.copyOf(n)
+            }
+        }.getOrNull() ?: return 0.0
+        return primingSec(parse(head))
+    }
+
+    fun primingSec(info: Info): Double {
+        if ((info.editMediaTime ?: 0) > 0) return 0.0 // declared: Chromium trims it itself
+        // Only the 44.1 kHz AAC-LC stream has a measured constant; don't guess for others.
+        if (info.timescale != 44100L) return 0.0
+        return YOUTUBE_AAC_PRIMING_SAMPLES / 44100.0
+    }
+
+    /** The first track's mdhd timescale and first non-empty edit's media_time, from the file's start. */
+    fun parse(b: ByteArray): Info {
+        var timescale: Long? = null
+        var mediaTime: Long? = null
+        fun u32(at: Int) = ((b[at].toLong() and 0xff) shl 24) or ((b[at + 1].toLong() and 0xff) shl 16) or
+            ((b[at + 2].toLong() and 0xff) shl 8) or (b[at + 3].toLong() and 0xff)
+        fun u64(at: Int) = (u32(at) shl 32) or u32(at + 4)
+        fun walk(start: Int, end: Int, depth: Int) {
+            var p = start
+            while (p + 8 <= end && depth < 8) {
+                var size = u32(p)
+                val type = String(b, p + 4, 4, Charsets.ISO_8859_1)
+                var header = 8
+                if (size == 1L) {
+                    if (p + 16 > end) return
+                    size = u64(p + 8)
+                    header = 16
+                } else if (size == 0L) {
+                    size = (end - p).toLong()
+                }
+                if (size < header || p + size > end) {
+                    // Truncated (we only read the head of the file): descend into what we have.
+                    if (type == "moov" || type == "trak" || type == "mdia" || type == "edts") walk(p + header, end, depth + 1)
+                    return
+                }
+                val body = p + header
+                val boxEnd = (p + size).toInt()
+                when (type) {
+                    "moov", "trak", "mdia", "edts" -> walk(body, boxEnd, depth + 1)
+                    "mdhd" -> if (timescale == null && body + 24 <= boxEnd) {
+                        val v1 = b[body].toInt() == 1
+                        timescale = u32(body + if (v1) 20 else 12)
+                    }
+                    "elst" -> if (mediaTime == null && body + 8 <= boxEnd) {
+                        val v1 = b[body].toInt() == 1
+                        val count = u32(body + 4)
+                        var e = body + 8
+                        val entry = if (v1) 20 else 12
+                        for (i in 0 until count) {
+                            if (e + entry > boxEnd) break
+                            val t = if (v1) u64(e + 8) else u32(e + 4).toInt().toLong() // signed: -1 = empty edit
+                            if (t >= 0) {
+                                mediaTime = t
+                                break
+                            }
+                            e += entry
+                        }
+                    }
+                    "moof", "mdat" -> return // past the header
+                }
+                if (type == "trak" && timescale != null) return // first track is enough
+                p = boxEnd
+            }
+        }
+        walk(0, b.size, 0)
+        return Info(timescale, mediaTime)
     }
 }
 

@@ -208,9 +208,37 @@ export interface EnrichedVideo {
   artist?: string;
 }
 
-export async function fetchSiteEnrichment(): Promise<EnrichedVideo[]> {
+let enrichmentP: Promise<EnrichedVideo[]> | null = null;
+
+/**
+ * The file is optional (404 on most deployments) and only changes on deploy,
+ * so the answer, including a 404, is fetched once per page load. A network
+ * failure isn't cached, so a later call can try again.
+ */
+export function fetchSiteEnrichment(): Promise<EnrichedVideo[]> {
+  if (!enrichmentP) {
+    enrichmentP = loadSiteEnrichment().then((r) => {
+      if (r === null) enrichmentP = null;
+      return r ?? [];
+    });
+  }
+  return enrichmentP;
+}
+
+/** Test hook: forget the cached answer. */
+export function resetSiteEnrichmentCache(): void {
+  enrichmentP = null;
+}
+
+/** null = couldn't reach the server (not cached). */
+async function loadSiteEnrichment(): Promise<EnrichedVideo[] | null> {
+  let res: Response;
   try {
-    const res = await fetch('./playlist.json', { cache: 'no-cache' });
+    res = await fetch('./playlist.json', { cache: 'no-cache' });
+  } catch {
+    return null;
+  }
+  try {
     if (!res.ok) return [];
     // A dev server may answer unknown paths with index.html; parse defensively.
     const data: unknown = JSON.parse(await res.text());

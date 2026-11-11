@@ -90,33 +90,73 @@ class YouTube(private val http: OkHttpClient) {
     }
 
     /**
-     * The best audio-only progressive stream: M4A/AAC first (decodes everywhere in WebView), then
-     * WebM/Opus. Original-language track preferred over dubbed/descriptive ones.
+     * The best audio-only progressive stream in the first of [formats] ("webm" / "m4a") this video
+     * offers; original-language track preferred over dubbed/descriptive ones. See [AudioPick].
      */
-    fun audio(videoId: String, preferItag: Int? = null): AudioSource {
+    fun audio(videoId: String, preferItag: Int? = null, formats: List<String> = AudioPick.DEFAULT_ORDER): AudioSource {
         val info = StreamInfo.getInfo(ServiceList.YouTube, "https://www.youtube.com/watch?v=$videoId")
-        val usable = info.audioStreams.filter {
+        val streams = info.audioStreams.filter {
             it.deliveryMethod == DeliveryMethod.PROGRESSIVE_HTTP && it.isUrl && !it.content.isNullOrBlank()
         }
-        val original = usable.filter { it.audioTrackType == null || it.audioTrackType == AudioTrackType.ORIGINAL }
-            .ifEmpty { usable }
-        val rate = { s: AudioStream -> if (s.averageBitrate > 0) s.averageBitrate else s.bitrate }
-        val pick = original.firstOrNull { preferItag != null && it.itag == preferItag }
-            ?: original.filter { it.format == MediaFormat.M4A }.maxByOrNull(rate)
-            ?: original.filter { it.format == MediaFormat.WEBMA_OPUS || it.format == MediaFormat.WEBMA || it.format == MediaFormat.OPUS }
-                .maxByOrNull(rate)
-            ?: throw NoAudioException()
-        val isM4a = pick.format == MediaFormat.M4A
+        // averageBitrate is in kbps (NewPipe's itag table), bitrate in bps.
+        val rate = { s: AudioStream -> if (s.averageBitrate > 0) s.averageBitrate * 1000 else s.bitrate }
+        val candidates = streams.mapIndexedNotNull { i, s ->
+            val ext = AudioPick.extFor(s.format) ?: return@mapIndexedNotNull null
+            AudioPick.Candidate(i, s.itag, ext, rate(s), s.audioTrackType == null || s.audioTrackType == AudioTrackType.ORIGINAL)
+        }
+        val chosen = AudioPick.choose(candidates, formats, preferItag) ?: throw NoAudioException()
+        val pick = streams[chosen.index]
         return AudioSource(
             url = pick.content,
-            ext = if (isM4a) "m4a" else "webm",
-            mimeType = if (isM4a) "audio/mp4" else "audio/webm",
+            ext = chosen.ext,
+            mimeType = AudioPick.mimeFor(chosen.ext),
             contentLength = pick.itagItem?.contentLength?.takeIf { it > 0 } ?: -1L,
             durationSec = info.duration.takeIf { it > 0 },
-            bitrate = rate(pick),
+            bitrate = chosen.bitrate,
             itag = pick.itag,
         )
     }
+}
+
+/**
+ * Which audio-only stream to download. WebM/Opus is preferred: it is what the cloud beat maps are
+ * made from (yt-dlp `bestaudio`), and decoders honour Opus pre-skip, so on-device decoding and
+ * `<audio>` playback line up with cloud maps to the sample. YouTube's M4A/AAC streams mostly start
+ * with 1600 samples (36.3 ms) of encoder priming that Chromium neither trims in decodeAudioData nor
+ * in `<audio>` (measured on WebView 113); see [Mp4Priming]. M4A stays as the fallback for WebViews
+ * that can't play Opus and for videos without an Opus stream.
+ */
+object AudioPick {
+    val DEFAULT_ORDER = listOf("webm", "m4a")
+    val KNOWN = setOf("webm", "m4a")
+
+    data class Candidate(val index: Int, val itag: Int, val ext: String, val bitrate: Int, val original: Boolean)
+
+    fun extFor(format: MediaFormat?): String? = when (format) {
+        MediaFormat.M4A -> "m4a"
+        MediaFormat.WEBMA_OPUS, MediaFormat.OPUS, MediaFormat.WEBMA -> "webm"
+        else -> null
+    }
+
+    fun mimeFor(ext: String) = if (ext == "webm") "audio/webm" else "audio/mp4"
+
+    /**
+     * [preferItag] (a URL refresh mid-download must keep the same bytes) wins; otherwise the
+     * highest bitrate in the first format of [order] that has one, original-language tracks first.
+     */
+    fun choose(all: List<Candidate>, order: List<String>, preferItag: Int? = null): Candidate? {
+        val pool = all.filter { it.original }.ifEmpty { all }
+        pool.firstOrNull { preferItag != null && it.itag == preferItag }?.let { return it }
+        val formats = (order.filter { it in KNOWN } + DEFAULT_ORDER).distinct()
+        for (ext in formats) {
+            pool.filter { it.ext == ext }.maxByOrNull { it.bitrate }?.let { return it }
+        }
+        return null
+    }
+
+    /** Parse the page's preference ("webm,m4a"); unknown entries dropped, empty means the default. */
+    fun parseOrder(csv: String?): List<String> =
+        csv.orEmpty().split(',').map { it.trim().lowercase() }.filter { it in KNOWN }.distinct().ifEmpty { DEFAULT_ORDER }
 }
 
 class NoAudioException : Exception("No audio-only stream for this video")

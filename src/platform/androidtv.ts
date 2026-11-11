@@ -23,10 +23,20 @@
  *
  * v2: songs added from the phone page ("Find a song"): getAddedSongs(),
  * removeAddedSong(), and the 'addedSongsChanged' event.
+ * v3: setAudioFormats() and PreparedAudio.primingSec (beat alignment, below).
+ *
+ * Beat alignment. Cloud maps are made from YouTube's WebM/Opus stream, so the
+ * shell downloads that by default: WebView decodes and plays it sample-aligned
+ * with the cloud timeline (Opus pre-skip is honoured). YouTube's M4A/AAC files
+ * mostly carry 1600 samples (36.3 ms) of undeclared encoder priming that
+ * Chromium decodes AND plays (measured, WebView 113), so when the M4A fallback
+ * is used the shell reports `primingSec` and this side takes it off both the
+ * playback clock and the audio handed to on-device analysis.
  */
 
 import type { AddedSong } from '../beat/cloud';
 import { fetchVideoInfo, limitConcurrency, cleanTitle } from '../player/playlistReader';
+import { ANALYSIS_RATE } from '../beat/analyzeAudio';
 import { SmoothClock } from '../player/clock';
 import { PlayerError, type MediaPlayer, type PlayItem, type StartStatus } from '../player/types';
 import { store } from '../store';
@@ -36,7 +46,7 @@ import type { DeviceAnalysisNote, Platform, PlaylistEntry } from './platform';
 // ---------------------------------------------------------------------------
 // Contract types
 
-export const BRIDGE_VERSION = 2;
+export const BRIDGE_VERSION = 3;
 
 /** The raw object the shell injects as `window.DanceBridge`. */
 export interface DanceBridgeNative {
@@ -58,6 +68,8 @@ export interface DanceBridgeNative {
   /** Abort a running prepareAudio download. */
   cancelAudio(videoId: string): void;
   stopLinkServer(): void;
+  /** v3: download format order, e.g. "webm,m4a"; returns the order in effect. */
+  setAudioFormats?(csv: string): string;
   // async: answer delivered later by request id
   /** value: BridgePlaylistEntry[] in playlist order (all pages). */
   getPlaylist(requestId: string, listIdOrUrl: string): void;
@@ -128,6 +140,8 @@ export interface PreparedAudio {
   durationSec: number | null;
   fromCache: boolean;
   downloadMs: number;
+  /** v3: seconds of encoder priming at the start that the cloud timeline doesn't have (M4A only; else 0). */
+  primingSec?: number;
 }
 
 export interface AudioProgress {
@@ -296,6 +310,8 @@ export const tvState = {
   /** Live stats while a song plays, then the last song's. */
   frames: null as FrameStats | null,
   framesLive: false,
+  /** Download format order agreed with the shell at startup ("webm,m4a"), for diagnostics. */
+  audioFormats: null as string | null,
 };
 
 // ---------------------------------------------------------------------------
@@ -313,6 +329,7 @@ export function createAndroidTvPlatform(): Platform {
     console.warn('[dd:tv] bridge version mismatch', config.bridgeVersion, BRIDGE_VERSION);
   }
   syncLinkFromNative();
+  void configureAudioFormats(b);
   installLifecycle(b);
   installAddedSongs(b);
   installFrameSampler();
@@ -355,7 +372,8 @@ export function createAndroidTvPlatform(): Platform {
       const p = await prepareAudio(videoId);
       const res = await fetch(p.url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.arrayBuffer();
+      const buf = await res.arrayBuffer();
+      return p.primingSec && p.primingSec > 0 ? trimPriming(buf, p.primingSec) : buf;
     },
     noteAnalysis(info) {
       tvState.lastAnalysis = info;
@@ -429,13 +447,90 @@ export function shouldOfferTvLink(): boolean {
 
 const preparing = new Map<string, Promise<PreparedAudio>>();
 
+/** 48 ms of Opus in WebM (559 bytes): the startup decode probe. */
+const OPUS_PROBE = 'GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAAAAH/EU2bdLpNu4tTq4QVSalmU6yBoU27i1OrhBZUrmtTrIHGTbuMU6uEElTDZ1OsggE8TbuMU6uEHFO7a1OsggHp7AEAAAAAAABZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVSalmoCrXsYMPQkBNgIRMYXZmV0GETGF2ZkSJiEBIAAAAAAAAFlSua/GuAQAAAAAAAGjXgQFzxYgAAAAAAAAAAZyBACK1nIN1bmSIgQCGhkFfT1BVU1aqg2MuoFa7hATEtACDgQIj44OEATEtAOGRn4EBtYhA53AAAAAAAGJkgRBV7oEAY6KTT3B1c0hlYWQBATgBgLsAAAAAABJUw2fRc3POY8CLY8WIAAAAAAAAAAFnyJlFo4dFTkNPREVSRIeMTGF2YyBsaWJvcHVzZ8ihRaOIRFVSQVRJT05Eh5MwMDowMDowMC4wNDgwMDAwMDAAH0O2ddLngQCjkYEAAIAIg22C0Bz96kn+AT/Ao5qBABWACKcaXYqYLl9vBctKGu2388jWBcFewKCeoZKBACkACAZtM5AK7H1As5EiKcSbgQd1ooQAzf5gHFO7a5G7j7OBALeK94EB8YIBkvCBAw==';
+
+let formatsReady: Promise<void> | null = null;
+
+/**
+ * Once per app open, before the first download: WebM/Opus when this WebView
+ * can both play and decode it (every Chromium we know of), else M4A first.
+ */
+function configureAudioFormats(b: BridgeClient): Promise<void> {
+  formatsReady ??= (async () => {
+    if (typeof b.native.setAudioFormats !== 'function') return; // older shell: its own default
+    const opus = await canUseOpus();
+    tvState.audioFormats = b.native.setAudioFormats(opus ? 'webm,m4a' : 'm4a,webm');
+    console.info('[dd:tv] audio formats', tvState.audioFormats);
+  })().catch((err: unknown) => console.warn('[dd:tv] audio format setup failed', err));
+  return formatsReady;
+}
+
+async function canUseOpus(): Promise<boolean> {
+  try {
+    if (!document.createElement('audio').canPlayType('audio/webm; codecs="opus"')) return false;
+    const bytes = Uint8Array.from(atob(OPUS_PROBE), (c) => c.charCodeAt(0));
+    const ctx = new OfflineAudioContext(1, 1, ANALYSIS_RATE);
+    const decoded = await Promise.race([
+      ctx.decodeAudioData(bytes.buffer),
+      new Promise<null>((r) => setTimeout(() => r(null), 3000)),
+    ]);
+    return !!decoded && decoded.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The analysis input for an M4A with undeclared priming: decoded the way
+ * analyzeAudio does (mono, ANALYSIS_RATE), priming dropped, as 16-bit WAV, so
+ * the device map lands on the cloud timeline like the player's clock does.
+ */
+async function trimPriming(buf: ArrayBuffer, primingSec: number): Promise<ArrayBuffer> {
+  let audio: AudioBuffer;
+  try {
+    audio = await new OfflineAudioContext(1, 1, ANALYSIS_RATE).decodeAudioData(buf.slice(0));
+  } catch {
+    return buf; // let the analysis report the decode failure itself
+  }
+  const skip = Math.min(audio.length, Math.round(primingSec * audio.sampleRate));
+  const n = audio.length - skip;
+  const chs = audio.numberOfChannels;
+  const out = new ArrayBuffer(44 + 2 * n);
+  const v = new DataView(out);
+  const str = (at: number, s: string) => {
+    for (let i = 0; i < s.length; i++) v.setUint8(at + i, s.charCodeAt(i));
+  };
+  str(0, 'RIFF');
+  v.setUint32(4, 36 + 2 * n, true);
+  str(8, 'WAVE');
+  str(12, 'fmt ');
+  v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true); // PCM
+  v.setUint16(22, 1, true); // mono
+  v.setUint32(24, audio.sampleRate, true);
+  v.setUint32(28, audio.sampleRate * 2, true);
+  v.setUint16(32, 2, true);
+  v.setUint16(34, 16, true);
+  str(36, 'data');
+  v.setUint32(40, 2 * n, true);
+  const data = Array.from({ length: chs }, (_, c) => audio.getChannelData(c));
+  for (let i = 0; i < n; i++) {
+    let x = 0;
+    for (let c = 0; c < chs; c++) x += data[c][i + skip];
+    x /= chs;
+    v.setInt16(44 + 2 * i, Math.max(-32768, Math.min(32767, Math.round(x * 32767))), true);
+  }
+  return out;
+}
+
 /** Download (or reuse) a song's audio. Concurrent calls share one download. */
 export function prepareAudio(videoId: string): Promise<PreparedAudio> {
   const b = tvBridge();
   if (!b) return Promise.reject(new BridgeError('internal', 'Not running on the TV app.'));
   let p = preparing.get(videoId);
   if (!p) {
-    p = b.call<PreparedAudio>('prepareAudio', videoId);
+    p = configureAudioFormats(b).then(() => b.call<PreparedAudio>('prepareAudio', videoId));
     preparing.set(videoId, p);
     // Keep successful results briefly (the cache answers instantly anyway).
     p.then(
@@ -599,6 +694,8 @@ export class TvAudioPlayer implements MediaPlayer {
   private wantPlay = false;
   private lastTime = 0;
   private lastRecovery = 0;
+  /** Encoder priming the element plays before the music (M4A fallback only): off the clock. */
+  private priming = 0;
 
   constructor() {
     players.add(this);
@@ -671,6 +768,7 @@ export class TvAudioPlayer implements MediaPlayer {
         (prepared) => {
           if (done) return;
           this.detail = prepared.fromCache ? 'Song ready.' : 'Downloaded.';
+          this.priming = prepared.primingSec && prepared.primingSec > 0 ? prepared.primingSec : 0;
           const a = this.audio;
           const onReady = () => {
             a.removeEventListener('canplay', onReady);
@@ -726,7 +824,7 @@ export class TvAudioPlayer implements MediaPlayer {
     if (!this.loaded) return 0;
     if (this.audio.currentTime > 0) this.lastTime = this.audio.currentTime;
     this.clock.update(this.audio.currentTime, this.isPlaying());
-    return Math.max(0, Math.min(this.clock.time(), this.duration() || Infinity));
+    return Math.max(0, Math.min(this.clock.time() - this.priming, this.duration() || Infinity));
   }
 
   duration(): number {
@@ -751,6 +849,7 @@ export class TvAudioPlayer implements MediaPlayer {
     this.src = null;
     this.wantPlay = false;
     this.lastTime = 0;
+    this.priming = 0;
     keepScreenOn(false);
     this.audio.pause();
     this.audio.removeAttribute('src');

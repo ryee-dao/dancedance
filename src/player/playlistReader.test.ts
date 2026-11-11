@@ -1,5 +1,12 @@
-import { describe, expect, it } from 'vitest';
-import { cleanTitle, limitConcurrency, parsePlaylistLink, PRIVATE_LIST_MESSAGE } from './playlistReader';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  cleanTitle,
+  fetchSiteEnrichment,
+  limitConcurrency,
+  parsePlaylistLink,
+  PRIVATE_LIST_MESSAGE,
+  resetSiteEnrichmentCache,
+} from './playlistReader';
 
 const ID = 'PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPboYG';
 
@@ -82,5 +89,32 @@ describe('limitConcurrency', () => {
     const results = await Promise.all([job(), job(), job(), job(), job()]);
     expect(results).toEqual([1, 1, 1, 1, 1]);
     expect(peak).toBe(2);
+  });
+});
+
+describe('fetchSiteEnrichment', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    resetSiteEnrichmentCache();
+  });
+
+  it('asks for playlist.json once per page load, even when it is a 404', async () => {
+    const fetchMock = vi.fn(async () => new Response('not found', { status: 404 }));
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await fetchSiteEnrichment()).toEqual([]);
+    expect(await fetchSiteEnrichment()).toEqual([]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('parses videos and caches them; a network failure is retried later', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError('offline'))
+      .mockResolvedValue(new Response(JSON.stringify({ videos: [{ videoId: 'abc', title: 'T' }, { bad: 1 }] })));
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await fetchSiteEnrichment()).toEqual([]);
+    expect(await fetchSiteEnrichment()).toEqual([{ videoId: 'abc', title: 'T' }]);
+    expect(await fetchSiteEnrichment()).toEqual([{ videoId: 'abc', title: 'T' }]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

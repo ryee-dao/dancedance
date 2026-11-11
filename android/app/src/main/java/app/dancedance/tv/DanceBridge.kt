@@ -27,6 +27,8 @@ import org.json.JSONObject
  *
  * Version 2 added: getAddedSongs(), removeAddedSong(), the addedSongsChanged event (songs added
  * from the phone page's "Find a song").
+ * Version 3 added: setAudioFormats() and PreparedAudio.primingSec (beat-map alignment; WebM/Opus
+ * downloaded by default, see [AudioPick] / [Mp4Priming]).
  */
 class DanceBridge(private val app: DanceApp, private val host: Host) {
     interface Host {
@@ -38,7 +40,7 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
     }
 
     companion object {
-        const val VERSION = 2
+        const val VERSION = 3
         private const val TAG = "DanceDance"
         private val ID_RE = Regex("^[A-Za-z0-9_-]{1,40}$")
         private val VIDEO_RE = Regex("^[A-Za-z0-9_-]{11}$")
@@ -147,6 +149,18 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
     @JavascriptInterface
     fun stopLinkServer() = app.link.stop()
 
+    /**
+     * Download format preference, e.g. "webm,m4a" (the default) or "m4a,webm" when the page's
+     * probe found the WebView can't play or decode Opus. Returns the order now in effect.
+     */
+    @JavascriptInterface
+    fun setAudioFormats(csv: String?): String {
+        val order = AudioPick.parseOrder(csv)
+        app.audio.formats = order
+        Log.i(TAG, "Audio formats: ${order.joinToString(",")}")
+        return order.joinToString(",")
+    }
+
     // ---------------------------------------------------------------------------------------
     // Asynchronous calls (result delivered later by request id)
 
@@ -177,7 +191,7 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
         }
     }
 
-    /** Value: {videoId, url, mimeType, bytes, durationSec, fromCache, downloadMs}. */
+    /** Value: {videoId, url, mimeType, bytes, durationSec, fromCache, downloadMs, primingSec}. */
     @JavascriptInterface
     fun prepareAudio(requestId: String, videoId: String) = async(requestId) {
         if (!VIDEO_RE.matches(videoId)) throw BridgeException("bad-input", "Not a YouTube video ID.")
@@ -198,6 +212,7 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
             .put("durationSec", p.durationSec ?: JSONObject.NULL)
             .put("fromCache", p.fromCache)
             .put("downloadMs", p.downloadMs)
+            .put("primingSec", p.primingSec)
     }
 
     /**
