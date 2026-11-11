@@ -3,17 +3,30 @@
  * repository's Beat maps workflow, so the web app doesn't need a GitHub token
  * in every browser.
  *
- *   POST /add      { "trackId": 1440936016, "queue"?: [123, 456] }
+ *   POST /add      { "trackId": 1440936016,
+ *                    "song"?:  { "artist": "...", "title": "...", "durationSec"?: 219 },
+ *                    "queue"?: [123, { "trackId": 456, "song"?: { ... } }] }
  *                  headers: Content-Type: application/json
  *                           X-Add-Passphrase: <passphrase>   (only when ADD_PASSPHRASE is set)
- *     200 { ok: true, song: { trackId, artist, title, durationSec, artworkUrl } }
- *     4xx/5xx { ok: false, error: <code> }   codes: bad-origin, bad-request, passphrase,
+ *     200 { ok: true, source: 'apple' | 'client', song: { trackId, artist, title, durationSec?, artworkUrl }, detail? }
+ *     4xx/5xx { ok: false, error: <code>, detail? }   codes: bad-origin, bad-request, passphrase,
  *         not-found, daily-limit, lookup-failed, not-configured, github-<status>
- *   GET /health    { ok, repo, passphrase: <required?>, dailyLimit }
+ *   GET /health           { ok, repo, passphrase: <required?>, dailyLimit }
+ *   GET /health?probe=1   the same plus { apple: 'ok' | 'apple-<status>' | 'apple-timeout' | ... }
  *
- * Artist, title and length always come from Apple's lookup of the track ID,
- * never from the caller. `queue` = other track IDs the app is still waiting
- * for (max 9), re-sent so a run GitHub dropped from its queue is retried.
+ * Artist, title and length come from Apple's lookup of the track ID when
+ * Apple answers (source 'apple'). Only when the lookup itself fails (network
+ * error, timeout, non-200, unreadable answer, after one retry) does the relay
+ * fall back to the details the app took from its own iTunes search (source
+ * 'client', `detail` says why). If Apple answers that the ID is not a song,
+ * the answer is `not-found` whatever the app sent. Client details are
+ * validated strictly: trimmed strings of 1-200 characters without control
+ * characters or line breaks; durationSec an integer 20-900, or left out (the
+ * cloud job then looks the length up itself). `queue` = other songs the app is
+ * still waiting for (max 9), re-sent so a run GitHub dropped is retried.
+ *
+ * `detail` is a short diagnostic (e.g. apple-403, apple-timeout,
+ * apple-bad-json, song-title); it never contains secrets or upstream bodies.
  *
  * Settings (wrangler.toml [vars] / `wrangler secret put`):
  *   GITHUB_REPO      var     "owner/repo"
@@ -36,21 +49,44 @@ export interface Env {
 
 type FetchFn = (input: string, init?: RequestInit) => Promise<Response>;
 
+export interface HandleOptions {
+  /** Per-attempt time limit for Apple's lookup (default APPLE_TIMEOUT_MS). */
+  appleTimeoutMs?: number;
+}
+
 export const WORKFLOW_FILE = 'beatmaps.yml';
 export const WORKFLOW_REF = 'main';
 export const DEFAULT_DAILY_LIMIT = 30;
 export const MAX_BODY_BYTES = 2048;
 export const MAX_QUEUE = 9;
+export const APPLE_TIMEOUT_MS = 4000;
+/** A well-known song used by GET /health?probe=1. */
+export const PROBE_TRACK_ID = 1573849255;
 const GITHUB_API = 'https://api.github.com';
+const APPLE_LOOKUP = 'https://itunes.apple.com/lookup';
+const APPLE_HEADERS: Record<string, string> = {
+  Accept: 'application/json',
+  'User-Agent': 'Mozilla/5.0 (compatible; DanceDanceRelay/1.0)',
+};
 const REPO_RE = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})\/[A-Za-z0-9._-]{1,100}$/;
 const PASS_HEADER = 'X-Add-Passphrase';
+/** C0/C1 control characters (incl. tab, CR, LF) and Unicode line/paragraph separators. */
+const CTRL_RE = /[\u0000-\u001f\u007f-\u009f\u2028\u2029]/;
 
 export interface Song {
   trackId: number;
   artist: string;
   title: string;
-  durationSec: number;
+  /** Absent only for client details without a length (the cloud job looks it up). */
+  durationSec?: number;
   artworkUrl: string;
+}
+
+/** Artist/title/length the app took from its own iTunes search. */
+export interface ClientDetails {
+  artist: string;
+  title: string;
+  durationSec?: number;
 }
 
 function allowedOrigins(env: Env): string[] {
@@ -78,7 +114,8 @@ function json(status: number, body: unknown, cors: Record<string, string>): Resp
   });
 }
 
-const fail = (status: number, error: string, cors: Record<string, string>) => json(status, { ok: false, error }, cors);
+const fail = (status: number, error: string, cors: Record<string, string>, detail?: string) =>
+  json(status, detail ? { ok: false, error, detail } : { ok: false, error }, cors);
 
 /** Constant-time string comparison (length is not secret). */
 export function safeEqual(a: string, b: string): boolean {
@@ -93,40 +130,140 @@ function toTrackId(v: unknown): number | null {
   return typeof n === 'number' && Number.isSafeInteger(n) && n > 0 ? n : null;
 }
 
-/** Apple's data for these tracks (songs only, 20 s .. 15 min). */
-export async function lookupTracks(ids: number[], fetchFn: FetchFn): Promise<Map<number, Song> | null> {
-  let res: Response;
+function cleanText(v: unknown): string | null {
+  if (typeof v !== 'string' || CTRL_RE.test(v)) return null; // also a trailing line break
+  const s = v.trim();
+  return s.length >= 1 && s.length <= 200 ? s : null;
+}
+
+/**
+ * Strictly validated client details. `undefined` = none sent; otherwise either
+ * the cleaned details or the name of the bad field (for `detail`).
+ */
+export function parseClientDetails(v: unknown): { ok: true; details?: ClientDetails } | { ok: false; field: string } {
+  if (v === undefined || v === null) return { ok: true };
+  if (typeof v !== 'object' || Array.isArray(v)) return { ok: false, field: 'song' };
+  const r = v as Record<string, unknown>;
+  const artist = cleanText(r.artist);
+  if (!artist) return { ok: false, field: 'song-artist' };
+  const title = cleanText(r.title);
+  if (!title) return { ok: false, field: 'song-title' };
+  const d = r.durationSec;
+  if (d === undefined || d === null) return { ok: true, details: { artist, title } };
+  if (typeof d !== 'number' || !Number.isInteger(d) || d < 20 || d > 900) return { ok: false, field: 'song-duration' };
+  return { ok: true, details: { artist, title, durationSec: d } };
+}
+
+type AppleGet = { ok: true; data: unknown } | { ok: false; detail: string };
+
+/** One GET to Apple with a hard time limit (covers the body too). Never throws. */
+async function appleGet(url: string, fetchFn: FetchFn, timeoutMs: number): Promise<AppleGet> {
+  const ctl = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<AppleGet>((resolve) => {
+    timer = setTimeout(() => {
+      resolve({ ok: false, detail: 'apple-timeout' });
+      ctl.abort();
+    }, timeoutMs);
+  });
+  const attempt = (async (): Promise<AppleGet> => {
+    let res: Response;
+    try {
+      res = await fetchFn(url, { headers: APPLE_HEADERS, signal: ctl.signal });
+    } catch {
+      return { ok: false, detail: 'apple-network' };
+    }
+    if (!res.ok) {
+      try {
+        await res.body?.cancel();
+      } catch {
+        /* ignore */
+      }
+      return { ok: false, detail: `apple-${res.status}` };
+    }
+    let text: string;
+    try {
+      text = await res.text();
+    } catch {
+      return { ok: false, detail: 'apple-network' };
+    }
+    try {
+      return { ok: true, data: JSON.parse(text) };
+    } catch {
+      return { ok: false, detail: 'apple-bad-json' };
+    }
+  })();
   try {
-    res = await fetchFn(`https://itunes.apple.com/lookup?id=${ids.join(',')}&entity=song`, { headers: { Accept: 'application/json' } });
-  } catch {
-    return null;
+    return await Promise.race([attempt, timeout]);
+  } finally {
+    clearTimeout(timer);
   }
-  if (!res.ok) return null;
-  let data: unknown;
-  try {
-    data = await res.json();
-  } catch {
-    return null;
-  }
-  const out = new Map<number, Song>();
+}
+
+export type LookupResult =
+  | { ok: true; songs: Map<number, Song>; /** why an ID is not a usable song */ reasons: Map<number, string> }
+  | { ok: false; detail: string };
+
+/** Apple's answer for these IDs (songs only, 20 s .. 15 min); null when it isn't a lookup answer. */
+export function parseLookup(data: unknown, ids: number[]): { songs: Map<number, Song>; reasons: Map<number, string> } | null {
   const results = (data as { results?: unknown } | null)?.results;
-  if (!Array.isArray(results)) return out;
+  if (!data || typeof data !== 'object' || !Array.isArray(results)) return null;
+  const songs = new Map<number, Song>();
+  const reasons = new Map<number, string>();
   for (const raw of results) {
     const r = (raw ?? {}) as Record<string, unknown>;
-    if (r.wrapperType !== 'track' || r.kind !== 'song') continue;
-    if (typeof r.trackId !== 'number' || typeof r.artistName !== 'string' || typeof r.trackName !== 'string') continue;
+    if (typeof r.trackId !== 'number' || !ids.includes(r.trackId) || songs.has(r.trackId)) continue;
+    if (r.wrapperType !== 'track' || r.kind !== 'song' || typeof r.artistName !== 'string' || typeof r.trackName !== 'string') {
+      reasons.set(r.trackId, 'apple-not-song');
+      continue;
+    }
     const durationSec = Math.round((typeof r.trackTimeMillis === 'number' ? r.trackTimeMillis : 0) / 1000);
-    if (durationSec < 20 || durationSec > 900) continue;
+    const artist = r.artistName.trim().slice(0, 200);
+    const title = r.trackName.trim().slice(0, 200);
+    if (durationSec < 20 || durationSec > 900) {
+      reasons.set(r.trackId, 'apple-length');
+      continue;
+    }
+    if (!artist || !title) {
+      reasons.set(r.trackId, 'apple-not-song');
+      continue;
+    }
     const art = typeof r.artworkUrl100 === 'string' && r.artworkUrl100.startsWith('https://') ? r.artworkUrl100.replace(/\/\d+x\d+bb\./, '/300x300bb.') : '';
-    out.set(r.trackId, {
-      trackId: r.trackId,
-      artist: r.artistName.trim().slice(0, 200),
-      title: r.trackName.trim().slice(0, 200),
-      durationSec,
-      artworkUrl: art,
-    });
+    songs.set(r.trackId, { trackId: r.trackId, artist, title, durationSec, artworkUrl: art });
+    reasons.delete(r.trackId);
   }
-  return out;
+  for (const id of ids) if (!songs.has(id) && !reasons.has(id)) reasons.set(id, 'apple-not-listed');
+  return { songs, reasons };
+}
+
+/**
+ * Look the IDs up on Apple: `lookup?id=…&entity=song`, then on failure one
+ * retry as `lookup?id=…&country=us`. Fails only when neither gave an answer.
+ */
+export async function lookupTracks(ids: number[], fetchFn: FetchFn, timeoutMs = APPLE_TIMEOUT_MS): Promise<LookupResult> {
+  const list = ids.join(',');
+  const urls = [`${APPLE_LOOKUP}?id=${list}&entity=song`, `${APPLE_LOOKUP}?id=${list}&country=us`];
+  const details: string[] = [];
+  for (const url of urls) {
+    const got = await appleGet(url, fetchFn, timeoutMs);
+    if (!got.ok) {
+      details.push(got.detail);
+      continue;
+    }
+    const parsed = parseLookup(got.data, ids);
+    if (parsed) return { ok: true, ...parsed };
+    details.push('apple-bad-shape');
+  }
+  return { ok: false, detail: [...new Set(details)].join('/') };
+}
+
+/** GET /health?probe=1: one lookup of a fixed, well-known song. */
+async function probeApple(fetchFn: FetchFn, timeoutMs: number): Promise<string> {
+  const got = await appleGet(`${APPLE_LOOKUP}?id=${PROBE_TRACK_ID}&entity=song`, fetchFn, timeoutMs);
+  if (!got.ok) return got.detail;
+  const parsed = parseLookup(got.data, [PROBE_TRACK_ID]);
+  if (!parsed) return 'apple-bad-shape';
+  return parsed.songs.has(PROBE_TRACK_ID) ? 'ok' : (parsed.reasons.get(PROBE_TRACK_ID) ?? 'apple-not-listed');
 }
 
 function githubHeaders(token: string): Record<string, string> {
@@ -138,14 +275,29 @@ function githubHeaders(token: string): Record<string, string> {
   };
 }
 
-/** The same workflow inputs the web app's direct-token path sends. */
+/** The same workflow inputs the web app's direct-token path sends (an empty length is looked up by the job). */
 export function dispatchBody(song: Song, queue: Song[]): string {
-  const inputs: Record<string, string> = { add_artist: song.artist, add_title: song.title, add_duration: String(song.durationSec) };
+  const inputs: Record<string, string> = {
+    add_artist: song.artist,
+    add_title: song.title,
+    add_duration: song.durationSec !== undefined ? String(song.durationSec) : '',
+  };
   if (queue.length) inputs.add_queue = JSON.stringify(queue.map((q) => ({ artist: q.artist, title: q.title, duration: q.durationSec })));
   return JSON.stringify({ ref: WORKFLOW_REF, inputs });
 }
 
-export async function handle(req: Request, env: Env, fetchFn: FetchFn = (i, init) => fetch(i, init), now: () => Date = () => new Date()): Promise<Response> {
+interface Wanted {
+  trackId: number;
+  details?: ClientDetails;
+}
+
+export async function handle(
+  req: Request,
+  env: Env,
+  fetchFn: FetchFn = (i, init) => fetch(i, init),
+  now: () => Date = () => new Date(),
+  opts: HandleOptions = {},
+): Promise<Response> {
   const url = new URL(req.url);
   const origin = req.headers.get('Origin');
   const cors = corsHeaders(origin, env);
@@ -153,19 +305,22 @@ export async function handle(req: Request, env: Env, fetchFn: FetchFn = (i, init
   const repo = (env.GITHUB_REPO ?? '').trim();
   const configured = REPO_RE.test(repo) && !!env.GITHUB_TOKEN;
   const limit = Math.max(1, Math.floor(Number(env.DAILY_LIMIT) || DEFAULT_DAILY_LIMIT));
+  const timeoutMs = opts.appleTimeoutMs ?? APPLE_TIMEOUT_MS;
 
   if (req.method === 'OPTIONS') {
     return originOk ? new Response(null, { status: 204, headers: cors }) : fail(403, 'bad-origin', {});
   }
   if (url.pathname === '/health') {
     if (req.method !== 'GET') return fail(405, 'bad-request', cors);
-    return json(200, { ok: configured, repo: REPO_RE.test(repo) ? repo : null, passphrase: !!env.ADD_PASSPHRASE, dailyLimit: limit }, cors);
+    const health: Record<string, unknown> = { ok: configured, repo: REPO_RE.test(repo) ? repo : null, passphrase: !!env.ADD_PASSPHRASE, dailyLimit: limit };
+    if (url.searchParams.get('probe') === '1') health.apple = await probeApple(fetchFn, timeoutMs);
+    return json(200, health, cors);
   }
   if (url.pathname !== '/add') return fail(404, 'bad-request', cors);
   if (req.method !== 'POST') return fail(405, 'bad-request', cors);
   if (!originOk) return fail(403, 'bad-origin', {});
-  if (!/^application\/json\b/i.test(req.headers.get('Content-Type') ?? '')) return fail(415, 'bad-request', cors);
-  if (Number(req.headers.get('Content-Length') ?? '0') > MAX_BODY_BYTES) return fail(413, 'bad-request', cors);
+  if (!/^application\/json\b/i.test(req.headers.get('Content-Type') ?? '')) return fail(415, 'bad-request', cors, 'content-type');
+  if (Number(req.headers.get('Content-Length') ?? '0') > MAX_BODY_BYTES) return fail(413, 'bad-request', cors, 'too-large');
   if (env.ADD_PASSPHRASE && !safeEqual(req.headers.get(PASS_HEADER) ?? '', env.ADD_PASSPHRASE)) return fail(401, 'passphrase', cors);
   if (!configured) return fail(500, 'not-configured', cors);
 
@@ -173,28 +328,52 @@ export async function handle(req: Request, env: Env, fetchFn: FetchFn = (i, init
   try {
     text = await req.text();
   } catch {
-    return fail(400, 'bad-request', cors);
+    return fail(400, 'bad-request', cors, 'body');
   }
-  if (text.length > MAX_BODY_BYTES) return fail(413, 'bad-request', cors);
-  let body: { trackId?: unknown; queue?: unknown };
+  if (text.length > MAX_BODY_BYTES) return fail(413, 'bad-request', cors, 'too-large');
+  let body: { trackId?: unknown; song?: unknown; queue?: unknown };
   try {
     body = JSON.parse(text) as typeof body;
   } catch {
-    return fail(400, 'bad-request', cors);
+    return fail(400, 'bad-request', cors, 'json');
   }
-  const trackId = toTrackId(body?.trackId);
-  if (!trackId) return fail(400, 'bad-request', cors);
-  const queueIds = (Array.isArray(body.queue) ? body.queue : [])
-    .map(toTrackId)
-    .filter((x): x is number => x !== null && x !== trackId)
-    .filter((x, i, a) => a.indexOf(x) === i)
-    .slice(0, MAX_QUEUE);
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return fail(400, 'bad-request', cors, 'json');
+  const trackId = toTrackId(body.trackId);
+  if (!trackId) return fail(400, 'bad-request', cors, 'track-id');
+  const main = parseClientDetails(body.song);
+  if (!main.ok) return fail(400, 'bad-request', cors, main.field);
+  if (body.queue !== undefined && !Array.isArray(body.queue)) return fail(400, 'bad-request', cors, 'queue');
 
-  const tracks = await lookupTracks([trackId, ...queueIds], fetchFn);
-  if (!tracks) return fail(502, 'lookup-failed', cors);
-  const song = tracks.get(trackId);
-  if (!song) return fail(404, 'not-found', cors);
-  const queue = queueIds.map((id) => tracks.get(id)).filter((s): s is Song => !!s);
+  const queued: Wanted[] = [];
+  for (const raw of (body.queue as unknown[] | undefined) ?? []) {
+    const isObj = !!raw && typeof raw === 'object' && !Array.isArray(raw);
+    const id = toTrackId(isObj ? (raw as Record<string, unknown>).trackId : raw);
+    const d = parseClientDetails(isObj ? (raw as Record<string, unknown>).song : undefined);
+    if (!d.ok) return fail(400, 'bad-request', cors, `queue-${d.field}`);
+    if (id === null || id === trackId || queued.some((q) => q.trackId === id)) continue;
+    if (queued.length < MAX_QUEUE) queued.push({ trackId: id, details: d.details });
+  }
+
+  const looked = await lookupTracks([trackId, ...queued.map((q) => q.trackId)], fetchFn, timeoutMs);
+  let song: Song;
+  let queue: Song[];
+  let source: 'apple' | 'client';
+  let detail: string | undefined;
+  if (looked.ok) {
+    const s = looked.songs.get(trackId);
+    if (!s) return fail(404, 'not-found', cors, looked.reasons.get(trackId) ?? 'apple-not-listed');
+    song = s;
+    queue = queued.map((q) => looked.songs.get(q.trackId)).filter((x): x is Song => !!x);
+    source = 'apple';
+  } else {
+    // Apple gave no usable answer: use what the app found in its own iTunes search.
+    if (!main.details) return fail(502, 'lookup-failed', cors, looked.detail);
+    const fromClient = (id: number, d: ClientDetails): Song => ({ trackId: id, ...d, artworkUrl: '' });
+    song = fromClient(trackId, main.details);
+    queue = queued.filter((q) => q.details).map((q) => fromClient(q.trackId, q.details!));
+    source = 'client';
+    detail = looked.detail;
+  }
 
   const base = `${GITHUB_API}/repos/${repo}/actions/workflows/${WORKFLOW_FILE}`;
   const headers = githubHeaders(env.GITHUB_TOKEN!);
@@ -221,7 +400,7 @@ export async function handle(req: Request, env: Env, fetchFn: FetchFn = (i, init
   } catch {
     return fail(502, 'github-unreachable', cors);
   }
-  return json(200, { ok: true, song }, cors);
+  return json(200, { ok: true, source, song, ...(detail ? { detail } : {}) }, cors);
 }
 
 export default {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { handle, safeEqual, type Env } from './index';
+import { handle, PROBE_TRACK_ID, safeEqual, type Env } from './index';
 
 const TOKEN = 'github_pat_SECRET_TOKEN_never_in_responses_0123456789';
 const ORIGIN = 'https://jo.github.io';
@@ -14,13 +14,25 @@ interface Call {
   init?: RequestInit;
 }
 
-/** Upstream fake: iTunes lookup, GitHub run count, GitHub dispatch. */
-function upstream(o: { lookup?: unknown; lookupStatus?: number; count?: number; countStatus?: number; dispatchStatus?: number; dispatchBody?: string } = {}) {
+type AppleReply = { status?: number; body?: unknown; hang?: boolean; throws?: boolean };
+
+/** Upstream fake: iTunes lookup (one reply per attempt, the last repeats), GitHub run count, GitHub dispatch. */
+function upstream(
+  o: { lookup?: unknown; lookupStatus?: number; apple?: AppleReply[]; count?: number; countStatus?: number; dispatchStatus?: number; dispatchBody?: string } = {},
+) {
   const calls: Call[] = [];
+  let appleCalls = 0;
   const fn = async (url: string, init?: RequestInit): Promise<Response> => {
     calls.push({ url, init });
     if (url.startsWith('https://itunes.apple.com/lookup')) {
-      return new Response(JSON.stringify(o.lookup ?? { resultCount: 2, results: [TRACK, QUEUED] }), { status: o.lookupStatus ?? 200 });
+      const replies = o.apple ?? [{ status: o.lookupStatus, body: o.lookup }];
+      const r = replies[Math.min(appleCalls++, replies.length - 1)];
+      if (r.throws) throw new TypeError('network connection lost');
+      if (r.hang) {
+        return new Promise<Response>((_, reject) => init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError'))));
+      }
+      const body = r.body ?? { resultCount: 2, results: [TRACK, QUEUED] };
+      return new Response(typeof body === 'string' ? body : JSON.stringify(body), { status: r.status ?? 200 });
     }
     if (url.includes('/runs?')) return new Response(JSON.stringify({ total_count: o.count ?? 3 }), { status: o.countStatus ?? 200 });
     if (url.endsWith('/dispatches')) return new Response(o.dispatchBody ?? null, { status: o.dispatchStatus ?? 204 });
@@ -50,14 +62,21 @@ describe('add-song relay', () => {
     expect(r).toEqual({
       status: 200,
       cors: ORIGIN,
-      body: { ok: true, song: { trackId: 1440936016, artist: 'Taylor Swift', title: 'Shake It Off', durationSec: 219, artworkUrl: 'https://is1-ssl.mzstatic.com/a/300x300bb.jpg' } },
+      body: {
+        ok: true,
+        source: 'apple',
+        song: { trackId: 1440936016, artist: 'Taylor Swift', title: 'Shake It Off', durationSec: 219, artworkUrl: 'https://is1-ssl.mzstatic.com/a/300x300bb.jpg' },
+      },
     });
     expect(f.calls.map((c) => c.url)).toEqual([
       'https://itunes.apple.com/lookup?id=1440936016,7&entity=song',
       'https://api.github.com/repos/jo/dancedance/actions/workflows/beatmaps.yml/runs?event=workflow_dispatch&per_page=1&created=%3E%3D2026-11-09T12%3A00%3A00Z',
       'https://api.github.com/repos/jo/dancedance/actions/workflows/beatmaps.yml/dispatches',
     ]);
-    expect((f.calls[0].init?.headers as Record<string, string>).Authorization).toBeUndefined(); // token never goes to Apple
+    const appleHeaders = f.calls[0].init?.headers as Record<string, string>;
+    expect(appleHeaders.Authorization).toBeUndefined(); // token never goes to Apple
+    expect(appleHeaders.Accept).toBe('application/json');
+    expect(appleHeaders['User-Agent']).toMatch(/^Mozilla\/5\.0/);
     const d = f.calls[2].init!;
     expect(d.method).toBe('POST');
     expect((d.headers as Record<string, string>).Authorization).toBe(`Bearer ${TOKEN}`);
@@ -67,10 +86,15 @@ describe('add-song relay', () => {
     });
   });
 
-  it('ignores any artist/title the caller sends', async () => {
+  it('uses Apple’s names whenever Apple answers, ignoring what the caller sends', async () => {
     const f = upstream({ lookup: { results: [TRACK] } });
-    await handle(add({ trackId: 1440936016, artist: '$(rm -rf /)', title: 'x' }), env, f, NOW);
+    const r = await read(
+      await handle(add({ trackId: 1440936016, artist: '$(rm -rf /)', song: { artist: 'Fake', title: 'Spoof', durationSec: 30 } }), env, f, NOW),
+    );
+    expect(r.body).toMatchObject({ ok: true, source: 'apple', song: { artist: 'Taylor Swift', title: 'Shake It Off', durationSec: 219 } });
+    expect(r.body.detail).toBeUndefined();
     expect(f.calls[2].init!.body as string).not.toContain('rm -rf');
+    expect(f.calls[2].init!.body as string).not.toContain('Spoof');
   });
 
   it('rejects other origins (and answers their preflight with 403, no CORS headers)', async () => {
@@ -109,14 +133,168 @@ describe('add-song relay', () => {
     expect(safeEqual('a', 'b')).toBe(false);
   });
 
-  it('unknown track or a failed lookup: nothing is dispatched', async () => {
+  it('unknown track or a failed lookup without client details: nothing is dispatched', async () => {
     const none = upstream({ lookup: { resultCount: 0, results: [] } });
-    expect((await read(await handle(add({ trackId: 99 }), env, none, NOW))).body.error).toBe('not-found');
+    expect((await read(await handle(add({ trackId: 99 }), env, none, NOW))).body).toEqual({ ok: false, error: 'not-found', detail: 'apple-not-listed' });
     const tooLong = upstream({ lookup: { results: [{ ...TRACK, trackTimeMillis: 3_600_000 }] } });
-    expect((await read(await handle(add({ trackId: 1440936016 }), env, tooLong, NOW))).body.error).toBe('not-found');
+    expect((await read(await handle(add({ trackId: 1440936016 }), env, tooLong, NOW))).body).toEqual({ ok: false, error: 'not-found', detail: 'apple-length' });
     const down = upstream({ lookupStatus: 503 });
-    expect((await read(await handle(add({ trackId: 1440936016 }), env, down, NOW))).body.error).toBe('lookup-failed');
+    expect(await read(await handle(add({ trackId: 1440936016 }), env, down, NOW))).toMatchObject({
+      status: 502,
+      body: { ok: false, error: 'lookup-failed', detail: 'apple-503' },
+    });
+    expect(down.calls.map((c) => c.url)).toEqual([
+      'https://itunes.apple.com/lookup?id=1440936016&entity=song',
+      'https://itunes.apple.com/lookup?id=1440936016&country=us',
+    ]);
     for (const f of [none, tooLong, down]) expect(f.calls.some((c) => c.url.includes('api.github.com'))).toBe(false);
+    expect(none.calls).toHaveLength(1); // Apple answered: no retry
+  });
+
+  describe('when Apple’s lookup fails', () => {
+    const SONG = { artist: 'Taylor Swift', title: 'Shake It Off', durationSec: 219 };
+    const FAST = { appleTimeoutMs: 20 };
+
+    it.each<[string, AppleReply, string]>([
+      ['403', { status: 403, body: '<html>Forbidden</html>' }, 'apple-403'],
+      ['a timeout', { hang: true }, 'apple-timeout'],
+      ['non-JSON', { status: 200, body: '<html>Please wait</html>' }, 'apple-bad-json'],
+      ['a network error', { throws: true }, 'apple-network'],
+      ['a non-lookup JSON answer', { status: 200, body: { error: 'x' } }, 'apple-bad-shape'],
+    ])('%s: dispatches with the client’s details (source client, detail %s)', async (_, reply, detail) => {
+      const f = upstream({ apple: [reply] });
+      const body = {
+        trackId: 1440936016,
+        song: { artist: '  Taylor Swift ', title: 'Shake It Off', durationSec: 219 },
+        queue: [{ trackId: 7, song: { artist: 'ABBA', title: 'Waterloo' } }, 8],
+      };
+      const r = await read(await handle(add(body), env, f, NOW, FAST));
+      expect(r).toEqual({ status: 200, cors: ORIGIN, body: { ok: true, source: 'client', detail, song: { trackId: 1440936016, ...SONG, artworkUrl: '' } } });
+      expect(JSON.stringify(r.body)).not.toContain('Forbidden');
+      const apple = f.calls.filter((c) => c.url.startsWith('https://itunes.apple.com/'));
+      expect(apple.map((c) => c.url)).toEqual([
+        'https://itunes.apple.com/lookup?id=1440936016,7,8&entity=song',
+        'https://itunes.apple.com/lookup?id=1440936016,7,8&country=us',
+      ]);
+      const d = f.calls.find((c) => c.url.endsWith('/dispatches'))!;
+      // Queued 8 had no details, so it is left for a later run; 7 has no length, so the job looks it up.
+      expect(JSON.parse(d.init!.body as string)).toEqual({
+        ref: 'main',
+        inputs: { add_artist: 'Taylor Swift', add_title: 'Shake It Off', add_duration: '219', add_queue: '[{"artist":"ABBA","title":"Waterloo"}]' },
+      });
+    });
+
+    it('the retry succeeds: Apple’s data is used', async () => {
+      const f = upstream({ apple: [{ status: 403 }, { status: 200, body: { results: [TRACK] } }] });
+      const r = await read(await handle(add({ trackId: 1440936016, song: { artist: 'X', title: 'Y' } }), env, f, NOW, FAST));
+      expect(r.body).toMatchObject({ ok: true, source: 'apple', song: { artist: 'Taylor Swift', durationSec: 219 } });
+      expect(r.body.detail).toBeUndefined();
+    });
+
+    it('both attempts fail differently: both are reported', async () => {
+      const f = upstream({ apple: [{ status: 403 }, { hang: true }] });
+      const r = await read(await handle(add({ trackId: 1440936016 }), env, f, NOW, FAST));
+      expect(r.body).toEqual({ ok: false, error: 'lookup-failed', detail: 'apple-403/apple-timeout' });
+    });
+
+    it('a client song without a length is dispatched with an empty length', async () => {
+      const f = upstream({ apple: [{ status: 429 }] });
+      const r = await read(await handle(add({ trackId: 5, song: { artist: 'a-ha', title: 'Take On Me' } }), env, f, NOW, FAST));
+      expect(r.body).toEqual({ ok: true, source: 'client', detail: 'apple-429', song: { trackId: 5, artist: 'a-ha', title: 'Take On Me', artworkUrl: '' } });
+      const d = f.calls.find((c) => c.url.endsWith('/dispatches'))!;
+      expect(JSON.parse(d.init!.body as string).inputs).toEqual({ add_artist: 'a-ha', add_title: 'Take On Me', add_duration: '' });
+    });
+
+    it('still respects the daily cap when falling back', async () => {
+      const f = upstream({ apple: [{ status: 403 }], count: 30 });
+      expect((await read(await handle(add({ trackId: 1440936016, song: SONG }), env, f, NOW, FAST))).body.error).toBe('daily-limit');
+      expect(f.calls.some((c) => c.url.endsWith('/dispatches'))).toBe(false);
+    });
+  });
+
+  it('Apple says the ID is not a song: not-found, even with client details', async () => {
+    const SONG = { artist: 'Taylor Swift', title: 'Shake It Off', durationSec: 219 };
+    const album = upstream({ lookup: { results: [{ wrapperType: 'collection', collectionId: 1440936016 }] } });
+    expect((await read(await handle(add({ trackId: 1440936016, song: SONG }), env, album, NOW))).body).toEqual({
+      ok: false,
+      error: 'not-found',
+      detail: 'apple-not-listed',
+    });
+    const video = upstream({ lookup: { results: [{ ...TRACK, kind: 'music-video' }] } });
+    expect((await read(await handle(add({ trackId: 1440936016, song: SONG }), env, video, NOW))).body).toEqual({
+      ok: false,
+      error: 'not-found',
+      detail: 'apple-not-song',
+    });
+    const gone = upstream({ lookup: { resultCount: 0, results: [] } });
+    expect(await read(await handle(add({ trackId: 1440936016, song: SONG }), env, gone, NOW))).toMatchObject({ status: 404, body: { error: 'not-found' } });
+    for (const f of [album, video, gone]) {
+      expect(f.calls.some((c) => c.url.includes('api.github.com'))).toBe(false);
+      expect(f.calls).toHaveLength(1);
+    }
+  });
+
+  it.each<[string, unknown, string]>([
+    ['song is not an object', 'Taylor Swift - Shake It Off', 'song'],
+    ['song is an array', ['a', 'b'], 'song'],
+    ['missing artist', { title: 'Shake It Off' }, 'song-artist'],
+    ['blank title', { artist: 'A', title: '   ' }, 'song-title'],
+    ['artist not a string', { artist: 42, title: 'T' }, 'song-artist'],
+    ['newline in title', { artist: 'A', title: 'Shake\nIt Off' }, 'song-title'],
+    ['carriage return inside artist', { artist: 'A\rB', title: 'T' }, 'song-artist'],
+    ['trailing newline in artist', { artist: 'A\n', title: 'T' }, 'song-artist'],
+    ['tab in title', { artist: 'A', title: 'Shake\tIt' }, 'song-title'],
+    ['NUL in artist', { artist: 'A\u0000B', title: 'T' }, 'song-artist'],
+    ['C1 control in title', { artist: 'A', title: 'T\u0085x' }, 'song-title'],
+    ['line separator in title', { artist: 'A', title: 'T\u2028x' }, 'song-title'],
+    ['artist over 200 characters', { artist: 'a'.repeat(201), title: 'T' }, 'song-artist'],
+    ['title over 200 characters', { artist: 'A', title: 'é'.repeat(201) }, 'song-title'],
+    ['fractional length', { artist: 'A', title: 'T', durationSec: 219.5 }, 'song-duration'],
+    ['length as a string', { artist: 'A', title: 'T', durationSec: '219' }, 'song-duration'],
+    ['length too short', { artist: 'A', title: 'T', durationSec: 19 }, 'song-duration'],
+    ['length too long', { artist: 'A', title: 'T', durationSec: 901 }, 'song-duration'],
+  ])('rejects malformed client details (%s) before any lookup', async (_, song, detail) => {
+    const f = upstream({ apple: [{ status: 403 }] });
+    const r = await read(await handle(add({ trackId: 1440936016, song }), env, f, NOW));
+    expect(r).toEqual({ status: 400, cors: ORIGIN, body: { ok: false, error: 'bad-request', detail } });
+    expect(f.calls).toEqual([]);
+  });
+
+  it('rejects malformed details on a queued song, and a non-array queue', async () => {
+    const f = upstream();
+    const bad = await read(await handle(add({ trackId: 1440936016, queue: [{ trackId: 7, song: { artist: 'ABBA', title: 'Water\nloo' } }] }), env, f, NOW));
+    expect(bad.body).toEqual({ ok: false, error: 'bad-request', detail: 'queue-song-title' });
+    expect((await read(await handle(add({ trackId: 1440936016, queue: '7' }), env, f, NOW))).body.detail).toBe('queue');
+    expect(f.calls).toEqual([]);
+  });
+
+  it('accepts the edge values (200 characters, 20 and 900 seconds, trimmed spaces)', async () => {
+    for (const durationSec of [20, 900]) {
+      const f = upstream({ apple: [{ status: 403 }] });
+      const song = { artist: ` ${'a'.repeat(200)} `, title: 'T', durationSec };
+      const r = await read(await handle(add({ trackId: 1, song }), env, f, NOW, { appleTimeoutMs: 20 }));
+      expect(r.body).toMatchObject({ ok: true, source: 'client', song: { artist: 'a'.repeat(200), durationSec } });
+    }
+  });
+
+  it('health ?probe=1 does one Apple lookup of a fixed song and reports the outcome, never secrets', async () => {
+    const PROBE = { ...TRACK, trackId: PROBE_TRACK_ID };
+    const ok = upstream({ lookup: { results: [PROBE] } });
+    const h = await read(await handle(new Request('https://relay.example/health?probe=1', { headers: { Origin: ORIGIN } }), env, ok, NOW));
+    expect(h.body).toEqual({ ok: true, repo: 'jo/dancedance', passphrase: false, dailyLimit: 30, apple: 'ok' });
+    expect(ok.calls.map((c) => c.url)).toEqual([`https://itunes.apple.com/lookup?id=${PROBE_TRACK_ID}&entity=song`]);
+    expect((ok.calls[0].init?.headers as Record<string, string>).Authorization).toBeUndefined();
+    const probe = async (f: ReturnType<typeof upstream>) =>
+      (await read(await handle(new Request('https://relay.example/health?probe=1'), env, f, NOW, { appleTimeoutMs: 20 }))).body.apple;
+    expect(await probe(upstream({ apple: [{ status: 403, body: `secret ${TOKEN}` }] }))).toBe('apple-403');
+    expect(await probe(upstream({ apple: [{ hang: true }] }))).toBe('apple-timeout');
+    expect(await probe(upstream({ apple: [{ body: 'not json' }] }))).toBe('apple-bad-json');
+    expect(await probe(upstream({ apple: [{ throws: true }] }))).toBe('apple-network');
+    expect(await probe(upstream({ apple: [{ body: { results: [] } }] }))).toBe('apple-not-listed');
+    // Without ?probe=1 Apple is not contacted.
+    const quiet = upstream();
+    expect((await read(await handle(new Request('https://relay.example/health'), env, quiet, NOW))).body.apple).toBeUndefined();
+    expect(quiet.calls).toEqual([]);
   });
 
   it('stops at the daily cap', async () => {

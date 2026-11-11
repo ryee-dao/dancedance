@@ -64,7 +64,7 @@ Limits:
 
 ### Optional: Cloudflare relay
 
-If you'd rather not paste a GitHub token into each browser, a tiny Cloudflare Worker (free plan is fine) can hold the token instead. The app then sends it only the song's Apple track ID; the Worker looks the song up itself and starts the job.
+If you'd rather not paste a GitHub token into each browser, a tiny Cloudflare Worker (free plan is fine) can hold the token instead. The app sends it the song's Apple track ID (plus the artist, title and length from its own search); the Worker looks the song up with Apple itself and starts the job, and only uses the app's details if Apple's lookup fails.
 
 1. Make a fine-grained token as above (this repository only, **Actions: Read and write**).
 2. In `cloudflare/add-song-worker/wrangler.toml`, set `GITHUB_REPO` to `your-username/your-repo` and `ALLOWED_ORIGINS` to your Pages address without a path (for example `https://your-username.github.io`), plus `http://localhost:5173` if you use the dev server. Optionally change `DAILY_LIMIT` (default 30 songs a day).
@@ -80,6 +80,8 @@ If you'd rather not paste a GitHub token into each browser, a tiny Cloudflare Wo
 4. Either paste that address into the app (**Options → Connect to GitHub → Relay address**), or set it for everyone: **Settings → Secrets and variables → Actions → Variables → New repository variable**, name `ADD_SONG_URL`, then run **Actions → Deploy site**. With the variable set, the app never asks for a token.
 
 The Worker only accepts requests from the addresses in `ALLOWED_ORIGINS`. The daily limit is a soft one: before starting a job, the Worker asks GitHub how many manual runs of the Beat maps job started in the last 24 hours. Check it's running with `https://<worker address>/health`.
+
+The Worker doesn't update itself: after pulling an update that changes anything in `cloudflare/add-song-worker`, run `npx wrangler deploy` again from that folder. If adding a song fails with a message about Apple's music catalogue, open `https://<worker address>/health?probe=1`: it looks up one well-known song with Apple and shows `"apple": "ok"`, or what went wrong (for example `apple-403` if Apple refuses the Worker, `apple-timeout` or `apple-bad-json`). Either way the Worker still adds songs using the details the app sends.
 
 ## When the beat-map job goes red
 

@@ -84,11 +84,27 @@ export async function sendSong(song: Omit<PendingAdd, 'sentAt'>): Promise<SendRe
   const others = addedSongs.queueFor(song.key);
   if (c.relay) {
     if (!song.trackId) return { ok: false, error: 'no-track', message: 'Search for this song again to add it through the relay.' };
-    const res = await relayAdd(c.relay, song.trackId, others.map((p) => p.trackId).filter((x): x is number => !!x), store.addPassphrase());
+    // The details from our own iTunes search ride along; the relay uses them only if its Apple lookup fails.
+    const queue = others
+      .filter((p): p is PendingAdd & { trackId: number } => !!p.trackId)
+      .map((p) => ({ trackId: p.trackId, artist: p.artist, title: p.title, durationSec: p.durationSec }));
+    const res = await relayAdd(
+      c.relay,
+      { trackId: song.trackId, artist: song.artist, title: song.title, durationSec: song.durationSec },
+      queue,
+      store.addPassphrase(),
+    );
     if (!res.ok) return { ok: false, error: res.error, message: res.message, ...(res.error === 'passphrase' ? { needs: 'passphrase' as const } : {}) };
-    // Apple's names, exactly as the job will write them to songs.json.
+    // The names the relay sent to the job (Apple's, or ours when it fell back), as the job will write them to songs.json.
     const key = songKey(res.song.artist, res.song.title);
-    addedSongs.addPending({ ...song, key, artist: res.song.artist, title: res.song.title, durationSec: res.song.durationSec, sentAt: Date.now() });
+    addedSongs.addPending({
+      ...song,
+      key,
+      artist: res.song.artist,
+      title: res.song.title,
+      durationSec: res.song.durationSec ?? song.durationSec,
+      sentAt: Date.now(),
+    });
     return { ok: true, key };
   }
   if (!c.repo || !c.token) return { ok: false, error: 'not-connected', message: 'Connect to GitHub first.', needs: 'connect' };
