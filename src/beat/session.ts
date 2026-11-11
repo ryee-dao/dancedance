@@ -174,6 +174,8 @@ export class BeatSession {
       return 'ready';
     }
     const pref = store.settings().liveSync;
+    // "Not now" earlier in this app session for this song: don't ask again.
+    if (pref === 'ask' && syncPromptSkipped(this.key)) return this.none('off');
     // Never answered and tab audio works here: offer "Share this tab" first (it needs a click each time).
     if (pref === 'ask' && this.devices.tabSupported && this.item.kind === 'youtube') return 'ask-mic';
     if (!this.devices.micSupported) return this.none('unsupported');
@@ -191,25 +193,40 @@ export class BeatSession {
     return 'ready';
   }
 
-  /** The user's answer to the microphone explainer. Resolves after the browser prompt. */
+  /**
+   * The user's answer to the microphone explainer. Resolves after the browser
+   * prompt. "No" is "Not now": no sync for this song only (see declineSync).
+   */
   async answerMic(use: boolean): Promise<void> {
-    store.updateSettings({ liveSync: use ? 'mic' : 'off' });
     if (!use) {
-      this.none('off');
+      this.declineSync(false);
       return;
     }
+    store.updateSettings({ liveSync: 'mic' });
     await this.startMic();
   }
 
   /**
+   * Continue this song without beat sync. `forever` ("Don't ask again") turns
+   * the "Songs without a beat map" option Off; otherwise ("Not now", Escape)
+   * nothing is saved and only this song is skipped: the prompt isn't shown
+   * for it again in this app session, but other songs (and later sessions)
+   * still ask.
+   */
+  declineSync(forever: boolean): void {
+    if (forever) store.updateSettings({ liveSync: 'off' });
+    else skipSyncPrompt(this.key);
+    this.none('off');
+  }
+
+  /**
    * The user chose "Share this tab" in the explainer (call from the click).
-   * Cancelling the browser's picker counts as "Not now", so it isn't asked again.
+   * Cancelling the browser's picker counts as "Not now" for this song.
    */
   async answerTab(): Promise<string | null> {
     const msg = await this.useTab();
     if (!this.disposed && this.tracker?.source !== 'tab' && msg === 'Tab sharing was cancelled.') {
-      store.updateSettings({ liveSync: 'off' });
-      this.none('off');
+      this.declineSync(false);
       return 'No beat sync for this song. You can turn it on from the pause menu.';
     }
     return msg;
@@ -532,4 +549,22 @@ export class BeatSession {
 function shareDeviceMap(map: BeatMap, existingSource: BeatMapSource | null): void {
   const shared = queueMapUpload(map, { existingSource });
   console.info('[dd:beats]', `share device map: ${shared}`);
+}
+
+// --- "Not now" on the sync prompt -------------------------------------------
+// Remembered for this app session only (not saved): the prompt isn't repeated
+// for the same song, but comes back in a later session.
+const skippedPrompts = new Set<string>();
+
+export function skipSyncPrompt(key: string): void {
+  skippedPrompts.add(key);
+}
+
+export function syncPromptSkipped(key: string): boolean {
+  return skippedPrompts.has(key);
+}
+
+/** Tests: forget "Not now" answers. */
+export function resetSyncPromptMemory(): void {
+  skippedPrompts.clear();
 }

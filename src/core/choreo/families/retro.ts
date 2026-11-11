@@ -34,12 +34,6 @@ const FOLDED: PoseSpec = {
   l: at(-1, 0.13, 0.7, 0.14, [1, 0, -0.2]),
   handR: 0, handL: 0,
 };
-/** Hands on the knees in a bent stance. */
-const kneeHands = (xr: number, xl: number): PoseSpec => ({
-  r: at(1, xr, 0.44, xr < 0 ? 0.23 : 0.2, [1, 0.1, -0.3]),
-  l: at(-1, xl, 0.44, xl > 0 ? 0.17 : 0.2, [1, 0.1, -0.3]),
-  handR: 1, handL: 1,
-});
 
 // ---------------------------------------------------------------------------
 // Swing / solo jazz
@@ -51,14 +45,21 @@ const gazeOut: PoseSpec = {
 };
 
 
-const annie = (cross: boolean, side: 1 | -1): PoseSpec => ({
-  y: cross ? -0.09 : -0.06, bend: 8, nod: 4,
-  rf: side > 0 ? [0.1, 0, 0.1] : [0.09, 0, 0], lf: side > 0 ? [-0.09, 0, 0] : [-0.1, 0, 0.1],
-  kneeR: cross ? -0.4 : 0.35, kneeL: cross ? -0.4 : 0.35, hips: 0.03 * side, tilt: 4 * side,
-  r: cross ? at(1, -0.06, 0.58, 0.22, [1, -0.4, -0.2]) : at(1, 0.26, 0.52, 0.1, [1, -0.2, -0.3]),
-  l: cross ? at(-1, 0.06, 0.56, 0.19, [1, -0.4, -0.2]) : at(-1, -0.26, 0.52, 0.1, [1, -0.2, -0.3]),
-  handR: 0.6, handL: 0.6,
-});
+/** Tacky Annie: touch one toe back (knee bent, hip sitting into the standing side), or replace it. */
+const annie = (back: boolean, side: 1 | -1): PoseSpec => {
+  const s: PoseSpec = back
+    ? {
+      y: -0.1, bend: 10, nod: 4, hips: -0.05, tilt: -6, lean: -3,
+      rf: [0.11, 0.03, -0.14], pitchR: 35, lf: [-0.09, 0, 0], kneeR: -0.25,
+      r: at(1, 0.2, 0.5, 0.2, [1, -0.3, -0.3]), l: at(-1, -0.12, 0.56, 0.24, [1, -0.3, -0.3]), handR: 0.5, handL: 0.5,
+    }
+    : {
+      y: -0.06, bend: 7, nod: 2, hips: 0, tilt: 0,
+      rf: [0.09, 0, 0], pitchR: 0, lf: [-0.09, 0, 0], kneeR: 0,
+      r: at(1, 0.16, 0.54, 0.16, [1, -0.3, -0.3]), l: at(-1, -0.16, 0.54, 0.16, [1, -0.3, -0.3]), handR: 0.5, handL: 0.5,
+    };
+  return side > 0 ? s : mir(s);
+};
 
 const boogieBack: PoseSpec = {
   y: -0.09, hips: 0.06, tilt: 8, bend: 12, nod: 4, shR: 0.6, shL: 0.6,
@@ -71,24 +72,27 @@ const boogieBackUp: PoseSpec = {
   r: at(1, 0.2, 0.7, 0.16, [1, -0.3, -0.2]), l: at(-1, -0.2, 0.7, 0.16, [1, -0.3, -0.2]), handR: 1, handL: 1,
 };
 
-const boogieFwd = (side: 1 | -1, down: boolean): PoseSpec => ({
-  y: down ? -0.14 : -0.1, bend: 16, nod: 3, lean: 3 * side,
-  hips: 0.065 * side, tilt: 9 * side, x: 0.02 * side,
-  rf: [0.15, 0, side > 0 ? 0.08 : 0], lf: [-0.15, 0, side < 0 ? 0.08 : 0],
-  kneeR: 0.25, kneeL: 0.25,
-  ...kneeHands(0.14, -0.14),
-});
+/** Boogie Forward: point the foot across in front (point) or sweep it forward and out, hip pushed to that side (step). */
+const boogieFwd = (side: 1 | -1, step: boolean): PoseSpec => {
+  const s: PoseSpec = step
+    ? {
+      y: -0.1, bend: 10, nod: 3, lean: 4, x: 0.03,
+      hips: 0.07, tilt: 10,
+      rf: [0.15, 0, 0.1], lf: [-0.09, 0, -0.02], kneeR: 0.2,
+      r: at(1, 0.24, 0.6, 0.12, [1, -0.3, -0.3]), l: at(-1, -0.14, 0.62, 0.2, [1, -0.3, -0.3]), handR: 1, handL: 1,
+    }
+    : {
+      y: -0.08, bend: 8, nod: 4, lean: -2, x: -0.01,
+      hips: -0.03, tilt: -4,
+      rf: [-0.05, 0, 0.1], pitchR: 30, lf: [-0.09, 0, 0], kneeR: -0.2,
+      r: at(1, 0.14, 0.6, 0.2, [1, -0.3, -0.3]), l: at(-1, -0.22, 0.6, 0.12, [1, -0.3, -0.3]), handR: 1, handL: 1,
+    };
+  return side > 0 ? s : mir(s);
+};
 
-const logCross: PoseSpec = {
-  y: -0.08, x: -0.02, lean: -12, head: -8, hips: -0.03,
-  rf: [-0.07, 0, 0.08], lf: [-0.16, 0.12, -0.03], kneeL: 0.2,
-  r: at(1, -0.12, 0.55, 0.2, [1, -0.6, -0.2]), l: [72, -10, 80, -10], handR: 1, handL: 1,
-};
-const logOut: PoseSpec = {
-  y: -0.03, x: 0.05, lean: 6, head: 4, hips: 0.04,
-  rf: [0.18, 0, 0], lf: [-0.07, 0, 0], kneeL: 0,
-  r: [70, 5, 76, 5], l: at(-1, 0.04, 0.6, 0.2, [1, -0.6, -0.2]), handR: 1, handL: 1,
-};
+/** Fall Off the Log arms: a finger snap out to the sides on the kick, loose otherwise. */
+const logSnap: PoseSpec = { r: at(1, 0.27, 0.74, 0.12, [1, -0.3, -0.2]), l: at(-1, -0.27, 0.74, 0.12, [1, -0.3, -0.2]), handR: 0, handL: 0 };
+const logLoose: PoseSpec = { r: [26, 10, 40, 30], l: [26, 10, 40, 30], handR: 1, handL: 1 };
 
 
 
@@ -96,34 +100,50 @@ const messAt = (ph: number): PoseSpec => ({
   r: at(1, 0.12 + 0.07 * Math.cos(ph), 1.12 + 0.06 * Math.sin(ph), 0.1, [1, 0.2, -0.2]), l: ARM.hip, handR: 0, handL: 0, formR: 'point',
 });
 
+/** Stomp Off: stomp the right foot slightly forward, right arm lifting... */
 const stompOut: PoseSpec = {
-  y: -0.08, bend: 6, nod: 6, x: 0.03,
-  rf: [0.17, 0, 0.04], lf: [-0.09, 0, 0],
-  r: [30, 10, 50, 40], l: [30, 10, 50, 40], handR: 1, handL: 1,
+  y: -0.1, bend: 6, nod: 6, x: 0.02, hips: 0.03, tilt: 4,
+  rf: [0.1, 0, 0.1], lf: [-0.09, 0, 0],
+  r: at(1, 0.24, 1.04, 0.12, [1, 0.2, -0.2]), l: [26, 10, 36, 30], handR: 1, handL: 1,
 };
+/** ...then draw it back and close it to the left foot, taking the weight, ready to stomp the left. */
 const stompKick: PoseSpec = {
-  y: -0.03, bend: -2, nod: -2, x: 0.02,
-  rf: [0.15, 0, 0.04], lf: [0.0, 0.16, 0.16], kneeL: -0.1,
-  r: at(1, 0.3, 0.74, 0.08, [1, -0.2, -0.2]), l: at(-1, -0.3, 0.74, 0.08, [1, -0.2, -0.2]), handR: 1, handL: 1,
+  y: -0.04, bend: 2, x: 0.01, hips: 0.02,
+  rf: [0.06, 0, 0], lf: [-0.07, 0.03, 0.02],
+  r: [40, 10, 50, 30], l: [30, 10, 40, 30], handR: 1, handL: 1,
 };
 
 
 // ---------------------------------------------------------------------------
 // Swing / rockabilly / 50s-60s
 
-const pushArms = (side: 1 | -1): PoseSpec => (side > 0
-  ? { r: at(1, 0.4, 0.82, 0.1, [1, -0.3, -0.2]), l: at(-1, 0.12, 0.8, 0.24, [1, -0.3, -0.2]), handR: 1, handL: 1 }
-  : { r: at(1, -0.12, 0.8, 0.24, [1, -0.3, -0.2]), l: at(-1, -0.4, 0.82, 0.1, [1, -0.3, -0.2]), handR: 1, handL: 1 });
-
-const appleJack = (side: 1 | -1): PoseSpec => ({
-  y: -0.08, lean: 9 * side, head: 6 * side, hips: 0.03 * side, tilt: 4 * side,
-  rf: [0.08, 0, 0.02], lf: [-0.08, 0, 0.02], slideR: true, slideL: true,
-  kneeR: 0.45 * side, kneeL: -0.45 * side,
-  r: side > 0 ? [82, 5, 96, 5] : [46, 5, 36, 5], l: side < 0 ? [82, 5, 96, 5] : [46, 5, 36, 5], handR: 1, handL: 1,
+/**
+ * Shim Sham pushes: a lunge turned toward screen right (right foot forward), the
+ * hips pushing forward (push) or easing back (release), arms swinging loose.
+ */
+const pushLunge = (push: boolean): PoseSpec => ({
+  spin: 35, x: 0.02, y: push ? -0.1 : -0.07,
+  bend: push ? -9 : 6, hips: push ? 0.05 : 0.01, tilt: push ? 6 : 0, nod: push ? -3 : 2,
+  rf: [0.12, 0, 0.12], lf: [-0.11, 0, -0.06], kneeR: 0.15,
+  r: push ? [40, -20, 46, -10] : [22, 10, 30, 30], l: push ? [40, -20, 46, -10] : [22, 10, 30, 30], handR: 1, handL: 1,
 });
+
+/**
+ * Apple Jacks (weight on the user's LEFT foot for side 1): the free right knee bends
+ * and points across in front of the standing leg, the left arm pushes forward and
+ * the right arm swings out to the side; side -1 is the mirror.
+ */
+const appleJack = (side: 1 | -1): PoseSpec => {
+  const s: PoseSpec = {
+    y: -0.09, lean: -4, head: -4, hips: -0.05, tilt: -6, twist: -6,
+    lf: [-0.09, 0, 0], rf: [0.05, 0.03, 0.04], pitchR: 30, kneeR: -0.55, kneeL: 0.1,
+    l: at(-1, -0.06, 0.78, 0.3, [1, -0.3, -0.2]), r: [84, -5, 92, -5], handR: 1, handL: 1,
+  };
+  return side > 0 ? s : mir(s);
+};
 const appleMid: PoseSpec = {
-  y: -0.03, lean: 0, head: 0, hips: 0, tilt: 0, rf: [0.08, 0, 0.02], lf: [-0.08, 0, 0.02], slideR: true, slideL: true, kneeR: 0, kneeL: 0,
-  r: [60, 5, 62, 5], l: [60, 5, 62, 5], handR: 1, handL: 1,
+  y: -0.05, rf: [0.08, 0, 0.02], lf: [-0.08, 0, 0.02],
+  r: [40, 5, 50, 20], l: [40, 5, 50, 20], handR: 1, handL: 1,
 };
 
 const jigKick = (side: 1 | -1): PoseSpec => {
@@ -236,24 +256,33 @@ export const moves: MoveDef[] = [
     ],
   }),
   full({
-    id: 'tacky-annie', name: 'Tacky Annie', tags: 'pop party | legs | swing', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms'],
-    desc: 'Slightly hunched with soft knees, step forward on alternate feet with the knees knocking in, loose hands crossing low and flapping open.',
-    keys: [[0, annie(true, 1)], [0.5, annie(false, 1)], [1, annie(true, -1)], [1.5, annie(false, -1)]],
+    id: 'tacky-annie', name: 'Tacky Annie', tags: 'pop party | legs | swing', beats: 4, level: 'mid', d: 2, parts: ['legs', 'arms'],
+    desc: 'Hunched a little with soft knees, touch the right toe back behind you and replace it, then touch the left toe back and replace it, loose hands swinging low.',
+    keys: [[0, annie(true, 1)], [1, annie(false, 1)], [2, annie(true, -1)], [3, annie(false, -1)]],
   }),
   full({
     id: 'boogie-back', name: 'Boogie Back', tags: 'pop funk | hips legs | swing hips', beats: 2, level: 'mid', d: 2, parts: ['hips', 'legs', 'arms'], mirror: true,
-    desc: 'Step back and sit the hip out to that side, shoulders hunched and both palms pushing forward, then pop back up.',
-    keys: [[0, boogieBack], [1, boogieBackUp]],
+    desc: 'Kick one foot forward with a clap, step it back with the hips pushed back and out, shoulders hunched, then close the other foot to it.',
+    keys: [
+      [0, { y: -0.03, bend: -3, rf: [0.11, 0.13, 0.2], lf: [-0.09, 0, 0], r: ARM.clap, l: ARM.clap, handR: 1, handL: 1 }],
+      [0.5, boogieBack],
+      [1, { ...boogieBackUp, lf: [-0.11, 0, -0.11] }],
+    ],
   }),
   full({
-    id: 'boogie-forward', name: 'Boogie Forward', tags: 'pop funk | hips | swing hips walk', beats: 2, level: 'mid', d: 2, parts: ['hips', 'legs'],
-    desc: 'Wide and low with hands on the thighs, step forward on alternate feet rolling the hips out to the stepping side.',
-    keys: [[0, boogieFwd(1, true)], [0.5, boogieFwd(1, false)], [1, boogieFwd(-1, true)], [1.5, boogieFwd(-1, false)]],
+    id: 'boogie-forward', name: 'Boogie Forward', tags: 'pop funk | hips | swing hips walk', beats: 4, level: 'mid', d: 2, parts: ['hips', 'legs'],
+    desc: 'Point one foot across in front of the other, then sweep it forward and out in a slow step, pushing that hip out to the side; then the other foot.',
+    keys: [[0, boogieFwd(1, false)], [1, boogieFwd(1, true)], [2, boogieFwd(-1, false)], [3, boogieFwd(-1, true)]],
   }),
   full({
-    id: 'fall-off-the-log', name: 'Fall Off the Log', tags: 'pop party | legs full | swing', beats: 2, level: 'mid', d: 2, parts: ['legs', 'torso', 'arms'], mirror: true,
-    desc: 'Cross one foot over and tip the body away as if falling off a log, the other leg flicking out, then catch yourself with a step out to the side.',
-    keys: [[0, logCross], [1, logOut]],
+    id: 'fall-off-the-log', name: 'Fall Off the Log', tags: 'pop party | legs full | swing', beats: 4, level: 'mid', d: 3, parts: ['legs', 'torso', 'arms'], mirror: true, travel: 0.26,
+    desc: 'Kick one foot out to its side with a finger snap, leaning away as if about to fall, then step it behind the other foot, step to the side and cross it over in front, travelling the other way.',
+    keys: [
+      [0, { x: 0, y: -0.04, lean: 10, head: 6, hips: 0.03, rf: [0.04, 0, 0], lf: [-0.23, 0.12, 0.02], ...logSnap }],
+      [1, { x: 0.04, y: -0.08, lean: 0, rf: [0.04, 0, 0], lf: [0.08, 0, -0.07], kneeL: 0.1, ...logLoose }],
+      [2, { x: 0.1, y: -0.05, lean: -2, hips: 0.02, rf: [0.18, 0, 0], lf: [0.08, 0, -0.07], ...logLoose }],
+      [3, { x: 0.17, y: -0.08, lean: -4, rf: [0.18, 0, 0], lf: [0.22, 0, 0.07], kneeL: -0.1, ...logLoose }],
+    ],
   }),
   full({
     id: 'mess-around', name: 'Mess Around', tags: 'pop latin | hips | swing hips', beats: 4, level: 'low', d: 2, parts: ['hips', 'arms'], mirror: true,
@@ -266,22 +295,28 @@ export const moves: MoveDef[] = [
     ],
   }),
   full({
-    id: 'stomp-off', name: 'Stomp Off', tags: 'pop rock | legs | swing stomp kick', beats: 2, level: 'mid', d: 2, parts: ['legs'], mirror: true, impact: true,
-    desc: 'Stomp one foot out to the side with the arms swinging down, then kick the other foot low across in front with the arms flung open.',
+    id: 'stomp-off', name: 'Stomp Off', tags: 'pop rock | legs | swing stomp', beats: 2, level: 'mid', d: 2, parts: ['legs'], mirror: true, impact: true,
+    desc: 'Close one foot to the other, then stomp the free foot down slightly forward, lifting the same-side arm.',
     keys: [[0, stompOut], [1, stompKick]],
   }),
   // --- Swing / rockabilly / 50s-60s -------------------------------------
   full({
-    id: 'crossover-push', name: 'Push & Crossover', tags: 'pop party | full | swing hands', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms'], mirror: true,
-    desc: 'Cross one foot over in front while both palms push away to the other side, then step that foot out wide and push the hands toward it.',
+    id: 'crossover-push', name: 'Push & Crossover', tags: 'pop party | hips legs | swing hips', beats: 4, level: 'mid', d: 2, parts: ['hips', 'legs'], mirror: true,
+    desc: 'In a lunge turned about 45 degrees to one side, push the hips forward three times, then bring the back foot forward across the front one and take the lunge facing the other diagonal.',
     keys: [
-      [0, { y: -0.07, twist: -8, hips: -0.02, rf: [-0.05, 0, 0.07], lf: [-0.1, 0, 0], kneeR: -0.1, ...pushArms(-1) }],
-      [1, { y: -0.04, twist: 6, lean: 4, x: 0.03, rf: [0.21, 0, 0], lf: [-0.1, 0, 0], ...pushArms(1) }],
+      [0, pushLunge(true)],
+      [0.5, pushLunge(false)],
+      [1, pushLunge(true)],
+      [1.5, pushLunge(false)],
+      [2, pushLunge(true)],
+      [2.5, pushLunge(false)],
+      [3, { spin: 0, y: -0.06, x: 0.01, rf: [0.1, 0, 0.06], lf: [-0.02, 0, 0.1], kneeL: -0.15, r: [24, 10, 34, 30], l: [24, 10, 34, 30], handR: 1, handL: 1 }],
+      [3.5, { spin: -20, y: -0.08, x: 0, rf: [0.11, 0, -0.04], lf: [-0.12, 0, 0.12], kneeL: 0.15, r: [24, 10, 34, 30], l: [24, 10, 34, 30], handR: 1, handL: 1 }],
     ],
   }),
   full({
     id: 'apple-jacks', name: 'Apple Jacks', tags: 'pop party | legs | swing', beats: 2, level: 'mid', d: 2, parts: ['legs', 'torso'],
-    desc: 'Feet together, swivel both toes to one side as the body tips over that way with the arm lifting, back to centre, then swivel and tip to the other side.',
+    desc: 'Shift onto one foot as the other knee bends and points across in front of the standing leg, the opposite arm pushing forward and the near arm swinging out to the side; then change feet.',
     keys: [[0, appleJack(1)], [0.5, appleMid], [1, appleJack(-1)], [1.5, appleMid]],
   }),
   full({
@@ -365,11 +400,11 @@ export const moves: MoveDef[] = [
   // --- Country & western -------------------------------------------------
   full({
     id: 'heel-strut', name: 'Heel Strut', tags: 'rock pop | legs hips | country walk', beats: 2, level: 'low', d: 1, parts: ['legs', 'hips'],
-    desc: 'Thumbs in the belt, strut on the spot: dig one heel forward with the toe up, drop the toe and sit into that hip, then the other foot.',
+    desc: 'Thumbs in the belt, step the heel forward with the toes up, then drop the toes to the floor and sit into that hip; then the other foot.',
     keys: [
-      [0, { y: -0.03, bend: -4, lean: -2, hips: -0.02, rf: [0.1, 0.03, 0.16], lf: [-0.09, 0, 0], kneeR: 0.15, ...BELT }],
+      [0, { y: -0.03, bend: -4, lean: -2, hips: -0.02, rf: [0.1, 0.03, 0.16], pitchR: -30, lf: [-0.09, 0, 0], kneeR: 0.15, ...BELT }],
       [0.5, { y: -0.06, bend: -2, lean: 4, hips: 0.06, tilt: 8, rf: [0.1, 0, 0.12], lf: [-0.09, 0, 0], ...BELT }],
-      [1, { y: -0.03, bend: -4, lean: 2, hips: 0.02, rf: [0.09, 0, 0], lf: [-0.1, 0.03, 0.16], kneeL: 0.15, ...BELT }],
+      [1, { y: -0.03, bend: -4, lean: 2, hips: 0.02, rf: [0.09, 0, 0], lf: [-0.1, 0.03, 0.16], pitchL: -30, kneeL: 0.15, ...BELT }],
       [1.5, { y: -0.06, bend: -2, lean: -4, hips: -0.06, tilt: -8, rf: [0.09, 0, 0], lf: [-0.1, 0, 0.12], ...BELT }],
     ],
   }),
@@ -405,7 +440,7 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'sailor-step', name: 'Sailor Step', tags: 'pop rock | legs | country swing', beats: 2, level: 'mid', d: 2, parts: ['legs', 'torso'], mirror: true,
-    desc: 'Swing one foot behind the other, step the back foot out, step the first foot out to the side, body swaying with it; then the other side.',
+    desc: 'Cross one foot behind the other, step the other foot out a little to its side, then step the first foot out to its side (1&2), body swaying with it; then the other side.',
     keys: [
       [0, { y: -0.07, x: -0.02, lean: -6, hips: -0.03, rf: [-0.04, 0, -0.07], lf: [-0.1, 0, 0], kneeR: 0.1, r: [34, 5, 44, 10], l: [22, 0, 30, 10], handR: 1, handL: 1 }],
       [0.5, { y: -0.04, x: -0.04, lean: -3, rf: [-0.04, 0, -0.07], lf: [-0.18, 0, 0], r: [28, 5, 36, 10], l: [28, 0, 36, 10], handR: 1, handL: 1 }],
@@ -415,13 +450,13 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'monterey-turn', name: 'Monterey Turn', tags: 'pop rock | turn legs | country spin', beats: 4, level: 'mid', d: 3, parts: ['turn', 'legs'], mirror: true,
-    desc: 'Point one toe out to the side, swivel a half turn toward it bringing the feet together, point the other toe, and swivel back to the front.',
+    desc: 'Touch the right toe out to the side, make a half turn right on the ball of the left foot bringing the right foot in beside it, then do it again to face the front.',
     keys: [
-      [0, { y: -0.04, spin: 0, rf: [0.22, 0, 0.02], lf: [-0.07, 0, 0], kneeR: 0.2, ...HIPS }],
-      [0.5, { ...T0, y: -0.02, spin: 80, ...HIPS }],
+      [0, { y: -0.04, spin: 0, rf: [0.22, 0, 0.02], lf: [-0.07, 0, 0], kneeR: 0.2, pitchR: 20, ...HIPS }],
+      [0.5, { ...T0, y: -0.02, spin: 80, pitchL: 18, ...HIPS }],
       [1, { ...T0, y: -0.05, spin: 180, ...HIPS }],
-      [2, { y: -0.04, spin: 180, rf: [0.07, 0, 0], lf: [-0.22, 0, 0.02], kneeL: 0.2, ...HIPS }],
-      [2.5, { ...T0, y: -0.02, spin: 270, ...HIPS }],
+      [2, { y: -0.04, spin: 180, rf: [0.22, 0, 0.02], lf: [-0.07, 0, 0], kneeR: 0.2, pitchR: 20, ...HIPS }],
+      [2.5, { ...T0, y: -0.02, spin: 260, pitchL: 18, ...HIPS }],
       [3, { ...T0, y: -0.05, spin: 0, ...HIPS }],
     ],
   }),
@@ -437,8 +472,8 @@ export const moves: MoveDef[] = [
     ],
   }),
   full({
-    id: 'hoedown-slap', name: 'Hoedown Knee Slap', tags: 'party rock | full | country clap', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms'],
-    desc: 'Lift one knee and slap it with the same hand, clap, then lift and slap the other knee and clap: a barn-dance hoedown.',
+    id: 'hoedown-slap', name: 'Knee Slap & Clap', tags: 'party rock | full | country clap', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms'],
+    desc: 'Lift one knee and slap it with the same hand, clap, then lift and slap the other knee and clap.',
     keys: [
       [0, { y: -0.04, bend: 8, nod: 5, rf: [0.09, 0.24, 0.14], lf: [-0.09, 0, 0], r: at(1, 0.1, 0.5, 0.24, [1, -0.3, -0.3]), l: [30, 0, 40, 10], handR: 1, handL: 1 }],
       [0.5, { y: -0.06, rf: [0.09, 0, 0], lf: [-0.09, 0, 0], r: ARM.clap, l: ARM.clap, handR: 1, handL: 1 }],
@@ -604,13 +639,13 @@ export const moves: MoveDef[] = [
   // --- Tap & more line-dance / step-dance ---------------------------------
   full({
     id: 'shuffle-off-to-buffalo', name: 'Shuffle Off to Buffalo', tags: 'pop party | legs | swing walk', beats: 2, level: 'high', d: 3, parts: ['legs', 'jump'], mirror: true, travel: 0.16, jump: true,
-    desc: 'Vaudeville tap travel: arms out low to the sides, shuffle one foot, hop on the other, and cross the shuffling foot over in front as you move sideways.',
+    desc: 'Vaudeville tap travel, arms out low: shuffle one foot (brush forward and back), hop on the other, step the shuffling foot crossed over in front, then leap sideways onto the other foot.',
     keys: [
       [0, { x: 0, y: -0.05, lean: 3, rf: [0.09, 0, 0], lf: [-0.09, 0.04, 0.08], ...VAUDE }],
       [0.25, { x: 0.01, y: -0.04, rf: [0.09, 0, 0], lf: [-0.09, 0.04, -0.03], ...VAUDE }],
       [0.5, { x: 0.05, y: 0.03, lean: 4, rf: [0.14, 0.02, 0], lf: [-0.04, 0.08, 0.02], ...VAUDE_HI }],
-      [1, { x: 0.1, y: -0.06, lean: 2, rf: [0.14, 0, 0], lf: [0.08, 0, 0.07], kneeL: -0.1, ...VAUDE }],
-      [1.5, { x: 0.16, y: -0.04, rf: [0.25, 0, 0], lf: [0.08, 0, 0.07], ...VAUDE_HI }],
+      [1, { x: 0.1, y: -0.07, lean: 2, rf: [0.13, 0, 0], lf: [0.18, 0, 0.08], kneeL: -0.15, ...VAUDE }],
+      [1.5, { x: 0.16, y: 0.02, lean: 3, rf: [0.25, 0.02, 0], lf: [0.1, 0.05, 0.04], ...VAUDE_HI }],
     ],
   }),
   full({

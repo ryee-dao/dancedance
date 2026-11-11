@@ -11,7 +11,7 @@
  */
 
 import { DUO_HOME } from '../choreo/duoMoves';
-import { COLORS, FigurePainter } from './renderer';
+import { COLORS, FigurePainter, fitText } from './renderer';
 import { HumanPainter, LOOKS, type HumanLook } from './humanPainter';
 import { J, NUM_JOINTS, type Skeleton } from './skeleton';
 import { CAM, PIV_Y, type CoachStyle } from './styles';
@@ -145,6 +145,11 @@ export interface DuoLayout {
   strip: { x: number; y: number; w: number; h: number; vertical: boolean } | null;
 }
 
+/** "PLAYER n" floor label: size, centre below the floor line, and its bottom edge (all × scale). */
+const LABEL_SIZE = 0.065;
+const LABEL_Y = 0.105;
+const LABEL_BOTTOM = LABEL_Y + LABEL_SIZE * 0.6;
+
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
 
 export class DuoRenderer2D {
@@ -159,7 +164,7 @@ export class DuoRenderer2D {
   private glow1: CanvasGradient | null = null;
   private glow2: CanvasGradient | null = null;
   private energy = 0.4;
-  private fontCache = new Map<string, number>();
+  private fontCache = new Map<string, { size: number; text: string }>();
   layout: DuoLayout = { w: 1, h: 1, cx: 0, floorY: 0, scale: 1, strip: null };
   private _style: CoachStyle = 'classic';
 
@@ -180,24 +185,37 @@ export class DuoRenderer2D {
     this.fig2.style = this.mini2.style = this.mini4.style = p2;
   }
 
-  resize(w: number, h: number, showStrip = true): void {
+  /**
+   * @param hudTop Where the page's bottom HUD (song progress bar + time)
+   *   starts, as a fraction of the height: the floor labels and the strip
+   *   stay above it. Omitted (previews, demo bench): layout as before.
+   */
+  resize(w: number, h: number, showStrip = true, hudTop?: number): void {
     w = Math.max(2, Math.round(w));
     h = Math.max(2, Math.round(h));
     if (this.canvas.width !== w) this.canvas.width = w;
     if (this.canvas.height !== h) this.canvas.height = h;
     const landscape = w / h >= 1.2;
+    // A little air above the HUD; Infinity = no HUD to avoid (layout as before).
+    const hudY = hudTop === undefined ? Infinity : h * Math.max(0.7, Math.min(1, hudTop)) - h * 0.015;
     let strip: DuoLayout['strip'] = null;
     let cx: number, floorY: number, scale: number;
     if (landscape) {
       scale = Math.min(h * 0.54, (showStrip ? w * 0.66 : w) / 2.15);
-      floorY = h * 0.86;
+      // The "PLAYER n" label sits under the ring: raise the floor so it clears the HUD.
+      floorY = Math.min(h * 0.86, hudY - scale * LABEL_BOTTOM);
       cx = showStrip ? w * 0.345 : w * 0.5;
-      if (showStrip) strip = { x: w * 0.69, y: h * 0.1, w: w * 0.29, h: h * 0.74, vertical: true };
+      // Top aligned with the single-player strip (0.15): clear of the status chip.
+      if (showStrip) strip = { x: w * 0.69, y: h * 0.15, w: w * 0.29, h: Math.min(h * 0.69, hudY - h * 0.15), vertical: true };
     } else {
       scale = Math.min(h * 0.36, w / 2.3);
       floorY = h * (showStrip ? 0.62 : 0.84);
+      if (!showStrip) floorY = Math.min(floorY, hudY - scale * LABEL_BOTTOM);
       cx = w * 0.5;
-      if (showStrip) strip = { x: w * 0.04, y: h * 0.67, w: w * 0.92, h: h * 0.29, vertical: false };
+      if (showStrip) {
+        const y = Math.max(h * 0.67, floorY + scale * LABEL_BOTTOM + h * 0.015);
+        strip = { x: w * 0.04, y, w: w * 0.92, h: Math.max(h * 0.12, Math.min(h * 0.96 - y, hudY - y)), vertical: false };
+      }
     }
     this.layout = { w, h, cx, floorY, scale, strip };
     const c = this.ctx;
@@ -287,11 +305,11 @@ export class DuoRenderer2D {
     c.fill();
     // Label on the floor in front of the ring.
     c.globalAlpha = 1;
-    c.font = `900 ${Math.round(L.scale * 0.075)}px ${FONT}`;
+    c.font = `900 ${Math.round(L.scale * LABEL_SIZE)}px ${FONT}`;
     c.textAlign = 'center';
     c.textBaseline = 'middle';
     c.fillStyle = col.main;
-    c.fillText(p === 1 ? 'PLAYER 1' : 'PLAYER 2', x, L.floorY + L.scale * 0.115);
+    c.fillText(p === 1 ? 'PLAYER 1' : 'PLAYER 2', x, L.floorY + L.scale * LABEL_Y);
     c.restore();
   }
 
@@ -346,25 +364,22 @@ export class DuoRenderer2D {
     c.stroke();
   }
 
-  private fit(text: string, maxW: number, size: number, weight: number): number {
+  private fit(text: string, maxW: number, size: number, weight: number): { size: number; text: string } {
     const key = `${text}|${Math.round(maxW)}|${Math.round(size)}|${weight}`;
     const hit = this.fontCache.get(key);
     if (hit !== undefined) return hit;
-    const c = this.ctx;
-    c.font = `${weight} ${size}px ${FONT}`;
-    const w = c.measureText(text).width;
-    const s = w > maxW ? Math.max(size * 0.5, (size * maxW) / w) : size;
+    const fit = fitText(this.ctx, text, maxW, size, weight, 0.5, FONT);
     if (this.fontCache.size > 400) this.fontCache.clear();
-    this.fontCache.set(key, s);
-    return s;
+    this.fontCache.set(key, fit);
+    return fit;
   }
 
   private text(text: string, x: number, y: number, size: number, weight: number, color: string, maxW: number): void {
     const c = this.ctx;
-    const s = this.fit(text, maxW, size, weight);
-    c.font = `${weight} ${Math.round(s)}px ${FONT}`;
+    const fit = this.fit(text, maxW, size, weight);
+    c.font = `${weight} ${fit.size}px ${FONT}`;
     c.fillStyle = color;
-    c.fillText(text, x, y);
+    c.fillText(fit.text, x, y);
   }
 
   /** A coloured "P1" / "P2" chip; returns its width. */

@@ -36,7 +36,8 @@
 
 import type { BeatMap, SectionType } from '../analysis/beatmap';
 import { CH, type Pose } from '../coach/skeleton';
-import { IDLE_MOVE, MOVES, keysOf, type Level, type Move } from './moves';
+import { FAMILIES, THEME_TRADITIONS, TRADITION_BY_ID, TRADITION_FILES, TRADITION_THEMES, type Theme, type Tradition } from './families';
+import { IDLE_MOVE, MOVES, findMove, keysOf, type Level, type Move } from './moves';
 import { getPool } from './pool';
 import { BALANCED_POP, styleKey, type SongStyle } from './songStyle';
 
@@ -62,6 +63,8 @@ export interface MoveInstance {
   unitStart: boolean;
   /** Phrase counter (for debugging / tests). */
   phrase: number;
+  /** A short in-place move filling beats a unit's move doesn't divide (odd bars, pickups). */
+  fill?: boolean;
 }
 
 export interface SigStep {
@@ -121,6 +124,79 @@ export function styleFactor(m: Move, style: SongStyle): number {
     if (n) w *= n >= 2 ? 4 : 3;
   }
   return w;
+}
+
+// ---------------------------------------------------------------------------
+// Specialty moves
+//
+// A specialty move's identity belongs to one dance tradition (a folk dance,
+// Bollywood, afrobeats, country, swing, salsa ...). It carries a tradition
+// theme (families.ts TRADITION_THEMES), is listed in TRADITION_BY_ID, or
+// comes from a tradition file (world / retro / afro). Its family tags only
+// say what it can sit next to, so they don't make it eligible: a specialty
+// move is used only when the song's style opens one of its traditions (a
+// matching theme, or for latin steps a latin-led family mix). Ordinary moves
+// that merely carry a secondary family tag are unaffected.
+
+/** Latin traditional steps open when latin is at least this share of the song's top family weight. */
+const LATIN_HOME_SHARE = 0.8;
+/** Distinct non-matching specialty moves a routine may still use ("spice"), per level. */
+export const SPICE_ALLOWANCE: Readonly<Record<Intensity, number>> = { chill: 0, cardio: 0, sweaty: 1 };
+/** Weight factor of a spice candidate (relative to its style weight). */
+const SPICE_WEIGHT = 0.3;
+
+const SPECIALTY = new Map<string, readonly Tradition[]>();
+
+/** Traditions of a move ([] = an ordinary move). Variations and ornaments share their base move's. */
+export function specialtyOf(m: Move): readonly Tradition[] {
+  const hit = SPECIALTY.get(m.id);
+  if (hit) return hit;
+  const base = m.base !== m.id ? findMove(m.base) : undefined;
+  const set = new Set<Tradition>();
+  for (const x of base ? [m, base] : [m]) {
+    for (const t of x.themes) if (TRADITION_THEMES.includes(t)) set.add(t as Tradition);
+    for (const t of TRADITION_BY_ID[x.id] ?? []) set.add(t);
+  }
+  if (set.size === 0 && TRADITION_FILES.has(base?.file ?? m.file)) set.add('folk');
+  const out = [...set].sort();
+  SPECIALTY.set(m.id, out);
+  return out;
+}
+
+/**
+ * Afro-Caribbean themes: their genre / artist styles use the latin family as
+ * a stand-in for hip-led grooves, so it doesn't open salsa / bachata steps.
+ */
+const LATIN_PROXY_THEMES: readonly Theme[] = ['afro', 'amapiano', 'dancehall', 'reggae', 'soca'];
+
+/** Traditions a song's style opens: its tradition themes, plus latin steps for a latin-led mix. */
+export function styleTraditions(style: SongStyle): ReadonlySet<Tradition> {
+  const s = new Set<Tradition>();
+  for (const t of style.themes) for (const x of THEME_TRADITIONS[t] ?? []) s.add(x);
+  let max = 0;
+  for (const f of FAMILIES) max = Math.max(max, style.families[f] ?? 0);
+  const latinLed = max > 0 && (style.families.latin ?? 0) >= LATIN_HOME_SHARE * max;
+  if (latinLed && !style.themes.some((t) => LATIN_PROXY_THEMES.includes(t))) s.add('latin');
+  return s;
+}
+
+/** Whether a move suits a song with these open traditions (ordinary moves always do). */
+export function specialtyFits(m: Move, open: ReadonlySet<Tradition>): boolean {
+  const tr = specialtyOf(m);
+  return tr.length === 0 || tr.some((t) => open.has(t));
+}
+
+/** Weight factor of a specialty move whose tradition the song's themes ask for (so it shows prominently). */
+const THEME_MATCH_BOOST = 5;
+/** ... and of a latin traditional step in a latin-led song (plenty of latin grooves compete already). */
+const LATIN_MATCH_BOOST = 1.5;
+
+/** Extra weight of a matching specialty move (1 for ordinary or non-matching moves). */
+export function traditionBoost(m: Move, open: ReadonlySet<Tradition>): number {
+  const tr = specialtyOf(m);
+  if (tr.length === 0) return 1;
+  if (tr.some((t) => t !== 'latin' && open.has(t))) return THEME_MATCH_BOOST;
+  return tr.includes('latin') && open.has('latin') ? LATIN_MATCH_BOOST : 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -217,9 +293,49 @@ const DANCE_MOVES = MOVES.filter((m) => !m.idle && !m.cooldown);
 /** The outro draws from the stretches plus the calm flows of the cooldown file (tai chi, yoga shapes). */
 const COOLDOWN_MOVES = MOVES.filter((m) => m.cooldown || (m.file === 'cooldown' && m.level === 'low' && !m.jump && !m.idle));
 
+/** Longest display name a variation keeps (the NOW / NEXT cards fit about this much). */
+export const MAX_NAME = 26;
+/** Shorter forms of common variation suffixes. */
+const SUFFIX_SHORT: Readonly<Record<string, string>> = { 'double time': 'double', 'half time': 'half', 'clap on 4': 'clap', 'hit on 4': 'hit', 'spin out': 'spin', 'alternating': 'alt' };
+/** Style words a suffix can lose ("latin open break" -> "open break"). */
+const SUFFIX_STYLE_WORDS = new Set(['latin', 'samba', 'bachata', 'salsa', 'disco', 'funk', 'funky', 'kpop', 'k-pop', 'hiphop', 'rock', 'pop', 'bhangra', 'bollywood', 'cha', 'merengue', 'cumbia', 'flamenco', 'aerobic', 'party']);
+
+/**
+ * A variation's display name within MAX_NAME characters: "Base · suffix"
+ * with a shorter suffix (abbreviated, minus words the base already says or
+ * style words), else the base name alone. Catalogue names are kept as written.
+ */
+export function shortName(name: string): string {
+  if (name.length <= MAX_NAME) return name;
+  const k = name.indexOf(' · ');
+  if (k < 0) return name;
+  const base = name.slice(0, k);
+  let suf = name.slice(k + 3);
+  const fits = (x: string) => base.length + 3 + x.length <= MAX_NAME && x.length > 0;
+  if (SUFFIX_SHORT[suf] && fits(SUFFIX_SHORT[suf])) return `${base} · ${SUFFIX_SHORT[suf]}`;
+  const baseWords = new Set(base.toLowerCase().split(/[\s-]+/));
+  const words = suf.split(' ');
+  const kept = words.filter((w) => !baseWords.has(w.toLowerCase()) && !SUFFIX_STYLE_WORDS.has(w.toLowerCase()));
+  suf = kept.join(' ');
+  if (kept.length && kept.length < words.length && fits(suf)) return `${base} · ${suf}`;
+  return base;
+}
+
+const SHORT = new Map<Move, Move>();
+/** `m`, or a copy with its shortened display name (cached, so identity is stable). */
+function withShortName(m: Move): Move {
+  if (m.name.length <= MAX_NAME || m.base === m.id) return m;
+  let s = SHORT.get(m);
+  if (!s) {
+    s = { ...m, name: shortName(m.name) };
+    SHORT.set(m, s);
+  }
+  return s;
+}
+
 /** Base moves + variations (variations get a per-level share). */
 function dancePool(useVariations: boolean): { moves: readonly Move[]; isVar: Uint8Array } {
-  const vars = useVariations ? getPool().variations : [];
+  const vars = useVariations ? getPool().variations.map(withShortName) : [];
   const moves = [...DANCE_MOVES, ...vars];
   const isVar = new Uint8Array(moves.length);
   for (let i = DANCE_MOVES.length; i < moves.length; i++) isVar[i] = 1;
@@ -287,6 +403,13 @@ export class Choreographer {
   /** Phrase number each move was last used in. */
   private lastUsed = new Map<Move, number>();
   private ornaments: { get(base: string): readonly Move[] } | null;
+  /** Specialty moves of traditions the song doesn't open (excluded, spice aside). */
+  private outside = new Set<Move>();
+  /** Base ids of the spice moves used so far. */
+  private spiced: string[] = [];
+  /** In-place 1- and 2-beat moves for gaps, with their style weights. */
+  private gapMoves: Move[] = [];
+  private gapW: number[] = [];
 
   constructor(seedKey: string, intensity: Intensity, half: boolean, opts: RoutineOpts = {}) {
     this.intensity = intensity;
@@ -299,13 +422,19 @@ export class Choreographer {
     const useVars = opts.variations !== false;
     const { moves, isVar } = dancePool(useVars);
     this.pool = moves;
-    this.ornaments = useVars ? getPool().ornaments : null;
+    const orn = useVars ? getPool().ornaments : null;
+    this.ornaments = orn ? { get: (id: string) => orn.get(id).map(withShortName) } : null;
     // Variations as a share of the picks (there are many more of them than base moves).
     // Variations get VARIATION_SHARE of the total (style x level) weight mass.
     this.base = new Float64Array(moves.length);
+    const open = styleTraditions(this.style);
     let mb = 0, mv = 0;
     for (let i = 0; i < moves.length; i++) {
-      this.base[i] = styleFactor(moves[i], this.style);
+      this.base[i] = styleFactor(moves[i], this.style) * traditionBoost(moves[i], open);
+      if (!specialtyFits(moves[i], open)) {
+        this.outside.add(moves[i]);
+        continue;
+      }
       const w = this.base[i] * intensityFactor(moves[i], intensity);
       if (isVar[i]) mv += w;
       else mb += w;
@@ -313,8 +442,13 @@ export class Choreographer {
     const share = VARIATION_SHARE[intensity];
     const vw = mv > 0 ? (share / (1 - share)) * (mb / mv) : 0;
     for (let i = 0; i < moves.length; i++) if (isVar[i]) this.base[i] *= vw;
+    for (const m of DANCE_MOVES) {
+      if (m.beats > 2 || m.travel !== 0 || this.outside.has(m) || intensityFactor(m, intensity) <= 0) continue;
+      this.gapMoves.push(m);
+      this.gapW.push(styleFactor(m, this.style) * traditionBoost(m, open) * intensityFactor(m, intensity) * (m.beats === 1 ? 2 : 1));
+    }
     // The chorus combo keeps the stable seed (same in 'fresh' mode).
-    this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}|${sk}`)), intensity, this.style);
+    this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}|${sk}`)), intensity, this.style, open);
   }
 
   /** Fill `bars` (contiguous) with one phrase. */
@@ -358,7 +492,7 @@ export class Choreographer {
       } else if (this.intensity === 'sweaty' && n >= 2) {
         // Hard: quicker changes, a third move per phrase.
         this.recent.push(A, B);
-        const C = this.choose(o, B);
+        const C = this.choose(o, B, n >= 4);
         this.recent.length -= 2;
         const c: UnitChoice = { kind: 'move', move: C };
         pattern = n === 2 ? [a, b] : n === 3 ? [a, b, a] : [a, b, a, c];
@@ -378,30 +512,81 @@ export class Choreographer {
         // Phrase end: the unit's last 4 beats spin out / hit a pose.
         if (u === n - 1 && n > 1) flourish = this.ornament(pattern[u % pattern.length].kind === 'move' ? (pattern[u % pattern.length] as { move: Move }).move : choice.move, ['spin', 'hit4', 'clap4'], FLOURISH_P[this.intensity]);
       }
-      this.fillUnit(out, start, end, choice, o.section, phraseNo, flourish);
+      this.fillUnit(out, start, end, choice, o.section, phraseNo, flourish, !!(o.warmup || o.cooldown));
     }
     for (const c of pattern) if (c.kind === 'move') this.lastUsed.set(c.move, phraseNo);
   }
 
-  /** Fill [start, end) with the groove (filler for pickups / leftovers). */
-  filler(out: MoveInstance[], start: number, end: number, section: SectionType, unitStart = false): void {
-    for (let b = start; b < end; b++) {
-      const mirror = this.lastMove === IDLE_MOVE ? !this.lastMirror : false;
-      out.push({ move: IDLE_MOVE, mirror, start: b, span: 1, half: false, origin: 0, section, sig: false, unitStart: unitStart && b === start, phrase: -1 });
-      this.lastMove = IDLE_MOVE;
-      this.lastMirror = mirror;
+  /**
+   * Fill a short gap [start, end) (a pickup, an odd bar's spare beat, what a
+   * move's length doesn't divide) with an in-place 1- or 2-beat move of the
+   * song's style, repeated, then a 1-beat move for any odd beat. Never the
+   * idle groove: that is only for "no beats yet" / pre-lock plans.
+   */
+  filler(out: MoveInstance[], start: number, end: number, section: SectionType, unitStart = false, phrase = -1, calm = false): void {
+    let b = start;
+    let first = unitStart;
+    let tries = 0;
+    while (b < end && tries++ < 8) {
+      const r = end - b;
+      // Half time: a 1-beat move over 2 song beats when there's room.
+      const mult = this.half && r >= 2 ? 2 : 1;
+      const prev = this.lastMove;
+      const w = this.gapMoves.map((m, i) => {
+        if (m.beats * mult > r || m === prev) return 0;
+        if (calm && m.level !== 'low') return 0;
+        if (!calm && m.level === 'high' && this.intensity !== 'sweaty') return 0;
+        let x = this.gapW[i];
+        // Moves that share the neighbour's family and body parts blend in best.
+        if (prev && !prev.idle) {
+          if (m.families[0] && prev.families.includes(m.families[0])) x *= 2;
+          x *= 0.5 + partsOverlap(prev, m);
+        }
+        return x;
+      });
+      const g = pickWeighted(this.rng, this.gapMoves, w) ?? this.gapMoves.find((m) => m.beats === 1 && m !== prev) ?? null;
+      if (!g) break;
+      const span = g.beats * mult;
+      const reps = Math.max(1, Math.floor(r / span));
+      for (let k = 0; k < reps && b + span <= end; k++) {
+        const mirror = g.mirror ? k % 2 === 1 : false;
+        out.push({ move: g, mirror, start: b, span, half: mult === 2, origin: 0, section, sig: false, unitStart: first, phrase, fill: true });
+        first = false;
+        b += span;
+        this.lastMove = g;
+        this.lastMirror = mirror;
+      }
     }
+    // Last resort (no gap move fits at all): the groove.
+    for (; b < end; b++) {
+      out.push({ move: IDLE_MOVE, mirror: false, start: b, span: 1, half: false, origin: 0, section, sig: false, unitStart: first, phrase, fill: true });
+      first = false;
+      this.lastMove = IDLE_MOVE;
+      this.lastMirror = false;
+    }
+  }
+
+  /**
+   * May a specialty move the song doesn't open be picked now, as the
+   * routine's spice? Only for Hard's one-off third move of a phrase (never
+   * the chorus combo, a section memo, the warm-up or the cool-down), and only
+   * SPICE_ALLOWANCE distinct moves per routine; a spice move is not reused.
+   */
+  private spiceOk(m: Move, o: PhraseOpts, slot: boolean): boolean {
+    if (!slot || o.cooldown || o.warmup || o.signature || o.memoKey) return false;
+    return !this.spiced.includes(m.base) && this.spiced.length < SPICE_ALLOWANCE[this.intensity];
   }
 
   private allowed(m: Move, o: PhraseOpts): boolean {
     if (o.cooldown) return COOLDOWN_MOVES.includes(m) && (m.cooldown || intensityFactor(m, this.intensity) > 0);
     if (m.cooldown || m.idle) return false;
+    if (this.outside.has(m)) return false;
     if (intensityFactor(m, this.intensity) <= 0) return false;
     const lw = levelWeights(o.warmup ? 'warmup' : o.section, this.intensity, o.energy);
     return lw[m.level] > 0;
   }
 
-  private choose(o: PhraseOpts, avoid: Move | null): Move {
+  private choose(o: PhraseOpts, avoid: Move | null, spiceSlot = false): Move {
     const pool = o.cooldown ? COOLDOWN_MOVES : this.pool;
     const lw = levelWeights(o.warmup ? 'warmup' : o.section, this.intensity, o.energy);
     const prev = this.lastMove;
@@ -412,6 +597,10 @@ export class Choreographer {
       if (m === prev && !(this.intensity === 'chill' && o.memoKey)) return 0; // no repeat across a phrase boundary
       let w = o.cooldown ? (m.cooldown || intensityFactor(m, this.intensity) > 0 ? 1 : 0) : lw[m.level] * intensityFactor(m, this.intensity) * this.base[i];
       if (w <= 0) return 0;
+      if (!o.cooldown && this.outside.has(m)) {
+        if (!this.spiceOk(m, o, spiceSlot)) return 0;
+        w *= SPICE_WEIGHT;
+      }
       // Not again within NO_REPEAT_PHRASES phrases; other versions of the same base move rarely.
       const used = this.lastUsed.get(m);
       if (!o.cooldown && used !== undefined && phrase - used <= NO_REPEAT_PHRASES) return 0;
@@ -426,9 +615,12 @@ export class Choreographer {
       return w;
     });
     const picked = pickWeighted(this.rng, pool, weights);
-    if (picked) return picked;
+    if (picked) {
+      if (!o.cooldown && this.outside.has(picked) && !this.spiced.includes(picked.base)) this.spiced.push(picked.base);
+      return picked;
+    }
     // Everything excluded (tiny pools): relax to anything allowed but `prev`.
-    const fallback = pool.filter((m) => m !== prev && m !== avoid && (o.cooldown || intensityFactor(m, this.intensity) > 0));
+    const fallback = pool.filter((m) => m !== prev && m !== avoid && !this.outside.has(m) && (o.cooldown || intensityFactor(m, this.intensity) > 0));
     return fallback.length ? fallback[Math.floor(this.rng() * fallback.length)] : pool[0];
   }
 
@@ -439,7 +631,7 @@ export class Choreographer {
     return list.length ? list[Math.floor(this.rng() * list.length)] : null;
   }
 
-  private fillUnit(out: MoveInstance[], start: number, end: number, choice: UnitChoice, section: SectionType, phrase: number, flourish: Move | null = null): void {
+  private fillUnit(out: MoveInstance[], start: number, end: number, choice: UnitChoice, section: SectionType, phrase: number, flourish: Move | null = null, calm = false): void {
     const mult = this.half ? 2 : 1;
     let b = start;
     let first = true;
@@ -476,10 +668,7 @@ export class Choreographer {
       }
       if (fl && flourish) push(flourish, false, origin, false);
     }
-    if (b < end) {
-      const wasFirst = first;
-      this.filler(out, b, end, section, wasFirst);
-    }
+    if (b < end) this.filler(out, b, end, section, first, phrase, calm);
     if (choice.kind === 'move') {
       this.recent.push(choice.move);
       if (this.recent.length > 3) this.recent.shift();
@@ -497,11 +686,12 @@ function lastKeyPose(m: Move, mirror: boolean): Pose {
  * song's curated `signature` (move ids) supplies the blocks when those moves
  * suit the level; otherwise they're picked with the song's style weights.
  */
-function pickSignature(rng: () => number, intensity: Intensity, style: SongStyle = BALANCED_POP): SigStep[] {
-  const ok = (m: Move) => m.beats <= 4 && intensityFactor(m, intensity) > 0 && !(m.travel !== 0 && m.beats === 4);
+function pickSignature(rng: () => number, intensity: Intensity, style: SongStyle = BALANCED_POP, open: ReadonlySet<Tradition> = styleTraditions(style)): SigStep[] {
+  // Never a spice move: the chorus combo is the song's identity.
+  const ok = (m: Move) => m.beats <= 4 && intensityFactor(m, intensity) > 0 && !(m.travel !== 0 && m.beats === 4) && specialtyFits(m, open);
   const pool = DANCE_MOVES.filter((m) => ok(m) && (m.level !== 'low' || intensity === 'chill'));
   const weight = (m: Move) =>
-    (m.level === 'high' ? (intensity === 'chill' ? 0.3 : intensity === 'cardio' ? 1 : 1.8) : 1.2) * (m.beats === 2 ? 2 : 1) * intensityFactor(m, intensity) * styleFactor(m, style);
+    (m.level === 'high' ? (intensity === 'chill' ? 0.3 : intensity === 'cardio' ? 1 : 1.8) : 1.2) * (m.beats === 2 ? 2 : 1) * intensityFactor(m, intensity) * styleFactor(m, style) * traditionBoost(m, open);
   const nods = (style.signature ?? []).map((id) => DANCE_MOVES.find((m) => m.id === id)).filter((m): m is Move => !!m && ok(m));
   const a = nods[0] ?? pickWeighted(rng, pool, pool.map(weight));
   if (!a) return [];
@@ -662,7 +852,7 @@ export function generateRoutine(map: BeatMap, intensity: Intensity, opts: Routin
 
   const { pickup, bars } = buildBars(N, map.downbeats);
   const firstType = map.sections[0]?.type ?? 'intro';
-  if (pickup > 0) ch.filler(out, 0, pickup, firstType);
+  if (pickup > 0) ch.filler(out, 0, pickup, firstType, false, -1, true);
   if (bars.length === 0) return { instances: out, signature: ch.signature, half, beats: N };
 
   const runs = sectionRuns(map, bars);

@@ -43,6 +43,12 @@
  *
  * Every state transition is logged to the console with a `[dd:player]`
  * prefix so a stuck start can be diagnosed from a pasted log.
+ *
+ * Mid-song recovery: if YouTube reports error 2 or 5 after the song has
+ * started, the IFrame player is recreated once and the song resumes (muted
+ * until it is confirmed playing again) from the last known time; time()
+ * holds that position meanwhile and onRecovering(true/false) brackets it.
+ * A second failure, or no resume within RECOVER_MS, reaches onError.
  */
 
 import { SmoothClock } from './clock';
@@ -82,8 +88,12 @@ const FRESH_START_S = 3;
 const CONFIRM_LONG_MS = 4000;
 /** BUFFERING at 0 with no duration this long: retry once with a new player. */
 const STUCK_RETRY_MS = 10000;
+/** Mid-song recovery: the new player must be playing again within this long. */
+const RECOVER_MS = 20000;
+/** ...and its time advancing (from about where we were) for this long. */
+const RECOVER_CONFIRM_MS = 600;
 
-type Phase = 'idle' | 'starting' | 'settling' | 'ready';
+type Phase = 'idle' | 'starting' | 'settling' | 'ready' | 'recovering';
 
 const STATE_NAMES: Record<number, string> = {
   [-1]: 'UNSTARTED',
@@ -106,6 +116,8 @@ export class YouTubePlayer implements MediaPlayer {
   onEnded: (() => void) | null = null;
   onError: ((err: PlayerError) => void) | null = null;
   onStatus: ((status: StartStatus) => void) | null = null;
+  /** Mid-song recovery started (true) / succeeded (false). A failed recovery ends with onError instead. */
+  onRecovering: ((active: boolean) => void) | null = null;
 
   private yt: YTPlayer | null = null;
   private slot: HTMLElement | null = null;
@@ -160,6 +172,11 @@ export class YouTubePlayer implements MediaPlayer {
   private playRequestedAt = 0;
   private gestureSent = false;
 
+  // mid-song recovery
+  private recoverUsed = false;
+  private recoverAt = 0;
+  private recoverErr: PlayerError | null = null;
+
   load(item: PlayItem): Promise<void> {
     if (item.kind !== 'youtube') return Promise.reject(new PlayerError(2, 'Not a YouTube item'));
     this.cancelPending();
@@ -171,6 +188,7 @@ export class YouTubePlayer implements MediaPlayer {
     this.teardownPlayer();
     this.phase = 'idle';
     this.wantPlaying = false;
+    this.recoverUsed = false;
     return this.ensurePlayer().then((p) => {
       if (token !== this.loadToken || this.destroyed) throw new PlayerError('cancelled');
       log(`player ready after ${Math.round(performance.now() - this.loadAt)} ms; loadVideoById`);
@@ -265,6 +283,11 @@ export class YouTubePlayer implements MediaPlayer {
   play(): void {
     const p = this.yt;
     log('play()', this.snapshot(p));
+    if (this.phase === 'recovering') {
+      this.wantPlaying = true; // honoured once the new player is going
+      this.playRequestedAt = performance.now();
+      return;
+    }
     if (!p) return;
     if (this.phase === 'starting') {
       // User kick while autoplay is blocked; stay muted until confirmed.
@@ -285,6 +308,10 @@ export class YouTubePlayer implements MediaPlayer {
   pause(): void {
     const p = this.yt;
     log('pause()', this.snapshot(p));
+    if (this.phase === 'recovering') {
+      this.wantPlaying = false;
+      return;
+    }
     if (!p || this.phase !== 'ready') return;
     this.wantPlaying = false;
     p.pauseVideo();
@@ -308,6 +335,7 @@ export class YouTubePlayer implements MediaPlayer {
   }
 
   time(): number {
+    if (this.phase === 'recovering') return this.recoverAt; // hold the place
     const p = this.yt;
     if (!p || this.phase !== 'ready') return 0;
     const now = performance.now();
@@ -594,6 +622,11 @@ export class YouTubePlayer implements MediaPlayer {
       return;
     }
 
+    if (this.phase === 'recovering') {
+      this.pollRecovery(p, state, t, now);
+      return;
+    }
+
     if (this.phase === 'ready') {
       if (!this.dur) this.dur = p.getDuration() || 0;
       this.noteRaw(t, now);
@@ -656,10 +689,87 @@ export class YouTubePlayer implements MediaPlayer {
       reject(err);
       return;
     }
+    if (this.phase === 'recovering') {
+      this.failRecovery(`error ${code} again`);
+      return;
+    }
     if (this.phase === 'ready') {
+      if ((code === 2 || code === 5) && !this.recoverUsed) {
+        this.recover(err);
+        return;
+      }
       this.wantPlaying = false;
       this.onError?.(err);
     }
+  }
+
+  /** Error 2/5 mid-song: recreate the player once and resume from where we were. */
+  private recover(err: PlayerError): void {
+    const at = this.time();
+    this.recoverUsed = true;
+    this.recoverErr = err;
+    this.recoverAt = at;
+    log(`recovering from error ${err.code}: new player, resume at ${at.toFixed(2)} s`);
+    const token = this.loadToken;
+    this.teardownPlayer();
+    this.enterPhase('recovering');
+    this.clock.seek(at);
+    this.clock.update(at, false);
+    this.onRecovering?.(true);
+    this.ensurePlayer().then(
+      (p) => {
+        if (token !== this.loadToken || this.destroyed || this.phase !== 'recovering') return;
+        this.phaseStart = performance.now();
+        p.mute();
+        p.loadVideoById({ videoId: this.videoId, startSeconds: at });
+        this.startPolling();
+      },
+      () => {
+        if (token === this.loadToken && this.phase === 'recovering') this.failRecovery('no new player');
+      },
+    );
+  }
+
+  private pollRecovery(p: YTPlayer, state: number, t: number, now: number): void {
+    const vid = p.getVideoData?.()?.video_id;
+    const idOk = p.getVideoData ? vid === this.videoId : true;
+    // Back near where we were (not an ad running from 0) and moving forward.
+    const near = t >= this.recoverAt - 1.5 && t <= this.recoverAt + 15;
+    const advancing = state === YTState.PLAYING && idOk && near && this.lastT >= 0 && t > this.lastT;
+    if (advancing) {
+      if (this.advancingSince === 0) this.advancingSince = now;
+    } else if (state !== YTState.PLAYING || !near) {
+      this.advancingSince = 0;
+    }
+    this.lastT = t;
+    if (this.advancingSince && now - this.advancingSince >= RECOVER_CONFIRM_MS) {
+      log('recovered; unmuting', this.snapshot(p));
+      if (!this.wantPlaying) p.pauseVideo();
+      p.unMute();
+      this.lastUnmuteAt = now;
+      this.dur = p.getDuration() || this.dur;
+      this.readyStatus = null;
+      this.lastRaw = NaN;
+      this.lastRawChangeAt = now;
+      this.playRequestedAt = now;
+      this.gestureSent = false;
+      this.phase = 'ready';
+      this.clock.seek(t);
+      this.clock.update(t, this.wantPlaying);
+      this.recoverErr = null;
+      this.onRecovering?.(false);
+      return;
+    }
+    if (now - this.phaseStart > RECOVER_MS) this.failRecovery('timed out');
+  }
+
+  private failRecovery(why: string): void {
+    log(`recovery failed (${why})`, this.snapshot(this.yt));
+    const err = this.recoverErr ?? new PlayerError(5, describeYTError(5));
+    this.recoverErr = null;
+    this.phase = 'idle';
+    this.wantPlaying = false;
+    this.onError?.(err);
   }
 }
 

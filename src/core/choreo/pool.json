@@ -1,10 +1,10 @@
 {
- "catalogueHash": "69fde0c3",
+ "catalogueHash": "ed340fe",
  "threshold": 0.085,
  "stats": {
   "baseMoves": 658,
   "candidates": 6167,
-  "counted": 1115,
+  "counted": 1116,
   "ornaments": 908,
   "byType": {
    "alt": {
@@ -34,8 +34,8 @@
    "combo": {
     "candidates": 4821,
     "invalid": 40,
-    "notUnique": 3790,
-    "accepted": 991
+    "notUnique": 3789,
+    "accepted": 992
    },
    "hips": {
     "candidates": 140,
@@ -1056,6 +1056,7 @@
   ["kick-cross~combo~popKickCross+jazzHands", "kick-cross", "combo", "popKickCross", "jazzHands"],
   ["kick-cross~combo~popKickCross+latinOneUp", "kick-cross", "combo", "popKickCross", "latinOneUp"],
   ["kick-cross~combo~popKickCross+popHandJive", "kick-cross", "combo", "popKickCross", "popHandJive"],
+  ["kick-cross~combo~popKickCross+popShrug", "kick-cross", "combo", "popKickCross", "popShrug"],
   ["kick-cross~combo~popKickCross+popTMotion", "kick-cross", "combo", "popKickCross", "popTMotion"],
   ["kick-cross~combo~popKickCross+popVMotions", "kick-cross", "combo", "popKickCross", "popVMotions"],
   ["kick-cross~combo~popKickCross+rkLighter", "kick-cross", "combo", "popKickCross", "rkLighter"],
@@ -1666,6 +1667,7 @@
   ["side-punch~hips", "side-punch", "hips"],
   ["side-punch~hit4", "side-punch", "hit4"],
   ["side-punch~spin", "side-punch", "spin"],
+  ["side-rock~combo~rock+clapEvery", "side-rock", "combo", "rock", "clapEvery"],
   ["side-rock~combo~rock+popVineClap", "side-rock", "combo", "rock", "popVineClap"],
   ["side-rock~diag", "side-rock", "diag"],
   ["side-rock~spin", "side-rock", "spin"],
@@ -2017,7 +2019,6 @@
   ["upright-row~hit4", "upright-row", "hit4"],
   ["upright-row~spin", "upright-row", "spin"],
   ["v-step~combo~vStep+bhangraOneUp", "v-step", "combo", "vStep", "bhangraOneUp"],
-  ["v-step~combo~vStep+clapEvery", "v-step", "combo", "vStep", "clapEvery"],
   ["v-step~combo~vStep+crossJab", "v-step", "combo", "vStep", "crossJab"],
   ["v-step~combo~vStep+cuteClasp", "v-step", "combo", "vStep", "cuteClasp"],
   ["v-step~combo~vStep+diagonal", "v-step", "combo", "vStep", "diagonal"],

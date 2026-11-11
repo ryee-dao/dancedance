@@ -111,14 +111,18 @@ class FakeYT {
   isMuted() {
     return this.muted;
   }
+  /** Test hook: the IFrame API reports an error now. */
+  fail(code: number) {
+    this.events?.onError?.({ target: this as never, data: code });
+  }
   /** Test hook: start an ad in the middle of playback. */
   midroll(ms: number) {
     this.adLeft = ms;
   }
-  loadVideoById({ videoId }: { videoId: string }) {
+  loadVideoById({ videoId, startSeconds }: { videoId: string; startSeconds?: number }) {
     if (this.script.silent) return;
     this.target = videoId;
-    this.t = 0;
+    this.t = startSeconds ?? 0;
     this.vid = '';
     if (this.stuck) {
       this.vid = videoId;
@@ -496,5 +500,87 @@ describe('YouTubePlayer start sequence', () => {
     await run(7000);
     expect(statuses).toContain('needs-gesture');
     p.destroy();
+  });
+});
+
+describe('YouTubePlayer mid-song error recovery', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'performance', 'Date'],
+    });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  async function playing(): Promise<{ p: InstanceType<typeof YouTubePlayer>; errors: InstanceType<typeof PlayerError>[]; recovering: boolean[] }> {
+    script = { duration: 200 };
+    const p = new YouTubePlayer();
+    const errors: InstanceType<typeof PlayerError>[] = [];
+    const recovering: boolean[] = [];
+    p.onError = (e) => errors.push(e);
+    p.onRecovering = (a) => recovering.push(a);
+    const loaded = p.load(ITEM).catch(() => {});
+    await run(2600);
+    await loaded;
+    p.play();
+    await run(10000);
+    expect(p.isPlaying()).toBe(true);
+    return { p, errors, recovering };
+  }
+
+  it('error 5 mid-song: recreates the player once, resumes from the same time (muted until playing), then continues', async () => {
+    const { p, errors, recovering } = await playing();
+    const before = p.time();
+    expect(before).toBeGreaterThan(8);
+    const first = created;
+    fake.fail(5);
+    expect(recovering).toEqual([true]);
+    expect(p.time()).toBeCloseTo(before, 1); // holds its place meanwhile
+    expect(p.isPlaying()).toBe(false);
+    await run(100);
+    expect(created).toBe(first + 1); // a brand-new IFrame player
+    expect(fake.muted).toBe(true);
+    expect(fake.t).toBeGreaterThanOrEqual(before - 0.5);
+    await run(1500);
+    expect(recovering).toEqual([true, false]);
+    expect(errors).toEqual([]);
+    expect(fake.muted).toBe(false);
+    expect(p.isPlaying()).toBe(true);
+    const t1 = p.time();
+    expect(t1).toBeGreaterThan(before);
+    await run(3000);
+    expect(p.time()).toBeGreaterThan(t1 + 2);
+    p.destroy();
+  });
+
+  it('a second failure during recovery reaches onError (once)', async () => {
+    const { p, errors, recovering } = await playing();
+    script.errorCode = 5; // the replacement player fails too
+    fake.fail(5);
+    await run(2000);
+    expect(recovering).toEqual([true]);
+    expect(errors.map((e) => e.code)).toEqual([5]);
+    p.destroy();
+  });
+
+  it('only one recovery per song: a later error 2/5 is reported', async () => {
+    const { p, errors, recovering } = await playing();
+    fake.fail(5);
+    await run(2000);
+    expect(recovering).toEqual([true, false]);
+    fake.fail(2);
+    expect(errors.map((e) => e.code)).toEqual([2]);
+    p.destroy();
+  });
+
+  it('errors 100/101/150 mid-song are reported straight away', async () => {
+    for (const code of [100, 101, 150]) {
+      const { p, errors, recovering } = await playing();
+      fake.fail(code);
+      expect(recovering).toEqual([]);
+      expect(errors.map((e) => e.code)).toEqual([code]);
+      p.destroy();
+    }
   });
 });

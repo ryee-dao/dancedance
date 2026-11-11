@@ -30,7 +30,7 @@ import { StageRenderer2D, type SceneInfo, type StripInfo } from '../core/coach/r
 import { CH, createPose, createSkeleton, solveSkeleton } from '../core/coach/skeleton';
 import { DEFAULT_COACH_STYLE, parseCoachStyle, type CoachStyle } from '../core/coach/styles';
 import type { FrameInfo, StageRenderer } from './play';
-import { createPlayersStage, urlPlayers } from './duoStage'; // two-player mode (duo agent)
+import { createPlayersStage, hudTopFraction, urlPlayers } from './duoStage'; // two-player mode (duo agent)
 
 export interface CoachStageDeps {
   getIntensity(): Intensity;
@@ -85,6 +85,9 @@ class CoachStageImpl implements CoachStage {
   private ready = createPose();
   private sk = createSkeleton();
   private needResize = true;
+  /** Last measured top of the page's bottom HUD (fraction of the height); see hudTopFraction. */
+  private hudTop = 0.9;
+  private hudCheckAt = 0;
   private lastPhase = '';
   private playStartWall = 0;
   private frozenDrawn = false;
@@ -177,7 +180,9 @@ class CoachStageImpl implements CoachStage {
     const k = Math.min(1, capW / w, capH / h);
     w *= k;
     h *= k;
-    this.r.resize(w, h, true);
+    this.hudTop = hudTopFraction(this.host, rect);
+    this.hudCheckAt = performance.now();
+    this.r.resize(w, h, true, this.hudTop);
     this.frozenDrawn = false;
   }
 
@@ -189,6 +194,13 @@ class CoachStageImpl implements CoachStage {
     }
     this.lastWall = wall;
     if (!this.r) return;
+    // The HUD can lay out after the stage was sized (fonts, a screen shown
+    // late): re-check it now and then and re-layout if it moved.
+    if (!this.needResize && this.host && wall - this.hudCheckAt > 1000) {
+      this.hudCheckAt = wall;
+      const f = hudTopFraction(this.host, this.host.getBoundingClientRect());
+      if (Math.abs(f - this.hudTop) > 0.004) this.needResize = true;
+    }
     if (this.needResize) this.resize();
     const style = this.style();
     if (style !== this.r.style) {

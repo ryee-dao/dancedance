@@ -163,6 +163,7 @@ class DuoStageImpl implements CoachStage {
 
   mount(stage: HTMLElement): void {
     this.host = stage;
+    stage.classList.add('duo'); // play-screen CSS places DOM panels around the duo strip
     const c = document.createElement('canvas');
     c.className = 'coach-canvas';
     c.setAttribute('aria-hidden', 'true');
@@ -186,12 +187,17 @@ class DuoStageImpl implements CoachStage {
     this.canvas?.remove();
     this.canvas = null;
     this.r = null;
+    this.host?.classList.remove('duo');
     this.host = null;
   }
 
   frameStats(): FrameStats {
     return { frameMs: this.frameEma, drawMs: this.drawEma, fps: this.frameEma > 0 ? 1000 / this.frameEma : 0 };
   }
+
+  /** Last measured top of the page's bottom HUD (fraction of the height); see hudTopFraction. */
+  private hudTop = 0.9;
+  private hudCheckAt = 0;
 
   private resize(): void {
     this.needResize = false;
@@ -205,7 +211,9 @@ class DuoStageImpl implements CoachStage {
     const k = Math.min(1, capW / w, capH / h);
     w *= k;
     h *= k;
-    this.r.resize(w, h, true);
+    this.hudTop = hudTopFraction(this.host, rect);
+    this.hudCheckAt = performance.now();
+    this.r.resize(w, h, true, this.hudTop);
     this.frozenDrawn = false;
   }
 
@@ -232,6 +240,13 @@ class DuoStageImpl implements CoachStage {
     }
     this.lastWall = wall;
     if (!this.r) return;
+    // The HUD can lay out after the stage was sized (fonts, a screen shown
+    // late): re-check it now and then and re-layout if it moved.
+    if (!this.needResize && this.host && wall - this.hudCheckAt > 1000) {
+      this.hudCheckAt = wall;
+      const f = hudTopFraction(this.host, this.host.getBoundingClientRect());
+      if (Math.abs(f - this.hudTop) > 0.004) this.needResize = true;
+    }
     if (this.needResize) this.resize();
     const style = this.style();
     if (style !== this.r.style) {
@@ -425,4 +440,20 @@ function setCard(c: DuoCard, cue: DuoCue): void {
   c.pair = !!cue.partner && c.shared;
   c.name1 = cue.name1;
   c.name2 = cue.name2;
+}
+
+/**
+ * Top of the play screen's bottom HUD (progress bar + time) as a fraction of
+ * the stage height, so the canvas can keep its floor labels and strip above it.
+ */
+export function hudTopFraction(host: HTMLElement, rect: DOMRect): number {
+  const hud = host.parentElement?.querySelector('.hud-bottom');
+  if (!hud) return 1; // no HUD on this page (demo bench): nothing to avoid
+  const r = hud.getBoundingClientRect();
+  if (r.height > 0 && rect.height > 0) return Math.max(0.7, Math.min(1, (r.top - rect.top) / rect.height));
+  // Not laid out (yet): estimate from the CSS (root font clamp(16px, 1.15vw, 32px);
+  // the HUD is about 4.4rem tall including its bottom offset).
+  if (rect.height <= 0 || typeof window === 'undefined') return 0.9;
+  const rem = Math.max(16, Math.min(32, window.innerWidth * 0.0115));
+  return Math.max(0.7, Math.min(1, 1 - (4.4 * rem) / rect.height));
 }

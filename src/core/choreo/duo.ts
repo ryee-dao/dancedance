@@ -30,7 +30,9 @@
  */
 
 import type { BeatMap, SectionType } from '../analysis/beatmap';
-import { generateRoutine, hashString, mulberry32, type Intensity, type MoveInstance, type Routine, type SigStep } from './generator';
+import type { Tradition } from './families';
+import { generateRoutine, hashString, mulberry32, specialtyFits, specialtyOf, styleTraditions, type Intensity, type MoveInstance, type Routine, type SigStep } from './generator';
+import type { SongStyle } from './songStyle';
 import { IDLE_MOVE, MOVES, type Move } from './moves';
 import { PARTNER_MOVES, partnerOf, type PartnerMove } from './duoMoves';
 
@@ -58,6 +60,12 @@ export interface DuoOpts {
   /** Seed key (video id, plus any fresh-routine salt). */
   seedKey: string;
   intensity: Intensity;
+  /**
+   * The song's style: P2's own moves follow the same specialty gating as the
+   * routine (generator.ts). Without it, only the traditions the routine itself
+   * uses are open.
+   */
+  style?: SongStyle;
 }
 
 // ---------------------------------------------------------------------------
@@ -130,8 +138,21 @@ function idle(start: number, n: number, section: SectionType, phrase: number, fi
   return out;
 }
 
-/** Tile one move over [start, end) (alternating sides, travel pairs), groove for the rest. */
-function tileMove(m: Move, start: number, end: number, half: boolean, section: SectionType, phrase: number, mirrorFirst = false): MoveInstance[] {
+/**
+ * The rest of a unit [b, end): the single routine's own instances there
+ * (its gap fills, or its move carrying on) when they cover it exactly, so
+ * the idle groove's name doesn't show mid-routine; else the groove.
+ */
+function restOf(ins: readonly MoveInstance[] | undefined, b: number, end: number, section: SectionType, phrase: number): MoveInstance[] {
+  if (b >= end) return [];
+  const f = (ins ?? []).filter((i) => i.start >= b && i.start + i.span <= end && i.move.travel === 0);
+  let x = b;
+  for (const i of f) x = i.start === x ? x + i.span : NaN;
+  return x === end ? f.map((i) => copy(i)) : idle(b, end - b, section, phrase);
+}
+
+/** Tile one move over [start, end) (alternating sides, travel pairs), the unit's fills (or groove) for the rest. */
+function tileMove(m: Move, start: number, end: number, half: boolean, section: SectionType, phrase: number, mirrorFirst = false, rest?: readonly MoveInstance[]): MoveInstance[] {
   const mult = half ? 2 : 1;
   const span = m.beats * mult;
   let n = Math.floor((end - start) / span);
@@ -145,7 +166,7 @@ function tileMove(m: Move, start: number, end: number, half: boolean, section: S
     origin += m.travel * (mirror ? -1 : 1);
     b += span;
   }
-  out.push(...idle(b, end - b, section, phrase));
+  out.push(...restOf(rest, b, end, section, phrase));
   return out;
 }
 
@@ -174,6 +195,7 @@ export class DuoChoreographer {
   private recentPartners: PartnerMove[] = [];
   private familyW = new Map<string, number>();
   private sigRun = '';
+  private open: ReadonlySet<Tradition> | null = null;
 
   constructor(private o: DuoOpts) {
     this.rng = mulberry32(hashString(`${o.seedKey}|duo|${o.intensity}`));
@@ -181,6 +203,12 @@ export class DuoChoreographer {
 
   build(r: Routine): DuoRoutine {
     const half = r.half;
+    if (this.o.style) this.open = styleTraditions(this.o.style);
+    else {
+      const open = new Set<Tradition>();
+      for (const inst of r.instances) for (const t of specialtyOf(inst.move)) open.add(t);
+      this.open = open;
+    }
     // The song's style, as the single routine expressed it: family weights from its moves.
     for (const inst of r.instances) {
       if (inst.move.idle || inst.move.cooldown) continue;
@@ -257,7 +285,7 @@ export class DuoChoreographer {
         if (!main || main.travel !== 0) return this.make(u, 'mirror', undefined, half);
         const b = this.complementOf(main);
         if (!b) return this.make(u, 'mirror', undefined, half);
-        return { p1: u.ins.map((i) => copy(i)), p2: tileMove(b, u.start, u.end, half, u.section, u.phrase, true), kind };
+        return { p1: u.ins.map((i) => copy(i)), p2: tileMove(b, u.start, u.end, half, u.section, u.phrase, true, u.ins), kind };
       }
       case 'call': {
         if (!main) return unison();
@@ -267,8 +295,8 @@ export class DuoChoreographer {
         if (span > halfLen || main.travel !== 0) return this.make(u, 'canon', undefined, half);
         const mid = u.start + halfLen;
         return {
-          p1: [...tileMove(main, u.start, mid, half, u.section, u.phrase), ...idle(mid, u.end - mid, u.section, u.phrase)],
-          p2: [...idle(u.start, halfLen, u.section, u.phrase), ...tileMove(main, mid, u.end, half, u.section, u.phrase, true)],
+          p1: [...tileMove(main, u.start, mid, half, u.section, u.phrase, false, u.ins), ...idle(mid, u.end - mid, u.section, u.phrase)],
+          p2: [...idle(u.start, halfLen, u.section, u.phrase), ...tileMove(main, mid, u.end, half, u.section, u.phrase, true, u.ins)],
           kind,
         };
       }
@@ -294,7 +322,7 @@ export class DuoChoreographer {
       case 'trade': {
         const pm = partner && partnerAllowed(partner, this.o.intensity, u.section) ? partner : this.pickPartner(u, kind === 'trade', half);
         if (!pm) return kind === 'trade' ? this.make(u, 'partner', undefined, half) : this.make(u, 'mirror', undefined, half);
-        const tiles = tilePartner(pm, u.start, u.end, half, u.section, u.phrase);
+        const tiles = tilePartner(pm, u.start, u.end, half, u.section, u.phrase, u.ins);
         if (!tiles) return this.make(u, 'mirror', undefined, half);
         return { ...tiles, kind: TRADE_IDS.has(pm.id) ? 'trade' : 'partner', partner: pm };
       }
@@ -341,7 +369,7 @@ export class DuoChoreographer {
     if (hit) return hit;
     const it = this.o.intensity;
     const pool = MOVES.filter(
-      (c) => !c.idle && !c.cooldown && c !== m && c.base !== m.base && c.beats === m.beats && c.travel === 0 && !c.fastTurn && difficultyOk(c.difficulty, it) && !(c.jump && it === 'chill') && c.level === m.level,
+      (c) => !c.idle && !c.cooldown && c !== m && c.base !== m.base && c.beats === m.beats && c.travel === 0 && !c.fastTurn && difficultyOk(c.difficulty, it) && !(c.jump && it === 'chill') && c.level === m.level && (!this.open || specialtyFits(c, this.open)),
     );
     let best: Move | undefined;
     let bestS = -Infinity;
@@ -414,7 +442,7 @@ function splitSignature(u: Unit): { p1: MoveInstance[]; p2: MoveInstance[] } | n
 }
 
 /** Tile a partner move over [start, end); groove for the rest. Null if it doesn't fit. */
-export function tilePartner(pm: PartnerMove, start: number, end: number, half: boolean, section: SectionType, phrase: number): { p1: MoveInstance[]; p2: MoveInstance[] } | null {
+export function tilePartner(pm: PartnerMove, start: number, end: number, half: boolean, section: SectionType, phrase: number, rest?: readonly MoveInstance[]): { p1: MoveInstance[]; p2: MoveInstance[] } | null {
   const mult = half ? 2 : 1;
   const span = 4 * mult;
   const reps = Math.floor((end - start) / (pm.beats * mult));
@@ -430,8 +458,8 @@ export function tilePartner(pm: PartnerMove, start: number, end: number, half: b
       b += span;
     }
   }
-  p1.push(...idle(b, end - b, section, phrase));
-  p2.push(...idle(b, end - b, section, phrase));
+  p1.push(...restOf(rest, b, end, section, phrase));
+  p2.push(...restOf(rest, b, end, section, phrase));
   return { p1, p2 };
 }
 
@@ -443,7 +471,7 @@ export function duoFromRoutine(r: Routine, o: DuoOpts): DuoRoutine {
 /** Generate the duo routine for a beat map (wraps generateRoutine). */
 export function generateDuoRoutine(map: BeatMap, intensity: Intensity, opts: Parameters<typeof generateRoutine>[2] = {}, salt = ''): DuoRoutine {
   const r = generateRoutine(map, intensity, opts);
-  return duoFromRoutine(r, { seedKey: `${map.videoId}${salt ? `|${salt}` : ''}`, intensity });
+  return duoFromRoutine(r, { seedKey: `${map.videoId}${salt ? `|${salt}` : ''}`, intensity, style: opts.style });
 }
 
 /** P2's mirror-unison instance for a P1 instance (live / idle plans). */

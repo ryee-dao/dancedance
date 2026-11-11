@@ -46,11 +46,15 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
-      - run: npm run build
+      # Optional: address of the "add a song" Cloudflare relay (repository
+      # variable ADD_SONG_URL). When the variable is unset, the value committed
+      # in .env is used; an empty environment variable would override it, so it
+      # is only exported when it has a value.
+      - run: |
+          if [ -n "$ADD_SONG_URL" ]; then export VITE_ADD_SONG_URL="$ADD_SONG_URL"; fi
+          npm run build
         env:
-          # Optional: address of the "add a song" Cloudflare relay (repository
-          # variable ADD_SONG_URL). Empty = the app asks for a relay or token.
-          VITE_ADD_SONG_URL: ${{ vars.ADD_SONG_URL }}
+          ADD_SONG_URL: ${{ vars.ADD_SONG_URL }}
 
       - uses: actions/configure-pages@v6
 

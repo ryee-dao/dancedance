@@ -272,7 +272,9 @@ const ARTISTS: ReadonlyMap<string, ArtistStyle> = (() => {
   a(['House of Pain', 'Kris Kross'], { hiphop: 0.9, party: 0.3, rock: 0.2 }, { themes: ['jump'] });
   a(['Run-DMC', 'Beastie Boys'], { hiphop: 0.8, rock: 0.5 });
   a(['Lil Nas X', 'Post Malone'], { hiphop: 0.6, pop: 0.6, rock: 0.2 });
-  a(['Sean Paul', 'Shaggy', 'Major Lazer', 'Wizkid', 'Burna Boy', 'Tems', 'Rema', 'Davido'], { latin: 0.6, hiphop: 0.6, pop: 0.3 }, { focus: HIPS() });
+  // Style themes open the matching specialty moves (dancehall / afrobeats steps).
+  a(['Sean Paul', 'Shaggy', 'Major Lazer'], { latin: 0.6, hiphop: 0.6, pop: 0.3 }, { focus: HIPS(), themes: ['dancehall'] });
+  a(['Wizkid', 'Burna Boy', 'Tems', 'Rema', 'Davido', 'Tyla', 'Ayra Starr', 'Fireboy DML', 'CKay', 'Asake'], { latin: 0.5, hiphop: 0.6, pop: 0.4 }, { focus: HIPS(), themes: ['afro'] });
   a(['DJ Snake', 'Dillon Francis'], { aerobic: 0.5, hiphop: 0.4, latin: 0.4 });
 
   // --- Rock
@@ -291,8 +293,13 @@ const ARTISTS: ReadonlyMap<string, ArtistStyle> = (() => {
   a(['The Rolling Stones'], { rock: 0.9, funk: 0.2 }, { themes: ['walk'] });
   a(['The Beatles'], { rock: 0.6, pop: 0.7 }, { themes: ['twist'] });
   a(['Chubby Checker', 'The Isley Brothers'], { rock: 0.5, pop: 0.6, party: 0.4, funk: 0.3 }, { themes: ['twist'] });
-  a(['Elvis Presley'], { rock: 0.8, pop: 0.4 }, { themes: ['hips'], focus: HIPS() });
-  a(['Chuck Berry', 'Little Richard', 'Jerry Lee Lewis', 'Bill Haley & His Comets'], { rock: 1, pop: 0.3 }, { themes: ['twist', 'walk'] });
+  a(['Elvis Presley'], { rock: 0.8, pop: 0.4 }, { themes: ['hips', 'swing'], focus: HIPS() });
+  a(['Chuck Berry', 'Little Richard', 'Jerry Lee Lewis', 'Bill Haley & His Comets'], { rock: 1, pop: 0.3 }, { themes: ['twist', 'walk', 'swing'] });
+  // --- Country (country steps are specialty moves: the theme opens them)
+  a(['Shania Twain', 'Dolly Parton', 'Billy Ray Cyrus', 'Garth Brooks', 'Brooks & Dunn', 'Luke Combs', 'Morgan Wallen', 'Carrie Underwood', 'Blake Shelton', 'Kenny Chesney', 'Luke Bryan', 'Florida Georgia Line', 'Johnny Cash', 'Zach Bryan', 'Jason Aldean'], { pop: 0.6, rock: 0.5, aerobic: 0.2 }, { themes: ['country'] });
+  // --- Bollywood / bhangra
+  a(['A. R. Rahman', 'Pritam', 'Vishal-Shekhar', 'Shankar-Ehsaan-Loy', 'Badshah', 'Neha Kakkar'], { pop: 0.7, latin: 0.3, disco: 0.2 }, { themes: ['bollywood'] });
+  a(['Diljit Dosanjh', 'Daler Mehndi', 'Panjabi MC', 'AP Dhillon', 'Sidhu Moose Wala'], { pop: 0.6, hiphop: 0.4, aerobic: 0.3 }, { themes: ['bhangra', 'bollywood'] });
   a(['Rage Against the Machine', 'Limp Bizkit', 'Linkin Park & Jay-Z'], { rock: 0.8, hiphop: 0.5 }, { themes: ['punch', 'jump'] });
   a(['Gorillaz'], { hiphop: 0.5, pop: 0.5, funk: 0.4 });
 
@@ -417,7 +424,7 @@ const GENRE_THEMES: [RegExp, Theme[]][] = [
   [/dancehall/, ['dancehall']],
   [/reggae(?!ton)/, ['reggae']],
   [/soca|calypso/, ['soca']],
-  [/jazz|swing|big band|blues/, ['swing']],
+  [/jazz|swing|big band|blues|rockabilly|doo-?wop|rock\s*(?:&|and|'?n'?)\s*roll/, ['swing']],
   [/country|bluegrass|americana/, ['country']],
   [/folk/, ['folk']],
   [/bollywood|indian|hindi|filmi|desi/, ['bollywood']],
@@ -460,7 +467,7 @@ const KEYWORDS: [RegExp, Theme[]][] = [
   [word("garba|dandiya"), ['garba']],
   [word("hula|aloha|hawaii|hawaiian"), ['hula']],
   [word("capoeira"), ['capoeira']],
-  [word("bellydance|belly dance|habibi|shimmy"), ['bellydance']],
+  [word("bellydance|belly dance|habibi"), ['bellydance']],
 ];
 
 /** Themes suggested by words in a title or artist name (whole words only). */

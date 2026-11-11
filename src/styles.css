@@ -531,7 +531,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  max-width: 40vw;
+  max-width: 28%;
   padding: 0.45rem 1rem;
   border-radius: 999px;
   background: rgba(23, 20, 36, 0.8);
@@ -567,19 +567,47 @@ body {
 /* Words on the stage while there is no beat to follow yet */
 .sync-help {
   /*
-   * Right column, over the coach's "next move" card (which has nothing
-   * useful to show while there is no beat) and clear of the figure.
+   * Takes the place of the coach's NEXT / THEN cards (nothing useful to show
+   * there while there is no beat), covering them exactly so no card edge
+   * peeks out, and clear of the NOW card and the figure. The numbers mirror
+   * the canvas strip layout (core/coach/renderer.ts, duoRenderer.ts).
    */
   position: absolute;
-  right: 3%;
-  top: 31.5%;
-  width: 28%;
-  min-width: 16rem;
+  /* A few px past the card edges so no border peeks out. */
+  left: calc(69% - 4px);
+  right: calc(3% - 4px);
+  top: calc(33% - 4px);
+  bottom: calc(21% - 4px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
   padding: 1.2rem 1.4rem;
   border-radius: 1.1rem;
-  background: rgba(23, 20, 36, 0.94);
+  background: #171424;
   border: 2px solid var(--line);
   pointer-events: none;
+}
+.coach-stage.duo ~ .sync-help {
+  right: calc(2% - 4px);
+  top: calc(37.5% - 4px);
+  bottom: calc(16% - 4px);
+}
+@media (max-aspect-ratio: 6/5) {
+  /* Portrait: the strip runs along the bottom; cover its NEXT / THEN part. */
+  .sync-help {
+    left: calc(45.5% - 4px);
+    right: calc(5% - 4px);
+    top: calc(71% - 4px);
+    bottom: calc(9% - 4px);
+    padding: 0.8rem 1rem;
+  }
+  .coach-stage.duo ~ .sync-help {
+    left: calc(43.5% - 4px);
+    right: calc(4% - 4px);
+    top: calc(67% - 4px);
+    bottom: calc(10% - 4px);
+  }
 }
 .sync-help-title {
   margin: 0;
@@ -618,6 +646,8 @@ body {
 }
 .hud-top {
   top: 1.6rem;
+  /* Clear of the status chip and the coach's strip (right column). */
+  right: 34%;
 }
 .now-title {
   font-size: 2.2rem;
@@ -787,6 +817,18 @@ body {
 }
 .overlay-note {
   color: var(--warn);
+}
+/* "Don't ask again" under the sync prompt's main choices */
+.overlay-never {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem 1rem;
+  margin-top: 1.2rem;
+}
+.overlay-never .overlay-hint {
+  margin: 0;
 }
 
 /* --- Level picker (Easy / Medium / Hard) ------------------------------------ */
@@ -1205,6 +1247,8 @@ body {
   color: var(--accent-2);
 }
 .style-grid {
+  /* Room for a focused card (scaled up, with its focus ring) under the heading. */
+  margin-top: 1.6rem;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   gap: 1.2rem;
@@ -1403,4 +1447,11 @@ body.dragging::after {
 .players-btn.players-on {
   border-color: var(--accent);
   box-shadow: inset 0 0 0 2px var(--accent);
+}
+/* Selected and focused: keep the selected accent and show the focus ring too. */
+.players-btn.players-on:focus {
+  box-shadow:
+    inset 0 0 0 2px var(--accent),
+    0 0 0 0.22rem var(--bg),
+    0 0 0 0.45rem var(--focus);
 }

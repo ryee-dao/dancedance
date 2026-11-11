@@ -44,6 +44,49 @@ export const COLORS = {
 
 
 /** Widths in figure units. */
+/** How far the feet and their shadow reach below the floor line (× scale). */
+const FEET_BELOW_FLOOR = 0.05;
+
+const FONT_STACK = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
+
+/**
+ * Fit one line of text into maxW: shrink the font from `size` down to
+ * `size * floor`, then (if still too wide) cut it with an ellipsis. Measures
+ * at the whole-pixel size that is drawn and keeps a small margin (4%).
+ */
+export function fitText(
+  c: CanvasRenderingContext2D,
+  text: string,
+  maxW: number,
+  size: number,
+  weight: number,
+  floor: number,
+  font: string,
+): { size: number; text: string } {
+  const limit = Math.max(1, maxW * 0.96);
+  const measure = (t: string, s: number) => {
+    c.font = `${weight} ${s}px ${font}`;
+    return c.measureText(t).width;
+  };
+  let s = Math.max(1, Math.round(size));
+  let w = measure(text, s);
+  if (w <= limit) return { size: s, text };
+  const min = Math.max(1, Math.round(size * floor));
+  s = Math.max(min, Math.floor((s * limit) / w));
+  w = measure(text, s);
+  while (w > limit && s > min) w = measure(text, --s);
+  if (w <= limit) return { size: s, text };
+  // Still too wide at the floor: ellipsize.
+  let lo = 0;
+  let hi = text.length;
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2);
+    if (measure(text.slice(0, mid).trimEnd() + '…', s) <= limit) lo = mid;
+    else hi = mid - 1;
+  }
+  return { size: s, text: lo > 0 ? text.slice(0, lo).trimEnd() + '…' : '…' };
+}
+
 const W_UPPER = 0.06;
 const W_FORE = 0.054;
 const W_THIGH = 0.08;
@@ -570,7 +613,7 @@ export class StageRenderer2D {
   private glowGrad2: CanvasGradient | null = null;
   layout: Layout = { w: 1, h: 1, figX: 0, floorY: 0, scale: 1, strip: null };
   private energy = 0.4;
-  private fontCache = new Map<string, number>();
+  private fontCache = new Map<string, { size: number; text: string }>();
 
   constructor(readonly canvas: HTMLCanvasElement, style: CoachStyle = DEFAULT_COACH_STYLE) {
     const ctx = canvas.getContext('2d', { alpha: false });
@@ -589,25 +632,34 @@ export class StageRenderer2D {
     this.afterPainter.style = s;
   }
 
-  /** Set the internal resolution (device px) and recompute layout. */
-  resize(w: number, h: number, showStrip = true): void {
+  /**
+   * Set the internal resolution (device px) and recompute layout.
+   * @param hudTop Where the play screen's bottom HUD (progress bar + time)
+   *   starts, as a fraction of the height: the feet, their shadow and the
+   *   strip stay above it. Omitted (previews, demo bench): layout as before.
+   */
+  resize(w: number, h: number, showStrip = true, hudTop?: number): void {
     w = Math.max(2, Math.round(w));
     h = Math.max(2, Math.round(h));
     if (this.canvas.width !== w) this.canvas.width = w;
     if (this.canvas.height !== h) this.canvas.height = h;
     const landscape = w / h >= 1.2;
+    // A little air above the HUD; Infinity = no HUD to avoid.
+    const hudY = hudTop === undefined ? Infinity : h * Math.max(0.7, Math.min(1, hudTop)) - h * 0.015;
     let figX: number, floorY: number, scale: number;
     let strip: Layout['strip'] = null;
     if (landscape) {
       scale = h * 0.6;
-      floorY = h * 0.86;
+      // Feet / shadow reach about 0.05 x scale below the floor line.
+      floorY = Math.min(h * 0.86, hudY - scale * FEET_BELOW_FLOOR);
       figX = showStrip ? w * 0.4 : w * 0.5;
-      if (showStrip) strip = { x: w * 0.69, y: h * 0.15, w: w * 0.28, h: h * 0.64, vertical: true };
+      if (showStrip) strip = { x: w * 0.69, y: h * 0.15, w: w * 0.28, h: Math.min(h * 0.64, hudY - h * 0.15), vertical: true };
     } else {
       scale = Math.min(h * 0.46, w * 0.7);
       floorY = h * (showStrip ? 0.66 : 0.84);
+      if (!showStrip) floorY = Math.min(floorY, hudY - scale * FEET_BELOW_FLOOR);
       figX = w * 0.5;
-      if (showStrip) strip = { x: w * 0.05, y: h * 0.71, w: w * 0.9, h: h * 0.2, vertical: false };
+      if (showStrip) strip = { x: w * 0.05, y: h * 0.71, w: w * 0.9, h: Math.max(h * 0.12, Math.min(h * 0.2, hudY - h * 0.71)), vertical: false };
     }
     this.layout = { w, h, figX, floorY, scale, strip };
     const c = this.ctx;
@@ -696,26 +748,27 @@ export class StageRenderer2D {
     c.globalAlpha = 1;
   }
 
-  private fitFont(text: string, maxW: number, size: number, weight: number): number {
+  /**
+   * Fit text to a box: shrink the font (down to a floor), then ellipsize.
+   * Measured at the rounded size actually drawn, with a small safety margin
+   * so long names never run up against a card edge. Cached.
+   */
+  private fitFont(text: string, maxW: number, size: number, weight: number): { size: number; text: string } {
     const key = `${text}|${Math.round(maxW)}|${Math.round(size)}|${weight}`;
     const hit = this.fontCache.get(key);
     if (hit !== undefined) return hit;
-    const c = this.ctx;
-    let s = size;
-    c.font = `${weight} ${s}px system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif`;
-    const w = c.measureText(text).width;
-    if (w > maxW) s = Math.max(size * 0.55, (s * maxW) / w);
+    const fit = fitText(this.ctx, text, maxW, size, weight, 0.55, FONT_STACK);
     if (this.fontCache.size > 400) this.fontCache.clear();
-    this.fontCache.set(key, s);
-    return s;
+    this.fontCache.set(key, fit);
+    return fit;
   }
 
   private text(text: string, x: number, y: number, size: number, weight: number, color: string, maxW: number): void {
     const c = this.ctx;
-    const s = this.fitFont(text, maxW, size, weight);
-    c.font = `${weight} ${Math.round(s)}px system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif`;
+    const fit = this.fitFont(text, maxW, size, weight);
+    c.font = `${weight} ${fit.size}px ${FONT_STACK}`;
     c.fillStyle = color;
-    c.fillText(text, x, y);
+    c.fillText(fit.text, x, y);
   }
 
   private panel(x: number, y: number, w: number, h: number, r: number, line: string): void {

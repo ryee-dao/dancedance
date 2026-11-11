@@ -158,13 +158,13 @@ export function createPlay(
 
   // --- overlays ------------------------------------------------------------
   let overlayScope: Scope | null = null;
-  type OverlayKind = 'none' | 'starting' | 'countdown' | 'paused' | 'gesture' | 'stall' | 'sync-ask' | 'sync-wait';
+  type OverlayKind = 'none' | 'starting' | 'countdown' | 'paused' | 'gesture' | 'stall' | 'reconnecting' | 'sync-ask' | 'sync-wait';
   let overlayKind: OverlayKind = 'none';
   // Live parts of the starting overlay, updated by the frame loop.
   let startingSync: HTMLElement | null = null;
   let startingElapsed: HTMLElement | null = null;
 
-  function setOverlay(kind: OverlayKind, content: HTMLElement | null, focusFirst?: string): void {
+  function setOverlay(kind: OverlayKind, content: HTMLElement | null, focusFirst?: string, onBack: () => void = exit): void {
     if (overlayScope) popScope(overlayScope);
     overlayScope = null;
     overlayKind = kind;
@@ -180,7 +180,7 @@ export function createPlay(
     if (content.querySelector('button')) {
       const scope: Scope = {
         root: overlay,
-        onBack: exit,
+        onBack,
         onKey: (e) => {
           if (isMediaToggle(e)) {
             togglePause();
@@ -289,15 +289,23 @@ export function createPlay(
             btn('mic-no', 'Not now'),
           )
         : h('div', { class: 'overlay-buttons' }, btn('mic-yes', 'Use microphone', true), btn('mic-no', 'Not now')),
+      h(
+        'div',
+        { class: 'overlay-never' },
+        h('button', { class: 'btn btn-quiet btn-small', type: 'button', 'data-action': 'sync-never' }, "Don't ask again"),
+        h('p', { class: 'overlay-hint' }, 'You can change this later in Options.'),
+      ),
     );
     card.dataset.token = String(my);
-    setOverlay('sync-ask', card, devices.tabSupported ? 'tab-yes' : 'mic-yes');
+    // Back / Escape here is "Not now": play the song without sync rather than leave it.
+    setOverlay('sync-ask', card, devices.tabSupported ? 'tab-yes' : 'mic-yes', () => answerMic(false));
   }
 
   function answerMic(use: boolean): void {
     const my = token;
     const s = session;
-    if (!s) return;
+    if (!s || overlayKind !== 'sync-ask') return; // answered already (e.g. a double press)
+    if (!use) setOverlay('sync-wait', null);
     if (use) {
       setOverlay(
         'sync-wait',
@@ -317,6 +325,16 @@ export function createPlay(
       }
       countdown(my);
     });
+  }
+
+  /** "Don't ask again" on the sync prompt: the option goes Off; this song plays without sync. */
+  function declineSyncForever(): void {
+    const my = token;
+    const s = session;
+    if (!s || overlayKind !== 'sync-ask') return;
+    setOverlay('sync-wait', null);
+    s.declineSync(true);
+    countdown(my);
   }
 
   function pausedOverlay(): void {
@@ -383,6 +401,20 @@ export function createPlay(
     );
   }
 
+  /** The video player failed mid-song and is being recreated (YouTubePlayer recovery). */
+  function reconnectingOverlay(): void {
+    setOverlay(
+      'reconnecting',
+      h(
+        'div',
+        { class: 'overlay-card' },
+        h('div', { class: 'eq', 'aria-hidden': 'true' }, h('i'), h('i'), h('i'), h('i'), h('i')),
+        h('p', { class: 'overlay-title' }, 'Reconnecting…'),
+        h('p', { class: 'overlay-status' }, 'The video stopped. Picking up where you were.'),
+      ),
+    );
+  }
+
   function countdownOverlay(n: number): void {
     setOverlay(
       'countdown',
@@ -429,6 +461,9 @@ export function createPlay(
         break;
       case 'mic-no':
         answerMic(false);
+        break;
+      case 'sync-never':
+        declineSyncForever();
         break;
       case 'tab-yes': {
         const my = token;
@@ -542,6 +577,16 @@ export function createPlay(
     p.onError = (err) => {
       if (my === token) handleError(err);
     };
+    if (p instanceof YouTubePlayer) {
+      p.onRecovering = (active) => {
+        if (my !== token) return;
+        if (active) {
+          if (overlayKind === 'none' || overlayKind === 'stall' || overlayKind === 'gesture') reconnectingOverlay();
+        } else if (overlayKind === 'reconnecting') {
+          setOverlay('none', null);
+        }
+      };
+    }
     const prep = s.prepare().catch(() => 'ready' as const);
     Promise.all([p.load(item), prep]).then(
       ([, next]) => {
@@ -589,14 +634,16 @@ export function createPlay(
       exit();
       return;
     }
+    // "Skipping." only when another song follows; otherwise we go back home.
+    const then = hasNext() ? ' Skipping.' : '';
     if (err.embedBlocked) {
       if (id) library.markBlocked(id, 'embed');
-      toast("This video can't be played outside YouTube. Skipping.");
+      toast(`This video can't be played outside YouTube.${then}`);
     } else if (err.unavailable) {
       if (id) library.markBlocked(id, 'gone');
-      toast('This video is unavailable. Skipping.');
+      toast(`This video is unavailable.${then}`);
     } else {
-      toast("Couldn't play this video. Skipping.");
+      toast(`Couldn't play this video.${then}`);
     }
     advance();
   }
