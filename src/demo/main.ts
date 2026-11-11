@@ -287,7 +287,7 @@ function galleryMoves(): Move[] {
   const fam = q.get('family');
   const vq = q.get('variations');
   const pool = getPool();
-  let list: Move[] = vq === 'all' ? [...MOVES, ...pool.variations, ...[...pool.ornaments.values()].flat()] : vq ? [...pool.moves] : [...MOVES];
+  let list: Move[] = vq === 'all' ? [...MOVES, ...pool.variations, ...pool.ornaments.all()] : vq ? [...pool.moves] : [...MOVES];
   if (fam) list = list.filter((m) => (m.families as readonly string[]).includes(fam));
   return list.length ? list : [...MOVES];
 }
@@ -366,7 +366,7 @@ function sheetMoves(set: string): Move[] {
   const vq = q.get('variations');
   if (vq) {
     const pool = getPool();
-    const all = [...pool.variations, ...[...pool.ornaments.values()].flat()];
+    const all = [...pool.variations, ...pool.ornaments.all()];
     return all.filter((m) => m.base === vq || m.id.split('~')[1] === vq);
   }
   // ?family=<file>: the moves a family file defines; ?tag=<family>: moves tagged with it.

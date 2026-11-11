@@ -25,12 +25,42 @@ export interface MovePool {
   moves: readonly Move[];
   /** Counted variations only. */
   variations: readonly Move[];
-  /** Ornamented versions of base moves, by base id. */
-  ornaments: ReadonlyMap<string, readonly Move[]>;
+  /** Ornamented versions of base moves (built lazily per base move, then cached). */
+  ornaments: Ornaments;
   /** Specs that no longer build (the catalogue changed since pool.json). */
   skipped: number;
   /** Build time (ms). */
   buildMs: number;
+}
+
+/** Ornaments by base move id, built on first request (they are only needed when picked). */
+export class Ornaments {
+  private built = new Map<string, readonly Move[]>();
+  constructor(private specs: ReadonlyMap<string, readonly VariationSpec[]>) {}
+  get(base: string): readonly Move[] {
+    let list = this.built.get(base);
+    if (!list) {
+      const out: Move[] = [];
+      for (const v of this.specs.get(base) ?? []) {
+        try {
+          out.push(buildVariation(v));
+        } catch {
+          // The catalogue changed since pool.json: skip.
+        }
+      }
+      this.built.set(base, (list = out));
+    }
+    return list;
+  }
+  /** Every ornament (builds them all: dev tools / tests). */
+  all(): Move[] {
+    return [...this.specs.keys()].flatMap((b) => this.get(b));
+  }
+  get count(): number {
+    let n = 0;
+    for (const l of this.specs.values()) n += l.length;
+    return n;
+  }
 }
 
 let pool: MovePool | null = null;
@@ -44,32 +74,30 @@ export function getPool(): MovePool {
   if (pool) return pool;
   const t0 = typeof performance !== 'undefined' ? performance.now() : Date.now();
   const variations: Move[] = [];
-  const ornaments = new Map<string, Move[]>();
+  const orn = new Map<string, VariationSpec[]>();
   let skipped = 0;
   for (const v of poolSpecs()) {
-    let m: Move;
-    try {
-      m = buildVariation(v);
-    } catch {
-      skipped++;
+    if (!isCounted(v.type)) {
+      let list = orn.get(v.base);
+      if (!list) orn.set(v.base, (list = []));
+      list.push(v);
       continue;
     }
-    if (isCounted(v.type)) variations.push(m);
-    else {
-      let list = ornaments.get(v.base);
-      if (!list) ornaments.set(v.base, (list = []));
-      list.push(m);
+    try {
+      variations.push(buildVariation(v));
+    } catch {
+      skipped++;
     }
   }
   const t1 = typeof performance !== 'undefined' ? performance.now() : Date.now();
-  pool = { moves: [...MOVES, ...variations], variations, ornaments, skipped, buildMs: t1 - t0 };
+  pool = { moves: [...MOVES, ...variations], variations, ornaments: new Ornaments(orn), skipped, buildMs: t1 - t0 };
   return pool;
 }
 
 /** Any move by id: catalogue, counted variation or ornament. */
 export function findPoolMove(id: string): Move | undefined {
   const p = getPool();
-  return p.moves.find((m) => m.id === id) ?? [...p.ornaments.values()].flat().find((m) => m.id === id);
+  return p.moves.find((m) => m.id === id) ?? p.ornaments.get(id.split('~')[0]).find((m) => m.id === id);
 }
 
 /** Forget the built pool (tests). */
