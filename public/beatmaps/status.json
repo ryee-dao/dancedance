@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-11T17:11:29.488Z",
+  "updatedAt": "2026-11-11T17:41:56.174Z",
   "videos": {
     "-7XnDlYY9qw": {
       "state": "ok",
@@ -380,6 +380,13 @@
       "state": "ok",
       "attempts": 2,
       "lastTried": "2026-11-11T05:32:48.939Z"
+    },
+    "dWErisOfeyE": {
+      "state": "blocked",
+      "reason": "blocked",
+      "message": "YouTube asked this machine to prove it is not a bot: [youtube] dWErisOfeyE: Sign in to confirm you’re not a bot. This helps protect our community. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how …",
+      "attempts": 1,
+      "lastTried": "2026-11-11T17:41:56.174Z"
     },
     "e-fA-gBCkj0": {
       "state": "ok",
