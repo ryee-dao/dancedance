@@ -296,8 +296,12 @@ function githubHeaders(token: string): Record<string, string> {
 // (src/core/analysis/shared.ts); a test checks both agree.
 
 export const MAP_MAX_BYTES = 40_000;
-const MAP_KEYS = new Set(['v', 'analyzerVersion', 'videoId', 'duration', 'bpm', 'beats', 'downbeats', 'sections', 'source', 'partial']);
+const MAP_KEYS = new Set(['v', 'analyzerVersion', 'videoId', 'duration', 'bpm', 'beats', 'downbeats', 'sections', 'source', 'partial', 'bars']);
 const SECTION_KEYS = new Set(['start', 'end', 'type', 'energy']);
+/** Optional per-bar readings (analyser 1.2.0+): one digit per downbeat, plus drop bar indices. */
+const BAR_KEYS = new Set(['energy', 'bass', 'change', 'drops']);
+const BAR_DIGIT_KEYS = ['energy', 'bass', 'change'] as const;
+const MAX_DROPS = 64;
 const SECTION_TYPES = ['intro', 'verse', 'chorus', 'drop', 'outro'];
 const MAP_SOURCES = ['tab', 'device'];
 const VIDEO_ID_RE = /^[A-Za-z0-9_-]{11}$/;
@@ -320,6 +324,14 @@ export interface SharedMap {
   downbeats: number[];
   sections: SharedSection[];
   source: 'tab' | 'device';
+  bars?: SharedBars;
+}
+
+export interface SharedBars {
+  energy: string;
+  bass: string;
+  change: string;
+  drops: number[];
 }
 
 const ms = (t: number) => Math.round(t * 1000) / 1000;
@@ -337,6 +349,7 @@ export function validateSharedMap(x: unknown): { ok: true; map: SharedMap } | { 
       for (const k of Object.keys(s)) if (!SECTION_KEYS.has(k)) return no('extra-field');
     }
   }
+  if (obj(x.bars)) for (const k of Object.keys(x.bars)) if (!BAR_KEYS.has(k)) return no('extra-field');
   if (x.v !== 1) return no('version');
   if (typeof x.analyzerVersion !== 'string' || !VERSION_RE.test(x.analyzerVersion)) return no('analyzer-version');
   if (typeof x.videoId !== 'string' || !VIDEO_ID_RE.test(x.videoId)) return no('video-id');
@@ -370,6 +383,22 @@ export function validateSharedMap(x: unknown): { ok: true; map: SharedMap } | { 
     if (typeof d !== 'number' || !Number.isInteger(d) || d < 0 || d >= beats.length || (downbeats.length && d <= downbeats[downbeats.length - 1])) return no('invalid');
     downbeats.push(d);
   }
+  let bars: SharedBars | undefined;
+  if (x.bars !== undefined) {
+    if (!obj(x.bars)) return no('invalid');
+    const b = x.bars;
+    for (const k of BAR_DIGIT_KEYS) {
+      const v = b[k];
+      if (typeof v !== 'string' || !/^[0-9]*$/.test(v) || v.length !== downbeats.length) return no('invalid');
+    }
+    if (!Array.isArray(b.drops) || b.drops.length > MAX_DROPS) return no('invalid');
+    const drops: number[] = [];
+    for (const d of b.drops as unknown[]) {
+      if (typeof d !== 'number' || !Number.isInteger(d) || d < 0 || d >= downbeats.length || (drops.length && d <= drops[drops.length - 1])) return no('invalid');
+      drops.push(d);
+    }
+    bars = { energy: b.energy as string, bass: b.bass as string, change: b.change as string, drops };
+  }
   const sections: SharedSection[] = [];
   const rs = x.sections as Record<string, unknown>[];
   if (!rs.length || rs.length > 64) return no(rs.length ? 'sections' : 'invalid');
@@ -385,10 +414,9 @@ export function validateSharedMap(x: unknown): { ok: true; map: SharedMap } | { 
     if (Math.abs(sections[i].start - prevEnd) > 0.002) return no('sections');
   }
   if (Math.abs(sections[sections.length - 1].end - duration) > 0.002) return no('sections');
-  return {
-    ok: true,
-    map: { v: 1, analyzerVersion: x.analyzerVersion, videoId: x.videoId, duration, bpm, beats, downbeats, sections, source: x.source as 'tab' | 'device' },
-  };
+  const map: SharedMap = { v: 1, analyzerVersion: x.analyzerVersion, videoId: x.videoId, duration, bpm, beats, downbeats, sections, source: x.source as 'tab' | 'device' };
+  if (bars) map.bars = bars;
+  return { ok: true, map };
 }
 
 /** The workflow_dispatch body for a contributed map (compact JSON in the map_json input). */

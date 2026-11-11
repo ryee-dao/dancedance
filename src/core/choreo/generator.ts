@@ -5,30 +5,38 @@
  * intensity, so the same song always gets the same routine.
  *
  * Structure:
- *   bars (from downbeats) -> section runs -> phrases (8 bars) -> units (2 bars).
- *   A unit repeats ONE move (alternating sides) or plays the signature combo.
- *   Phrases repeat so each move can be picked up. Every chorus /
- *   drop opens with the song's signature combo (one 8-beat sequence). The
- *   start warms up with low moves, the outro cools down.
- *   Above ~150 BPM every move is performed at half time (1 move beat = 2 song
- *   beats); phrases and units double so they stay musically aligned.
+ *   bars (from downbeats) -> section runs -> phrases (8 bars) -> holds
+ *   (2, 4 or 8 bars on the phrase's grid) -> units (2 bars). A hold repeats
+ *   ONE move (alternating sides, units returning to centre); a unit may
+ *   instead play the signature combo. Every chorus / drop opens with the
+ *   song's signature combo (one 8-beat sequence). The start warms up with a
+ *   gentle move, the outro cools down. Above ~150 BPM every move is
+ *   performed at half time (1 move beat = 2 song beats); phrases, holds and
+ *   units double so they stay musically aligned.
+ *
+ * The music drives the phrasing (see "Phrasing" below): per-bar readings
+ * from the beat map (energy, bass, groove change, drops; section energy for
+ * older maps) decide how long each move is held (steady, loud passages and
+ * drops hold longest; passages that keep changing switch sooner) and lean
+ * the pick toward vigorous moves in loud, bassy bars and gentle ones in soft
+ * bars. Each section type keeps a small palette of recurring moves.
  *
  * Levels (shown to the user as Easy / Medium / Hard):
  *   chill  (Easy):   difficulty-1 moves only, 4-bar units (a move lasts 4-8
- *                    bars), the same A/B pair for a whole section, no jumps.
- *   cardio (Medium): difficulty 1-2, 2-bar units, AABA phrases.
- *   sweaty (Hard):   all difficulties (favouring coordinated moves), 2-bar
- *                    units with ABAC phrases, more high-impact moves.
+ *                    bars), a palette of 2 moves per section type, no jumps.
+ *   cardio (Medium): difficulty 1-2, 2-bar units, palettes of 3.
+ *   sweaty (Hard):   all difficulties (favouring coordinated moves), shorter
+ *                    holds on average, palettes of 4, more high-impact moves.
  *
- * Live mode (no sections known) uses LivePlanner: the same unit logic with a
- * repeating verse / verse / chorus phrase cycle.
+ * Live mode (no sections known) uses LivePlanner: the same phrase logic with
+ * a repeating verse / verse / chorus phrase cycle.
  *
  * Song style (songStyle.ts) weights the pick on top of section energy and
  * level: moves of the song's families (~60-70 % of picks), its focus and its
  * title themes are favoured, never to the point of emptying the pool. The
  * pool is the catalogue plus validated variations (pool.ts): Easy sees few
- * (simple ones), Hard the most. A move doesn't come back within
- * NO_REPEAT_PHRASES phrases (section memos aside). The seed is
+ * (simple ones), Hard the most. A fresh pick doesn't come back within
+ * NO_REPEAT_PHRASES phrases (palette moves aside). The seed is
  * videoId + level + style; 'fresh' routines add a play counter, but the
  * chorus combo (signature) keeps the stable seed. Songs with a curated
  * `signature` build the chorus combo from those moves.
@@ -101,8 +109,6 @@ export const NO_REPEAT_PHRASES = 3;
 const VARIATION_SHARE: Record<Intensity, number> = { chill: 0.06, cardio: 0.25, sweaty: 0.35 };
 /** Chance a unit's last 4 beats become a phrase-end flourish (last unit of a phrase). */
 const FLOURISH_P: Record<Intensity, number> = { chill: 0, cardio: 0.3, sweaty: 0.5 };
-/** Chance a unit plays an ornamented version of its move (hip sway, diagonal). */
-const ORNAMENT_P: Record<Intensity, number> = { chill: 0, cardio: 0.15, sweaty: 0.25 };
 
 /** Style factor of a move for a song: families, focus and themes. */
 export function styleFactor(m: Move, style: SongStyle): number {
@@ -370,6 +376,21 @@ export function transitionCost(prev: Pose, next: Pose): number {
 // ---------------------------------------------------------------------------
 // Choreographer: shared unit / phrase logic for map and live planning
 
+/** What the generator knows about one bar of the music. */
+export interface BarFeel {
+  /** 0..1 intensity, relative within the song. */
+  energy: number;
+  /** 0..1 bass level, relative within the song. */
+  bass: number;
+  /** 0..1 how new the bar's groove is (0 = a repeat of the last bars). */
+  change: number;
+  /** A drop starts on this bar. */
+  drop: boolean;
+}
+
+/** Groove change assumed when a map has no bar readings (moderately steady). */
+export const DEFAULT_CHANGE = 0.4;
+
 export interface PhraseOpts {
   section: SectionType;
   energy: number;
@@ -377,13 +398,177 @@ export interface PhraseOpts {
   warmup?: boolean;
   /** First phrase of a chorus/drop: open with the signature combo. */
   signature?: boolean;
+  /** Units the signature combo opens with (default 2; Easy 1). */
+  sigUnits?: number;
   /** Cooldown moves only. */
   cooldown?: boolean;
-  /** Section memo key (repeat the same A/B when a section type returns). */
+  /** Palette key (default: the section type): sections sharing it reuse the same few moves. */
   memoKey?: string;
+  /** Per-bar readings, index-aligned with the phrase's bars (default: flat, from `energy`). */
+  feels?: readonly BarFeel[];
 }
 
 type UnitChoice = { kind: 'move'; move: Move } | { kind: 'sig' };
+
+// ---------------------------------------------------------------------------
+// Phrasing: how long a move is held, and which one
+//
+// A phrase (8 bars; 16 at half time) is cut into holds on its own grid: the
+// whole phrase, its halves, or quarters, never below one unit (2 bars; Easy
+// 4). Each candidate block is held whole with a seeded probability whose
+// log-odds rise with how steady the groove is (low bar `change`), with
+// energy (and, a little, in very quiet passages), at a drop and in peak
+// sections, and fall when the block's two halves differ in energy; so a
+// steady, loud drop holds one move for the whole phrase while a passage that
+// keeps switching beats changes every unit or two. A drop always starts a
+// new phrase and a new hold.
+//
+// Each section type keeps a small palette of moves per vibe tier (soft /
+// medium / heavy target vigour; 2-4 moves by level, one more for restless
+// passages) that recur, with an ornamented / variation version
+// now and then; a few one-off picks keep it from looping. Long holds switch
+// to a variation of the same move half-way, so they aren't a frozen loop.
+// Move choice leans on the bars' energy + bass: loud, bassy bars and drops
+// favour vigorous moves (jumps, big arms, headbangs, within the level's
+// rules), soft bars gentle ones (vigourTilt).
+
+/** Log-odds of holding a block whole, by level: [blocks of 2 units, blocks of 3+ units (a whole phrase)]. */
+const HOLD_BIAS: Readonly<Record<Intensity, readonly [number, number]>> = {
+  chill: [0.9, 0.9],
+  cardio: [1.4, -0.2],
+  sweaty: [0.8, -0.7],
+};
+/** Log-odds per unit of steadiness (1 - change) above STEADY_MID. */
+const HOLD_STEADY_W = 5;
+const STEADY_MID = 0.6;
+/** Log-odds per unit of the block's target vigour above 0.5 (loud passages hold longer) ... */
+const HOLD_ENERGY_W = 1.8;
+/** ... and below HOLD_CALM_BELOW (so do quiet, gentle ones). */
+const HOLD_CALM_W = 2;
+const HOLD_CALM_BELOW = 0.35;
+/** Extra log-odds when the block starts with a drop. */
+const HOLD_DROP = 1.2;
+/** Extra log-odds by section type. */
+const HOLD_SECTION: Readonly<Record<SectionType, number>> = { intro: 0.4, verse: 0, chorus: 0.2, drop: 0.5, outro: 0.6 };
+/** Log-odds lost per unit of energy contrast between a block's halves (beyond 0.15). */
+const HOLD_CONTRAST_W = 5;
+/** Target vigour shift by section type. */
+const TARGET_SECTION: Readonly<Record<SectionType, number>> = { intro: -0.1, verse: -0.03, chorus: 0.05, drop: 0.12, outro: -0.2 };
+/** Target vigour boost of a hold starting on a drop. */
+const TARGET_DROP = 0.15;
+/** Strength of the energy -> vigour lean (log weight ratio between the extremes is TILT / 4). */
+const VIGOUR_TILT = 8;
+/** Target vigour at / above which a hold draws on the section's heavy palette; at / below, its soft one. */
+const PALETTE_HEAVY = 0.62;
+const PALETTE_SOFT = 0.38;
+/** Weight factor of a first move that can also fill the pickup. */
+const PICKUP_FIT_BOOST = 4;
+/** Moves per palette. */
+const PALETTE_SIZE: Record<Intensity, number> = { chill: 2, cardio: 3, sweaty: 4 };
+/** Chance a hold adds a new palette move while the palette isn't full (a second one always joins). */
+const PALETTE_GROW_P = 0.35;
+/** Chance a hold is a one-off pick (not from the palette). */
+const ONE_OFF_P: Record<Intensity, number> = { chill: 0.04, cardio: 0.12, sweaty: 0.2 };
+/** Weight of the palette's first (main) move. */
+const MAIN_MOVE_BIAS = 1.6;
+/** Chance a recurring move comes back as a variation of itself. */
+const REPEAT_VARIANT_P: Record<Intensity, number> = { chill: 0.1, cardio: 0.3, sweaty: 0.45 };
+/** Chance a long hold (a whole phrase) switches to a variation half-way. */
+const MID_VARIANT_P: Record<Intensity, number> = { chill: 0.3, cardio: 0.6, sweaty: 0.7 };
+
+const VIGOUR = new Map<Move, number>();
+let VIGOUR_REF: { motion: Float64Array; raw: Float64Array } | null = null;
+
+const angleDelta = (a: number, b: number) => {
+  let d = Math.abs(b - a) % 360;
+  return d > 180 ? 360 - d : d;
+};
+
+/** How much a move moves per beat: limbs, feet, bounce, torso and head over its loop. */
+function moveMotion(m: Move): number {
+  const keys = m.keys;
+  if (keys.length < 2) return 0;
+  let sum = 0;
+  for (let i = 0; i < keys.length; i++) {
+    const a = keys[i].pose;
+    const b = keys[(i + 1) % keys.length].pose;
+    sum += transitionCost(a, b);
+    sum += ((angleDelta(a[CH.LEAN], b[CH.LEAN]) + angleDelta(a[CH.TWIST], b[CH.TWIST]) + angleDelta(a[CH.BEND], b[CH.BEND]) +
+      angleDelta(a[CH.HEAD_NOD], b[CH.HEAD_NOD]) + angleDelta(a[CH.HEAD_ROLL], b[CH.HEAD_ROLL])) / 90) * 0.5;
+    sum += Math.abs(b[CH.HIPS] - a[CH.HIPS]) * 3;
+  }
+  return sum / m.beats;
+}
+
+function rawVigour(m: Move, motionPct: number): number {
+  const level = m.level === 'high' ? 1 : m.level === 'mid' ? 0.5 : 0;
+  return 0.45 * level + 0.35 * motionPct + 0.2 * (m.jump ? 1 : m.impact ? 0.6 : 0);
+}
+
+function rankIn(sorted: Float64Array, v: number): number {
+  let lo = 0;
+  let hi = sorted.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (sorted[mid] < v) lo = mid + 1;
+    else hi = mid;
+  }
+  let up = lo;
+  while (up < sorted.length && sorted[up] === v) up++;
+  return sorted.length > 1 ? (lo + up - 1) / 2 / (sorted.length - 1) : 0.5;
+}
+
+/**
+ * How vigorous a move looks, 0 (gentle) .. 1 (all-out), as a percentile among
+ * the catalogue's dance moves: its level, how much it moves per beat, and
+ * jumps / squats.
+ */
+export function moveVigour(m: Move): number {
+  const hit = VIGOUR.get(m);
+  if (hit !== undefined) return hit;
+  if (!VIGOUR_REF) {
+    const motion = Float64Array.from(DANCE_MOVES.map(moveMotion)).sort();
+    const raw = Float64Array.from(DANCE_MOVES.map((x) => rawVigour(x, rankIn(motion, moveMotion(x))))).sort();
+    VIGOUR_REF = { motion, raw };
+  }
+  const v = rankIn(VIGOUR_REF.raw, rawVigour(m, rankIn(VIGOUR_REF.motion, moveMotion(m))));
+  VIGOUR.set(m, v);
+  return v;
+}
+
+/** Weight factor leaning move choice toward the target vigour (1 at a neutral target). */
+export function vigourTilt(m: Move, target: number): number {
+  return Math.exp(VIGOUR_TILT * (target - 0.5) * (moveVigour(m) - 0.5));
+}
+
+const mean = (xs: readonly BarFeel[], g: (f: BarFeel) => number, from = 0, to = xs.length) => {
+  let s = 0;
+  let n = 0;
+  for (let i = Math.max(0, from); i < Math.min(xs.length, to); i++) (s += g(xs[i])), n++;
+  return n ? s / n : 0;
+};
+
+/**
+ * How steady the groove is over bars [from, to): 1 - the mean change, leaving
+ * out the most changed bar (a fill) when there are 3 or more.
+ */
+export function steadiness(feels: readonly BarFeel[], from: number, to: number): number {
+  const c: number[] = [];
+  for (let i = Math.max(0, from); i < Math.min(feels.length, to); i++) c.push(feels[i].change);
+  if (c.length === 0) return 1 - DEFAULT_CHANGE;
+  c.sort((a, b) => a - b);
+  if (c.length >= 3) c.pop();
+  return 1 - c.reduce((a, b) => a + b, 0) / c.length;
+}
+
+/** Target vigour (0..1) of a stretch of bars. */
+export function targetVigour(feels: readonly BarFeel[], section: SectionType, warmup = false): number {
+  const e = mean(feels, (f) => f.energy);
+  const b = mean(feels, (f) => f.bass);
+  let t = 0.6 * e + 0.4 * b + TARGET_SECTION[section] + (feels[0]?.drop ? TARGET_DROP : 0);
+  if (warmup) t = Math.min(t, 0.35);
+  return Math.min(1, Math.max(0, t));
+}
 
 export class Choreographer {
   readonly signature: SigStep[];
@@ -394,8 +579,15 @@ export class Choreographer {
   private lastMove: Move | null = null;
   private lastMirror = false;
   private recent: Move[] = [];
-  private memo = new Map<string, [Move, Move]>();
+  /** Palettes: the few moves a section type keeps coming back to, per vibe tier. */
+  private palettes = new Map<string, Move[]>();
+  /** Base moves already danced (a recurring one may come back as a variation). */
+  private used = new Set<Move>();
+  /** Variations in the pool, by base move id. */
+  private varsByBase = new Map<string, Move[]>();
   private phraseNo = 0;
+  /** Beats before the first bar (set by generateRoutine; the first pick prefers a move that fits them). */
+  pickupBeats = 0;
   readonly style: SongStyle;
   private pool: readonly Move[];
   /** Per-move static weight: style x variation share (index-aligned with pool). */
@@ -441,7 +633,15 @@ export class Choreographer {
     }
     const share = VARIATION_SHARE[intensity];
     const vw = mv > 0 ? (share / (1 - share)) * (mb / mv) : 0;
-    for (let i = 0; i < moves.length; i++) if (isVar[i]) this.base[i] *= vw;
+    for (let i = 0; i < moves.length; i++) {
+      if (!isVar[i]) continue;
+      this.base[i] *= vw;
+      const m = moves[i];
+      if (this.outside.has(m) || intensityFactor(m, intensity) <= 0) continue;
+      const list = this.varsByBase.get(m.base);
+      if (list) list.push(m);
+      else this.varsByBase.set(m.base, [m]);
+    }
     for (const m of DANCE_MOVES) {
       if (m.beats > 2 || m.travel !== 0 || this.outside.has(m) || intensityFactor(m, intensity) <= 0) continue;
       this.gapMoves.push(m);
@@ -451,70 +651,185 @@ export class Choreographer {
     this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}|${sk}`)), intensity, this.style, open);
   }
 
-  /** Fill `bars` (contiguous) with one phrase. */
+  /**
+   * Fill `bars` (contiguous, one phrase) with holds: the signature combo
+   * first when asked, then holds on the phrase's own grid (planHolds), each
+   * one move (pickHold) repeated in units.
+   */
   phrase(out: MoveInstance[], bars: readonly Bar[], o: PhraseOpts): void {
     if (bars.length === 0) return;
     const unitBars = this.unitBars;
+    const phraseNo = this.phraseNo++;
+    const flat: BarFeel = { energy: o.energy, bass: o.energy, change: DEFAULT_CHANGE, drop: false };
+    const feels = o.feels && o.feels.length === bars.length ? o.feels : bars.map(() => flat);
+    let from = 0;
+    if (o.signature && this.signature.length) {
+      let take = Math.min(bars.length, Math.max(1, o.sigUnits ?? (this.intensity === 'chill' ? 1 : 2)) * unitBars);
+      if (bars.length - take < unitBars) take = bars.length;
+      for (const ub of this.units(bars.slice(0, take))) this.fillUnit(out, ub[0].start, barsEnd(ub), { kind: 'sig' }, o.section, phraseNo);
+      from = take;
+    }
+    if (from >= bars.length) return;
+    const calm = !!(o.warmup || o.cooldown);
+    for (const h of this.planHolds(feels, from, o)) {
+      const hb = bars.slice(h.a, h.a + h.len);
+      const hf = feels.slice(h.a, h.a + h.len);
+      const t = targetVigour(hf, o.section, o.warmup);
+      const move = o.cooldown ? this.choose(o, null, false, t) : this.pickHold(o, t, hf);
+      this.emitHold(out, hb, move, o, phraseNo, h.a + h.len === bars.length && !calm);
+    }
+  }
+
+  /** Bars cut into units of `unitBars` (a short tail joins the last unit). */
+  private units(bars: readonly Bar[]): Bar[][] {
+    const unitBars = this.unitBars;
     const units: Bar[][] = [];
     for (let i = 0; i < bars.length; i += unitBars) units.push(bars.slice(i, i + unitBars) as Bar[]);
-    // Absorb a lone trailing bar into the previous unit (keeps units >= 2 bars).
     if (units.length > 1 && units[units.length - 1].length < unitBars / 2 + 0.5 && unitBars > 1) {
       const tail = units.pop()!;
       units[units.length - 1].push(...tail);
     }
-    const n = units.length;
-    const phraseNo = this.phraseNo++;
+    return units;
+  }
 
-    let pattern: UnitChoice[];
-    if (o.signature && this.signature.length) {
-      const B = this.choose(o, null);
-      const S: UnitChoice = { kind: 'sig' };
-      const b: UnitChoice = { kind: 'move', move: B };
-      pattern = n === 1 ? [S] : n === 2 ? (this.intensity === 'chill' ? [S, b] : [S, S]) : n === 3 ? [S, b, S] : [S, S, b, S];
-    } else {
-      let A: Move;
-      let B: Move;
-      const memo = o.memoKey ? this.memo.get(o.memoKey) : undefined;
-      if (memo && (memo[0] !== this.lastMove || this.intensity === 'chill') && this.allowed(memo[0], o) && this.allowed(memo[1], o)) {
-        [A, B] = memo;
-      } else {
-        A = this.choose(o, null);
-        this.recent.push(A);
-        B = this.choose(o, A);
-        this.recent.pop();
-        if (o.memoKey && !this.memo.has(o.memoKey)) this.memo.set(o.memoKey, [A, B]);
+  /**
+   * Holds covering bars [from, n) of a phrase: the phrase's power-of-two
+   * block grid (in units), each block held whole or halved (seeded, see
+   * HOLD_*). Blocks never cross `from`, the phrase end or a drop; anything
+   * shorter than a unit joins its neighbour.
+   */
+  private planHolds(feels: readonly BarFeel[], from: number, o: PhraseOpts): { a: number; len: number }[] {
+    const n = feels.length;
+    const minHold = this.unitBars;
+    const out: { a: number; len: number }[] = [];
+    // The warm-up is one gentle move.
+    if (o.warmup && o.section !== 'intro') return [{ a: from, len: n - from }];
+    const bias = HOLD_BIAS[this.intensity];
+    const rec = (a: number, L: number) => {
+      const lo = Math.max(a, from);
+      const hi = Math.min(a + L, n);
+      if (hi <= lo) return;
+      if (L <= minHold || hi - lo <= minHold) {
+        out.push({ a: lo, len: hi - lo });
+        return;
       }
-      const a: UnitChoice = { kind: 'move', move: A };
-      const b: UnitChoice = { kind: 'move', move: B };
-      if (this.intensity === 'chill') {
-        // Easy: long repetition, one change per phrase.
-        pattern = n === 1 ? [a] : n === 2 ? [a, b] : [a, a, b, b];
-      } else if (this.intensity === 'sweaty' && n >= 2) {
-        // Hard: quicker changes, a third move per phrase.
-        this.recent.push(A, B);
-        const C = this.choose(o, B, n >= 4);
-        this.recent.length -= 2;
-        const c: UnitChoice = { kind: 'move', move: C };
-        pattern = n === 2 ? [a, b] : n === 3 ? [a, b, a] : [a, b, a, c];
-      } else {
-        pattern = n === 1 ? [a] : n === 2 ? [a, a] : n === 3 ? [a, a, b] : [a, a, b, a];
+      // A block cut by the phrase end or across a drop must split; one cut
+      // only by `from` (after the combo) may still hold its remainder.
+      let forced = hi < a + L || (hi - lo) % minHold !== 0;
+      for (let k = lo + 1; k < hi && !forced; k++) if (feels[k].drop) forced = true;
+      if (!forced) {
+        const units = (hi - lo) / minHold;
+        const tv = targetVigour(feels.slice(lo, hi), o.section);
+        const mid = lo + Math.floor((hi - lo) / 2);
+        const contrast = Math.abs(mean(feels, (f) => f.energy, lo, mid) - mean(feels, (f) => f.energy, mid, hi));
+        const x =
+          (units >= 3 ? bias[1] : bias[0]) +
+          HOLD_STEADY_W * (steadiness(feels, lo + 1, hi) - STEADY_MID) +
+          HOLD_ENERGY_W * Math.max(0, tv - 0.5) +
+          HOLD_CALM_W * Math.max(0, HOLD_CALM_BELOW - tv) +
+          (feels[lo].drop ? HOLD_DROP : 0) +
+          HOLD_SECTION[o.section] -
+          HOLD_CONTRAST_W * Math.max(0, contrast - 0.15);
+        if (this.rng() < 1 / (1 + Math.exp(-x))) {
+          out.push({ a: lo, len: hi - lo });
+          return;
+        }
+      }
+      const h = Math.max(minHold, L / 2);
+      rec(a, h);
+      rec(a + h, L - h);
+    };
+    let P = minHold;
+    while (P < n) P *= 2;
+    rec(0, P);
+    // Fragments shorter than a unit join the previous hold (or the next).
+    for (let i = 0; i < out.length; i++) {
+      if (out.length > 1 && out[i].len < minHold) {
+        if (i > 0) out[i - 1].len += out[i].len;
+        else {
+          out[1].a = out[0].a;
+          out[1].len += out[0].len;
+        }
+        out.splice(i, 1);
+        i--;
       }
     }
+    return out;
+  }
+
+  /**
+   * The move for one hold: usually one of the section type's palette moves
+   * (leaning toward the hold's target vigour, the main move favoured); while
+   * the palette grows, or now and then as a one-off, a fresh pick. A move
+   * coming back may return as a variation of itself.
+   */
+  private pickHold(o: PhraseOpts, target: number, feels: readonly BarFeel[]): Move {
+    const prev = this.lastMove;
+    const drop = feels[0]?.drop ?? false;
+    const t = drop ? Math.min(1, target + TARGET_DROP) : target;
+    // One palette per section type and vibe (soft / medium / heavy passages).
+    const tier = t >= PALETTE_HEAVY ? 'heavy' : t <= PALETTE_SOFT ? 'soft' : 'mid';
+    const key = `${o.memoKey ?? o.section}|${tier}`;
+    let pal = this.palettes.get(key);
+    if (!pal) this.palettes.set(key, (pal = []));
+    const restless = mean(feels, (f) => f.change) > 0.6 ? 1 : 0;
+    const size = PALETTE_SIZE[this.intensity] + restless;
+    const main = pal[0];
+    const cands = pal.filter((m) => m !== prev && (!prev || m.base !== prev.base) && this.allowed(m, o));
+    const grow = pal.length < size && (pal.length < 2 || this.rng() < PALETTE_GROW_P);
+    let move: Move | null = null;
+    let oneOff = false;
+    if (!grow && cands.length) {
+      oneOff = this.rng() < ONE_OFF_P[this.intensity];
+      if (!oneOff) move = pickWeighted(this.rng, cands, cands.map((m) => vigourTilt(m, t) * (m === main ? MAIN_MOVE_BIAS : 1)));
+    }
+    if (!move) {
+      // Fresh pick, kept apart from the palette's moves.
+      const n = this.recent.length;
+      this.recent.push(...pal);
+      move = this.choose(o, prev, oneOff, t);
+      this.recent.length = n;
+      if (!oneOff && pal.length < size && !pal.includes(move)) pal.push(move);
+    }
+    const again = this.used.has(move);
+    this.used.add(move);
+    if (again && this.rng() < REPEAT_VARIANT_P[this.intensity]) {
+      const v = this.variantOf(move, o);
+      if (v && v !== prev) return v;
+    }
+    return move;
+  }
+
+  /** A variation of `m` (an ornamented version or a pool variation of its base) allowed here, or null. */
+  private variantOf(m: Move, o: PhraseOpts): Move | null {
+    const list: Move[] = [];
+    for (const v of this.ornaments?.get(m.id) ?? []) {
+      const type = v.id.slice(v.id.lastIndexOf('~') + 1);
+      if ((type === 'hips' || type === 'diag') && intensityFactor(v, this.intensity) > 0) list.push(v);
+    }
+    for (const v of this.varsByBase.get(m.base) ?? []) if (v !== m && this.allowed(v, o)) list.push(v);
+    return list.length ? list[Math.floor(this.rng() * list.length)] : null;
+  }
+
+  /**
+   * One hold: `move` repeated over the hold's units. A whole-phrase hold
+   * may switch to a variation of the move half-way; a hold ending the phrase
+   * may close with a flourish.
+   */
+  private emitHold(out: MoveInstance[], bars: readonly Bar[], move: Move, o: PhraseOpts, phraseNo: number, phraseEnd: boolean): void {
+    const units = this.units(bars);
+    const n = units.length;
+    const calm = !!(o.warmup || o.cooldown);
+    let second = move;
+    const longHold = bars.length >= (this.half ? 16 : 8);
+    if (!calm && longHold && n >= 2 && this.rng() < MID_VARIANT_P[this.intensity]) second = this.variantOf(move, o) ?? move;
     for (let u = 0; u < n; u++) {
-      let choice = pattern[u % pattern.length] ?? pattern[0];
-      const ub = units[u];
-      const start = ub[0].start;
-      const end = ub[ub.length - 1].start + ub[ub.length - 1].len;
-      let flourish: Move | null = null;
-      if (choice.kind === 'move' && !o.cooldown && !o.warmup) {
-        const orn = this.ornament(choice.move, ['hips', 'diag'], ORNAMENT_P[this.intensity]);
-        if (orn) choice = { kind: 'move', move: orn };
-        // Phrase end: the unit's last 4 beats spin out / hit a pose.
-        if (u === n - 1 && n > 1) flourish = this.ornament(pattern[u % pattern.length].kind === 'move' ? (pattern[u % pattern.length] as { move: Move }).move : choice.move, ['spin', 'hit4', 'clap4'], FLOURISH_P[this.intensity]);
-      }
-      this.fillUnit(out, start, end, choice, o.section, phraseNo, flourish, !!(o.warmup || o.cooldown));
+      const m = u >= Math.ceil(n / 2) ? second : move;
+      const flourish = phraseEnd && u === n - 1 && n > 1 ? this.ornament(m, ['spin', 'hit4', 'clap4'], FLOURISH_P[this.intensity]) : null;
+      this.fillUnit(out, units[u][0].start, barsEnd(units[u]), { kind: 'move', move: m }, o.section, phraseNo, flourish, calm);
     }
-    for (const c of pattern) if (c.kind === 'move') this.lastUsed.set(c.move, phraseNo);
+    this.lastUsed.set(move, phraseNo);
+    this.lastUsed.set(second, phraseNo);
   }
 
   /**
@@ -567,13 +882,37 @@ export class Choreographer {
   }
 
   /**
+   * The beats before the first bar (a pickup): the first move itself when it
+   * fits them exactly, so the NOW card doesn't flicker through fillers in
+   * the song's first second, else one calm 1-beat move repeated.
+   */
+  pickup(n: number, first: MoveInstance | undefined, section: SectionType): MoveInstance[] {
+    const out: MoveInstance[] = [];
+    if (n <= 0) return out;
+    const mult = this.half ? 2 : 1;
+    const m0 = first && !first.sig && !first.move.idle && !first.move.cooldown ? first.move : null;
+    const base = { origin: 0, section, sig: false, unitStart: false, phrase: -1, fill: true };
+    if (m0 && m0.travel === 0 && m0.beats <= 2 && n % (m0.beats * mult) === 0) {
+      const span = m0.beats * mult;
+      const reps = n / span;
+      // Alternate sides so the last pickup instance leads into the first unit's.
+      for (let k = 0; k < reps; k++) out.push({ ...base, move: m0, mirror: m0.mirror && (reps - k) % 2 === 1, start: k * span, span, half: this.half });
+      return out;
+    }
+    const w = this.gapMoves.map((m, i) => (m.beats === 1 && m.level === 'low' ? this.gapW[i] : 0));
+    const g = pickWeighted(this.rng, this.gapMoves, w) ?? this.gapMoves.find((m) => m.beats === 1) ?? IDLE_MOVE;
+    for (let b = 0; b < n; b++) out.push({ ...base, move: g, mirror: g.mirror && (n - b) % 2 === 1, start: b, span: 1, half: false });
+    return out;
+  }
+
+  /**
    * May a specialty move the song doesn't open be picked now, as the
    * routine's spice? Only for Hard's one-off third move of a phrase (never
    * the chorus combo, a section memo, the warm-up or the cool-down), and only
    * SPICE_ALLOWANCE distinct moves per routine; a spice move is not reused.
    */
   private spiceOk(m: Move, o: PhraseOpts, slot: boolean): boolean {
-    if (!slot || o.cooldown || o.warmup || o.signature || o.memoKey) return false;
+    if (!slot || o.cooldown || o.warmup) return false;
     return !this.spiced.includes(m.base) && this.spiced.length < SPICE_ALLOWANCE[this.intensity];
   }
 
@@ -586,15 +925,16 @@ export class Choreographer {
     return lw[m.level] > 0;
   }
 
-  private choose(o: PhraseOpts, avoid: Move | null, spiceSlot = false): Move {
+  private choose(o: PhraseOpts, avoid: Move | null, spiceSlot = false, target = o.energy): Move {
     const pool = o.cooldown ? COOLDOWN_MOVES : this.pool;
-    const lw = levelWeights(o.warmup ? 'warmup' : o.section, this.intensity, o.energy);
+    const lw = levelWeights(o.warmup ? 'warmup' : o.section, this.intensity, target);
+    const tilt = !o.cooldown && !o.warmup;
     const prev = this.lastMove;
     const prevPose = prev ? lastKeyPose(prev, this.lastMirror) : null;
     const phrase = this.phraseNo;
     const weights = pool.map((m, i) => {
       if (m === avoid) return 0;
-      if (m === prev && !(this.intensity === 'chill' && o.memoKey)) return 0; // no repeat across a phrase boundary
+      if (m === prev) return 0; // no repeat across a hold boundary
       let w = o.cooldown ? (m.cooldown || intensityFactor(m, this.intensity) > 0 ? 1 : 0) : lw[m.level] * intensityFactor(m, this.intensity) * this.base[i];
       if (w <= 0) return 0;
       if (!o.cooldown && this.outside.has(m)) {
@@ -612,6 +952,10 @@ export class Choreographer {
       if (prev && !prev.idle) w *= 1 - 0.6 * partsOverlap(prev, m);
       if (avoid) w *= 1 - 0.5 * partsOverlap(avoid, m);
       if (prevPose) w *= Math.exp(-0.9 * transitionCost(prevPose, keysOf(m, false)[0].pose));
+      // The very first move also covers the pickup when it fits it (one NOW card for the song's first bar).
+      if (!prev && this.pickupBeats > 0 && m.travel === 0 && m.beats <= 2 && this.pickupBeats % (m.beats * (this.half ? 2 : 1)) === 0) w *= PICKUP_FIT_BOOST;
+      // Energy -> vigour (Easy: never pushes squats up).
+      if (tilt) w *= this.intensity === 'chill' && m.impact ? Math.min(1, vigourTilt(m, target)) : vigourTilt(m, target);
       return w;
     });
     const picked = pickWeighted(this.rng, pool, weights);
@@ -674,6 +1018,12 @@ export class Choreographer {
       if (this.recent.length > 3) this.recent.shift();
     }
   }
+}
+
+/** Beat just past the last of `bars`. */
+function barsEnd(bars: readonly Bar[]): number {
+  const l = bars[bars.length - 1];
+  return l.start + l.len;
 }
 
 function lastKeyPose(m: Move, mirror: boolean): Pose {
@@ -840,6 +1190,58 @@ function sectionRuns(map: BeatMap, bars: readonly Bar[]): Run[] {
   return runs;
 }
 
+/** Whether a map's bar readings line up with its downbeats (one digit per downbeat). */
+function barsUsable(map: BeatMap): boolean {
+  const b = map.bars;
+  const n = map.downbeats?.length ?? 0;
+  if (!b || n === 0) return false;
+  for (const s of [b.energy, b.bass, b.change]) if (typeof s !== 'string' || s.length !== n || !/^[0-9]*$/.test(s)) return false;
+  return Array.isArray(b.drops);
+}
+
+/**
+ * What the generator knows about each bar. With the map's bar readings, a
+ * bar takes the reading of the downbeat it starts at or after (bars before
+ * the first downbeat take the first one), its energy smoothed a little
+ * toward its section's; a drop counts on the bar that starts on that
+ * downbeat. Without them (older maps), every bar of a section gets the
+ * section's energy, a moderately steady groove, and drop sections start
+ * with a drop.
+ */
+export function barFeels(map: BeatMap, bars: readonly Bar[], runs: readonly { bars: readonly Bar[]; type: SectionType; energy: number }[]): Map<Bar, BarFeel> {
+  const out = new Map<Bar, BarFeel>();
+  const data = barsUsable(map);
+  const db = map.downbeats;
+  const digit = (s: string, k: number) => (s.charCodeAt(k) - 48) / 9;
+  const drops = data ? new Set(map.bars!.drops) : null;
+  for (const run of runs) {
+    run.bars.forEach((bar, i) => {
+      if (!data) {
+        out.set(bar, { energy: run.energy, bass: run.energy, change: DEFAULT_CHANGE, drop: i === 0 && run.type === 'drop' });
+        return;
+      }
+      // Last downbeat at or before the bar start.
+      let lo = 0;
+      let hi = db.length - 1;
+      let k = 0;
+      while (lo <= hi) {
+        const mid = (lo + hi) >> 1;
+        if (db[mid] <= bar.start) (k = mid), (lo = mid + 1);
+        else hi = mid - 1;
+      }
+      const b = map.bars!;
+      out.set(bar, {
+        energy: 0.75 * digit(b.energy, k) + 0.25 * run.energy,
+        bass: digit(b.bass, k),
+        change: digit(b.change, k),
+        drop: db[k] === bar.start && drops!.has(k),
+      });
+    });
+  }
+  for (const bar of bars) if (!out.has(bar)) out.set(bar, { energy: 0.5, bass: 0.5, change: DEFAULT_CHANGE, drop: false });
+  return out;
+}
+
 /** Generate the full routine for a beat map. */
 export function generateRoutine(map: BeatMap, intensity: Intensity, opts: RoutineOpts = {}): Routine {
   // Bad data (absurd tempo, non-increasing or non-finite beats): no routine;
@@ -852,8 +1254,10 @@ export function generateRoutine(map: BeatMap, intensity: Intensity, opts: Routin
 
   const { pickup, bars } = buildBars(N, map.downbeats);
   const firstType = map.sections[0]?.type ?? 'intro';
-  if (pickup > 0) ch.filler(out, 0, pickup, firstType, false, -1, true);
-  if (bars.length === 0) return { instances: out, signature: ch.signature, half, beats: N };
+  if (bars.length === 0) {
+    if (pickup > 0) ch.filler(out, 0, pickup, firstType, false, -1, true);
+    return { instances: out, signature: ch.signature, half, beats: N };
+  }
 
   const runs = sectionRuns(map, bars);
   const phraseBars = half ? 16 : 8;
@@ -869,6 +1273,9 @@ export function generateRoutine(map: BeatMap, intensity: Intensity, opts: Routin
       runs.push({ bars: tail, type: 'outro', energy: 0.2 });
     }
   }
+  const feel = barFeels(map, bars, runs);
+  ch.pickupBeats = pickup;
+  const feelsOf = (bs: readonly Bar[]) => bs.map((b) => feel.get(b)!);
 
   let warmedUp = false;
   for (const run of runs) {
@@ -881,25 +1288,40 @@ export function generateRoutine(map: BeatMap, intensity: Intensity, opts: Routin
       warmedUp = true;
       if (run.type !== 'intro' && !cooldown && barsLeft.length >= unitBars * 2 + 2) {
         const w = barsLeft.splice(0, unitBars * 2);
-        ch.phrase(out, w, { section: run.type, energy: run.energy, warmup: true });
+        ch.phrase(out, w, { section: run.type, energy: run.energy, warmup: true, memoKey: 'warmup', feels: feelsOf(w) });
       }
     }
     while (barsLeft.length > 0) {
       let take = Math.min(phraseBars, barsLeft.length);
       if (barsLeft.length - take > 0 && barsLeft.length - take < unitBars) take = barsLeft.length;
+      // A drop starts a new phrase (so its hold can run a whole phrase).
+      for (let j = unitBars; j < take; j++) {
+        if (feel.get(barsLeft[j])!.drop) {
+          take = j;
+          break;
+        }
+      }
       const pb = barsLeft.slice(0, take);
       barsLeft = barsLeft.slice(take);
+      const pf = feelsOf(pb);
+      // An intro warms up in its first phrase; a drop inside a (long) intro
+      // means the song has properly started: dance it like a verse.
+      const introDrop = run.type === 'intro' && !firstPhrase && !!pf[0]?.drop;
       ch.phrase(out, pb, {
-        section: run.type,
+        section: introDrop ? 'verse' : run.type,
         energy: run.energy,
-        warmup: run.type === 'intro',
+        warmup: run.type === 'intro' && firstPhrase,
         cooldown,
         signature: isPeak && firstPhrase,
-        memoKey: !isPeak && (firstPhrase || intensity === 'chill') ? run.type : undefined,
+        // A drop opens with one unit of the combo, then gets to the heavy move.
+        sigUnits: intensity === 'chill' ? 1 : run.type === 'drop' || pf[0]?.drop ? 1 : 2,
+        memoKey: run.type,
+        feels: pf,
       });
       firstPhrase = false;
     }
   }
+  if (pickup > 0) out.unshift(...ch.pickup(pickup, out[0], firstType));
   return { instances: out, signature: ch.signature, half, beats: N };
 }
 

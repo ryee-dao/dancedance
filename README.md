@@ -96,7 +96,7 @@ The 97 starter songs already have beat maps, stored with the site. For other son
 2. **Listening while you play.** For a song without a beat map, the app listens while the song plays. The coach grooves gently for about 10 seconds until it locks onto the tempo, then dances. What it learns is saved on that device, so the next play is in sync from the start.
    - **Share this tab** (Chrome and Edge on a computer, offered first when **Songs without a beat map** is set to **Ask first**): the browser lets the app hear the tab's own audio. When the browser asks what to share, pick this tab and keep "Also share tab audio" on. This is as accurate as a cloud beat map.
    - **Microphone** (any browser): the app hears the song through your mic. A noisy room makes it less accurate. The sound is analysed on your device and never recorded or sent anywhere.
-3. **The first full listen in Chrome or Edge saves the beat for everyone.** If a song plays to the end with tab audio (covering at least 85% of it, in practice from the start without skipping) and the beat stayed locked, the app sends the finished beat map (about 10 KB of timings, no sound) to the relay and says "Saved this song's beat for everyone." A short GitHub job checks it and publishes it, usually within a few minutes. Microphone results are never sent. If sending fails, the app tries again next time it opens. On Safari, Firefox, phones and tablets the app explains that the song will sync perfectly once someone has played it in Chrome or Edge on a computer, and offers the microphone.
+3. **The first full listen in Chrome or Edge saves the beat for everyone.** If a song plays to the end with tab audio (covering at least 85% of it, in practice from the start without skipping) and the beat stayed locked, the app sends the finished beat map (about 10 KB of timings and per-bar loudness readings, no sound) to the relay and says "Saved this song's beat for everyone." A short GitHub job checks it and publishes it, usually within a few minutes. Microphone results are never sent. If sending fails, the app tries again next time it opens. On Safari, Firefox, phones and tablets the app explains that the song will sync perfectly once someone has played it in Chrome or Edge on a computer, and offers the microphone.
 4. **The helper app** (optional, Mac or Windows): downloads the song on your own computer, whose home connection usually isn't blocked, and finds the beat before the song starts. That map is shared for everyone too. See [Helper app](#helper-app-for-computers).
 5. **The Android TV app** downloads the song on the projector and finds the beat there. See [Android TV app](#android-tv-app). (These maps stay on the TV.)
 6. **The owner's Mac** can make all pending beat maps in one go with `npm run beatmaps:local`. See [Making beat maps on your own computer](#making-beat-maps-on-your-own-computer).
@@ -228,7 +228,7 @@ With the signing key set up, the update installs over the old version and keeps 
 
 ### At a glance: things only the owner can do
 
-- [ ] **Redeploy the relay** (`npx wrangler deploy` in `cloudflare/add-song-worker`). On 2026-11-11 the live relay's `/health` did not yet report `mapDailyLimit`, which the current code does, so it looks older than the code and may not accept shared beat maps (`POST /map`). After deploying, check `https://dancedance-add-song.ryee.workers.dev/health?probe=1`.
+- [ ] **Redeploy the relay** (`npx wrangler deploy` in `cloudflare/add-song-worker`). On 2026-11-11 the live relay's `/health` did not yet report `mapDailyLimit`, which the current code does, so it looks older than the code and may not accept shared beat maps (`POST /map`). The current code also accepts the per-bar readings shared maps now carry (an older relay refuses them; the app then shares the map without them). After deploying, check `https://dancedance-add-song.ryee.workers.dev/health?probe=1`.
 - [ ] **Publish the first helper release** (tag `helper-v0.1.0`). Until then the helper download links don't work.
 - [ ] **Keep the repository settings and variables below in place**, especially `ADD_SONG_URL`.
 - [ ] **Run `npm run beatmaps:local -- --push`** on your Mac now and then, to turn pending songs into proper beat maps while GitHub's runners are blocked.
@@ -458,11 +458,21 @@ The coach picks from **658 base moves** in nine families (Latin, disco, funk, hi
 
 | Level | What changes |
 | --- | --- |
-| **Chill** | Easiest moves only, each repeated for longer, no jumps, almost no variations. |
-| **Cardio** | Easy and medium moves, shorter repeats, some variations and flourishes. |
-| **Sweaty** | All moves, more high-impact ones, the most variations. |
+| **Chill** | Easiest moves only, each held 4–8 bars, no jumps, almost no variations. |
+| **Cardio** | Easy and medium moves, held 2–8 bars (about 4 on average), some variations and flourishes. |
+| **Sweaty** | All moves, more high-impact ones, a few more moves per section, the most variations. |
 
 Each move repeats long enough to pick up, and every chorus opens with the song's signature combo.
+
+### Following the music
+
+Beat maps made since analyser 1.2.0 also say, for every bar, how loud it is, how much bass it has and how much the groove changes from the bars before, and where the drops are (a quiet stretch or build suddenly giving way to heavy bass). The routine uses this:
+
+- **The vibe.** Loud, bassy bars and drops lean toward vigorous moves (jumps, big arms, headbangs, within what the level allows; Chill never jumps); soft bars lean toward gentle ones. It's a weighting, not a rule.
+- **When moves change.** Moves change on the music's phrase grid (every 2, 4 or 8 bars from the start of a section, never mid-phrase). A steady, loud passage such as a drop or a big chorus holds one move for 4–8 bars, switching to a variation of it half-way; a passage whose beat keeps changing gets shorter holds. A drop always starts a new move. It's seeded and weighted, so holds vary.
+- **Recurring moves.** Each kind of section (verse, chorus, ...) keeps a small set of moves for its soft, medium and heavy passages and comes back to them, sometimes as a variation, instead of a stream of new ones.
+
+Older maps without these readings, and songs still being learned by listening, use the sections' energy instead.
 
 ### Song styles
 

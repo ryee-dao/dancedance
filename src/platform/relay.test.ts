@@ -124,6 +124,19 @@ describe('relay POST /map client', () => {
     expect(await relayShareMap('https://r.example', '{}', null, fake(404, { ok: false, error: 'bad-request' }))).toMatchObject({ retry: false });
     expect(await relayShareMap('https://r.example', '{}', null, fake(429, { ok: false, error: 'daily-limit' }))).toEqual({ ok: false, code: 'daily-limit', retry: true });
     expect(await relayShareMap('https://r.example', '{}', null, fake(401, { ok: false, error: 'passphrase' }))).toMatchObject({ retry: true });
+    // An older relay that doesn't know per-bar readings: sent again without them, once.
+    let n = 0;
+    const older: typeof ok = Object.assign(async (url: string, init: RequestInit) => {
+      older.calls.push({ url, init });
+      n++;
+      const hasBars = String(init.body).includes('"bars"');
+      return new Response(JSON.stringify(hasBars ? { ok: false, error: 'bad-map', detail: 'extra-field' } : { ok: true }), { status: hasBars ? 400 : 200 });
+    }, { calls: [] as { url: string; init: RequestInit }[] });
+    const withBars = JSON.stringify({ v: 1, bars: { energy: '1', bass: '1', change: '1', drops: [] } });
+    expect(await relayShareMap('https://r.example', withBars, null, older)).toEqual({ ok: true });
+    expect(n).toBe(2);
+    expect(JSON.parse(String(older.calls[1].init.body))).toEqual({ v: 1 });
+    expect(await relayShareMap('https://r.example', '{"v":1,"x":1}', null, fake(400, { ok: false, error: 'bad-map', detail: 'extra-field' }))).toEqual({ ok: false, code: 'bad-map', retry: false });
     const down = async () => Promise.reject(new TypeError('offline'));
     expect(await relayShareMap('https://r.example', '{}', null, down)).toEqual({ ok: false, code: 'network', retry: true });
   });

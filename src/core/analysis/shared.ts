@@ -13,7 +13,7 @@ import { BEATMAP_VERSION, SECTION_TYPES, validateBeatMap, type BeatMap } from '.
 /** Sources a player may contribute: 'tab' (heard via tab audio) and 'device' (analysed from a local download). */
 export const SHARED_SOURCES = ['tab', 'device'] as const;
 export type SharedSource = (typeof SHARED_SOURCES)[number];
-/** Request size limit of the relay's POST /map (bytes). Real maps are 5-15 KB. */
+/** Request size limit of the relay's POST /map (bytes). Real maps are 5-15 KB (bar readings add ~10 %). */
 export const SHARED_MAP_MAX_BYTES = 40_000;
 export const SHARED_MIN_DURATION = 30;
 export const SHARED_MAX_DURATION = 900;
@@ -27,8 +27,9 @@ export const SHARED_INTERVAL_TOLERANCE = 0.05;
 export const SHARED_MIN_SPAN = 0.6;
 const VIDEO_ID_RE = /^[A-Za-z0-9_-]{11}$/;
 const VERSION_RE = /^[0-9A-Za-z.+-]{1,32}$/;
-const TOP_KEYS = new Set(['v', 'analyzerVersion', 'videoId', 'duration', 'bpm', 'beats', 'downbeats', 'sections', 'source', 'partial']);
+const TOP_KEYS = new Set(['v', 'analyzerVersion', 'videoId', 'duration', 'bpm', 'beats', 'downbeats', 'sections', 'source', 'partial', 'bars']);
 const SECTION_KEYS = new Set(['start', 'end', 'type', 'energy']);
+const BAR_KEYS = new Set(['energy', 'bass', 'change', 'drops']);
 const EPS = 0.002;
 
 export type SharedCheck = { ok: true; map: BeatMap } | { ok: false; rule: string };
@@ -87,6 +88,9 @@ export function checkSharedMap(x: unknown): SharedCheck {
       if (!isObj(sec)) return { ok: false, rule: 'sections' };
       for (const k of Object.keys(sec)) if (!SECTION_KEYS.has(k)) return { ok: false, rule: 'extra-field' };
     }
+  }
+  if (isObj(x.bars)) {
+    for (const k of Object.keys(x.bars)) if (!BAR_KEYS.has(k)) return { ok: false, rule: 'extra-field' };
   }
   let map: BeatMap;
   try {
