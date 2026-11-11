@@ -1246,6 +1246,10 @@ body {
   content: '✓ ';
   color: var(--accent-2);
 }
+/* Female / male choice under the coach cards: clear of a focused (scaled) card. */
+.build-note {
+  margin-top: 1.8rem;
+}
 .style-grid {
   /* Room for a focused card (scaled up, with its focus ring) under the heading. */
   margin-top: 1.6rem;

@@ -17,10 +17,10 @@
 
 import { findMove } from '../choreo/moves';
 import { PoseEvaluator } from './animator';
-import { HumanPainter, LOOKS } from './humanPainter';
+import { HumanPainter, humanLook } from './humanPainter';
 import { loopPlan, type LoopPlan } from './loop';
 import { BODY, J, NUM_JOINTS, createPose, createSkeleton, solveSkeleton, type Skeleton } from './skeleton';
-import { CAM, DEFAULT_COACH_STYLE, PIV_Y, type CoachStyle } from './styles';
+import { CAM, DEFAULT_COACH_BUILD, DEFAULT_COACH_STYLE, PIV_Y, type CoachBuild, type CoachStyle } from './styles';
 
 export const COLORS = {
   bg0: '#0f0d17',
@@ -87,11 +87,32 @@ export function fitText(
   return { size: s, text: lo > 0 ? text.slice(0, lo).trimEnd() + '…' : '…' };
 }
 
-const W_UPPER = 0.06;
-const W_FORE = 0.054;
-const W_THIGH = 0.08;
-const W_SHIN = 0.066;
 const W_NECK = 0.055;
+
+/**
+ * Classic build per version. The female one is the original figure (pinched
+ * waist, short shorts, headband with trailing tails); the male one is broader
+ * across the shoulders, straighter, with thicker limbs, long shorts, a short
+ * flat-top crop under a sweatband and a jersey stripe.
+ */
+interface ClassicBuild {
+  upper: number;
+  fore: number;
+  thigh: number;
+  shin: number;
+  /** Extra shoulder width past the shoulder joints (units). */
+  shoulderOut: number;
+  /** Waist half-width as a fraction of the shoulder line (smaller = more pinched). */
+  waist: number;
+  capR: number;
+  /** How far the shorts reach down the thigh (0..1). */
+  shorts: number;
+  male: boolean;
+}
+const CLASSIC: Record<CoachBuild, ClassicBuild> = {
+  female: { upper: 0.06, fore: 0.054, thigh: 0.08, shin: 0.066, shoulderOut: 0, waist: 0.36, capR: 0.045, shorts: 0.3, male: false },
+  male: { upper: 0.07, fore: 0.062, thigh: 0.086, shin: 0.071, shoulderOut: 0.03, waist: 0.47, capR: 0.054, shorts: 0.62, male: true },
+};
 const W_FOOT = 0.054;
 const OUTLINE = 0.014;
 
@@ -110,6 +131,14 @@ export interface FigureOptions {
 export class FigurePainter {
   /** Look of the figure; 'classic' is the original cartoon. */
   style: CoachStyle = DEFAULT_COACH_STYLE;
+  /** Female or male version of the look. */
+  build: CoachBuild = DEFAULT_COACH_BUILD;
+  /**
+   * Recolour the top (two-player identity): the classic torso, or the human
+   * looks' shirt (+ hood). null = the look's own colours.
+   */
+  tint: { top: string; hood: string } | null = null;
+  private tintedLook: { key: string; look: ReturnType<typeof humanLook> } | null = null;
   private human: HumanPainter | null = null;
   private readonly px = new Float64Array(NUM_JOINTS * 2);
   private readonly ps = new Float64Array(NUM_JOINTS);
@@ -149,7 +178,7 @@ export class FigurePainter {
     this.sk3 = sk.p;
     const mini = !!o.mini;
     if (this.style !== 'classic') {
-      const look = LOOKS[this.style];
+      const look = this.lookNow();
       if (!this.human) this.human = new HumanPainter(look);
       else if (this.human.look !== look) this.human.setLook(look);
       ctx.save();
@@ -218,6 +247,55 @@ export class FigurePainter {
     ctx.restore();
   }
 
+  /**
+   * Redraw one forearm + hand over whatever was drawn since this figure's
+   * last draw() (same projection): a partner's arm hooked through yours
+   * (elbow swing) passes in front of your upper arm although the partner's
+   * body is behind you. side: 1 = right, -1 = left.
+   */
+  redrawForearm(ctx: CanvasRenderingContext2D, sk: Skeleton, side: 1 | -1, scale: number, alpha = 1): void {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (this.style !== 'classic' && this.human) {
+      this.human.redrawForearm(ctx, sk, side);
+      ctx.restore();
+      return;
+    }
+    const ol = OUTLINE * scale;
+    const el = side === 1 ? J.EL_R : J.EL_L, ha = side === 1 ? J.HA_R : J.HA_L;
+    const col = side === 1 ? COLORS.right : COLORS.left, light = side === 1 ? COLORS.rightLight : COLORS.leftLight;
+    const px = this.px, w = CLASSIC[this.build].fore * ((this.ps[el] + this.ps[ha]) * 0.5) * scale;
+    for (const pass of [0, 1]) {
+      ctx.strokeStyle = pass === 0 ? COLORS.outline : col;
+      ctx.lineWidth = w + (pass === 0 ? ol * 2 : 0);
+      ctx.beginPath();
+      ctx.moveTo(px[el * 2], px[el * 2 + 1]);
+      ctx.lineTo(px[ha * 2], px[ha * 2 + 1]);
+      ctx.stroke();
+    }
+    const open = side === 1 ? sk.handR : sk.handL;
+    const r = BODY.handR * this.ps[ha] * scale * (0.92 + 0.22 * Math.max(0, Math.min(1, open)));
+    ctx.fillStyle = light;
+    ctx.strokeStyle = COLORS.outline;
+    ctx.lineWidth = ol * 1.6;
+    ctx.beginPath();
+    ctx.arc(px[ha * 2], px[ha * 2 + 1], r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /** The human look for the current style / build / tint (cached, so the per-frame path allocates nothing). */
+  private lookNow(): ReturnType<typeof humanLook> {
+    const base = humanLook(this.style as 'human' | 'sticker', this.build);
+    if (!this.tint) return base;
+    const key = `${this.style}|${this.build}|${this.tint.top}|${this.tint.hood}`;
+    if (this.tintedLook?.key !== key) this.tintedLook = { key, look: { ...base, top: this.tint.top, ...(base.hood ? { hood: this.tint.hood } : {}) } };
+    return this.tintedLook.look;
+  }
+
   private shadow(ctx: CanvasRenderingContext2D, sk: Skeleton, cx: number, floorY: number, scale: number): void {
     const air = sk.air;
     const x = cx + ((sk.p[J.AN_L * 3] + sk.p[J.AN_R * 3]) * 0.5) * scale;
@@ -261,7 +339,8 @@ export class FigurePainter {
   }
 
   private arm(ctx: CanvasRenderingContext2D, sh: number, el: number, ha: number, color: string, light: string, open: number, scale: number, ol: number, form = 0): void {
-    this.seg2(ctx, sh, el, ha, W_UPPER, W_FORE, color, ol, scale);
+    const B = CLASSIC[this.build];
+    this.seg2(ctx, sh, el, ha, B.upper, B.fore, color, ol, scale);
     // Hand: a round mitt, bigger when open.
     const px = this.px;
     if (form > 0) open = 0;
@@ -304,7 +383,8 @@ export class FigurePainter {
   }
 
   private leg(ctx: CanvasRenderingContext2D, hip: number, kn: number, an: number, toe: number, color: string, dark: string, scale: number, ol: number): void {
-    this.seg2(ctx, hip, kn, an, W_THIGH, W_SHIN, color, ol, scale);
+    const B = CLASSIC[this.build];
+    this.seg2(ctx, hip, kn, an, B.thigh, B.shin, color, ol, scale);
     // Shoe: seen from the front, perpendicular to the shin, toes outward.
     const px = this.px;
     const s = this.ps[an] * scale;
@@ -375,10 +455,11 @@ export class FigurePainter {
     // Shorts over the thigh tops.
     const hl = J.HIP_L, hr = J.HIP_R;
     const kl = J.KN_L, kr = J.KN_R;
-    const k = 0.3;
+    const B = CLASSIC[this.build];
+    const k = B.shorts;
     const lx = px[hl * 2] + (px[kl * 2] - px[hl * 2]) * k, ly = px[hl * 2 + 1] + (px[kl * 2 + 1] - px[hl * 2 + 1]) * k;
     const rx = px[hr * 2] + (px[kr * 2] - px[hr * 2]) * k, ry = px[hr * 2 + 1] + (px[kr * 2 + 1] - px[hr * 2 + 1]) * k;
-    const sw = (W_THIGH + 0.008) * ps[hl] * scale;
+    const sw = (B.thigh + (B.male ? 0.02 : 0.008)) * ps[hl] * scale;
     ctx.strokeStyle = COLORS.outline;
     ctx.lineWidth = sw + ol * 2;
     ctx.beginPath();
@@ -409,13 +490,21 @@ export class FigurePainter {
     const W = this.wide;
     this.widen(J.SH_L, J.SH_R, 0, 0.062 * scale);
     this.widen(hl, hr, 4, 0.05 * scale);
-    const slx = W[0], sly = W[1], srx = W[2], sry = W[3];
+    let slx = W[0], sly = W[1], srx = W[2], sry = W[3];
     const hlx = W[4], hly = W[5], hrx = W[6], hry = W[7];
     // Waist half-width follows the shoulder line direction.
     const dx = srx - slx, dy = sry - sly;
     const len = Math.sqrt(dx * dx + dy * dy) || 1;
     const ux = dx / len, uy = dy / len;
-    const ww = len * 0.36;
+    const ww = len * B.waist;
+    if (B.shoulderOut > 0) {
+      // Broader shoulders: the torso reaches past the shoulder joints (scaled with the visible width, so a turned body stays narrow).
+      const o = B.shoulderOut * scale * Math.min(1, len / (0.25 * scale));
+      slx -= ux * o;
+      sly -= uy * o;
+      srx += ux * o;
+      sry += uy * o;
+    }
     ctx.beginPath();
     ctx.moveTo(slx - ux * 0.01 * scale, sly - 0.012 * scale);
     ctx.lineTo(srx + ux * 0.01 * scale, sry - 0.012 * scale);
@@ -423,13 +512,30 @@ export class FigurePainter {
     ctx.lineTo(hlx - ux * 0.012 * scale, hly - 0.01 * scale);
     ctx.quadraticCurveTo(wx - ux * ww * 1.05, wy - uy * ww, slx - ux * 0.01 * scale, sly - 0.012 * scale);
     ctx.closePath();
-    ctx.fillStyle = COLORS.body;
+    ctx.fillStyle = this.tint ? this.tint.top : COLORS.body;
     ctx.strokeStyle = COLORS.outline;
     ctx.lineWidth = ol * 2;
     ctx.stroke();
     ctx.fill();
+    if (B.male) {
+      // Jersey stripe across the chest, clipped to the torso.
+      ctx.save();
+      ctx.clip();
+      const cy = 0.42;
+      const ax = slx + (wx - ux * ww - slx) * cy, ay = sly + (wy - uy * ww - sly) * cy;
+      const bx = srx + (wx + ux * ww - srx) * cy, by = sry + (wy + uy * ww - sry) * cy;
+      ctx.strokeStyle = COLORS.band;
+      ctx.lineCap = 'butt';
+      ctx.lineWidth = 0.04 * scale;
+      ctx.beginPath();
+      ctx.moveTo(ax - ux * scale, ay - uy * scale);
+      ctx.lineTo(bx + ux * scale, by + uy * scale);
+      ctx.stroke();
+      ctx.restore();
+      ctx.lineCap = 'round';
+    }
     // Shoulder caps in the side colours (the arm colour starts at the shoulder).
-    const capR = 0.045 * scale;
+    const capR = B.capR * scale;
     ctx.lineWidth = ol * 1.4;
     ctx.fillStyle = COLORS.left;
     ctx.beginPath();
@@ -486,8 +592,9 @@ export class FigurePainter {
     ctx.save();
     ctx.translate(hx, hy);
     ctx.rotate(roll);
-    // Headband tails (behind the face side), swinging with head motion.
-    if (!mini) {
+    const male = CLASSIC[this.build].male;
+    // Headband tails (behind the face side), swinging with head motion (the female version).
+    if (!mini && !male) {
       if (!Number.isNaN(this.lastT) && t > this.lastT && t - this.lastT < 0.2) {
         const dt = t - this.lastT;
         const vx = (hx - this.lastHx) / scale / dt;
@@ -518,6 +625,12 @@ export class FigurePainter {
     // Band across the forehead.
     const fo = Math.max(-0.5, Math.min(0.5, fx * 9)) * r;
     const lift = Math.max(-0.4, Math.min(0.4, fy * 6)) * r;
+    if (male) {
+      this.maleHair(ctx, r, ol, back ? 0 : fo, back);
+      ctx.restore();
+      if (!back && !mini) this.face(ctx, hx, hy, roll, r, fo, lift, fz);
+      return;
+    }
     ctx.strokeStyle = COLORS.band;
     ctx.lineWidth = r * 0.34;
     ctx.lineCap = 'butt';
@@ -542,24 +655,84 @@ export class FigurePainter {
       ctx.ellipse(0, 0, r - r * 0.17, r - r * 0.17, 0, Math.PI * 1.06, Math.PI * 1.94);
       ctx.stroke();
       ctx.lineCap = 'round';
-    } else if (!mini) {
-      // Eyes + smile, shifted toward where the face points; closer together side-on.
-      const ex = fo * 0.8, ey = r * 0.12 + lift * 0.5;
-      const sp = r * 0.32 * Math.max(0.3, Math.min(1, fz * 1.15));
-      ctx.fillStyle = COLORS.outline;
+    }
+    ctx.restore();
+    if (!back && !mini) this.face(ctx, hx, hy, roll, r, fo, lift, fz);
+  }
+
+  /** Eyes + smile, shifted toward where the face points; closer together side-on. */
+  private face(ctx: CanvasRenderingContext2D, hx: number, hy: number, roll: number, r: number, fo: number, lift: number, fz: number): void {
+    ctx.save();
+    ctx.translate(hx, hy);
+    ctx.rotate(roll);
+    const ex = fo * 0.8, ey = r * 0.12 + lift * 0.5;
+    const sp = r * 0.32 * Math.max(0.3, Math.min(1, fz * 1.15));
+    ctx.fillStyle = COLORS.outline;
+    ctx.beginPath();
+    ctx.ellipse(ex - sp, ey, r * 0.1, r * 0.15, 0, 0, Math.PI * 2);
+    ctx.ellipse(ex + sp, ey, r * 0.1, r * 0.15, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = COLORS.outline;
+    ctx.lineWidth = r * 0.09;
+    ctx.beginPath();
+    ctx.arc(ex, ey + r * 0.22, r * 0.26, Math.PI * 0.2, Math.PI * 0.8);
+    ctx.stroke();
+    if (CLASSIC[this.build].male) {
+      // Straight, heavier brows.
+      ctx.lineWidth = r * 0.1;
+      ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.ellipse(ex - sp, ey, r * 0.1, r * 0.15, 0, 0, Math.PI * 2);
-      ctx.ellipse(ex + sp, ey, r * 0.1, r * 0.15, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = COLORS.outline;
-      ctx.lineWidth = r * 0.09;
-      ctx.beginPath();
-      ctx.arc(ex, ey + r * 0.22, r * 0.26, Math.PI * 0.2, Math.PI * 0.8);
+      ctx.moveTo(ex - sp - r * 0.14, ey - r * 0.27);
+      ctx.lineTo(ex - sp + r * 0.12, ey - r * 0.3);
+      ctx.moveTo(ex + sp - r * 0.12, ey - r * 0.3);
+      ctx.lineTo(ex + sp + r * 0.14, ey - r * 0.27);
       ctx.stroke();
     }
     ctx.restore();
   }
+
+  /**
+   * The male classic's hair (local head frame, y down): a short flat-top crop
+   * standing a little above the head, under a narrow sweatband (no tails).
+   * Back view: the crop covers the back of the head, the band goes round.
+   */
+  private maleHair(ctx: CanvasRenderingContext2D, r: number, ol: number, fo: number, back: boolean): void {
+    const f = fo * 0.35;
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.99, back ? r * 0.2 : -r * 0.1);
+    ctx.lineTo(-r * 0.97, -r * 0.82);
+    // Spiky crop: a few short tufts along the crown.
+    const tufts = MALE_TUFTS;
+    for (let i = 0; i < tufts.length; i += 2) ctx.lineTo(tufts[i] * r + f * (1 - Math.abs(tufts[i])), tufts[i + 1] * r);
+    ctx.lineTo(r * 0.97, -r * 0.82);
+    ctx.lineTo(r * 0.99, back ? r * 0.2 : -r * 0.1);
+    if (back) ctx.quadraticCurveTo(0, r * 0.45, -r * 0.99, r * 0.2);
+    else {
+      // Hairline across the forehead.
+      ctx.quadraticCurveTo(r * 0.5 + f, -r * 0.62, f, -r * 0.6);
+      ctx.quadraticCurveTo(-r * 0.5 + f, -r * 0.62, -r * 0.99, -r * 0.1);
+    }
+    ctx.closePath();
+    ctx.fillStyle = CLASSIC_HAIR;
+    ctx.strokeStyle = COLORS.outline;
+    ctx.lineWidth = ol * 2;
+    ctx.stroke();
+    ctx.fill();
+    // Sweatband over the hairline.
+    ctx.strokeStyle = COLORS.band;
+    ctx.lineWidth = r * 0.2;
+    ctx.lineCap = 'butt';
+    ctx.beginPath();
+    ctx.ellipse(f * 0.5, -r * 0.08, r * 0.97, r * 0.6, 0, Math.PI * 1.04, Math.PI * 1.96);
+    ctx.stroke();
+    ctx.lineCap = 'round';
+  }
 }
+
+/** Hair of the male classic coach (mid-tone so it reads on the dark stage). */
+const CLASSIC_HAIR = '#b06a3b';
+/** Crown outline of the male classic's spiky crop (x, y pairs × head radius, left to right). */
+const MALE_TUFTS = [-0.8, -1.22, -0.55, -1.02, -0.3, -1.34, -0.05, -1.08, 0.22, -1.36, 0.45, -1.06, 0.72, -1.26, 0.86, -0.98];
 
 // ---------------------------------------------------------------------------
 // Stage
@@ -615,11 +788,12 @@ export class StageRenderer2D {
   private energy = 0.4;
   private fontCache = new Map<string, { size: number; text: string }>();
 
-  constructor(readonly canvas: HTMLCanvasElement, style: CoachStyle = DEFAULT_COACH_STYLE) {
+  constructor(readonly canvas: HTMLCanvasElement, style: CoachStyle = DEFAULT_COACH_STYLE, build: CoachBuild = DEFAULT_COACH_BUILD) {
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw new Error('Canvas 2D unavailable');
     this.ctx = ctx;
     this.style = style;
+    this.build = build;
   }
 
   /** The coach's look (also used by the next / then thumbnails). */
@@ -630,6 +804,16 @@ export class StageRenderer2D {
     this.painter.style = s;
     this.nextPainter.style = s;
     this.afterPainter.style = s;
+  }
+
+  /** Female or male version of the look (also the thumbnails). */
+  get build(): CoachBuild {
+    return this.painter.build;
+  }
+  set build(b: CoachBuild) {
+    this.painter.build = b;
+    this.nextPainter.build = b;
+    this.afterPainter.build = b;
   }
 
   /**
@@ -938,6 +1122,8 @@ export interface CoachPreviewOptions {
   bpm?: number;
   /** Fill the canvas with the stage colours first (default true). */
   background?: boolean;
+  /** Female or male version (default female). */
+  build?: CoachBuild;
 }
 
 const PREVIEW_MOVE = 'step-clap';
@@ -978,6 +1164,7 @@ export function drawCoachPreview(canvas: HTMLCanvasElement, style: CoachStyle, o
     preview.painters.set(canvas, painter);
   }
   painter.style = style;
+  painter.build = opts.build ?? DEFAULT_COACH_BUILD;
   const floorY = h * 0.93;
   const scale = Math.min(h * 0.8, w * 1.2);
   if (opts.background !== false) {

@@ -83,7 +83,7 @@ const wiperA: PoseSpec = { lean: 3, head: -4, r: at(1, 0.25, 0.95, 0.14, [0.6, -
 const dandiyaHigh: PoseSpec = { twist: -14, turn: 14, r: at(1, 0.19, 0.9, 0.12, OUT_DN), l: at(-1, 0.14, 0.87, 0.13, [0.3, -1, -0.2]), ...FIST };
 const dandiyaOpen: PoseSpec = { twist: 0, turn: 0, r: [60, 10, 66, 20], l: [60, 10, 66, 20], ...FIST };
 const dandiyaLow: PoseSpec = { twist: 14, turn: -14, r: at(1, -0.13, 0.6, 0.15, [0.3, -1, -0.2]), l: at(-1, -0.17, 0.6, 0.12, OUT_DN), ...FIST };
-const kiteUp: PoseSpec = { twist: 16, turn: 18, nod: -8, r: at(1, 0.27, 1.03, 0.1, OUT_DN), l: at(-1, 0.08, 0.95, 0.14, [0.3, -1, -0.2]), ...FIST };
+const kiteUp: PoseSpec = { twist: 16, turn: 18, nod: -8, r: at(1, 0.27, 1.03, 0.1, OUT_DN), l: at(-1, 0.02, 0.84, 0.2, [0.3, -1, -0.2]), ...FIST };
 const kiteDown: PoseSpec = { twist: -6, turn: 6, nod: 2, r: at(1, 0.0, 0.66, 0.18, DOWN), l: at(-1, -0.16, 0.6, 0.14, DOWN), ...FIST };
 
 export const patterns: PatternSet = {

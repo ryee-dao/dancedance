@@ -1,11 +1,11 @@
 {
- "catalogueHash": "ed340fe",
+ "catalogueHash": "58a6a8f3",
  "threshold": 0.085,
  "stats": {
-  "baseMoves": 658,
-  "candidates": 6167,
-  "counted": 1116,
-  "ornaments": 908,
+  "baseMoves": 657,
+  "candidates": 6153,
+  "counted": 1114,
+  "ornaments": 904,
   "byType": {
    "alt": {
     "candidates": 38,
@@ -20,22 +20,22 @@
     "accepted": 40
    },
    "half": {
-    "candidates": 106,
+    "candidates": 105,
     "invalid": 0,
-    "notUnique": 48,
+    "notUnique": 47,
     "accepted": 58
    },
    "low": {
-    "candidates": 204,
+    "candidates": 203,
     "invalid": 0,
-    "notUnique": 197,
+    "notUnique": 196,
     "accepted": 7
    },
    "combo": {
-    "candidates": 4821,
-    "invalid": 40,
-    "notUnique": 3789,
-    "accepted": 992
+    "candidates": 4813,
+    "invalid": 38,
+    "notUnique": 3785,
+    "accepted": 990
    },
    "hips": {
     "candidates": 140,
@@ -44,28 +44,28 @@
     "accepted": 140
    },
    "clap4": {
-    "candidates": 182,
+    "candidates": 181,
     "invalid": 3,
     "notUnique": 0,
-    "accepted": 179
+    "accepted": 178
    },
    "hit4": {
-    "candidates": 182,
+    "candidates": 181,
     "invalid": 8,
     "notUnique": 0,
-    "accepted": 174
+    "accepted": 173
    },
    "diag": {
-    "candidates": 218,
+    "candidates": 217,
     "invalid": 9,
     "notUnique": 0,
-    "accepted": 209
+    "accepted": 208
    },
    "spin": {
-    "candidates": 206,
+    "candidates": 205,
     "invalid": 0,
     "notUnique": 0,
-    "accepted": 206
+    "accepted": 205
    }
   }
  },
@@ -373,6 +373,7 @@
   ["chaffa~combo~chaffa+cheekTap", "chaffa", "combo", "chaffa", "cheekTap"],
   ["chaffa~combo~chaffa+cuteClasp", "chaffa", "combo", "chaffa", "cuteClasp"],
   ["chaffa~combo~chaffa+diagonal", "chaffa", "combo", "chaffa", "diagonal"],
+  ["chaffa~combo~chaffa+kitePull", "chaffa", "combo", "chaffa", "kitePull"],
   ["chaffa~combo~chaffa+lArms", "chaffa", "combo", "chaffa", "lArms"],
   ["chaffa~combo~chaffa+marchArms", "chaffa", "combo", "chaffa", "marchArms"],
   ["chaffa~combo~chaffa+matka", "chaffa", "combo", "chaffa", "matka"],
@@ -911,7 +912,6 @@
   ["hustle-tap~clap4", "hustle-tap", "clap4"],
   ["hustle-tap~combo~backTap+clap", "hustle-tap", "combo", "backTap", "clap"],
   ["hustle-tap~combo~backTap+discoPoint", "hustle-tap", "combo", "backTap", "discoPoint"],
-  ["hustle-tap~combo~backTap+rollHigh", "hustle-tap", "combo", "backTap", "rollHigh"],
   ["hustle-tap~combo~backTap+swim", "hustle-tap", "combo", "backTap", "swim"],
   ["hustle-tap~diag", "hustle-tap", "diag"],
   ["hustle-tap~hips", "hustle-tap", "hips"],
@@ -1475,10 +1475,6 @@
   ["rock-step-clap~diag", "rock-step-clap", "diag"],
   ["rock-step-clap~hit4", "rock-step-clap", "hit4"],
   ["rock-step-clap~spin", "rock-step-clap", "spin"],
-  ["roll-high~clap4", "roll-high", "clap4"],
-  ["roll-high~diag", "roll-high", "diag"],
-  ["roll-high~hit4", "roll-high", "hit4"],
-  ["roll-high~spin", "roll-high", "spin"],
   ["roll-low~clap4", "roll-low", "clap4"],
   ["roll-low~diag", "roll-low", "diag"],
   ["roll-low~hips", "roll-low", "hips"],
@@ -1827,7 +1823,6 @@
   ["step-touch~combo~stepTouch+pullDown", "step-touch", "combo", "stepTouch", "pullDown"],
   ["step-touch~combo~stepTouch+rkHammer", "step-touch", "combo", "stepTouch", "rkHammer"],
   ["step-touch~combo~stepTouch+robot", "step-touch", "combo", "stepTouch", "robot"],
-  ["step-touch~combo~stepTouch+rollHigh", "step-touch", "combo", "stepTouch", "rollHigh"],
   ["step-touch~combo~stepTouch+sambaArms", "step-touch", "combo", "stepTouch", "sambaArms"],
   ["step-touch~combo~stepTouch+sambaCarnival", "step-touch", "combo", "stepTouch", "sambaCarnival"],
   ["step-touch~combo~stepTouch+windmill", "step-touch", "combo", "stepTouch", "windmill"],
@@ -2072,7 +2067,6 @@
   ["vine~combo~vine+pullDown", "vine", "combo", "vine", "pullDown"],
   ["vine~combo~vine+pumpOpen", "vine", "combo", "vine", "pumpOpen"],
   ["vine~combo~vine+rkLighter", "vine", "combo", "vine", "rkLighter"],
-  ["vine~combo~vine+rollHigh", "vine", "combo", "vine", "rollHigh"],
   ["vine~combo~vine+shoulderShimmy", "vine", "combo", "vine", "shoulderShimmy"],
   ["vine~combo~vine+steer", "vine", "combo", "vine", "steer"],
   ["vine~combo~vine+swim", "vine", "combo", "vine", "swim"],

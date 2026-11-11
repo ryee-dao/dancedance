@@ -34,6 +34,7 @@ export function startApp(root: HTMLElement): void {
         getIntensity: () => store.settings().intensity,
         isTV,
         getStyle: () => store.settings().coachStyle,
+        getBuild: () => store.settings().coachBuild,
         getRoutineMode: () => store.settings().routineMode,
         getPlayCount: (id) => store.playCount(id),
         getGenre: (id) => songGenre(id),

@@ -27,10 +27,10 @@ const wingsIn: PoseSpec = { r: at(1, 0.15, 0.78, 0.09, [0.3, -1, -0.3]), l: at(-
 const snapA: PoseSpec = { r: [24, 30, 70, 70], l: [24, 30, 70, 70], handR: 0, handL: 0, nod: 4 };
 const snapB: PoseSpec = { r: [20, 25, 58, 70], l: [20, 25, 58, 70], handR: 1, handL: 1 };
 // Stiff 90-degree arms that hinge in ticks while the chest and head turn like a machine.
-const robotA: PoseSpec = { turn: 18, twist: 12, r: [12, 0, 92, 90], l: [12, 0, 150, 90], handR: 1, handL: 1 };
-const robotA2: PoseSpec = { turn: 18, twist: 12, r: [40, 0, 98, 90], l: [12, 0, 150, 90], handR: 1, handL: 1 };
-const robotB: PoseSpec = { turn: -18, twist: -12, r: [12, 0, 150, 90], l: [12, 0, 92, 90], handR: 1, handL: 1 };
-const robotB2: PoseSpec = { turn: -18, twist: -12, r: [12, 0, 150, 90], l: [40, 0, 98, 90], handR: 1, handL: 1 };
+const robotA: PoseSpec = { turn: 18, twist: 12, r: [16, 0, 92, 30], l: [16, 0, 150, 30], handR: 1, handL: 1 };
+const robotA2: PoseSpec = { turn: 18, twist: 12, r: [44, 0, 98, 30], l: [16, 0, 150, 30], handR: 1, handL: 1 };
+const robotB: PoseSpec = { turn: -18, twist: -12, r: [16, 0, 150, 30], l: [16, 0, 92, 30], handR: 1, handL: 1 };
+const robotB2: PoseSpec = { turn: -18, twist: -12, r: [16, 0, 150, 30], l: [44, 0, 98, 30], handR: 1, handL: 1 };
 
 export const patterns: PatternSet = {
   foot: {
@@ -121,8 +121,8 @@ const samPoint: PoseSpec = {
 };
 const samBack: PoseSpec = { y: -0.02, rf: [0.09, 0, 0], lf: [-0.09, 0, 0], r: H(1, 0.17, 0.83, 0.06, ELB_DOWN), l: ARM.hip, handR: 0, handL: 0 };
 
-const twirlA: PoseSpec = { y: -0.03, r: H(1, 0.14, 0.88, 0.15, ELB_DOWN), l: H(-1, 0.0, 0.8, 0.18, ELB_DOWN), handR: 0.6, handL: 0.6, turn: 10, lean: 3 };
-const twirlB: PoseSpec = { y: -0.04, r: H(1, 0.07, 0.8, 0.18, ELB_DOWN), l: H(-1, -0.06, 0.9, 0.15, ELB_DOWN), handR: 0.6, handL: 0.6, turn: 10, lean: 3 };
+const twirlA: PoseSpec = { y: -0.03, r: H(1, 0.22, 0.8, 0.15, ELB_DOWN), l: H(-1, -0.12, 0.72, 0.18, ELB_DOWN), handR: 0.6, handL: 0.6, turn: 10, lean: 3 };
+const twirlB: PoseSpec = { y: -0.04, r: H(1, 0.16, 0.72, 0.18, ELB_DOWN), l: H(-1, -0.14, 0.76, 0.14, ELB_DOWN), handR: 0.6, handL: 0.6, turn: 10, lean: 3 };
 const twirlOpen: PoseSpec = { ...wide(-0.08), ...both(0.33, 0.63, 0.08, [0.3, -1, -0.3]), handR: 1, handL: 1, shR: 0.4, shL: 0.4, nod: -4 };
 
 const scooKnee: PoseSpec = { y: -0.01, rf: [0.08, 0.2, 0.14], bend: 2, r: H(1, 0.22, 0.58, 0.04, ELB_OUT), l: H(-1, 0.16, 0.8, 0.22, ELB_DOWN), handR: 0, handL: 0 };
@@ -132,7 +132,7 @@ const scooDown: PoseSpec = { y: -0.07, rf: [0.09, 0, 0.02], r: H(1, 0.2, 0.66, 0
 const flexUp: PoseSpec = { ...wide(-0.07), r: [92, 5, 150, 20], l: [92, 5, 150, 20], handR: 0, handL: 0, shR: 0.3, shL: 0.3, nod: -5 };
 const flexCrab: PoseSpec = { ...wide(-0.13, { kneeR: 0.25, kneeL: 0.25 }), ...both(0.08, 0.6, 0.17, ELB_FLEX), handR: 0, handL: 0, shR: 1.2, shL: 1.2, bend: 6, nod: 6 };
 
-const fiveSlap: PoseSpec = { y: -0.04, x: 0.02, lean: 8, turn: 16, r: H(1, 0.32, 0.92, 0.2, ELB_OUT), l: H(-1, -0.26, 0.9, 0.27, [0.3, -1, 0.3]), handR: 1, handL: 1 };
+const fiveSlap: PoseSpec = { y: -0.04, x: 0.02, lean: 8, turn: 16, r: H(1, 0.16, 0.82, 0.2, ELB_OUT), l: H(-1, -0.14, 0.82, 0.2, [0.3, -1, 0.3]), handR: 1, handL: 1 };
 const fiveBack: PoseSpec = { y: -0.06, x: 0, lean: 0, turn: 0, ...both(0.22, 0.62, 0.16, ELB_OUT), handR: 0, handL: 0, shR: 0.4, shL: 0.4 };
 
 const dropUp: PoseSpec = { ...wide(-0.02), r: ARM.v, l: ARM.v, handR: 1, handL: 1, nod: -6 };

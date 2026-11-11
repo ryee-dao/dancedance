@@ -28,7 +28,7 @@ import { loopPlan, type LoopPlan } from '../core/coach/loop';
 import { blendPose } from '../core/coach/poses';
 import { StageRenderer2D, type SceneInfo, type StripInfo } from '../core/coach/renderer';
 import { CH, createPose, createSkeleton, solveSkeleton } from '../core/coach/skeleton';
-import { DEFAULT_COACH_STYLE, parseCoachStyle, type CoachStyle } from '../core/coach/styles';
+import { DEFAULT_COACH_BUILD, DEFAULT_COACH_STYLE, parseCoachBuild, parseCoachStyle, type CoachBuild, type CoachStyle } from '../core/coach/styles';
 import type { FrameInfo, StageRenderer } from './play';
 import { createPlayersStage, hudTopFraction, urlPlayers } from './duoStage'; // two-player mode (duo agent)
 
@@ -37,6 +37,11 @@ export interface CoachStageDeps {
   isTV: boolean;
   /** The coach's look (default 'classic'). A `?coach=<style>` URL parameter wins. */
   getStyle?: () => CoachStyle;
+  /**
+   * Which version of the look dances (default 'female'), read every frame.
+   * Two players: P1 dances it, P2 the other version. `?build=` wins.
+   */
+  getBuild?: () => CoachBuild;
   /** 'same' (default): a song always gets the same routine; 'fresh': a new one each play. */
   getRoutineMode?: () => RoutineMode;
   /** Completed plays of a song so far (mixed into the seed in 'fresh' mode). Read once per song. */
@@ -119,6 +124,10 @@ class CoachStageImpl implements CoachStage {
     return this.urlStyle ?? parseCoachStyle(this.deps.getStyle?.()) ?? DEFAULT_COACH_STYLE;
   }
 
+  private build(): CoachBuild {
+    return coachBuildOf(this.deps);
+  }
+
   mount(stage: HTMLElement): void {
     this.host = stage;
     const c = document.createElement('canvas');
@@ -127,7 +136,7 @@ class CoachStageImpl implements CoachStage {
     c.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;';
     stage.appendChild(c);
     this.canvas = c;
-    this.r = new StageRenderer2D(c, this.style());
+    this.r = new StageRenderer2D(c, this.style(), this.build());
     if (typeof ResizeObserver !== 'undefined') {
       this.ro = new ResizeObserver(() => (this.needResize = true));
       this.ro.observe(stage);
@@ -203,8 +212,10 @@ class CoachStageImpl implements CoachStage {
     }
     if (this.needResize) this.resize();
     const style = this.style();
-    if (style !== this.r.style) {
+    const build = this.build();
+    if (style !== this.r.style || build !== this.r.build) {
       this.r.style = style;
+      this.r.build = build;
       this.frozenDrawn = false;
     }
 
@@ -357,6 +368,17 @@ export function routineInfo(
 }
 
 /** `?coach=<style>` on the page URL, if valid. */
+/** The version that dances: `?build=female|male` on the page URL, else the setting. */
+export function coachBuildOf(deps: Pick<CoachStageDeps, 'getBuild'>): CoachBuild {
+  let url: CoachBuild | null = null;
+  try {
+    url = typeof location === 'undefined' ? null : parseCoachBuild(new URLSearchParams(location.search).get('build'));
+  } catch {
+    url = null;
+  }
+  return url ?? parseCoachBuild(deps.getBuild?.()) ?? DEFAULT_COACH_BUILD;
+}
+
 function urlCoachStyle(): CoachStyle | null {
   try {
     return typeof location === 'undefined' ? null : parseCoachStyle(new URLSearchParams(location.search).get('coach'));

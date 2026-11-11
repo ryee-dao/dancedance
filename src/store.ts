@@ -6,7 +6,7 @@
  * working from an in-memory copy for the rest of the session.
  */
 
-import { DEFAULT_COACH_STYLE, parseCoachStyle, type CoachStyle } from './core/coach/styles';
+import { DEFAULT_COACH_BUILD, DEFAULT_COACH_STYLE, parseCoachBuild, parseCoachStyle, type CoachBuild, type CoachStyle } from './core/coach/styles';
 
 /** Every localStorage key the app uses. Later phases should add theirs here. */
 export const STORE_KEYS = {
@@ -102,6 +102,12 @@ export interface Settings {
   liveSync: LiveSyncPref;
   /** The coach's look (Options screen). A `?coach=` URL parameter overrides it. */
   coachStyle: CoachStyle;
+  /**
+   * Which version of the look dances in single player (Options screen). Two
+   * players always get both: P1 this one, P2 the other. A `?build=` URL
+   * parameter overrides it.
+   */
+  coachBuild: CoachBuild;
   /** Routine per play (Options screen). */
   routineMode: RoutineMode;
   /** Players dancing (level picker): 2 = two-player duo stage (ui/duoStage.ts). */
@@ -113,6 +119,7 @@ export const DEFAULT_SETTINGS: Settings = {
   intensity: 'cardio',
   liveSync: 'ask',
   coachStyle: DEFAULT_COACH_STYLE,
+  coachBuild: DEFAULT_COACH_BUILD,
   routineMode: 'same',
   players: 1,
 };
@@ -129,6 +136,7 @@ function sanitizeSettings(s: Partial<Record<keyof Settings, unknown>>): Settings
   }
   if (s.liveSync === 'ask' || s.liveSync === 'mic' || s.liveSync === 'off') out.liveSync = s.liveSync;
   out.coachStyle = parseCoachStyle(s.coachStyle) ?? DEFAULT_COACH_STYLE;
+  out.coachBuild = parseCoachBuild(s.coachBuild) ?? DEFAULT_COACH_BUILD;
   if (s.routineMode === 'same' || s.routineMode === 'fresh') out.routineMode = s.routineMode;
   if (s.players === 1 || s.players === 2) out.players = s.players;
   return out;

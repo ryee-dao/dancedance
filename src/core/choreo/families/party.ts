@@ -133,8 +133,8 @@ export const moves: MoveDef[] = [
     keys: [
       [0, { y: -0.01, r: R(0.1, 0.74, 0.22, E_FRONT), l: L(0.0, 0.74, 0.24, E_FRONT), handR: 1, handL: 1 }],
       [1, { y: -0.05, bend: 6, x: -0.01, r: R(0.27, 0.46, -0.18, E_BACK), l: L(-0.32, 0.72, 0.06, E_OUT), handR: 0.5, handL: 1 }],
-      [2, { y: -0.15, x: -0.04, bend: 16, lean: -4, nod: -4, rf: [-0.02, 0.02, -0.17], lf: [-0.12, 0, 0.12], r: R(0.06, 0.34, 0.3, E_FRONT), l: L(-0.38, 0.74, 0.02, E_OUT), handR: 1, handL: 1 }],
-      [3, { y: -0.13, x: -0.04, bend: 12, lean: -4, rf: [-0.02, 0.02, -0.17], lf: [-0.12, 0, 0.12], r: R(0.06, 0.92, 0.26, E_UP), l: L(-0.38, 0.76, 0.02, E_OUT), handR: 1, handL: 1 }],
+      [2, { y: -0.15, x: -0.04, bend: 16, lean: -4, nod: -4, rf: [-0.02, 0.02, -0.17], lf: [-0.12, 0, 0.12], r: R(-0.05, 0.42, 0.3, E_X), l: L(-0.38, 0.74, 0.02, E_OUT), handR: 1, handL: 1 }],
+      [3, { y: -0.13, x: -0.04, bend: 12, lean: -4, rf: [-0.02, 0.02, -0.17], lf: [-0.12, 0, 0.12], r: R(0.16, 1.02, 0.2, E_UP), l: L(-0.38, 0.76, 0.02, E_OUT), handR: 1, handL: 1 }],
     ],
   }),
   full({
@@ -564,8 +564,8 @@ export const moves: MoveDef[] = [
     id: 'elephant-trunk', name: 'Elephant Trunk', tags: 'party | arms legs | walk stomp animal', beats: 2, level: 'low', d: 1, parts: ['arms', 'legs'],
     desc: 'Hold your nose with one hand, bend forward a little and let the other arm hang as a trunk, swinging it side to side with heavy, plodding steps.',
     keys: [
-      [0, { y: -0.07, x: 0.025, lean: 4, bend: 14, nod: 8, rf: [0.1, 0, 0.02], lf: [-0.09, 0.03, 0], r: R(0.22, 0.38, 0.26, E_OUT), l: L(-0.05, 0.86, 0.17, E_OUT), handR: 1, handL: 0.3 }],
-      [1, { y: -0.07, x: -0.025, lean: -4, bend: 14, nod: 8, rf: [0.09, 0.03, 0], lf: [-0.1, 0, 0.02], r: R(-0.17, 0.4, 0.28, E_X), l: L(-0.05, 0.86, 0.17, E_OUT), handR: 1, handL: 0.3 }],
+      [0, { y: -0.07, x: 0.025, lean: 4, bend: 14, nod: 8, rf: [0.1, 0, 0.02], lf: [-0.09, 0.03, 0], r: R(0.12, 0.4, 0.3, E_FRONT), l: L(-0.02, 0.88, 0.2, [0.2, -1, 0.3]), handR: 1, handL: 0.3 }],
+      [1, { y: -0.07, x: -0.025, lean: -4, bend: 14, nod: 8, rf: [0.09, 0.03, 0], lf: [-0.1, 0, 0.02], r: R(-0.12, 0.42, 0.3, E_X), l: L(-0.02, 0.88, 0.2, [0.2, -1, 0.3]), handR: 1, handL: 0.3 }],
     ],
   }),
   full({

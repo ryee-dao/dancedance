@@ -350,8 +350,8 @@ export const moves: MoveDef[] = [
     desc: 'Balance on one leg, bend the other knee and hold that ankle behind you, knees side by side, the free arm out for balance.',
     keys: [
       [0, { y: -0.03, x: -0.02, r: [24, 0, 30, 10], l: [40, 0, 44, 0], ...OPEN2 }],
-      [1.25, { y: -0.02, x: -0.04, hips: -0.02, rf: [0.07, 0.3, -0.17], lf: [-0.07, 0, 0], r: at(1, 0.13, 0.42, -0.16, [0.6, 0, -0.6]), l: [96, 0, 98, 0], ...OPEN2 }],
-      [2.5, { y: -0.03, x: -0.04, hips: -0.02, rf: [0.07, 0.31, -0.18], lf: [-0.07, 0, 0], r: at(1, 0.13, 0.41, -0.17, [0.6, 0, -0.6]), l: [100, 0, 102, 0], ...OPEN2 }],
+      [1.25, { y: -0.02, x: -0.04, hips: -0.02, rf: [0.09, 0.37, -0.22], lf: [-0.07, 0, 0], kneeR: -0.3, r: at(1, 0.12, 0.42, -0.2, [0.6, 0, -0.6]), l: [96, 0, 98, 0], ...OPEN2 }],
+      [2.25, { y: -0.03, x: -0.04, hips: -0.02, rf: [0.09, 0.38, -0.23], lf: [-0.07, 0, 0], kneeR: -0.3, r: at(1, 0.12, 0.41, -0.21, [0.6, 0, -0.6]), l: [100, 0, 102, 0], ...OPEN2 }],
       [3.5, { y: -0.04, x: -0.02, rf: [0.09, 0, 0], lf: [-0.09, 0, 0], r: [24, 0, 30, 10], l: [40, 0, 44, 0], ...OPEN2 }],
     ],
   }),
@@ -369,8 +369,8 @@ export const moves: MoveDef[] = [
     desc: 'Knees soft, let the head and arms hang and roll down partway like a rag doll, then roll back up one bone at a time.',
     keys: [
       [0, { y: -0.03, nod: 6, r: [14, 0, 20, 20], l: [14, 0, 20, 20], ...OPEN2 }],
-      [1.5, { y: -0.12, bend: 38, nod: 22, shR: 0.3, shL: 0.3, r: [34, 90, 38, 90], l: [34, 90, 38, 90], handR: 0.7, handL: 0.7 }],
-      [2.5, { y: -0.12, bend: 40, nod: 22, shR: 0.3, shL: 0.3, r: [36, 90, 40, 90], l: [36, 90, 40, 90], handR: 0.7, handL: 0.7 }],
+      [1.5, { y: -0.12, bend: 70, nod: 22, shR: 0.3, shL: 0.3, r: [68, 90, 72, 90], l: [68, 90, 72, 90], handR: 0.7, handL: 0.7 }],
+      [2.5, { y: -0.12, bend: 74, nod: 22, shR: 0.3, shL: 0.3, r: [72, 90, 76, 90], l: [72, 90, 76, 90], handR: 0.7, handL: 0.7 }],
       [3.5, { y: -0.06, bend: 12, nod: 14, r: [20, 40, 24, 40], l: [20, 40, 24, 40], ...OPEN2 }],
     ],
   }),

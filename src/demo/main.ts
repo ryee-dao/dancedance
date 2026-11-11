@@ -12,6 +12,8 @@
  *
  *   preview  the style-chooser preview cards (drawCoachPreview) side by side
  *
+ * Versions: ?build=female|male (default female) for every mode.
+ *
  * Character styles: ?style=classic|human|sticker (or ?coach=...); keys 1-3
  * or the on-screen buttons switch it in song / gallery mode. ?compare=1 shows
  * every style side by side (3-up) dancing the same song in sync, or the same
@@ -33,7 +35,7 @@ import { loopPlan } from '../core/coach/loop';
 import { LOOKS } from '../core/coach/humanPainter';
 import { COLORS, FigurePainter, drawCoachPreview, StageRenderer2D, type StripInfo } from '../core/coach/renderer';
 import { createPose, createSkeleton, solveSkeleton, type Skeleton } from '../core/coach/skeleton';
-import { COACH_STYLE_IDS, coachStyleInfo, parseCoachStyle, type CoachStyle } from '../core/coach/styles';
+import { COACH_STYLE_IDS, DEFAULT_COACH_BUILD, coachStyleInfo, parseCoachBuild, parseCoachStyle, type CoachStyle } from '../core/coach/styles';
 import { createCoachStage } from '../ui/coachStage';
 import type { FrameInfo } from '../ui/play';
 import { SECTION_PLAN, SYNTH_MAX_BPM, SYNTH_MIN_BPM, SimSource, type SimMode } from './synth';
@@ -53,6 +55,7 @@ if (q.has('coach')) {
   q.set('style', style);
   history.replaceState(null, '', `${location.pathname}?${q.toString()}`);
 }
+const build = parseCoachBuild(q.get('build')) ?? DEFAULT_COACH_BUILD;
 const styleListeners: ((s: CoachStyle) => void)[] = [];
 function setStyle(s: CoachStyle): void {
   style = s;
@@ -186,6 +189,7 @@ function runSong(): void {
     getIntensity: () => level,
     isTV: q.get('tv') === '1',
     getStyle: () => style,
+    getBuild: () => build,
     getStyleOverride: styleOverride,
     getRoutineMode: () => fresh.mode,
     getPlayCount: () => fresh.plays,
@@ -297,7 +301,7 @@ function runGallery(): void {
   document.body.prepend(canvas);
   const LIST = galleryMoves();
   const label = (m: Move) => (m.base !== m.id ? `${m.name}  (variation of ${m.base})` : m.name);
-  const r = new StageRenderer2D(canvas, style);
+  const r = new StageRenderer2D(canvas, style, build);
   styleListeners.push((s) => (r.style = s));
   const resize = () => r.resize(innerWidth * devicePixelRatio, innerHeight * devicePixelRatio, true);
   resize();
@@ -403,6 +407,7 @@ function runSheet(): void {
   moves.forEach((m, row) => {
     const painter = new FigurePainter();
     painter.style = style;
+    painter.build = build;
     const plan = loopPlan(m, period);
     const span = Math.min(plan.loopBeats, Math.max(4, m.beats * 2));
     const y0 = row * cellH;
@@ -475,7 +480,7 @@ function runCompareSong(): void {
   let phase: FrameInfo['phase'] = (q.get('phase') as FrameInfo['phase']) ?? 'playing';
   const item = { kind: 'youtube' as const, videoId: 'demo-song', title: 'Demo song' };
   const stages = COACH_STYLE_IDS.map((st, i) => {
-    const stage = createCoachStage({ getIntensity: () => level, isTV: false, getStyle: () => st });
+    const stage = createCoachStage({ getIntensity: () => level, isTV: false, getStyle: () => st, getBuild: () => build });
     stage.mount(hosts[i]);
     return stage;
   });
@@ -532,7 +537,7 @@ function runCompareMove(): void {
   const renderers = hosts.map((h, i) => {
     const c = el('canvas', { style: 'position:absolute;inset:0;width:100%;height:100%;' });
     h.append(c);
-    return new StageRenderer2D(c, COACH_STYLE_IDS[i]);
+    return new StageRenderer2D(c, COACH_STYLE_IDS[i], build);
   });
   const resize = () => {
     for (let i = 0; i < renderers.length; i++) {
@@ -655,7 +660,7 @@ function runPreview(): void {
   function frame(): void {
     requestAnimationFrame(frame);
     const t = clock.now();
-    for (const k of cards) drawCoachPreview(k.c, k.st, { moveId, timeSec: t });
+    for (const k of cards) drawCoachPreview(k.c, k.st, { moveId, timeSec: t, build });
   }
   requestAnimationFrame(frame);
   window.__demo = { ready: true };

@@ -31,8 +31,8 @@ const sideCrunch: PoseSpec = {
   r: at(1, 0.24, 0.84, -0.02, [1, 0.1, -0.2]), l: BEHIND_HEAD.l, handR: 1, handL: 1,
 };
 const windmillTouch: PoseSpec = {
-  y: -0.12, bend: 44, twist: -24, lean: -9, nod: 6, turn: -10, rf: [0.21, 0, 0], lf: [-0.21, 0, 0], kneeL: 0.1,
-  r: [50, 145, 52, 145], l: [168, 0, 172, 0], ...OPEN,
+  y: -0.14, bend: 68, twist: -24, lean: -9, nod: 6, turn: -10, rf: [0.21, 0, 0], lf: [-0.21, 0, 0], kneeL: 0.1,
+  r: [74, 122, 76, 122], l: [168, 0, 172, 0], ...OPEN,
 };
 
 const GUARD_UP = { r: at(1, 0.08, 0.84, 0.2, [0.4, -1, -0.1]), l: at(-1, -0.08, 0.84, 0.2, [0.4, -1, -0.1]), ...FIST };
@@ -65,8 +65,8 @@ const skipLand: PoseSpec = { y: -0.035, x: 0, rf: [0.08, 0, 0], lf: [-0.08, 0.07
 const gateFront: PoseSpec = { y: -0.01, x: -0.03, lean: -2, rf: [0.07, 0.25, 0.2], lf: [-0.09, 0, 0], r: at(1, 0.04, 0.66, 0.24, [1, -0.5, -0.3]), l: at(-1, -0.04, 0.66, 0.24, [1, -0.5, -0.3]), ...OPEN };
 const gateOut: PoseSpec = { y: -0.02, x: -0.04, lean: -4, head: -3, rf: [0.24, 0.21, 0.02], lf: [-0.09, 0, 0], kneeR: 0.8, r: [84, -6, 88, -6], l: [84, -6, 88, -6], ...OPEN };
 const toeKick: PoseSpec = {
-  y: -0.03, x: -0.02, bend: 8, nod: 4, rf: [0.03, 0.3, 0.4], lf: [-0.09, 0, -0.02],
-  r: [40, -10, 44, -10], l: at(-1, 0.02, 0.66, 0.3, [1, -0.3, -0.2]), handR: 1, handL: 1,
+  y: -0.03, x: -0.02, bend: 16, nod: 8, rf: [0.04, 0.46, 0.4], lf: [-0.09, 0, -0.02],
+  r: [40, -10, 44, -10], l: at(-1, 0.04, 0.5, 0.4, [1, -0.3, -0.2]), handR: 1, handL: 1,
 };
 const CARIOCA_ARMS = { r: [74, 0, 80, 0] as ArmAngles, l: [74, 0, 80, 0] as ArmAngles, ...OPEN };
 

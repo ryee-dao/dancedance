@@ -13,10 +13,13 @@
  * a real foot step (the animator arcs the feet). Front-facing figures stage
  * contact side by side: P1's inner hand is its RIGHT hand (screen right),
  * P2's inner hand is its LEFT hand. Symmetric moves author P1 only; P2 is
- * its mirror image. Orbiting moves (elbow swing) turn both bodies with
- * `spin` while the roots travel round the pair's centre, so the linked
- * joints stay together (a rigid rotation); the stage derives the depth from
- * the spin.
+ * its mirror image. Orbiting moves (elbow swing, star turn) turn both bodies
+ * with `spin` while the roots travel round the pair's centre, P2 always P1
+ * turned 180 deg about that centre, so the linked joints stay together (a
+ * rigid rotation); the stage derives the depth from the spin and draws the
+ * hooked forearms interlocked (`hook`). Partners who should face each other
+ * (elbow swing, do-si-do) are turned toward each other with `spin`, never
+ * left facing the viewer.
  *
  * Moves longer than 4 beats are split into 4-beat halves (the animator
  * plays them back to back; tracks interpolate across the boundary).
@@ -63,11 +66,15 @@ export interface PartnerMove {
   depth: readonly (readonly [number, number, number])[];
   /** Orbit radius (depth from spin), 0 = none. */
   orbit: number;
+  /** Orbit moves: P1's spin minus its angle round the circle (see orbitKeys). */
+  orbitSpin: number;
   contacts: readonly Contact[];
   /** The roles differ (P1 and P2 get their own cue names). */
   roles: boolean;
   /** A prop drawn between the players (rope: P1's left hand to P2's right hand). */
   prop: 'rope' | null;
+  /** Arms hooked through each other (1 = right arms, -1 = left): the renderer interlocks them. 0 = none. */
+  hook: 0 | 1 | -1;
 }
 
 type Keys = (readonly [number, PoseSpec])[];
@@ -90,7 +97,9 @@ interface PartnerDef {
   cues?: readonly [string, string, string?, string?];
   depth?: readonly (readonly [number, number, number])[];
   orbit?: number;
+  orbitSpin?: number;
   prop?: 'rope';
+  hook?: 1 | -1;
   contacts?: readonly Contact[];
 }
 
@@ -115,47 +124,108 @@ const IN = 0.25; // standard step-in (roots 0.5 apart)
 // ---------------------------------------------------------------------------
 // Definitions
 
-function orbitKeys(r: number, dir: 1 | -1, arms: (th: number) => PoseSpec, beats = 8): { p1: Keys; p2: Keys } {
+/**
+ * Orbit: both players circle the pair's centre at radius `r`. P2 is always P1
+ * turned 180 deg about that centre (point symmetry: same body pose, spin +
+ * 180, opposite side of the circle), so whatever P1's arm holds at the centre
+ * P2's same arm holds from the other side: the link stays physically closed
+ * all the way round.
+ *
+ * Each body faces its line of travel turned `face` deg toward the partner.
+ * dir = 1: clockwise from above (left -> front -> right -> back), the RIGHT
+ * side toward the centre (right-elbow swing). dir = -1: the other way round,
+ * the LEFT side in. The angle `th` puts P1's root at pair-space
+ * (-r cos th, depth r sin th); `PartnerMove.orbitSpin` recovers th from the
+ * spin for the depth (th = spin - orbitSpin).
+ */
+function orbitSpinOffset(dir: 1 | -1, face: number): number {
+  return dir > 0 ? face : 180 - face;
+}
+
+function orbitKeys(r: number, dir: 1 | -1, face: number, th0: number, body: PoseSpec, beats = 8): { p1: Keys; p2: Keys } {
   const p1: Keys = [];
   const p2: Keys = [];
   const n = beats * 2;
+  const off = orbitSpinOffset(dir, face);
   for (let i = 0; i < n; i++) {
     const at = i / 2;
-    const th = (dir * 360 * i) / n;
+    const th = th0 + (dir * 360 * i) / n;
     const rad = (th * Math.PI) / 180;
     const X1 = H - r * Math.cos(rad);
     const X2 = r * Math.cos(rad) - H;
-    const lift = i % 2 === 1 ? 0.03 : 0;
-    const a = arms(th);
-    p1.push([at, { ...a, x: X1, y: -0.04, spin: th, rf: [X1 + 0.06, i % 4 === 1 ? lift : 0, 0], lf: [X1 - 0.06, i % 4 === 3 ? lift : 0, 0] }]);
-    const m = mir(a);
-    p2.push([at, { ...m, x: X2, y: -0.04, spin: th, rf: [X2 + 0.06, i % 4 === 3 ? lift : 0, 0], lf: [X2 - 0.06, i % 4 === 1 ? lift : 0, 0] }]);
+    // Small skipping steps: one foot rises every half beat, alternating.
+    const liftR = i % 4 === 1 ? 0.035 : 0, liftL = i % 4 === 3 ? 0.035 : 0;
+    const y = i % 2 === 1 ? -0.03 : -0.05;
+    p1.push([at, { ...body, x: X1, y, spin: th + off, rf: [X1 + 0.06, liftR, 0], lf: [X1 - 0.06, liftL, 0] }]);
+    p2.push([at, { ...body, x: X2, y, spin: th + off + 180, rf: [X2 + 0.06, liftR, 0], lf: [X2 - 0.06, liftL, 0] }]);
   }
   return { p1, p2 };
 }
 
-const ELBOW_R = 0.25;
-const elbowArms = (): PoseSpec => ({
-  r: h1(1, H - ELBOW_R, -0.04, 0.035, 0.74, 0.13, [0.15, -1, -0.15]),
-  l: ARM.hip,
-  handR: 0.2,
-  handL: 0,
-  lean: 0,
-});
-const elbowSwing = orbitKeys(ELBOW_R, 1, elbowArms);
+/** Swing angles of a bone direction (out = away from the body's midline, up, fwd) in the torso frame. */
+function swingOf(out: number, up: number, fwd: number): [number, number] {
+  const hz = Math.sqrt(out * out + fwd * fwd);
+  return [(Math.atan2(hz, -up) * 180) / Math.PI, (Math.atan2(fwd, out) * 180) / Math.PI];
+}
 
-const TURN_R = 0.26;
-const starArms = (): PoseSpec => ({
-  r: h1(1, H - TURN_R, -0.04, 0, 1.0, 0.04, [0.6, 0, -0.6]),
-  l: [60, 10, 70, 30],
-  handR: 1,
-  handL: 1,
-});
-const starTurn = orbitKeys(TURN_R, -1, starArms);
+/** Arm angles from an elbow and a hand position relative to the shoulder (out, up, fwd); bone lengths come from the rig. */
+function armThrough(e: readonly [number, number, number], hnd: readonly [number, number, number]): [number, number, number, number] {
+  const [ue, up] = swingOf(e[0], e[1], e[2]);
+  const [fe, fp] = swingOf(hnd[0] - e[0], hnd[1] - e[1], hnd[2] - e[2]);
+  return [Math.round(ue * 10) / 10, Math.round(up * 10) / 10, Math.round(fe * 10) / 10, Math.round(fp * 10) / 10];
+}
+
+// Elbow swing (folk-dance elbow turn): turned toward each other, right
+// elbows hooked between them, free arms out for balance, skipping round the
+// shared centre. Hook geometry in P1's own frame (shoulder at out 0, the
+// centre of the circle at (r cos f, r sin f) from the root): each upper arm
+// reaches just past the centre, offset to the side of the partner's, and the
+// forearm bends up around the partner's upper arm (the crooks interlock).
+const ELBOW_R = 0.19;
+const ELBOW_FACE = 50;
+const elbowBody = ((): PoseSpec => {
+  const f = (ELBOW_FACE * Math.PI) / 180;
+  // Centre of the circle relative to the right shoulder (shoulder at x 0.125 from the root).
+  const cx = ELBOW_R * Math.cos(f) - 0.125, cz = ELBOW_R * Math.sin(f);
+  // Along the line toward the partner's shoulder, and across it (horizontal).
+  const sx = 2 * cx, sz = 2 * cz;
+  const sl = Math.hypot(sx, sz);
+  const dx = sx / sl, dz = sz / sl;
+  const nx = dz, nz = -dx; // to P1's right of that line (outside)
+  const elbow: [number, number, number] = [cx + dx * 0.03 + nx * 0.035, -0.085, cz + dz * 0.03 + nz * 0.035];
+  // Forearm: bent ~90 deg, across the partner's upper arm (inward) and a
+  // little up, the hand gripping over it: the two crooks interlock.
+  const hand: [number, number, number] = [elbow[0] - nx * 0.125, elbow[1] + 0.08, elbow[2] - nz * 0.125];
+  return {
+    r: armThrough(elbow, hand),
+    l: [112, -18, 128, -8],
+    handR: 0.3,
+    handL: 1,
+  };
+})();
+const elbowSwing = orbitKeys(ELBOW_R, 1, ELBOW_FACE, 90 - ELBOW_FACE, elbowBody);
+
+// Star turn: left palms pressed together up high over the centre, walking
+// forward round each other the other way (left side in), free arm low and out.
+const TURN_R = 0.25;
+const STAR_FACE = 25;
+const starBody = ((): PoseSpec => {
+  const f = (STAR_FACE * Math.PI) / 180;
+  // Hand just short of the centre (the two palms meet there), in neutral-stance world coordinates.
+  const k = 1 - 0.022 / TURN_R;
+  return {
+    l: at(-1, -TURN_R * Math.cos(f) * k, 1.0, TURN_R * Math.sin(f) * k, [0.6, 0.1, -0.6]),
+    r: [48, -15, 62, 10],
+    handL: 1,
+    handR: 1,
+    turn: -14,
+  };
+})();
+const starTurn = orbitKeys(TURN_R, -1, STAR_FACE, -30, starBody);
 
 // Under-arm turn: the turner's hand stays over its own head; the arch-maker reaches over.
-const ARCH_X1 = 0.36; // arch-maker step-in
-const TURN_X2 = -0.36; // turner step-in (P2 coordinates)
+const ARCH_X1 = 0.32; // arch-maker step-in (shoulders a little apart)
+const TURN_X2 = -0.32; // turner step-in (P2 coordinates)
 const archTop = { cx: H + TURN_X2 - 0.03, cy: 1.0 };
 function underArm(): { p1: Keys; p2: Keys } {
   const p1: Keys = [];
@@ -263,7 +333,12 @@ function pass(beats: 4 | 8, arms: (i: number) => PoseSpec): { p1: Keys; p2: Keys
   return { p1, p2 };
 }
 const FOLD: PoseSpec = { r: at(1, -0.07, 0.68, 0.17, [0.6, -0.6, -0.2]), l: at(-1, 0.07, 0.72, 0.19, [0.6, -0.6, -0.2]), handR: 0, handL: 0 };
-const doSiDo = pass(8, (i) => ({ ...FOLD, head: i < 4 ? 6 : -6, turn: i < 4 ? 14 : -14 }));
+// Do-si-do: partners FACE each other (three-quarter turned, so both stay
+// readable) and keep facing that way the whole time: walk forward past each
+// other right shoulder to right shoulder (P1 passes in front), then back up
+// to place left shoulder to left shoulder (P1 behind). P2's spin is mirrored.
+const DOSIDO_TURN = 55;
+const doSiDo = pass(8, () => ({ ...FOLD, spin: DOSIDO_TURN }));
 const crossOver = pass(4, (i) => (i === 2 || i === 0 ? { r: ARM.clap, l: ARM.clap, handR: 1, handL: 1 } : { r: [60, -20, 70, 0], l: [60, -20, 70, 0], handR: 1, handL: 1 }));
 
 // Role moves: P1 does `a` while P2 does `b`, then they swap (beats 4..8).
@@ -407,6 +482,9 @@ function spinOut(): { p1: Keys; p2: Keys } {
 }
 const spinOutKeys = spinOut();
 
+/** Hip bump: the inner arm swings back out of the way (an elbow on the hip would jab the partner). */
+const BUMP_INNER: PoseSpec['r'] = [32, -55, 40, -40];
+
 const DEFS: PartnerDef[] = [
   {
     id: 'duo-high-five', name: 'High Five, Low Five', tags: 'party pop | arms | hands clap', level: 'low', d: 1, beats: 4, parts: ['arms'],
@@ -445,10 +523,10 @@ const DEFS: PartnerDef[] = [
     id: 'duo-hip-bump', name: 'Partner Hip Bump', tags: 'party disco | hips | hips', level: 'mid', d: 1, beats: 4, parts: ['hips'],
     desc: 'Stand close, lean away and bump your inner hips together, then clap.',
     p1: [
-      [0, { x: 0.3, y: -0.06, ...feet(0.3, 0.1), hips: 0.085, tilt: 12, lean: -12, r: ARM.hip, l: [150, 0, 160, 0], handR: 0, handL: 1, head: -6 }],
-      [1, { x: 0.3, y: -0.03, ...feet(0.3, 0.1), hips: -0.02, tilt: -3, r: ARM.clap, l: ARM.clap, handR: 1, handL: 1 }],
-      [2, { x: 0.3, y: -0.06, ...feet(0.3, 0.1), hips: 0.085, tilt: 12, lean: -12, r: ARM.hip, l: [150, 0, 160, 0], handR: 0, handL: 1, head: -6 }],
-      [3, { x: 0.3, y: -0.03, ...feet(0.3, 0.1), hips: -0.02, tilt: -3, r: ARM.clap, l: ARM.clap, handR: 1, handL: 1 }],
+      [0, { x: 0.28, y: -0.06, ...feet(0.28, 0.1), hips: 0.085, tilt: 12, lean: -12, r: BUMP_INNER, l: [150, 0, 160, 0], handR: 1, handL: 1, head: -6 }],
+      [1, { x: 0.28, y: -0.03, ...feet(0.28, 0.1), hips: -0.02, tilt: -3, r: ARM.clap, l: ARM.clap, handR: 1, handL: 1 }],
+      [2, { x: 0.28, y: -0.06, ...feet(0.28, 0.1), hips: 0.085, tilt: 12, lean: -12, r: BUMP_INNER, l: [150, 0, 160, 0], handR: 1, handL: 1, head: -6 }],
+      [3, { x: 0.28, y: -0.03, ...feet(0.28, 0.1), hips: -0.02, tilt: -3, r: ARM.clap, l: ARM.clap, handR: 1, handL: 1 }],
     ],
     contacts: [{ at: 0, a: [1, J.HIP_R], b: [2, J.HIP_L], tol: 0.16 }],
   },
@@ -543,15 +621,19 @@ const DEFS: PartnerDef[] = [
   },
   {
     id: 'duo-elbow-swing', name: 'Elbow Swing', tags: 'party latin | full | spin', level: 'mid', d: 2, beats: 8, parts: ['turn', 'legs'],
-    desc: 'Link inner elbows and skip round each other in a full circle.',
-    p1: elbowSwing.p1, p2: elbowSwing.p2, orbit: ELBOW_R,
-    contacts: [0, 2, 4, 6].map((t) => ({ at: t, a: [1, J.HA_R] as const, b: [2, J.HA_L] as const, tol: 0.1 })),
+    desc: 'Turn to face each other, hook right elbows, free arm out, and skip round each other in a full circle.',
+    p1: elbowSwing.p1, p2: elbowSwing.p2, orbit: ELBOW_R, orbitSpin: orbitSpinOffset(1, ELBOW_FACE), hook: 1,
+    // Hooked: the elbows sit side by side, each hand wrapped over the partner's upper arm.
+    contacts: [0, 2, 4, 6].flatMap((t) => [
+      { at: t, a: [1, J.EL_R] as const, b: [2, J.EL_R] as const, tol: 0.1 },
+      { at: t, a: [1, J.HA_R] as const, b: [2, J.EL_R] as const, tol: 0.14 },
+    ]),
   },
   {
     id: 'duo-star-turn', name: 'Star Turn', tags: 'party latin | full | spin hands', level: 'mid', d: 2, beats: 8, parts: ['turn', 'legs'],
-    desc: 'Press inner palms together up high and walk round each other the other way.',
-    p1: starTurn.p1, p2: starTurn.p2, orbit: TURN_R,
-    contacts: [0, 2, 4, 6].map((t) => ({ at: t, a: [1, J.HA_R] as const, b: [2, J.HA_L] as const, tol: 0.1 })),
+    desc: 'Press left palms together up high and walk forward round each other the other way.',
+    p1: starTurn.p1, p2: starTurn.p2, orbit: TURN_R, orbitSpin: orbitSpinOffset(-1, STAR_FACE),
+    contacts: [0, 2, 4, 6].map((t) => ({ at: t, a: [1, J.HA_L] as const, b: [2, J.HA_L] as const, tol: 0.08 })),
   },
   {
     id: 'duo-under-arm-turn', name: 'Under-Arm Turn', tags: 'latin pop | turn | spin hands', level: 'mid', d: 2, beats: 8, parts: ['turn', 'arms'],
@@ -569,7 +651,7 @@ const DEFS: PartnerDef[] = [
   },
   {
     id: 'duo-do-si-do', name: 'Do-Si-Do', tags: 'party | legs | walk', level: 'mid', d: 2, beats: 8, parts: ['legs'],
-    desc: 'Arms folded, walk past each other (P1 in front), then walk back passing behind.',
+    desc: 'Face each other with arms folded, walk forward past each other right shoulder to right shoulder (P1 in front), then back up to place left shoulder to left shoulder.',
     p1: doSiDo.p1, p2: doSiDo.p2,
     depth: [[0, 0, 0], [2, 0.2, -0.2], [4, 0, 0], [6, -0.2, 0.2]],
   },
@@ -674,9 +756,11 @@ function buildPartner(d: PartnerDef): PartnerMove {
     p2,
     depth: d.depth ?? [],
     orbit: d.orbit ?? 0,
+    orbitSpin: d.orbitSpin ?? 0,
     contacts: d.contacts ?? [],
     roles: !!d.cues,
     prop: d.prop ?? null,
+    hook: d.hook ?? 0,
   };
 }
 
@@ -711,8 +795,10 @@ export function partnerOf(m: Move): { pm: PartnerMove; player: Player; part: num
 /** Depth offsets (z1, z2) of a partner move at move beat `b` (0..beats), given each player's current spin (orbit moves). */
 export function partnerDepth(pm: PartnerMove, b: number, spin1: number, spin2: number, out: [number, number]): [number, number] {
   if (pm.orbit > 0) {
-    out[0] = pm.orbit * Math.sin((spin1 * Math.PI) / 180);
-    out[1] = -pm.orbit * Math.sin((spin2 * Math.PI) / 180);
+    // P2 is P1 turned 180 deg about the centre: opposite depth.
+    void spin2;
+    out[0] = pm.orbit * Math.sin(((spin1 - pm.orbitSpin) * Math.PI) / 180);
+    out[1] = -out[0];
     return out;
   }
   const d = pm.depth;

@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { BeatMap } from '../analysis/beatmap';
 import { generateDuoRoutine, mirrorInstance, type DuoRoutine } from './duo';
-import { contactReport, validatePartner } from './duoCheck';
-import { PARTNER_ERRORS, PARTNER_MOVES, partnerOf } from './duoMoves';
+import { contactReport, jointWorld, partnerFrame, validatePartner } from './duoCheck';
+import { findPartnerMove, PARTNER_ERRORS, PARTNER_MOVES, partnerOf } from './duoMoves';
+import { J } from '../coach/skeleton';
 import { type Intensity, type MoveInstance } from './generator';
 import { MOVES } from './moves';
 import { resolveSongStyle } from './songStyle';
@@ -49,6 +50,75 @@ describe('partner moves', () => {
     expect(PARTNER_MOVES.some((m) => m.jump)).toBe(true);
     expect(PARTNER_MOVES.some((m) => m.orbit > 0)).toBe(true);
     expect(PARTNER_MOVES.some((m) => m.depth.length > 0)).toBe(true);
+  });
+});
+
+/** Horizontal facing (x, z) of a player's chest at a solved frame, in pair space. */
+function facing(f: ReturnType<typeof partnerFrame>, p: 1 | 2): [number, number] {
+  const rt = f.sk[p - 1].rt;
+  return [rt[2], rt[8]]; // torso frame's forward (+z) axis in world x / z
+}
+
+describe('partner moves make physical sense', () => {
+  it('bodies never pass through each other (chests and pelvises stay apart)', () => {
+    for (const pm of PARTNER_MOVES) {
+      for (let b = 0; b < pm.beats; b += 0.25) {
+        const f = partnerFrame(pm, b);
+        for (const j of [J.CHEST, J.PELVIS]) {
+          const a = jointWorld(f, 1, j), c = jointWorld(f, 2, j);
+          expect(Math.hypot(a[0] - c[0], a[2] - c[2]), `${pm.id} b${b}`).toBeGreaterThan(0.25);
+        }
+      }
+    }
+  });
+
+  it('elbow swing: turned toward each other, right elbows hooked, circling the shared centre', () => {
+    const pm = findPartnerMove('duo-elbow-swing')!;
+    expect(pm.hook).toBe(1);
+    const xs = new Set<number>();
+    for (let b = 0; b < pm.beats; b += 0.5) {
+      const f = partnerFrame(pm, b);
+      const p1 = jointWorld(f, 1, J.PELVIS), p2 = jointWorld(f, 2, J.PELVIS);
+      // P2 is P1 turned 180 deg about the pair's centre.
+      expect(p1[0] + p2[0], `b${b}`).toBeCloseTo(0, 2);
+      expect(p1[2] + p2[2], `b${b}`).toBeCloseTo(0, 2);
+      xs.add(Math.sign(Math.round(p1[0] * 100)));
+      // Each faces the partner more than the viewer would allow side by side: forward . (to partner) > 0.5.
+      for (const [me, other, p] of [[p1, p2, 1], [p2, p1, 2]] as const) {
+        const [fx, fz] = facing(f, p);
+        const dx = other[0] - me[0], dz = other[2] - me[2];
+        const d = Math.hypot(dx, dz);
+        expect((fx * dx + fz * dz) / d, `P${p} b${b}`).toBeGreaterThan(0.5);
+      }
+      // The hooking elbows sit together between them, below the shoulders.
+      const e1 = jointWorld(f, 1, J.EL_R), e2 = jointWorld(f, 2, J.EL_R);
+      expect(Math.hypot(e1[0] - e2[0], e1[1] - e2[1], e1[2] - e2[2]), `b${b}`).toBeLessThan(0.1);
+      expect(Math.hypot(e1[0], e1[2]), `b${b}`).toBeLessThan(0.08);
+      expect(e1[1]).toBeLessThan(jointWorld(f, 1, J.SH_R)[1]);
+      // Each hand reaches over the partner's arm: closer to the partner's upper arm than to its own shoulder line's far side.
+      const h1 = jointWorld(f, 1, J.HA_R), s2 = jointWorld(f, 2, J.SH_R);
+      const mid = [(e2[0] + s2[0]) / 2, (e2[1] + s2[1]) / 2, (e2[2] + s2[2]) / 2];
+      expect(Math.hypot(h1[0] - mid[0], h1[1] - mid[1], h1[2] - mid[2]), `b${b}`).toBeLessThan(0.12);
+    }
+    // They really go round: P1 is on both sides of the centre during the move.
+    expect(xs.has(1) && xs.has(-1)).toBe(true);
+  });
+
+  it('do-si-do and star turn: partners face along their own path, not the viewer', () => {
+    const dsd = findPartnerMove('duo-do-si-do')!;
+    for (let b = 0; b < dsd.beats; b += 1) {
+      const f = partnerFrame(dsd, b);
+      // P1 faces screen right (toward where P2 started), P2 faces screen left.
+      expect(facing(f, 1)[0], `b${b}`).toBeGreaterThan(0.6);
+      expect(facing(f, 2)[0], `b${b}`).toBeLessThan(-0.6);
+    }
+    const star = findPartnerMove('duo-star-turn')!;
+    for (let b = 0; b < star.beats; b += 0.5) {
+      const f = partnerFrame(star, b);
+      const h1 = jointWorld(f, 1, J.HA_L), h2 = jointWorld(f, 2, J.HA_L);
+      expect(Math.hypot(h1[0] - h2[0], h1[1] - h2[1], h1[2] - h2[2]), `b${b}`).toBeLessThan(0.08);
+      expect(h1[1]).toBeGreaterThan(0.9);
+    }
   });
 });
 
