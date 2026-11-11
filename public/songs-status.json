@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-11T17:41:56.174Z",
+  "updatedAt": "2026-11-11T21:16:34.466Z",
   "requests": {
     "evanescence - bring me to life": {
       "state": "map-pending",
@@ -10,6 +10,16 @@
       "message": "Listed. YouTube refused the cloud download, so there is no beat map yet: the app finds the beat by listening, and the job keeps trying.",
       "attempts": 1,
       "lastTried": "2026-11-11T17:11:29.488Z"
+    },
+    "finger eleven - paralyzer": {
+      "state": "map-pending",
+      "artist": "Finger Eleven",
+      "title": "Paralyzer",
+      "durationSec": 208,
+      "videoId": "aF18NehJxos",
+      "message": "Listed. YouTube refused the cloud download, so there is no beat map yet: the app finds the beat by listening, and the job keeps trying.",
+      "attempts": 1,
+      "lastTried": "2026-11-11T21:16:05.704Z"
     },
     "shakira - hips don t lie feat wyclef jean": {
       "state": "map-pending",

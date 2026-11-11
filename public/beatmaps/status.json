@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-11T17:41:56.174Z",
+  "updatedAt": "2026-11-11T21:16:34.466Z",
   "videos": {
     "-7XnDlYY9qw": {
       "state": "ok",
@@ -356,6 +356,13 @@
       "attempts": 2,
       "lastTried": "2026-11-11T05:14:42.390Z"
     },
+    "aF18NehJxos": {
+      "state": "error",
+      "reason": "outdated",
+      "message": "YouTube refused the media download (HTTP 403); usually fixed by a newer yt-dlp: unable to download video data: HTTP Error 403: Forbidden",
+      "attempts": 1,
+      "lastTried": "2026-11-11T21:16:05.704Z"
+    },
     "aeZnkEMIxBM": {
       "state": "ok",
       "attempts": 2,
@@ -382,11 +389,11 @@
       "lastTried": "2026-11-11T05:32:48.939Z"
     },
     "dWErisOfeyE": {
-      "state": "blocked",
-      "reason": "blocked",
-      "message": "YouTube asked this machine to prove it is not a bot: [youtube] dWErisOfeyE: Sign in to confirm you’re not a bot. This helps protect our community. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how …",
-      "attempts": 1,
-      "lastTried": "2026-11-11T17:41:56.174Z"
+      "state": "error",
+      "reason": "outdated",
+      "message": "YouTube refused the media download (HTTP 403); usually fixed by a newer yt-dlp: unable to download video data: HTTP Error 403: Forbidden",
+      "attempts": 2,
+      "lastTried": "2026-11-11T21:16:34.466Z"
     },
     "e-fA-gBCkj0": {
       "state": "ok",
@@ -564,11 +571,11 @@
       "lastTried": "2026-11-11T03:48:43.683Z"
     },
     "s8ZXJ5QUYvQ": {
-      "state": "blocked",
-      "reason": "blocked",
-      "message": "YouTube asked this machine to prove it is not a bot: [youtube] s8ZXJ5QUYvQ: Sign in to confirm you’re not a bot. This helps protect our community. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how …",
-      "attempts": 1,
-      "lastTried": "2026-11-11T17:11:29.488Z"
+      "state": "error",
+      "reason": "outdated",
+      "message": "YouTube refused the media download (HTTP 403); usually fixed by a newer yt-dlp: unable to download video data: HTTP Error 403: Forbidden",
+      "attempts": 2,
+      "lastTried": "2026-11-11T21:16:19.920Z"
     },
     "sKtl7-_6AjE": {
       "state": "ok",

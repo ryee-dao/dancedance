@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-11T17:41:56.174Z",
+  "updatedAt": "2026-11-11T21:16:34.466Z",
   "songs": [
     {
       "videoId": "_Vj092UgKwQ",
@@ -34,6 +34,15 @@
       "durationSec": 220,
       "hasMap": false,
       "genre": "Pop"
+    },
+    {
+      "videoId": "aF18NehJxos",
+      "title": "Paralyzer",
+      "artist": "Finger Eleven",
+      "addedAt": "2026-11-11T21:16:05.704Z",
+      "durationSec": 208,
+      "hasMap": false,
+      "genre": "Rock"
     }
   ]
 }
