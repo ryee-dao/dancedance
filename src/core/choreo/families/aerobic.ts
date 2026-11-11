@@ -116,8 +116,8 @@ export const patterns: PatternSet = {
     heelDig: {
       beats: 2, parts: ['legs'], mirror: true,
       keys: [
-        [0, { y: -0.045, x: -0.03, bend: -6, nod: 4, rf: [0.22, 0.03, 0.2] }],
-        [1, { y: -0.015 }],
+        [0, { y: -0.045, x: -0.03, bend: -6, nod: 4, rf: [0.22, 0.03, 0.2], pitchR: -35 }],
+        [1, { y: -0.015, pitchR: 0 }],
       ],
     },
     kneeLift: {

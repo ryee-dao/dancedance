@@ -59,6 +59,9 @@ export interface PoseSpec {
   /** Hand form: a pointing index finger or rock horns (else fist / open by handR). */
   formR?: 'point' | 'horns';
   formL?: 'point' | 'horns';
+  /** Foot pitch, deg: + = up on the ball of the foot (heel raised; the heel lifts automatically), - = heel dig (toes up). */
+  pitchR?: number;
+  pitchL?: number;
 }
 
 const RAD = 180 / Math.PI;
@@ -200,6 +203,8 @@ export function pose(spec: PoseSpec): Pose {
   if (spec.slideL) p[CH.SLIDE_L] = 1;
   if (spec.formR) p[CH.FORM_R] = spec.formR === 'point' ? 1 : 2;
   if (spec.formL) p[CH.FORM_L] = spec.formL === 'point' ? 1 : 2;
+  if (spec.pitchR !== undefined) p[CH.PITCH_R] = spec.pitchR;
+  if (spec.pitchL !== undefined) p[CH.PITCH_L] = spec.pitchL;
   return p;
 }
 
@@ -338,7 +343,7 @@ export const G_TORSO = 2;
 export const NUM_GROUPS = 3;
 
 export const GROUP_CHANNELS: readonly (readonly number[])[] = [
-  [CH.X, CH.Y, CH.HIPS, CH.HIPTWIST, CH.RFT_X, CH.RFT_Y, CH.RFT_Z, CH.LFT_X, CH.LFT_Y, CH.LFT_Z, CH.HIP_TILT, CH.SPIN, CH.KNEE_R, CH.KNEE_L, CH.SLIDE_R, CH.SLIDE_L],
+  [CH.X, CH.Y, CH.HIPS, CH.HIPTWIST, CH.RFT_X, CH.RFT_Y, CH.RFT_Z, CH.LFT_X, CH.LFT_Y, CH.LFT_Z, CH.HIP_TILT, CH.SPIN, CH.KNEE_R, CH.KNEE_L, CH.SLIDE_R, CH.SLIDE_L, CH.PITCH_R, CH.PITCH_L],
   [CH.SH_R, CH.SH_L, CH.RA_E, CH.RA_P, CH.RF_E, CH.RF_P, CH.LA_E, CH.LA_P, CH.LF_E, CH.LF_P, CH.HAND_R, CH.HAND_L, CH.FORM_R, CH.FORM_L],
   [CH.LEAN, CH.TWIST, CH.BEND, CH.HEAD_ROLL, CH.HEAD_NOD, CH.HEAD_TURN, CH.CHEST_X],
 ];

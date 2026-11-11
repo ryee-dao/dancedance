@@ -89,6 +89,10 @@ export function specFromPose(q: Pose, like: PoseSpec): PoseSpec {
     if (q[CH.SLIDE_R] > 0.5) o.slideR = true;
     if (q[CH.SLIDE_L] > 0.5) o.slideL = true;
   }
+  if (hasPair('pitchR', 'pitchL')) {
+    o.pitchR = q[CH.PITCH_R];
+    o.pitchL = q[CH.PITCH_L];
+  }
   if (hasPair('formR', 'formL')) {
     const f = (v: number) => (v > 1.5 ? 'horns' : v > 0.5 ? 'point' : undefined);
     const fr = f(q[CH.FORM_R]), fl = f(q[CH.FORM_L]);

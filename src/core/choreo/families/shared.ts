@@ -14,7 +14,7 @@ const hipSwayA: PoseSpec = { hips: 0.074, tilt: 7, y: -0.038, x: 0.012, lf: [-0.
 
 // Turns: on the balls of the feet, close stance, one foot lifting off the floor.
 // SPIN interpolates linearly and the short way round: keep keys < 180 deg apart.
-const TURN_FEET: PoseSpec = { rf: [0.055, 0, 0], lf: [-0.055, 0, 0] };
+const TURN_FEET: PoseSpec = { rf: [0.055, 0, 0], lf: [-0.055, 0, 0], pitchR: 18, pitchL: 18 };
 /** A 360 over beats start .. start+2 (lands on the next key at 0 / 360). */
 export const spinKeys = (start: number, hips = 0): (readonly [number, PoseSpec])[] => [
   [start, { ...TURN_FEET, y: -0.06, spin: 0, hips: hips * 0.5, kneeR: 0.1, kneeL: 0.1 }],

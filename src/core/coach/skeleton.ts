@@ -66,9 +66,11 @@ export const CH = {
   SLIDE_L: 34,
   FORM_R: 35, // hand form: 0 = plain (fist / open by HAND_R), 1 = pointing index finger, 2 = horns
   FORM_L: 36,
+  PITCH_R: 37, // foot pitch, deg: + = up on the ball of the foot (heel raised), - = heel dig (toes up)
+  PITCH_L: 38,
 } as const;
 
-export const NUM_CHANNELS = 37;
+export const NUM_CHANNELS = 39;
 
 /** Hand forms (CH.FORM_R / FORM_L values). */
 export const HAND_FORM = { plain: 0, point: 1, horns: 2 } as const;
@@ -96,6 +98,7 @@ const MIRROR_SWAP: readonly (readonly [number, number])[] = [
   [CH.KNEE_R, CH.KNEE_L],
   [CH.SLIDE_R, CH.SLIDE_L],
   [CH.FORM_R, CH.FORM_L],
+  [CH.PITCH_R, CH.PITCH_L],
 ];
 
 export type Pose = Float64Array;
@@ -287,7 +290,7 @@ function arm(sk: Skeleton, pose: Pose, side: number, sh: number, el: number, ha:
 }
 
 /** Two-bone IK for a leg; hip joint already placed; ankle target in V2. */
-function leg(sk: Skeleton, side: number, hip: number, knee: number, ankle: number, toe: number, turn: number): void {
+function leg(sk: Skeleton, side: number, hip: number, knee: number, ankle: number, toe: number, turn: number, pitch = 0): void {
   const p = sk.p;
   const hx = p[hip * 3], hy = p[hip * 3 + 1], hz = p[hip * 3 + 2];
   let dx = V2[0] - hx, dy = V2[1] - hy, dz = V2[2] - hz;
@@ -334,9 +337,23 @@ function leg(sk: Skeleton, side: number, hip: number, knee: number, ankle: numbe
   fx -= fd * sx; fy -= fd * sy; fz -= fd * sz;
   const fl = Math.sqrt(fx * fx + fy * fy + fz * fz) || 1;
   const L = 0.085;
-  p[toe * 3] = p[ankle * 3] + (fx / fl) * L;
-  p[toe * 3 + 1] = Math.max(0.004, p[ankle * 3 + 1] + (fy / fl) * L - 0.012);
-  p[toe * 3 + 2] = p[ankle * 3 + 2] + (fz / fl) * L;
+  if (pitch === 0) {
+    p[toe * 3] = p[ankle * 3] + (fx / fl) * L;
+    p[toe * 3 + 1] = Math.max(0.004, p[ankle * 3 + 1] + (fy / fl) * L - 0.012);
+    p[toe * 3 + 2] = p[ankle * 3 + 2] + (fz / fl) * L;
+  } else {
+    // Pitched foot: the horizontal heading of the foot, tipped by `pitch`
+    // (+ = toes down onto the floor with the heel raised, - = toes up).
+    let hx = fx, hz = fz;
+    const hl = Math.sqrt(hx * hx + hz * hz) || 1;
+    hx /= hl;
+    hz /= hl;
+    const a = pitch * DEG;
+    const c = Math.cos(a), s = Math.sin(a);
+    p[toe * 3] = p[ankle * 3] + hx * c * L;
+    p[toe * 3 + 1] = Math.max(0.004, p[ankle * 3 + 1] - s * L - 0.012 * c);
+    p[toe * 3 + 2] = p[ankle * 3 + 2] + hz * c * L;
+  }
 }
 
 /**
@@ -362,8 +379,11 @@ export function solveSkeleton(pose: Pose, sk: Skeleton): Skeleton {
   const pz = 0;
 
   // Ankle targets (feet travel with the body while airborne).
-  const rax = pose[CH.RFT_X], ray = BODY.ankleY + Math.max(0, pose[CH.RFT_Y]) + air, raz = pose[CH.RFT_Z];
-  const lax = pose[CH.LFT_X], lay = BODY.ankleY + Math.max(0, pose[CH.LFT_Y]) + air, laz = pose[CH.LFT_Z];
+  // Up on the ball of the foot (pitch > 0): the heel (ankle) rises so the toes stay on the floor.
+  const riseR = pose[CH.PITCH_R] > 0 ? Math.sin(Math.min(70, pose[CH.PITCH_R]) * DEG) * 0.073 : 0;
+  const riseL = pose[CH.PITCH_L] > 0 ? Math.sin(Math.min(70, pose[CH.PITCH_L]) * DEG) * 0.073 : 0;
+  const rax = pose[CH.RFT_X], ray = BODY.ankleY + Math.max(0, pose[CH.RFT_Y]) + air + riseR, raz = pose[CH.RFT_Z];
+  const lax = pose[CH.LFT_X], lay = BODY.ankleY + Math.max(0, pose[CH.LFT_Y]) + air + riseL, laz = pose[CH.LFT_Z];
 
   // Grounded feet must stay reachable: lower the pelvis rather than slide a foot.
   if (rootY <= 0.0001) {
@@ -414,9 +434,9 @@ export function solveSkeleton(pose: Pose, sk: Skeleton): Skeleton {
   place(p, J.HIP_R, J.PELVIS, RP, BODY.hipHalf, 0, 0);
   place(p, J.HIP_L, J.PELVIS, RP, -BODY.hipHalf, 0, 0);
   V2[0] = rax; V2[1] = ray; V2[2] = raz;
-  leg(sk, 1, J.HIP_R, J.KN_R, J.AN_R, J.TOE_R, pose[CH.KNEE_R]);
+  leg(sk, 1, J.HIP_R, J.KN_R, J.AN_R, J.TOE_R, pose[CH.KNEE_R], pose[CH.PITCH_R]);
   V2[0] = lax; V2[1] = lay; V2[2] = laz;
-  leg(sk, -1, J.HIP_L, J.KN_L, J.AN_L, J.TOE_L, pose[CH.KNEE_L]);
+  leg(sk, -1, J.HIP_L, J.KN_L, J.AN_L, J.TOE_L, pose[CH.KNEE_L], pose[CH.PITCH_L]);
   sk.spin = pose[CH.SPIN];
   // Turn: the whole solved body rotates about the vertical axis through the root.
   const sp = pose[CH.SPIN];

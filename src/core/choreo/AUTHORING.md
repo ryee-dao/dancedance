@@ -53,6 +53,9 @@ across all files. A broken definition is skipped and reported in
   - `spin` whole-body turn (deg): see Turns.
   - `slideR` / `slideL: true` on a key: that foot GLIDES to the key's spot
     (no step arc) - slides, swivels, glides.
+  - `pitchR` / `pitchL` foot pitch (deg): + = up on the ball of the foot (the
+    heel rises automatically, toes stay on the floor), - = heel dig (toes up).
+    Reads best in quarter profile; head-on it is a subtle cue.
   - `formR` / `formL: 'point' | 'horns'`: a pointing index finger or rock
     horns (drawn in all three looks; otherwise `handR` 0 = fist, 1 = open).
   - Reach: a hand is at most 0.315 from its shoulder (upper arm 0.165 +
