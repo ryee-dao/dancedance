@@ -6,7 +6,7 @@
 
 export const BEATMAP_VERSION = 1;
 /** Bump whenever analysis results change (cached maps from older analysers can then be refreshed). */
-export const ANALYZER_VERSION = '1.1.0';
+export const ANALYZER_VERSION = '1.2.0';
 
 export type BeatMapSource = 'cloud' | 'device' | 'file' | 'tab' | 'mic';
 export type SectionType = 'intro' | 'verse' | 'chorus' | 'drop' | 'outro';
@@ -17,6 +17,28 @@ export interface Section {
   type: SectionType;
   energy: number;
 }
+
+/**
+ * Optional per-bar readings (analyser 1.2.0+), for the choreographer. Each
+ * string has one digit 0-9 per downbeat: character k describes the bar from
+ * downbeat k to downbeat k + 1 (the last one: one typical bar). Maps without
+ * them fall back to section energy.
+ */
+export interface BarReadings {
+  /** Overall intensity, relative within the song (0 = quietest, 9 = loudest). */
+  energy: string;
+  /** Bass (below 200 Hz) level, relative within the song. */
+  bass: string;
+  /** How new the bar's groove is compared with the previous 1, 2 or 4 bars (0 = a repeat). */
+  change: string;
+  /** Bar indices (into downbeats) where a drop starts, increasing. */
+  drops: number[];
+}
+
+/** Longest list of drops a map may carry. */
+export const MAX_DROPS = 64;
+export const BAR_READING_KEYS = ['energy', 'bass', 'change'] as const;
+const DIGITS_RE = /^[0-9]*$/;
 
 export interface BeatMap {
   v: number;
@@ -29,6 +51,8 @@ export interface BeatMap {
   sections: Section[];
   source: BeatMapSource;
   partial?: boolean;
+  /** Per-bar readings (optional; see BarReadings). */
+  bars?: BarReadings;
 }
 
 export const BEATMAP_SOURCES: readonly BeatMapSource[] = ['cloud', 'device', 'file', 'tab', 'mic'];
@@ -152,6 +176,7 @@ export function validateBeatMap(x: unknown): BeatMap {
     sections.push({ start: roundMs(start), end: roundMs(end), type: s.type as SectionType, energy: Math.round(energy * 1000) / 1000 });
   }
   if (sections.length === 0 && duration > 0) fail('at least one section is required');
+  const bars = x.bars === undefined ? undefined : validateBars(x.bars, downbeats.length);
 
   const out: BeatMap = {
     v,
@@ -165,7 +190,36 @@ export function validateBeatMap(x: unknown): BeatMap {
     source: x.source as BeatMapSource,
   };
   if (x.partial === true) out.partial = true;
+  if (bars) out.bars = bars;
   return out;
+}
+
+/** Validate optional per-bar readings against the downbeat count (unknown sub-fields dropped). */
+function validateBars(x: unknown, nDownbeats: number): BarReadings {
+  if (!isObj(x)) fail('bars must be an object');
+  const out = {} as BarReadings;
+  for (const k of BAR_READING_KEYS) {
+    const v = x[k];
+    if (typeof v !== 'string' || !DIGITS_RE.test(v)) fail(`bars.${k} must be a string of digits`);
+    if (v.length !== nDownbeats) fail(`bars.${k} must have one digit per downbeat (${nDownbeats})`);
+    out[k] = v;
+  }
+  if (!Array.isArray(x.drops) || x.drops.length > MAX_DROPS) fail(`bars.drops must be an array of at most ${MAX_DROPS} bar indices`);
+  const drops: number[] = [];
+  for (let i = 0; i < x.drops.length; i++) {
+    const d = x.drops[i];
+    if (typeof d !== 'number' || !Number.isInteger(d) || d < 0 || d >= nDownbeats) fail(`bars.drops[${i}] must be an integer bar index`);
+    if (i > 0 && d <= drops[i - 1]) fail(`bars.drops must be strictly increasing (at index ${i})`);
+    drops.push(d);
+  }
+  out.drops = drops;
+  return out;
+}
+
+/** Digit (0-9) of a 0..1 reading. */
+export function quantiseReading(x: number): string {
+  const v = Number.isFinite(x) ? Math.round(Math.min(1, Math.max(0, x)) * 9) : 0;
+  return String(v);
 }
 
 /** Validate and serialise to compact JSON. */

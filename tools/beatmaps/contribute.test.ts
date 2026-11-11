@@ -16,6 +16,8 @@ const PUBLIC = join(__dirname, '../../public/beatmaps');
 const REAL = parse(readFileSync(join(PUBLIC, 'fw-QRyQcFH8.json'), 'utf8'));
 const ADDED_ID = 'addedsong01';
 const asTab = (o: Partial<BeatMap> = {}): BeatMap => ({ ...REAL, videoId: ADDED_ID, source: 'tab', ...o });
+/** Bar readings (analyser 1.2.0+) of the right length for REAL. */
+const BARS = { energy: REAL.downbeats.map((_, i) => String(i % 10)).join(''), bass: '5'.repeat(REAL.downbeats.length), change: '3'.repeat(REAL.downbeats.length), drops: [4, 20] };
 const NOW = new Date('2026-11-11T06:00:00Z');
 
 let root: string;
@@ -97,6 +99,15 @@ describe('contributed beat maps (map_json)', () => {
     expect(readdirSync(paths.beatmapsDir).map((f) => readFileSync(join(paths.beatmapsDir, f), 'utf8'))).toEqual(before);
   });
 
+  it('accepts maps with bar readings (written as sent) and without them', async () => {
+    const out = await runBeatmaps(paths, opts(asTab({ bars: BARS })), deps);
+    expect(out.report.contribution?.outcome).toBe('accepted');
+    const written = parse(await readFile(join(paths.beatmapsDir, `${ADDED_ID}.json`), 'utf8'));
+    expect(written.bars).toEqual(BARS);
+    expect(checkSharedMap(asTab()).ok).toBe(true);
+    expect(checkSharedMap(asTab({ bars: BARS })).ok).toBe(true);
+  });
+
   it('accepts maps for starter and playlist songs too, but never for unknown videos', async () => {
     expect((await runBeatmaps(paths, opts(asTab({ videoId: 'playlist001' })), deps)).report.contribution?.outcome).toBe('accepted');
     expect((await runBeatmaps(paths, opts(asTab({ videoId: 'starter0001' })), deps)).report.contribution?.outcome).toBe('accepted');
@@ -117,6 +128,10 @@ describe('contributed beat maps (map_json)', () => {
     ['a short song', asTab({ duration: 20, beats: REAL.beats.filter((t) => t < 20), downbeats: [], sections: [{ start: 0, end: 20, type: 'verse', energy: 0.5 }] })],
     ['a length far from the official one', asTab({ duration: 400, sections: REAL.sections.map((s, i, a) => (i === a.length - 1 ? { ...s, end: 400 } : s)) })],
     ['a bad video ID', asTab({ videoId: 'x"; echo 1' })],
+    ['an extra bar-readings field', { ...asTab({ bars: BARS }), bars: { ...BARS, note: 'x' } }],
+    ['bar readings of the wrong length', asTab({ bars: { ...BARS, energy: BARS.energy.slice(1) } })],
+    ['bar readings that are not digits', asTab({ bars: { ...BARS, bass: BARS.bass.replace('5', 'x') } })],
+    ['a drop past the last bar', asTab({ bars: { ...BARS, drops: [REAL.downbeats.length] } })],
   ])('rejects %s and writes nothing', async (_, map) => {
     const out = await runBeatmaps(paths, opts(map), deps);
     expect(out.exitCode).toBe(0);

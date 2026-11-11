@@ -12,6 +12,10 @@ const NOW = () => new Date('2026-11-11T06:00:00.000Z');
 const PUBLIC = join(__dirname, '../../../public/beatmaps');
 const REAL = JSON.parse(readFileSync(join(PUBLIC, 'fw-QRyQcFH8.json'), 'utf8'));
 const TAB = { ...REAL, source: 'tab' };
+const nBars = REAL.downbeats.length;
+/** Bar readings (analyser 1.2.0+) of the right length for REAL. */
+const BARS = { energy: '7'.repeat(nBars), bass: '6'.repeat(nBars), change: '2'.repeat(nBars), drops: [4, 20] };
+const TAB_BARS = { ...TAB, bars: BARS };
 
 interface Call {
   url: string;
@@ -61,6 +65,14 @@ describe('relay POST /map', () => {
     expect(d.inputs.map_json).not.toContain(' ');
     expect(f.calls[1].init!.body!.toString().length).toBeLessThan(60_000);
     expect((f.calls[1].init!.headers as Record<string, string>).Authorization).toBe(`Bearer ${TOKEN}`);
+  });
+
+  it('accepts maps with per-bar readings and forwards them unchanged', async () => {
+    const f = github();
+    expect((await read(await handle(post(TAB_BARS), env, f, NOW))).status).toBe(200);
+    expect(JSON.parse(JSON.parse(f.calls[1].init!.body as string).inputs.map_json)).toEqual(TAB_BARS);
+    // Bar readings cost ~4 bytes a bar: a 15-minute song at 220 BPM still fits.
+    expect(JSON.stringify(TAB_BARS).length - JSON.stringify(TAB).length).toBeLessThan(4 * nBars + 80);
   });
 
   it('accepts device maps too', async () => {
@@ -123,6 +135,14 @@ describe('relay POST /map', () => {
     ['sections ending early', { ...TAB, sections: sec.map((s: { end: number }, i: number) => (i === last ? { ...s, end: s.end - 3 } : s)) }, 'sections'],
     ['an unknown section type', { ...TAB, sections: sec.map((s: object, i: number) => (i ? s : { ...s, type: 'bridge' })) }, 'invalid'],
     ['no sections', { ...TAB, sections: [] }, 'invalid'],
+    ['an extra bar-readings field', { ...TAB, bars: { ...BARS, x: '1' } }, 'extra-field'],
+    ['bar readings that are not an object', { ...TAB, bars: '777' }, 'invalid'],
+    ['a missing bar reading', { ...TAB, bars: { energy: BARS.energy, bass: BARS.bass, drops: [] } }, 'invalid'],
+    ['bar readings of the wrong length', { ...TAB, bars: { ...BARS, change: BARS.change.slice(1) } }, 'invalid'],
+    ['bar readings that are not digits', { ...TAB, bars: { ...BARS, energy: `a${BARS.energy.slice(1)}` } }, 'invalid'],
+    ['drops out of order', { ...TAB, bars: { ...BARS, drops: [20, 4] } }, 'invalid'],
+    ['a drop past the last bar', { ...TAB, bars: { ...BARS, drops: [nBars] } }, 'invalid'],
+    ['too many drops', { ...TAB, bars: { ...BARS, drops: Array.from({ length: 65 }, (_, i) => i) } }, 'invalid'],
   ])('rejects %s (bad-map), dispatching nothing', async (_, map, rule) => {
     const f = github();
     expect(await read(await handle(post(map), env, f, NOW))).toEqual({ status: 400, body: { ok: false, error: 'bad-map', detail: rule } });
@@ -134,7 +154,10 @@ describe('relay POST /map', () => {
     const cases: unknown[] = [];
     for (const n of names) {
       const m = JSON.parse(readFileSync(join(PUBLIC, n), 'utf8'));
+      const nb = m.downbeats.length;
+      const bars = { energy: '5'.repeat(nb), bass: '4'.repeat(nb), change: '3'.repeat(nb), drops: nb > 2 ? [1] : [] };
       cases.push({ ...m, source: 'tab' }, { ...m, source: 'device' }, m, { ...m, source: 'tab', bpm: m.bpm * 1.2 }, { ...m, source: 'tab', beats: m.beats.slice(0, 40), downbeats: [] });
+      cases.push({ ...m, source: 'tab', bars }, { ...m, source: 'tab', bars: { ...bars, energy: bars.energy.slice(1) } }, { ...m, source: 'tab', bars: { ...bars, extra: 1 } });
     }
     for (const c of cases) {
       const a = validateSharedMap(c);

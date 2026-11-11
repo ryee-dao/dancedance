@@ -39,6 +39,15 @@ describe('BeatMap serialisation', () => {
     expect(p.partial).toBe(true);
   });
 
+  it('keeps optional bar readings; maps without them stay as they were', () => {
+    const bars = { energy: '29', bass: '18', change: '05', drops: [1] };
+    const back = parse(serialize({ ...good(), bars }));
+    expect(back.bars).toEqual(bars);
+    expect('bars' in parse(serialize(good()))).toBe(false);
+    // Unknown fields inside bars are dropped like any other.
+    expect(parse(JSON.stringify({ ...good(), bars: { ...bars, extra: '1' } })).bars).toEqual(bars);
+  });
+
   it('drops unknown fields', () => {
     const json = JSON.stringify({ ...good(), extra: 'x' });
     expect('extra' in parse(json)).toBe(false);
@@ -69,6 +78,15 @@ describe('BeatMap serialisation', () => {
     ['no sections', (m) => ({ ...m, sections: [] })],
     ['unknown source', (m) => ({ ...m, source: 'youtube' })],
     ['partial not boolean', (m) => ({ ...m, partial: 'yes' })],
+    ['bars not an object', (m) => ({ ...m, bars: '2918' })],
+    ['bars missing a reading', (m) => ({ ...m, bars: { energy: '29', bass: '18', drops: [] } })],
+    ['bar readings not digits', (m) => ({ ...m, bars: { energy: '2a', bass: '18', change: '05', drops: [] } })],
+    ['bar readings as numbers', (m) => ({ ...m, bars: { energy: 29, bass: '18', change: '05', drops: [] } })],
+    ['bar readings of the wrong length', (m) => ({ ...m, bars: { energy: '291', bass: '18', change: '05', drops: [] } })],
+    ['drops not an array', (m) => ({ ...m, bars: { energy: '29', bass: '18', change: '05', drops: 1 } })],
+    ['a drop past the last bar', (m) => ({ ...m, bars: { energy: '29', bass: '18', change: '05', drops: [2] } })],
+    ['drops out of order', (m) => ({ ...m, bars: { energy: '29', bass: '18', change: '05', drops: [1, 0] } })],
+    ['a fractional drop', (m) => ({ ...m, bars: { energy: '29', bass: '18', change: '05', drops: [0.5] } })],
   ];
   for (const [name, mutate] of bad) {
     it(`rejects ${name} with a clear error`, () => {

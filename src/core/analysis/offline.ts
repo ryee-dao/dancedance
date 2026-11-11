@@ -6,7 +6,8 @@
  *
  * Pure TypeScript: no DOM, Web Audio or Node APIs.
  */
-import { ANALYZER_VERSION, BEATMAP_VERSION, roundMs, type BeatMap, type BeatMapSource, type Section } from './beatmap';
+import { ANALYZER_VERSION, BEATMAP_VERSION, MAX_DROPS, quantiseReading, roundMs, type BeatMap, type BeatMapSource, type Section } from './beatmap';
+import { barReadings, type BarValues } from './bars';
 import { trackBeats } from './beats';
 import { findDownbeats } from './downbeats';
 import { FeatureExtractor, FeatureStore, FRAME_RATE, frameTime, onsetEnvelope, SAMPLE_RATE, type Features } from './onset';
@@ -32,6 +33,8 @@ export interface AnalysisResult {
   beats: number[];
   downbeats: number[];
   sections: Section[];
+  /** Per-bar readings, one per downbeat (absent without a usable bar grid). */
+  bars?: BarValues;
 }
 
 export interface AnalyzeFeaturesOptions {
@@ -66,7 +69,8 @@ export function analyzeFeatures(features: Features, opts: AnalyzeFeaturesOptions
   const downbeats = findDownbeats(features, beatFrames);
   const bpm = beats.length >= 4 ? 60 / regressionPeriod(beats) : tempo.bpm;
   const sections = segmentSections({ features, envelope: env, beats, downbeats, duration });
-  return { bpm, confidence: tempo.confidence, beats, downbeats, sections };
+  const bars = barReadings({ features, envelope: env, beats, downbeats, duration });
+  return { bpm, confidence: tempo.confidence, beats, downbeats, sections, ...(bars ? { bars } : {}) };
 }
 
 /** Least-squares slope of beat time against beat index (average period, s). */
@@ -138,9 +142,14 @@ export function toBeatMap(
     beats.push(t);
   }
   const downbeats: number[] = [];
-  for (const d of r.downbeats) {
-    const m = indexMap.get(d);
-    if (m !== undefined) downbeats.push(m);
+  /** For each kept downbeat, its index in r.downbeats (to carry its bar readings). */
+  const keptBars: number[] = [];
+  for (let k = 0; k < r.downbeats.length; k++) {
+    const m = indexMap.get(r.downbeats[k]);
+    if (m !== undefined && (downbeats.length === 0 || m > downbeats[downbeats.length - 1])) {
+      downbeats.push(m);
+      keptBars.push(k);
+    }
   }
   // Shift sections, clip, and stretch the ends so the whole song is covered.
   const sections: Section[] = [];
@@ -167,6 +176,13 @@ export function toBeatMap(
     source: meta.source,
   };
   if (meta.partial) map.partial = true;
+  const rb = r.bars;
+  if (rb && keptBars.length && rb.energy.length === r.downbeats.length && rb.bass.length === r.downbeats.length && rb.change.length === r.downbeats.length) {
+    const digits = (x: number[]) => keptBars.map((k) => quantiseReading(x[k])).join('');
+    const pos = new Map(keptBars.map((k, i) => [k, i]));
+    const drops = rb.drops.map((k) => pos.get(k)).filter((i): i is number => i !== undefined).slice(0, MAX_DROPS);
+    map.bars = { energy: digits(rb.energy), bass: digits(rb.bass), change: digits(rb.change), drops };
+  }
   return map;
 }
 

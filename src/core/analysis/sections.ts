@@ -51,7 +51,7 @@ export interface SectionInput {
   duration: number;
 }
 
-interface Bar {
+export interface Bar {
   start: number; // seconds
   end: number;
   loud: number; // dB
@@ -67,7 +67,7 @@ interface Bar {
 const toFrame = (t: number) => Math.round((t * SAMPLE_RATE) / HOP);
 const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);
 
-function percentile(sorted: ArrayLike<number>, p: number): number {
+export function percentile(sorted: ArrayLike<number>, p: number): number {
   const n = sorted.length;
   if (n === 0) return 0;
   const x = p * (n - 1);
@@ -76,11 +76,11 @@ function percentile(sorted: ArrayLike<number>, p: number): number {
   return i + 1 < n ? sorted[i] * (1 - f) + sorted[i + 1] * f : sorted[i];
 }
 
-function sortedCopy(x: ArrayLike<number>): Float64Array {
+export function sortedCopy(x: ArrayLike<number>): Float64Array {
   return Float64Array.from(x).sort();
 }
 
-function barFeatures(f: Features, env: Float32Array, start: number, end: number): Bar {
+export function barFeatures(f: Features, env: Float32Array, start: number, end: number): Bar {
   const a = Math.max(0, Math.min(f.frames - 1, toFrame(start)));
   const b = Math.max(a + 1, Math.min(f.frames, toFrame(end)));
   const mid = Math.max(a + 1, Math.min(b - 1, Math.round((a + b) / 2)));
@@ -139,7 +139,7 @@ function robustZ(x: number[], minScale: number): number[] {
  * range. Contrast is shrunk towards 0.5 when every cue is nearly flat, so a
  * uniform track does not get exaggerated differences. Silent bars are 0.
  */
-function barIntensity(bars: Bar[]): number[] {
+export function barIntensity(bars: Bar[]): number[] {
   const z = [
     { w: 0.3, v: robustZ(bars.map((b) => b.loud), 0.5) },
     { w: 0.15, v: robustZ(bars.map((b) => b.low), 0.75) },

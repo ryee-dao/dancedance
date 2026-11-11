@@ -226,6 +226,18 @@ export async function relayHealth(
   }
 }
 
+/** The map JSON without its optional per-bar readings, or null when it has none. */
+function withoutBars(mapJson: string): string | null {
+  try {
+    const m = JSON.parse(mapJson) as Record<string, unknown>;
+    if (!m || typeof m !== 'object' || !('bars' in m)) return null;
+    delete m.bars;
+    return JSON.stringify(m);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * POST /map: hand a beat map heard or analysed in this browser to the relay
  * (the body is the compact map JSON). `retry` says whether trying again later
@@ -246,7 +258,7 @@ export async function relayShareMap(
   } catch {
     return { ok: false, code: 'network', retry: true };
   }
-  let body: { ok?: unknown; error?: unknown } = {};
+  let body: { ok?: unknown; error?: unknown; detail?: unknown } = {};
   try {
     body = JSON.parse(await res.text()) as typeof body;
   } catch {
@@ -254,6 +266,12 @@ export async function relayShareMap(
   }
   if (res.ok && body && body.ok === true) return { ok: true };
   const code = body && typeof body.error === 'string' ? body.error.slice(0, 40) : `http-${res.status}`;
+  // A relay deployed before maps carried per-bar readings refuses the field:
+  // share the map without them (the app falls back to section energy).
+  if (code === 'bad-map' && body.detail === 'extra-field') {
+    const plain = withoutBars(mapJson);
+    if (plain) return relayShareMap(relay, plain, passphrase, fetchFn);
+  }
   // bad-map / bad-request / bad-origin / not-configured / 404 (an older relay without /map): this map won't get in.
   const retry = !(code === 'bad-map' || code === 'bad-request' || code === 'bad-origin' || code === 'not-configured' || res.status === 404 || res.status === 413);
   return { ok: false, code, retry };
