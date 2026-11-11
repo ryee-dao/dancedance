@@ -126,8 +126,9 @@ export async function downloadAudio(videoId: string, dir: string, o: YtDlpOption
     } catch (e) {
       last = e;
       const kind = e instanceof ToolFailure ? e.classification.kind : undefined;
-      // Only "refused" outcomes are worth another client; a removed or private video is not.
-      if (kind !== 'outdated' && kind !== 'blocked') throw e;
+      // A refusal is worth another client (the tv client can also answer "The
+      // page needs to be reloaded", a plain error); a removed or private video is not.
+      if (kind === 'unavailable') throw e;
       for (const f of await readdir(dir)) await rm(join(dir, f), { force: true });
     }
   }
