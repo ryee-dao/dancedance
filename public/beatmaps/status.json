@@ -1,0 +1,640 @@
+{
+  "updatedAt": "2026-11-11T04:50:24.819Z",
+  "videos": {
+    "-7XnDlYY9qw": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:59:08.964Z"
+    },
+    "-qZxMY7FZf8": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:54:23.022Z"
+    },
+    "-sVB91NTa4A": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:57:55.623Z"
+    },
+    "0Bl8dDFsAQU": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:40:38.300Z"
+    },
+    "0Ui-QzihJGo": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:01:30.273Z"
+    },
+    "1j_XvebOg4c": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:31:27.620Z"
+    },
+    "1oAn81h21aQ": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:44:18.057Z"
+    },
+    "4-TbQnONe_w": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:36:19.088Z"
+    },
+    "47NhAUUnIjs": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:05:54.228Z"
+    },
+    "4AqjqOqNrjw": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:46:56.317Z"
+    },
+    "4NRXx6U8ABQ": {
+      "state": "ok",
+      "attempts": 0,
+      "lastTried": ""
+    },
+    "4ZI8AC4AR5A": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:55:34.093Z"
+    },
+    "53tgVlXBZVg": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:51:31.845Z"
+    },
+    "5NV6Rdv1a3I": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:40:09.402Z"
+    },
+    "5y_KJAg8bHI": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:03:06.816Z"
+    },
+    "6M6samPEMpM": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:58:43.114Z"
+    },
+    "7-x3uD5z1bQ": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:34:49.261Z"
+    },
+    "7CTJcHjkq0E": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:56:43.853Z"
+    },
+    "7Ya2U8XN_Zw": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:38:33.844Z"
+    },
+    "8ELbX5CMomE": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:47:33.854Z"
+    },
+    "8YMkAW9TxDM": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:03:24.082Z"
+    },
+    "8xG7mH8i-WE": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:00:48.482Z"
+    },
+    "9lybsz-7TFM": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:44:05.757Z"
+    },
+    "AMNNqQpU-i4": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:04:22.785Z"
+    },
+    "BerNfXSuvJ0": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:03:36.274Z"
+    },
+    "CVhJYPNK6sI": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:31:42.285Z"
+    },
+    "D8j5Fm94_CE": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:35:02.289Z"
+    },
+    "DlSsIKn3HTU": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:57:29.104Z"
+    },
+    "EQzXwcZS-FU": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:43:41.315Z"
+    },
+    "FHo-g6DCTv4": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:06:11.094Z"
+    },
+    "GT1lysg-Kw4": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:00:17.115Z"
+    },
+    "GcHHjq8pXec": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:05:24.713Z"
+    },
+    "GchEVSx9XEA": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:44:57.645Z"
+    },
+    "GhH4rTap48M": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:42:39.687Z"
+    },
+    "H59xVMF4zxE": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:37:01.151Z"
+    },
+    "HbzZPpWr4MI": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:02:41.412Z"
+    },
+    "HhwTF97OyX8": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:34:21.556Z"
+    },
+    "IgCHFfDFivc": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:55:00.007Z"
+    },
+    "IhP3J0j9JmY": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:46:43.911Z"
+    },
+    "JDHoc9qzC5I": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:52:11.333Z"
+    },
+    "JRfuAukYTKg": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:44:44.699Z"
+    },
+    "JTBoLANhyVA": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:58:12.357Z"
+    },
+    "LX366rnYTB4": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:56:57.818Z"
+    },
+    "LhZ5GXCZtEw": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:38:50.142Z"
+    },
+    "Mr_uHJPUlO8": {
+      "state": "error",
+      "reason": "outdated",
+      "message": "YouTube refused the media download (HTTP 403); usually fixed by a newer yt-dlp: unable to download video data: HTTP Error 403: Forbidden",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:52:46.693Z"
+    },
+    "Mzk6KkyxXC8": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:01:03.473Z"
+    },
+    "NU61CbO9u6o": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:55:16.839Z"
+    },
+    "NaQ083rNUwc": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:57:12.454Z"
+    },
+    "OjX4Fpb7LX8": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:02:28.215Z"
+    },
+    "PdKKoOiEgqY": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:46:13.537Z"
+    },
+    "Pmv8aQKO6k0": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:51:08.462Z"
+    },
+    "Pw-0pbY9JeU": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:48:27.600Z"
+    },
+    "RwTwd5tAq1U": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:56:02.655Z"
+    },
+    "SRdlnO9gMIY": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:32:08.605Z"
+    },
+    "Sb5aq5HcS1A": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:52:24.446Z"
+    },
+    "TIUwLfpufs0": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:51:59.186Z"
+    },
+    "TUVcZfQe-Kw": {
+      "state": "blocked",
+      "message": "Sign in to confirm you are not a bot",
+      "attempts": 0,
+      "lastTried": ""
+    },
+    "UOQlKBlobRY": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:48:59.566Z"
+    },
+    "UOUBW8bkjQ4": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:50:37.203Z"
+    },
+    "UfM-nM762ec": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:45:55.215Z"
+    },
+    "V1Z586zoeeE": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:34:34.368Z"
+    },
+    "ViwtNLUqkMY": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:58:55.169Z"
+    },
+    "WzsYtW8zyXU": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:01:45.330Z"
+    },
+    "XQG89cwhmJU": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:39:42.078Z"
+    },
+    "XZe_pV2rXuk": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:47:59.751Z"
+    },
+    "XaCrQL_8eMY": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:34:08.480Z"
+    },
+    "Y6feSJsCxIw": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:32:24.769Z"
+    },
+    "YgCYsJicgEU": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:33:06.812Z"
+    },
+    "YxRothF-QE4": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:38:20.139Z"
+    },
+    "_Vj092UgKwQ": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:49:10.284Z"
+    },
+    "_dK2tDK9grQ": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:43:26.542Z"
+    },
+    "aAizT0NOWkM": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:00:33.694Z"
+    },
+    "aeZnkEMIxBM": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:53:28.075Z"
+    },
+    "ahvkAPbPGKw": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:04:52.940Z"
+    },
+    "b3bkpyNiv8Y": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:41:20.905Z"
+    },
+    "bOq67Poe95w": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:01:16.621Z"
+    },
+    "bSwzZoLCoZ0": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:55:49.251Z"
+    },
+    "e-fA-gBCkj0": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:39:29.696Z"
+    },
+    "eOGHYnhEABA": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:37:16.439Z"
+    },
+    "egpE0ysQ21Q": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:52:59.830Z"
+    },
+    "fH_OnJk6QqU": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:46:27.099Z"
+    },
+    "g9j5UzxEhEM": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:54:46.017Z"
+    },
+    "gx7GyiDZQms": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:01:57.898Z"
+    },
+    "hCLkVrp_4CE": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:32:49.972Z"
+    },
+    "hn6lonvIRsI": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:37:51.326Z"
+    },
+    "hyzGXmPQzEg": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:03:52.545Z"
+    },
+    "iFaKc8Bvk4Y": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:04:37.756Z"
+    },
+    "iSF26HsmeRI": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:47:09.666Z"
+    },
+    "i_SsnRdgitA": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:35:32.550Z"
+    },
+    "iawgB2CDCrw": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:35:17.126Z"
+    },
+    "ic8j13piAhQ": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:36:36.400Z"
+    },
+    "id2-K3daNRQ": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:05:39.260Z"
+    },
+    "j5n5YzMm5LY": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:33:55.031Z"
+    },
+    "jRr5EasAq84": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:58:28.426Z"
+    },
+    "jgh8owCuX78": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:00:04.493Z"
+    },
+    "jz7C2W4m26U": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:39:02.418Z"
+    },
+    "kJNyjdpT1vo": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:41:36.493Z"
+    },
+    "loOWKm8GW6A": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:50:09.655Z"
+    },
+    "mgT0N3tMP74": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:45:30.074Z"
+    },
+    "mwL1cohnHNE": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:40:54.869Z"
+    },
+    "nEIHHydwec8": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:43:03.520Z"
+    },
+    "niR2qJ3mGEE": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:49:27.070Z"
+    },
+    "nky4me4NP70": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:49:42.467Z"
+    },
+    "nx3-XCtnEqU": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:40:25.975Z"
+    },
+    "o6Tf-xcVB_o": {
+      "state": "error",
+      "reason": "outdated",
+      "message": "YouTube refused the media download (HTTP 403); usually fixed by a newer yt-dlp: unable to download video data: HTTP Error 403: Forbidden",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:35:47.491Z"
+    },
+    "o6ytLPKscrU": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:33:21.206Z"
+    },
+    "o9mLyHtSLjk": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:37:29.326Z"
+    },
+    "pd1_SxHh2vo": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:36:04.117Z"
+    },
+    "qJ_Tw0w3lLA": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:51:44.639Z"
+    },
+    "qX0cPZT3Lzg": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:50:52.898Z"
+    },
+    "r_9Kf0D5BTs": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:48:43.683Z"
+    },
+    "sKtl7-_6AjE": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:56:27.945Z"
+    },
+    "sLqdRmwY6vc": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:02:14.025Z"
+    },
+    "sqLWfFCbYBI": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:53:14.842Z"
+    },
+    "suRsxpoAc5w": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:42:17.468Z"
+    },
+    "t19wM1gn1Wo": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:56:14.824Z"
+    },
+    "u6lihZAcy4s": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:33:40.288Z"
+    },
+    "vXlyuCzZc4E": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:54:06.527Z"
+    },
+    "w4Xfg_MRH10": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:05:08.542Z"
+    },
+    "w5i-cwLH7s0": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T04:04:05.836Z"
+    },
+    "xjiYBGs0TUA": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:59:48.909Z"
+    },
+    "yvvamodXZbw": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:47:47.072Z"
+    },
+    "zIh5AHxh-Ok": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:41:51.048Z"
+    },
+    "zLxXqEZ5OoA": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:45:13.958Z"
+    },
+    "zd-h01o7LtI": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:38:06.516Z"
+    },
+    "zgEKLhvCCVA": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-11T03:53:52.348Z"
+    }
+  }
+}

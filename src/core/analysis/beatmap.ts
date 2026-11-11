@@ -6,7 +6,7 @@
 
 export const BEATMAP_VERSION = 1;
 /** Bump whenever analysis results change (cached maps from older analysers can then be refreshed). */
-export const ANALYZER_VERSION = '1.0.0';
+export const ANALYZER_VERSION = '1.1.0';
 
 export type BeatMapSource = 'cloud' | 'device' | 'file' | 'tab' | 'mic';
 export type SectionType = 'intro' | 'verse' | 'chorus' | 'drop' | 'outro';

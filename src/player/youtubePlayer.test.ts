@@ -20,6 +20,8 @@ interface Script {
   errorCode?: number;
   /** Content duration in seconds. */
   duration?: number;
+  /** loadVideoById does nothing at all (no state events ever). */
+  silent?: boolean;
 }
 
 /** Scripted stand-in for YT.Player. Time advances via a 50 ms interval. */
@@ -70,7 +72,12 @@ class FakeYT {
   isMuted() {
     return this.muted;
   }
+  /** Test hook: start an ad in the middle of playback. */
+  midroll(ms: number) {
+    this.adLeft = ms;
+  }
   loadVideoById({ videoId }: { videoId: string }) {
+    if (this.script.silent) return;
     this.target = videoId;
     this.t = 0;
     this.vid = '';
@@ -297,6 +304,40 @@ describe('YouTubePlayer start sequence', () => {
     await run(3000);
     expect(await first).toBe('cancelled');
     await expect(second).resolves.toBeUndefined();
+    p.destroy();
+  });
+
+  it('after play(): reports a mid-song ad, freezes the clock, and clears it when the song moves again', async () => {
+    script = {};
+    const p = new YouTubePlayer();
+    const statuses: string[] = [];
+    p.onStatus = (s) => statuses.push(s);
+    void p.load(ITEM);
+    await run(3000);
+    p.play();
+    await run(2000);
+    expect(p.isPlaying()).toBe(true);
+    fake.midroll(8000);
+    await run(1000);
+    const frozenAt = p.time();
+    await run(3000);
+    expect(statuses).toContain('ad');
+    expect(p.isPlaying()).toBe(false);
+    expect(p.time()).toBeLessThanOrEqual(frozenAt + 0.01);
+    await run(6000);
+    expect(statuses[statuses.length - 1]).toBe('playing');
+    expect(p.isPlaying()).toBe(true);
+    p.destroy();
+  });
+
+  it('asks for a press (with retry/skip in the UI) within ~6 s when the player never reacts', async () => {
+    script = { silent: true };
+    const p = new YouTubePlayer();
+    const statuses: string[] = [];
+    p.onStatus = (s) => statuses.push(s);
+    void p.load(ITEM).catch(() => {});
+    await run(7000);
+    expect(statuses).toContain('needs-gesture');
     p.destroy();
   });
 });

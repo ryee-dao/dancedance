@@ -1,0 +1,77 @@
+# Build the web app and publish it to GitHub Pages.
+#
+# Runs on every push to main, by hand (Actions -> Deploy site -> Run workflow),
+# and from beatmaps.yml after it commits new beat maps (pushes made with
+# GITHUB_TOKEN do not start other workflows, so that job calls this one).
+#
+# One-time setup: Settings -> Pages -> Build and deployment -> Source: GitHub Actions.
+# Optional repository variable: ADD_SONG_URL (see README, "Optional: Cloudflare relay").
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        description: Commit to build (defaults to the commit that triggered the run)
+        type: string
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # When called from beatmaps.yml, build the commit it just pushed
+          # (github.sha would still be the commit from before the new maps).
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+        env:
+          # Optional: address of the "add a song" Cloudflare relay (repository
+          # variable ADD_SONG_URL). Empty = the app asks for a relay or token.
+          VITE_ADD_SONG_URL: ${{ vars.ADD_SONG_URL }}
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Only one Pages deployment at a time; a newer one waits instead of cancelling.
+    concurrency:
+      group: pages-deploy
+      cancel-in-progress: false
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

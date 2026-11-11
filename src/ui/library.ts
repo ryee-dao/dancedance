@@ -6,9 +6,13 @@
  */
 
 import starterData from '../data/starter.json';
+import { reloadCloudIndex } from '../beat/bpmIndex';
+import type { AddedSong } from '../beat/cloud';
 import { getPlatform } from '../platform/platform';
 import { cleanTitle } from '../player/playlistReader';
 import { store, type BlockReason, type PlaylistLink } from '../store';
+import { addedSongs } from './addedSongs';
+import { toast } from './toast';
 
 export type Era = 'current' | 'throwback';
 
@@ -17,7 +21,7 @@ export interface Song {
   /** null until known (playlist songs fill in from oEmbed). */
   title: string | null;
   artist: string | null;
-  source: 'playlist' | 'starter';
+  source: 'playlist' | 'starter' | 'added';
   era?: Era;
 }
 
@@ -55,6 +59,24 @@ class Library extends EventTarget {
   private enrichment = new Map<string, { title: string; artist?: string }>();
   private refreshToken = 0;
   private lookupsQueued = new Set<string>();
+  private addedWired = false;
+
+  /** Songs added by search (songs.json) come and go on their own; follow them. */
+  private wireAdded(): void {
+    if (this.addedWired) return;
+    this.addedWired = true;
+    addedSongs.addEventListener('change', () => {
+      this.emit('change');
+      this.queueLookups(); // embeddability of newly published songs
+    });
+    addedSongs.addEventListener('appeared', (e) => {
+      const song = (e as CustomEvent<AddedSong>).detail;
+      const dup = this.playlistIds.includes(song.videoId) || STARTER.some((s) => s.videoId === song.videoId);
+      toast(dup ? `“${song.title}” is already in your songs.` : `“${song.title}” is ready to dance. It’s in My added songs.`, 6000);
+      void reloadCloudIndex(getPlatform().beatmapBase);
+    });
+    addedSongs.start(getPlatform().beatmapBase);
+  }
 
   playlistStatus(): PlaylistStatus {
     return this.status;
@@ -68,6 +90,8 @@ class Library extends EventTarget {
   async refresh(): Promise<void> {
     const token = ++this.refreshToken;
     const platform = getPlatform();
+    if (this.addedWired) void addedSongs.refresh();
+    this.wireAdded();
     void platform.getEnrichment().then((videos) => {
       for (const v of videos) {
         if (v.title) this.enrichment.set(v.videoId, { title: v.title, artist: v.artist });
@@ -138,6 +162,15 @@ class Library extends EventTarget {
     return this.playlistIds.map((id) => this.song(id, 'playlist'));
   }
 
+  /** Songs added by search, newest first, minus any already in the playlist or starter pack. */
+  addedSongs(): Song[] {
+    const taken = new Set([...this.playlistIds, ...STARTER.map((s) => s.videoId)]);
+    return addedSongs
+      .songs()
+      .filter((s) => !taken.has(s.videoId))
+      .map((s) => this.song(s.videoId, 'added'));
+  }
+
   /** Starter songs not already in the playlist (playlist wins). */
   starterSongs(): Song[] {
     const inPlaylist = new Set(this.playlistIds);
@@ -177,12 +210,13 @@ class Library extends EventTarget {
   find(videoId: string): Song | null {
     if (this.playlistIds.includes(videoId)) return this.song(videoId, 'playlist');
     if (STARTER.some((s) => s.videoId === videoId)) return this.song(videoId, 'starter');
+    if (addedSongs.find(videoId)) return this.song(videoId, 'added');
     return null;
   }
 
   /** Every song that isn't flagged as unplayable, de-duplicated. */
   playable(): Song[] {
-    return [...this.playlistSongs(), ...this.starterSongs()].filter((s) => !this.blockReason(s.videoId));
+    return [...this.playlistSongs(), ...this.addedSongs(), ...this.starterSongs()].filter((s) => !this.blockReason(s.videoId));
   }
 
   private song(videoId: string, source: Song['source']): Song {
@@ -190,6 +224,8 @@ class Library extends EventTarget {
     if (starter) {
       return { videoId, title: starter.title, artist: starter.artist, source, era: starter.era };
     }
+    const added = addedSongs.find(videoId);
+    if (added) return { videoId, title: added.title, artist: added.artist, source };
     const enriched = this.enrichment.get(videoId);
     if (enriched) return { videoId, title: enriched.title, artist: enriched.artist ?? null, source };
     const cached = store.titles()[videoId];
@@ -245,6 +281,7 @@ class Library extends EventTarget {
     };
     const ids = [
       ...this.playlistIds.filter((id) => needs(id, 30 * DAY)),
+      ...addedSongs.songs().map((s) => s.videoId).filter((id) => needs(id, 7 * DAY)),
       ...STARTER.map((s) => s.videoId).filter((id) => needs(id, 7 * DAY)),
     ];
     for (const id of ids) {

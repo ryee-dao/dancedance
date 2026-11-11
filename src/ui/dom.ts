@@ -1,6 +1,7 @@
 /** Tiny DOM helpers and the shared screen/navigation types. */
 
 import type { PlayItem } from '../player/types';
+import type { Intensity } from '../store';
 import type { Scope } from './focusNav';
 
 type Attrs = Record<string, string | number | boolean | null | undefined>;
@@ -49,8 +50,15 @@ export interface HomeOptions {
 export interface Nav {
   home(opts?: HomeOptions): void;
   link(): void;
-  /** Play a queue. With shuffle, songs continue one after another. */
-  play(queue: PlayItem[], opts?: { shuffle?: boolean }): void;
+  /**
+   * Play a queue. With shuffle, songs continue one after another.
+   * `intensity`: the level picked for this run (default: the last used).
+   */
+  play(queue: PlayItem[], opts?: { shuffle?: boolean; intensity?: Intensity }): void;
   /** Open the file picker ("Play a file"). */
   pickFile(): void;
+  /** "Add a song" search screen (web only). */
+  addSong(): void;
+  /** Options: coach look, audio offset, beat sync, links. */
+  options(): void;
 }

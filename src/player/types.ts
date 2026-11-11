@@ -12,10 +12,15 @@ export type PlayItem =
  *                     a muted preroll ad)
  *  - 'needs-gesture': the browser blocked autoplay; call play() from a user
  *                     action (button / OK key) to continue
- *  - 'slow':          nothing has started after a generous timeout; the UI
- *                     should offer retry / skip (loading keeps going)
+ *  - 'slow':          nothing has started after a timeout (or the player went
+ *                     silent); the UI should offer retry / skip (loading
+ *                     keeps going). After play(): buffering for a long time.
+ *  - 'playing':       after play() only: the song is advancing again after an
+ *                     'ad' / 'slow' report; the UI can clear its notice.
+ * After play(), 'ad' means the player reports PLAYING but the song time
+ * stands still (an ad mid-song).
  */
-export type StartStatus = 'loading' | 'ad' | 'needs-gesture' | 'slow';
+export type StartStatus = 'loading' | 'ad' | 'needs-gesture' | 'slow' | 'playing';
 
 /**
  * Player error. `code` is the YouTube IFrame error number where there is one
@@ -59,5 +64,10 @@ export interface MediaPlayer {
   /** Errors after load() resolved. Errors during load reject load(). */
   onError: ((err: PlayerError) => void) | null;
   onStatus: ((status: StartStatus) => void) | null;
+  /**
+   * Optional live detail for the "Starting soon" screen while load() runs,
+   * e.g. "Downloading the song… 40%" (Android TV player). Polled per frame.
+   */
+  loadingDetail?(): string | null;
   destroy(): void;
 }

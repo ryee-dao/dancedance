@@ -275,3 +275,179 @@ export function signedErrors(est: number[], ref: number[], tol = 0.1): number[] 
   }
   return out;
 }
+
+// ---------------------------------------------------------------------------
+// Real-music-like synthetic material (test-only).
+
+type Gauss = () => number;
+
+function thump(pcm: Float32Array, sr: number, gauss: Gauss, at: number, amp: number, f0 = 55): void {
+  const start = Math.round(at * sr);
+  const len = Math.round(0.25 * sr);
+  let phase = 0;
+  for (let i = 0; i < len && start + i < pcm.length; i++) {
+    const tt = i / sr;
+    phase += (2 * Math.PI * (f0 + 90 * Math.exp(-tt / 0.02))) / sr;
+    let v = Math.sin(phase) * Math.exp(-tt / 0.07) * Math.min(1, i / 16);
+    if (i < 0.004 * sr) v += 0.3 * gauss() * (1 - i / (0.004 * sr));
+    if (start + i >= 0) pcm[start + i] += amp * v;
+  }
+}
+
+function noiseHit(pcm: Float32Array, sr: number, gauss: Gauss, at: number, amp: number, decay: number, lowpass: number, tone = 0): void {
+  const start = Math.round(at * sr);
+  const len = Math.round(Math.min(0.3, decay * 6) * sr);
+  let lp = 0;
+  let prev = 0;
+  for (let i = 0; i < len && start + i < pcm.length; i++) {
+    const tt = i / sr;
+    const w = gauss();
+    let v: number;
+    if (lowpass > 0) {
+      lp += lowpass * (w - lp);
+      v = lp;
+    } else {
+      v = w - prev; // crude high-pass
+      prev = w;
+    }
+    v *= Math.exp(-tt / decay);
+    if (tone > 0) v += 0.6 * Math.sin(2 * Math.PI * tone * tt) * Math.exp(-tt / 0.03);
+    if (start + i >= 0) pcm[start + i] += amp * v;
+  }
+}
+
+export type DrumKind = 'kick' | 'snare' | 'hat' | 'clap';
+export interface PatternEvent {
+  /** Position in beats from the start of the bar (may be fractional). */
+  at: number;
+  kind: DrumKind;
+  gain?: number;
+}
+
+function drum(pcm: Float32Array, sr: number, gauss: Gauss, kind: DrumKind, at: number, g: number): void {
+  if (kind === 'kick') thump(pcm, sr, gauss, at, 0.9 * g);
+  else if (kind === 'snare') noiseHit(pcm, sr, gauss, at, 0.7 * g, 0.05, 0.5, 185);
+  else if (kind === 'clap') noiseHit(pcm, sr, gauss, at, 0.6 * g, 0.03, 0.8);
+  else noiseHit(pcm, sr, gauss, at, 0.25 * g, 0.012, 0);
+}
+
+export interface PatternOptions {
+  bpm: number;
+  bars: number;
+  /** Beats per bar (default 4). */
+  beatsPerBar?: number;
+  events: PatternEvent[];
+  sampleRate?: number;
+  seed?: number;
+  /** Additive white noise SNR (dB). */
+  snrDb?: number;
+}
+
+/** A drum loop: the same bar of events repeated; beats/downbeats are the metrical grid. */
+export function synthPattern(o: PatternOptions): SynthResult {
+  const sr = o.sampleRate ?? 22050;
+  const gauss = gaussian(mulberry32(o.seed ?? 99));
+  const bpb = o.beatsPerBar ?? 4;
+  const P = 60 / o.bpm;
+  const first = 0.25;
+  const duration = first + o.bars * bpb * P + 0.5;
+  const pcm = new Float32Array(Math.round(duration * sr));
+  const beats: number[] = [];
+  const downbeats: number[] = [];
+  for (let b = 0; b < o.bars; b++) {
+    const t0 = first + b * bpb * P;
+    for (let k = 0; k < bpb; k++) {
+      if (k === 0) downbeats.push(beats.length);
+      beats.push(t0 + k * P);
+    }
+    for (const e of o.events) drum(pcm, sr, gauss, e.kind, t0 + e.at * P, e.gain ?? 1);
+  }
+  addNoise(pcm, o.snrDb, gauss);
+  return { pcm, sampleRate: sr, beats, downbeats, duration, sectionTimes: [0, duration] };
+}
+
+function addNoise(pcm: Float32Array, snrDb: number | undefined, gauss: Gauss): void {
+  if (snrDb === undefined) return;
+  let ss = 0;
+  for (let i = 0; i < pcm.length; i++) ss += pcm[i] * pcm[i];
+  const k = Math.sqrt(ss / Math.max(1, pcm.length)) / Math.pow(10, snrDb / 20);
+  for (let i = 0; i < pcm.length; i++) pcm[i] += k * gauss();
+}
+
+export interface SongSection {
+  name: string;
+  bars: number;
+  /** Chord per bar, cycled: MIDI note numbers of each chord. */
+  chords: number[][];
+  /** Drum bar for this section. */
+  drums: PatternEvent[];
+}
+
+export interface SongOptions {
+  bpm: number;
+  sections: SongSection[];
+  sampleRate?: number;
+  seed?: number;
+  snrDb?: number;
+}
+
+/**
+ * A "compressed master": every bar is normalised to the same RMS, so the
+ * sections differ only in harmony (sustained chord tones + a bass note) and
+ * drum pattern, never in loudness. sectionTimes holds the true boundaries.
+ */
+export function synthSong(o: SongOptions): SynthResult & { sectionNames: string[] } {
+  const sr = o.sampleRate ?? 22050;
+  const gauss = gaussian(mulberry32(o.seed ?? 4242));
+  const P = 60 / o.bpm;
+  const first = 0.25;
+  const totalBars = o.sections.reduce((s, x) => s + x.bars, 0);
+  const duration = first + totalBars * 4 * P + 0.5;
+  const pcm = new Float32Array(Math.round(duration * sr));
+  const beats: number[] = [];
+  const downbeats: number[] = [];
+  const sectionTimes: number[] = [0];
+  const barStarts: number[] = [];
+  let bar = 0;
+  for (let si = 0; si < o.sections.length; si++) {
+    const sec = o.sections[si];
+    if (si > 0) sectionTimes.push(first + bar * 4 * P);
+    for (let b = 0; b < sec.bars; b++, bar++) {
+      const t0 = first + bar * 4 * P;
+      barStarts.push(t0);
+      for (let k = 0; k < 4; k++) {
+        if (k === 0) downbeats.push(beats.length);
+        beats.push(t0 + k * P);
+      }
+      // Harmony: chord tones (with two harmonics) and a bass note, re-struck each beat.
+      const chord = sec.chords[b % sec.chords.length];
+      const i0 = Math.round(t0 * sr);
+      const i1 = Math.min(pcm.length, Math.round((t0 + 4 * P) * sr));
+      for (let i = i0; i < i1; i++) {
+        const tt = (i - i0) / sr;
+        const env = 0.35 + 0.65 * Math.exp(-(tt % P) / 0.25);
+        let v = 0;
+        for (const note of chord) {
+          const f = 440 * Math.pow(2, (note - 69) / 12);
+          v += Math.sin(2 * Math.PI * f * tt) + 0.4 * Math.sin(4 * Math.PI * f * tt) + 0.2 * Math.sin(6 * Math.PI * f * tt);
+        }
+        const fb = 440 * Math.pow(2, (chord[0] - 12 - 69) / 12);
+        v = (0.08 * v) / chord.length + 0.12 * Math.sin(2 * Math.PI * fb * tt);
+        pcm[i] += env * v;
+      }
+      for (const e of sec.drums) drum(pcm, sr, gauss, e.kind, t0 + e.at * P, e.gain ?? 1);
+    }
+  }
+  sectionTimes.push(duration);
+  // Constant loudness: normalise every bar to the same RMS.
+  for (let k = 0; k < barStarts.length; k++) {
+    const i0 = Math.round(barStarts[k] * sr);
+    const i1 = Math.min(pcm.length, k + 1 < barStarts.length ? Math.round(barStarts[k + 1] * sr) : pcm.length);
+    let ss = 0;
+    for (let i = i0; i < i1; i++) ss += pcm[i] * pcm[i];
+    const g = 0.2 / Math.sqrt(ss / Math.max(1, i1 - i0) + 1e-12);
+    for (let i = i0; i < i1; i++) pcm[i] *= g;
+  }
+  addNoise(pcm, o.snrDb, gauss);
+  return { pcm, sampleRate: sr, beats, downbeats, duration, sectionTimes, sectionNames: o.sections.map((s) => s.name) };
+}

@@ -1,0 +1,4 @@
+# Build output and per-machine files (the root .gitignore covers .gradle, build/ and local.properties)
+.kotlin/
+*.apk
+*.aab

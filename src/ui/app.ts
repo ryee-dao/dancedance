@@ -1,6 +1,8 @@
 /** App shell: screen switching, file picking and drag-and-drop. */
 
+import { loadCloudIndex } from '../beat/bpmIndex';
 import { getPlatform, setPlatform } from '../platform/platform';
+import { createAndroidTvPlatform, hasTvBridge, shouldOfferTvLink } from '../platform/androidtv';
 import { createWebPlatform } from '../platform/web';
 import { fileTitle, isSupportedAudioFile } from '../player/audioPlayer';
 import type { PlayItem } from '../player/types';
@@ -9,12 +11,27 @@ import { initFocusNav, setScreenScope } from './focusNav';
 import { createHome } from './home';
 import { library } from './library';
 import { createLinkPlaylist } from './linkPlaylist';
-import { createPlay } from './play';
+import { createAddSong } from './addSong';
+import { createOptions } from './options';
+import { store } from '../store';
+import { createCoachStage } from './coachStage';
+import { createPlay, setStageRenderer } from './play';
+import { createTvLink } from './tvLink';
 import { toast } from './toast';
 
 export function startApp(root: HTMLElement): void {
-  // Later phase: pick androidtv.ts here when window.DanceBridge exists.
-  setPlatform(createWebPlatform());
+  // Inside the Android TV shell (window.DanceBridge) use the TV platform.
+  const tv = hasTvBridge();
+  setPlatform(tv ? createAndroidTvPlatform() : createWebPlatform());
+  // The coach dances on the play screen. `?stage=pulse` swaps in the plain
+  // beat-pulse ring instead (handy for checking sync by eye).
+  if (new URLSearchParams(location.search).get('stage') !== 'pulse') {
+    const isTV = getPlatform().isTV;
+    // The stored look applies unless the URL says ?coach=<style> (the stage checks that).
+    setStageRenderer(() =>
+      createCoachStage({ getIntensity: () => store.settings().intensity, isTV, getStyle: () => store.settings().coachStyle }),
+    );
+  }
   initFocusNav();
 
   let current: Screen | null = null;
@@ -45,7 +62,7 @@ export function startApp(root: HTMLElement): void {
 
   const nav: Nav = {
     home: (opts) => show(createHome(nav, opts)),
-    link: () => show(createLinkPlaylist(nav)),
+    link: () => show(tv ? createTvLink(nav) : createLinkPlaylist(nav)),
     play: (queue: PlayItem[], opts) => {
       if (queue.length) show(createPlay(nav, queue, opts));
     },
@@ -53,6 +70,12 @@ export function startApp(root: HTMLElement): void {
       fileInput.value = '';
       fileInput.click();
     },
+    addSong: () => {
+      // Search and the GitHub token are web-only; the TV just shows the published list.
+      if (tv) show(createHome(nav));
+      else show(createAddSong(nav));
+    },
+    options: () => show(createOptions(nav)),
   };
 
   fileInput.addEventListener('change', () => {
@@ -63,7 +86,10 @@ export function startApp(root: HTMLElement): void {
   if (getPlatform().canPlayFiles) setupDrop(playFile);
 
   void library.refresh();
-  nav.home();
+  void loadCloudIndex(getPlatform().beatmapBase);
+  // TV, first run without a playlist: offer phone linking straight away.
+  if (tv && shouldOfferTvLink()) nav.link();
+  else nav.home();
 }
 
 /** Drop an audio file anywhere on the window. */

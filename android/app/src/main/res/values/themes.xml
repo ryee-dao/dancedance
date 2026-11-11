@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Plain platform theme: the whole UI is the web app. Same background colour as the page
+         so there's no white flash while the WebView starts. -->
+    <style name="Theme.DanceDance" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/stage</item>
+        <item name="android:colorBackground">@color/stage</item>
+        <item name="android:statusBarColor">@color/stage</item>
+        <item name="android:navigationBarColor">@color/stage</item>
+    </style>
+</resources>

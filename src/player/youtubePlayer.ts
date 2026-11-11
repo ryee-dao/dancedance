@@ -22,7 +22,16 @@
  *
  * Statuses: 'ad' when the player reports PLAYING but our song isn't
  * advancing; 'needs-gesture' when nothing starts at all (autoplay blocked)
- * or play() doesn't take; 'slow' after 45 s without a confirmed start.
+ * or play() doesn't take; 'slow' after 30 s without a confirmed start, or
+ * after 8 s if the player hasn't reported a single state change.
+ *
+ * After play() the player is supervised too: 'ad' when it reports PLAYING but
+ * the song time stands still (a mid-roll or late preroll ad), 'slow' when it
+ * buffers for a long time, and 'playing' once the song is moving again. While
+ * the song time stands still the clock freezes instead of running ahead.
+ *
+ * Every state transition is logged to the console with a `[dd:player]`
+ * prefix so a stuck start can be diagnosed from a pasted log.
  */
 
 import { SmoothClock } from './clock';
@@ -37,13 +46,37 @@ const AD_HINT_MS = 2500;
 /** Stuck unstarted/cued this long: probably autoplay blocked. */
 const GESTURE_HINT_MS = 6000;
 /** Give the user retry/skip options after this long. */
-const SLOW_MS = 45000;
+const SLOW_MS = 30000;
+/** ...or this soon when the player hasn't reported any state change at all. */
+const NOTHING_MS = 8000;
+/** Ready phase: PLAYING with the song time standing still this long = stalled. */
+const STALL_MS = 1500;
+/** Ready phase: stalled this long while PLAYING is reported as an ad. */
+const STALL_AD_MS = 3000;
+/** Ready phase: buffering this long is reported as slow. */
+const BUFFER_SLOW_MS = 10000;
 /** After play(), not PLAYING (or buffering) within this long: blocked. */
 const PLAY_CHECK_MS = 3000;
 /** Max wait for pause + seek(0) to settle before resolving anyway. */
 const SETTLE_MS = 4000;
 
 type Phase = 'idle' | 'starting' | 'settling' | 'ready';
+
+const STATE_NAMES: Record<number, string> = {
+  [-1]: 'UNSTARTED',
+  0: 'ENDED',
+  1: 'PLAYING',
+  2: 'PAUSED',
+  3: 'BUFFERING',
+  5: 'CUED',
+};
+const stateName = (s: number) => STATE_NAMES[s] ?? String(s);
+
+/** Console diagnostics the user can paste into a bug report. */
+function log(...args: unknown[]): void {
+  if (import.meta.env.MODE === 'test') return;
+  console.info('[dd:player]', ...args);
+}
 
 export class YouTubePlayer implements MediaPlayer {
   readonly kind = 'youtube' as const;
@@ -72,8 +105,16 @@ export class YouTubePlayer implements MediaPlayer {
   private playingStuckSince = 0;
   private status: StartStatus | null = null;
   private slowSent = false;
+  /** Any onStateChange since loadVideoById (diagnostics / early escape). */
+  sawStateEvent = false;
+  private lastPolledState = NaN;
+  private loadAt = 0;
 
   // play() supervision
+  private lastRaw = NaN;
+  private lastRawChangeAt = 0;
+  private readyStatus: StartStatus | null = null;
+  private lastUnmuteAt = 0;
   private wantPlaying = false;
   private playRequestedAt = 0;
   private gestureSent = false;
@@ -82,8 +123,12 @@ export class YouTubePlayer implements MediaPlayer {
     if (item.kind !== 'youtube') return Promise.reject(new PlayerError(2, 'Not a YouTube item'));
     this.cancelPending();
     const token = ++this.loadToken;
+    this.loadAt = performance.now();
+    log(`load ${item.videoId}`, { haveApi: typeof window !== 'undefined' && !!window.YT?.Player, havePlayer: !!this.yt });
     return this.ensurePlayer().then((p) => {
       if (token !== this.loadToken || this.destroyed) throw new PlayerError('cancelled');
+      log(`player ready after ${Math.round(performance.now() - this.loadAt)} ms; loadVideoById`);
+      this.sawStateEvent = false;
       return new Promise<void>((resolve, reject) => {
         this.pending = { resolve, reject };
         this.videoId = item.videoId;
@@ -103,6 +148,7 @@ export class YouTubePlayer implements MediaPlayer {
 
   play(): void {
     const p = this.yt;
+    log('play()', this.snapshot(p));
     if (!p) return;
     if (this.phase === 'starting') {
       // User kick while autoplay is blocked; stay muted until confirmed.
@@ -115,12 +161,14 @@ export class YouTubePlayer implements MediaPlayer {
     if (this.phase !== 'ready') return;
     this.wantPlaying = true;
     this.playRequestedAt = performance.now();
+    this.lastRawChangeAt = this.playRequestedAt;
     this.gestureSent = false;
     p.playVideo();
   }
 
   pause(): void {
     const p = this.yt;
+    log('pause()', this.snapshot(p));
     if (!p || this.phase !== 'ready') return;
     this.wantPlaying = false;
     p.pauseVideo();
@@ -128,7 +176,19 @@ export class YouTubePlayer implements MediaPlayer {
   }
 
   isPlaying(): boolean {
-    return this.phase === 'ready' && this.yt?.getPlayerState() === YTState.PLAYING;
+    return this.phase === 'ready' && this.yt?.getPlayerState() === YTState.PLAYING && !this.stalled(performance.now());
+  }
+
+  /** PLAYING is reported but the song time hasn't moved for a while (ad / stall). */
+  private stalled(now: number): boolean {
+    return this.wantPlaying && now - this.lastRawChangeAt > STALL_MS;
+  }
+
+  private noteRaw(t: number, now: number): void {
+    if (t !== this.lastRaw) {
+      this.lastRaw = t;
+      this.lastRawChangeAt = now;
+    }
   }
 
   time(): number {
@@ -139,7 +199,9 @@ export class YouTubePlayer implements MediaPlayer {
     // ~30x/s adds nothing.
     if (now - this.lastClockSample >= 30) {
       this.lastClockSample = now;
-      this.clock.update(safeTime(p), p.getPlayerState() === YTState.PLAYING);
+      const raw = safeTime(p);
+      this.noteRaw(raw, now);
+      this.clock.update(raw, p.getPlayerState() === YTState.PLAYING && !this.stalled(now));
     }
     const t = this.clock.time();
     return this.dur > 0 ? Math.min(Math.max(0, t), this.dur) : Math.max(0, t);
@@ -166,6 +228,28 @@ export class YouTubePlayer implements MediaPlayer {
   }
 
   // -------------------------------------------------------------------------
+
+  /** Compact state for the [dd:player] log. */
+  private snapshot(p: YTPlayer | null): Record<string, unknown> {
+    if (!p) return { phase: this.phase, player: 'none' };
+    let vid: string | undefined;
+    let muted: boolean | undefined;
+    try {
+      vid = p.getVideoData?.()?.video_id;
+      muted = p.isMuted();
+    } catch {
+      /* the iframe may be gone */
+    }
+    return {
+      phase: this.phase,
+      state: stateName(p.getPlayerState()),
+      t: Math.round(safeTime(p) * 1000) / 1000,
+      vid,
+      want: this.videoId,
+      muted,
+      sinceLoad: Math.round(performance.now() - this.loadAt),
+    };
+  }
 
   private ensurePlayer(): Promise<YTPlayer> {
     if (!this.readyP) {
@@ -202,6 +286,7 @@ export class YouTubePlayer implements MediaPlayer {
   }
 
   private enterPhase(phase: Phase): void {
+    log(`phase ${this.phase} -> ${phase}`);
     this.phase = phase;
     this.phaseStart = performance.now();
     this.lastT = -1;
@@ -211,6 +296,7 @@ export class YouTubePlayer implements MediaPlayer {
 
   private emitStatus(s: StartStatus): void {
     if (this.status === s) return;
+    log(`status ${s}`, this.snapshot(this.yt));
     this.status = s;
     this.onStatus?.(s);
   }
@@ -225,6 +311,10 @@ export class YouTubePlayer implements MediaPlayer {
     const now = performance.now();
     const state = p.getPlayerState();
     const t = safeTime(p);
+    if (state !== this.lastPolledState) {
+      log(`poll ${stateName(this.lastPolledState)} -> ${stateName(state)}`, this.snapshot(p));
+      this.lastPolledState = state;
+    }
 
     if (this.phase === 'starting') {
       const vid = p.getVideoData?.()?.video_id;
@@ -239,6 +329,7 @@ export class YouTubePlayer implements MediaPlayer {
       this.lastT = t;
 
       if (this.advancingSince && now - this.advancingSince >= CONFIRM_MS && t >= 0.6) {
+        log('song confirmed playing; pausing and rewinding', this.snapshot(p));
         // Real song confirmed. Rewind silently, then unmute.
         p.pauseVideo();
         p.seekTo(0, true);
@@ -264,7 +355,9 @@ export class YouTubePlayer implements MediaPlayer {
       ) {
         this.emitStatus('needs-gesture');
       }
-      if (!this.slowSent && now - this.phaseStart > SLOW_MS) {
+      const nothingYet = !this.sawStateEvent && now - this.loadAt > NOTHING_MS && this.status !== 'needs-gesture';
+      if (!this.slowSent && (now - this.phaseStart > SLOW_MS || nothingYet)) {
+        log(nothingYet ? 'no player state change at all; offering retry/skip' : 'still not started; offering retry/skip', this.snapshot(p));
         this.slowSent = true;
         this.status = 'slow';
         this.onStatus?.('slow');
@@ -282,6 +375,9 @@ export class YouTubePlayer implements MediaPlayer {
         }
         p.unMute();
         this.dur = p.getDuration() || 0;
+        this.readyStatus = null;
+        this.lastRaw = NaN;
+        log(`settled (${settled ? 'paused at 0' : 'timed out'}); unmuted; ready`, this.snapshot(p));
         this.phase = 'ready';
         this.clock.seek(0);
         this.clock.update(0, false);
@@ -294,16 +390,46 @@ export class YouTubePlayer implements MediaPlayer {
 
     if (this.phase === 'ready') {
       if (!this.dur) this.dur = p.getDuration() || 0;
-      if (this.wantPlaying && state !== YTState.PLAYING && state !== YTState.BUFFERING) {
+      this.noteRaw(t, now);
+      if (!this.wantPlaying) return;
+      if (state !== YTState.PLAYING && state !== YTState.BUFFERING) {
         if (!this.gestureSent && now - this.playRequestedAt > PLAY_CHECK_MS) {
           this.gestureSent = true;
+          log('play() did not take; asking for a press', this.snapshot(p));
           this.onStatus?.('needs-gesture');
+        }
+        return;
+      }
+      const still = now - this.lastRawChangeAt;
+      if (state === YTState.PLAYING && still > STALL_AD_MS) this.emitReady('ad', p);
+      else if (state === YTState.BUFFERING && still > BUFFER_SLOW_MS) this.emitReady('slow', p);
+      else if (still < STALL_MS && this.readyStatus !== null && this.readyStatus !== 'playing') this.emitReady('playing', p);
+      // We unmute after the start sequence; make sure nothing re-muted us.
+      if (state === YTState.PLAYING && now - this.lastUnmuteAt > 2000) {
+        try {
+          if (p.isMuted()) {
+            this.lastUnmuteAt = now;
+            log('player is muted during playback; unmuting', this.snapshot(p));
+            p.unMute();
+          }
+        } catch {
+          /* ignore */
         }
       }
     }
   }
 
+  private emitReady(s: StartStatus, p: YTPlayer): void {
+    if (this.readyStatus === s) return;
+    log(`playback status ${s}`, this.snapshot(p));
+    this.readyStatus = s;
+    this.onStatus?.(s);
+  }
+
   private handleState(state: number): void {
+    const p0 = this.yt;
+    log(`event ${stateName(state)}`, this.snapshot(p0));
+    this.sawStateEvent = true;
     if (this.phase !== 'ready') return;
     const p = this.yt;
     if (p) this.clock.update(safeTime(p), state === YTState.PLAYING);
@@ -315,6 +441,7 @@ export class YouTubePlayer implements MediaPlayer {
   }
 
   private handleError(code: number): void {
+    log(`error ${code}`, this.snapshot(this.yt));
     const err = new PlayerError(code, describeYTError(code));
     if (this.pending) {
       const { reject } = this.pending;

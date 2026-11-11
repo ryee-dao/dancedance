@@ -453,28 +453,161 @@ body {
   border-radius: 50%;
   background: radial-gradient(ellipse at center, rgba(255, 92, 138, 0.28), transparent 70%);
 }
-.ph-ring {
+/* Default beat-pulse stage (placeholder until the coach is plugged in). */
+.bp-stage {
+  position: absolute;
+  inset: 0;
+}
+.bp-ring,
+.bp-core {
   position: absolute;
   left: 50%;
-  top: 48%;
-  width: 34vmin;
-  height: 34vmin;
+  top: 46%;
   border-radius: 50%;
-  border: 0.5vmin solid transparent;
-  border-top-color: var(--accent);
-  border-right-color: var(--accent-2);
-  opacity: 0.6;
   transform: translate(-50%, -50%);
+  will-change: transform, opacity;
 }
-.ph-note {
+.bp-ring {
+  width: 36vmin;
+  height: 36vmin;
+  border: 0.9vmin solid var(--accent-2);
+  box-shadow:
+    0 0 3vmin rgba(75, 227, 192, 0.35),
+    inset 0 0 3vmin rgba(75, 227, 192, 0.25);
+  opacity: 0.25;
+}
+.bp-core {
+  width: 30vmin;
+  height: 30vmin;
+  background: radial-gradient(circle, rgba(255, 92, 138, 0.95) 0%, rgba(255, 92, 138, 0.35) 45%, transparent 70%);
+  opacity: 0;
+}
+.bp-section {
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(48% + 21vmin);
-  margin: 0;
-  color: var(--muted);
-  font-size: 1.1rem;
+  top: calc(46% - 1.6rem);
+  color: var(--text);
+  font-size: 2.6rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
   text-align: center;
+  text-transform: uppercase;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.7);
+}
+.bp-dots {
+  position: absolute;
+  left: 50%;
+  top: calc(46% + 23vmin);
+  display: flex;
+  gap: 1.1rem;
+  transform: translateX(-50%);
+}
+.bp-idle .bp-dots,
+.bp-idle .bp-section {
+  visibility: hidden;
+}
+.bp-dot {
+  display: block;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+}
+.bp-dot.on {
+  background: var(--accent-2);
+  box-shadow: 0 0 1rem rgba(75, 227, 192, 0.8);
+}
+.bp-dot-one.on {
+  background: var(--accent);
+  box-shadow: 0 0 1rem rgba(255, 92, 138, 0.8);
+}
+
+/* Beat-sync status chip (top right) */
+.sync-chip {
+  position: absolute;
+  top: 1.6rem;
+  right: var(--gutter);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: 40vw;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  background: rgba(23, 20, 36, 0.8);
+  border: 2px solid var(--line);
+  color: var(--text);
+  font-size: 1.05rem;
+  font-weight: 800;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.sync-chip-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sync-dot {
+  flex: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.sync-chip[data-kind='ok'] .sync-dot {
+  background: var(--accent-2);
+}
+.sync-chip[data-kind='listen'] .sync-dot {
+  background: var(--focus);
+  animation: blink 1.6s ease-in-out infinite;
+}
+.sync-chip[data-kind='none'] {
+  color: var(--muted);
+}
+
+/* Words on the stage while there is no beat to follow yet */
+.sync-help {
+  /*
+   * Right column, over the coach's "next move" card (which has nothing
+   * useful to show while there is no beat) and clear of the figure.
+   */
+  position: absolute;
+  right: 3%;
+  top: 31.5%;
+  width: 28%;
+  min-width: 16rem;
+  padding: 1.2rem 1.4rem;
+  border-radius: 1.1rem;
+  background: rgba(23, 20, 36, 0.94);
+  border: 2px solid var(--line);
+  pointer-events: none;
+}
+.sync-help-title {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 900;
+}
+.sync-help-body {
+  margin: 0.4rem 0 0;
+  color: var(--muted);
+  font-size: 1.2rem;
+  line-height: 1.45;
+}
+
+/* "Audio offset +40 ms" readout while Left/Right are pressed */
+.offset-readout {
+  position: absolute;
+  left: 50%;
+  top: 1.4rem;
+  padding: 0.7rem 1.6rem;
+  border-radius: 999px;
+  background: rgba(247, 244, 255, 0.95);
+  color: #17121f;
+  font-size: 1.6rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 6;
 }
 
 .hud {
@@ -628,6 +761,507 @@ body {
   animation: pop 1000ms ease-out;
 }
 
+.overlay-sync {
+  min-height: 1.6rem;
+  margin: 0.8rem 0 0;
+  color: var(--accent-2);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+.overlay-elapsed {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+.overlay-explain {
+  color: var(--text);
+  font-size: 1.3rem;
+  line-height: 1.45;
+}
+.overlay-tip,
+.overlay-hint {
+  font-size: 1rem;
+}
+.overlay-hint {
+  margin: 1.4rem 0 0;
+  color: var(--muted);
+}
+.overlay-note {
+  color: var(--warn);
+}
+
+/* --- Level picker (Easy / Medium / Hard) ------------------------------------ */
+
+.picker-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background: rgba(10, 8, 16, 0.8);
+  animation: fade 160ms ease-out;
+}
+.picker-card {
+  max-width: min(56rem, 100%);
+  padding: 2rem 2.4rem 2.4rem;
+  border-radius: 1.4rem;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.6);
+  text-align: center;
+}
+.picker-kicker {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.picker-title {
+  margin: 0.4rem 0 1.6rem;
+  font-size: 2rem;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+.picker-levels {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.1rem;
+}
+.level-btn {
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 11rem;
+  padding: 1rem 1.6rem;
+  border-radius: 1.1rem;
+}
+.level-name {
+  font-size: 1.6rem;
+  font-weight: 900;
+}
+.level-hint {
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.picker-levels .level-btn:focus {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.picker-levels .level-btn:focus .level-hint {
+  color: var(--accent-ink);
+}
+
+/* Tempo badge on tiles: bottom right of the thumbnail, away from "New". */
+.bpm-badge {
+  position: absolute;
+  right: 0.55rem;
+  bottom: 0.55rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(15, 13, 23, 0.85);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* --- My added songs (home) --------------------------------------------- */
+
+.shelf-foot {
+  margin: 0.9rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.pending-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.3rem;
+}
+.pending-card {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 0.9rem;
+  border: 2px dashed var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+}
+.pending-card[data-state='failed'] {
+  border-style: solid;
+  border-color: var(--warn);
+}
+.pending-art {
+  flex: none;
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 0.6rem;
+  background: var(--surface-2);
+  object-fit: cover;
+}
+.pending-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.pending-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.pending-msg {
+  color: var(--accent-2);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.pending-card[data-state='failed'] .pending-msg,
+.pending-card[data-state='slow'] .pending-msg,
+.pending-card[data-state='retrying'] .pending-msg {
+  color: var(--warn);
+}
+.pending-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+.spinner {
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  margin-right: 0.45em;
+  border: 0.16em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: -0.05em;
+  animation: spin 900ms linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.picker-extra {
+  margin-top: 1.4rem;
+}
+
+/* --- Add a song / Options -------------------------------------------------- */
+
+.add-screen,
+.options-screen {
+  width: min(64rem, 100%);
+  margin: 0 auto;
+  padding: 1.6rem var(--gutter) 3rem;
+}
+.add-header {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-bottom: 1.2rem;
+}
+.add-title {
+  margin: 0;
+}
+.search-input {
+  font-size: 1.4rem;
+  padding: 1rem 1.2rem;
+}
+.search-input::-webkit-search-cancel-button {
+  filter: invert(1);
+}
+.search-status {
+  min-height: 1.6em;
+  margin: 0.8rem 0 1rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+.search-status[data-kind='error'] {
+  color: var(--warn);
+}
+.search-status[data-kind='info'] {
+  color: var(--accent-2);
+}
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.result-row {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  width: 100%;
+  padding: 0.7rem 1.1rem 0.7rem 0.7rem;
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  scroll-margin: 6rem 1rem 2rem;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+.result-row:focus {
+  z-index: 1;
+  border-color: var(--focus);
+  background: var(--surface-2);
+  box-shadow: 0 0.6rem 1.8rem rgba(0, 0, 0, 0.5);
+  transform: scale(1.015);
+}
+.result-art {
+  flex: none;
+  width: 4.6rem;
+  height: 4.6rem;
+  border-radius: 0.5rem;
+  background: var(--surface-2);
+  object-fit: cover;
+}
+.result-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+.result-title {
+  overflow: hidden;
+  font-size: 1.25rem;
+  font-weight: 800;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.result-artist {
+  color: var(--text);
+  font-size: 1.05rem;
+}
+.result-album {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.9rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.result-badge {
+  flex: none;
+  background: var(--accent-2);
+  color: #04261d;
+}
+.result-badge.badge-pending {
+  background: var(--surface-2);
+  color: var(--accent-2);
+  border: 2px solid var(--accent-2);
+}
+.result-time {
+  flex: none;
+  color: var(--muted);
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.conn-line {
+  margin-top: 2rem;
+}
+.conn-line .note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.dialog-card {
+  width: min(44rem, 100%);
+  text-align: left;
+}
+.dialog-title {
+  margin: 0 0 0.8rem;
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+.dialog-text {
+  margin: 0 0 0.9rem;
+  font-size: 1.1rem;
+}
+.dialog-help {
+  margin: 0 0 1.2rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.inline-link {
+  color: var(--accent-2);
+  font-weight: 700;
+}
+.inline-link:focus {
+  outline: 0.2rem solid var(--focus);
+  outline-offset: 0.15rem;
+}
+.field-gap {
+  margin-top: 1rem;
+}
+.connect-way {
+  margin: 0;
+  padding: 0.9rem 1.1rem 1.1rem;
+  border: 2px solid var(--line);
+  border-radius: 0.9rem;
+}
+.connect-legend {
+  padding: 0 0.4rem;
+  font-weight: 850;
+}
+.connect-or {
+  margin: 0.6rem 0;
+  color: var(--muted);
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+}
+.dialog-card {
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+}
+.confirm-song {
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+.confirm-art {
+  flex: none;
+  width: 8rem;
+  height: 8rem;
+  border-radius: 0.8rem;
+  background: var(--surface-2);
+  object-fit: cover;
+}
+.confirm-title {
+  margin: 0.2rem 0;
+  font-size: 1.9rem;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+.confirm-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+
+.opt-section {
+  margin-top: 2rem;
+}
+.opt-title {
+  margin: 0 0 0.6rem;
+  font-size: 1.5rem;
+  font-weight: 850;
+}
+.opt-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
+}
+.opt-status {
+  color: var(--muted);
+}
+.offset-value {
+  min-width: 12rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.choice-btn {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  border-radius: 1rem;
+}
+.choice-hint {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.choice-btn.selected,
+.style-card.selected {
+  border-color: var(--accent-2);
+}
+.choice-btn.selected .choice-name::before {
+  content: '✓ ';
+  color: var(--accent-2);
+}
+.style-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1.2rem;
+}
+.style-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  border: 3px solid var(--line);
+  border-radius: 1.1rem;
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+.style-card:focus {
+  transform: scale(1.04);
+  box-shadow:
+    0 0 0 0.25rem var(--bg),
+    0 0 0 0.55rem var(--focus);
+}
+.style-preview {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 32 / 30;
+  background: radial-gradient(ellipse at 50% 85%, #2a2146 0%, var(--bg-2) 70%);
+}
+.style-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.8rem 1rem 1rem;
+}
+.style-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+.style-check {
+  display: none;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: var(--accent-2);
+  color: #04261d;
+  font-size: 0.8rem;
+  font-weight: 850;
+}
+.style-card.selected .style-check {
+  display: inline-block;
+}
+.style-blurb {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 /* --- Toasts and drop hint ------------------------------------------------ */
 
 .toasts {
@@ -704,6 +1338,20 @@ body.dragging::after {
     opacity: 0.2;
   }
 }
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
 @keyframes rise {
   from {
     transform: translateY(0.8rem);
@@ -722,6 +1370,12 @@ body.dragging::after {
 }
 
 @media (max-width: 700px) {
+  .pending-list {
+    grid-template-columns: 1fr;
+  }
+  .result-album {
+    display: none;
+  }
   .grid {
     grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
     gap: 1rem;

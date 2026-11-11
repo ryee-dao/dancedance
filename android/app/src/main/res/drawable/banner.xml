@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TV home-row banner (original artwork): the DanceDance mark, two sound-wave arcs over a dot, and the name. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="320dp" android:height="180dp" android:viewportWidth="320" android:viewportHeight="180">
+    <path android:pathData="M0,0 H320 V180 H0 Z" android:fillColor="#0F0D17"/>
+    <path android:pathData="M0,150 L320,120 L320,180 L0,180 Z" android:fillColor="#1C1730"/>
+    <path android:pathData="M62,112 m-11,0 a11,11 0 1,0 22,0 a11,11 0 1,0 -22,0" android:fillColor="#FFFFFF"/>
+    <path android:pathData="M36,104 A26,26 0 0,1 88,104" android:strokeColor="#FF5C8A" android:strokeWidth="8" android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="#00000000"/>
+    <path android:pathData="M22,96 A40,40 0 0,1 102,96" android:strokeColor="#4BE3C0" android:strokeWidth="8" android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="#00000000" android:strokeAlpha="0.85"/>
+    <path android:pathData="M128,50 L128,80 L136,80 A14,15 0 0,0 136,50 Z M158,80 L169,50 L180,80 M163,69 L175,69 M188,80 L188,50 L210,80 L210,50 M240,55 A13,15 0 1,0 240,75 M269,50 L248,50 L248,80 L269,80 M248,65 L263,65" android:strokeColor="#FFFFFF" android:strokeWidth="6" android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="#00000000"/>
+    <path android:pathData="M128,100 L128,130 L136,130 A14,15 0 0,0 136,100 Z M158,130 L169,100 L180,130 M163,119 L175,119 M188,130 L188,100 L210,130 L210,100 M240,105 A13,15 0 1,0 240,125 M269,100 L248,100 L248,130 L269,130 M248,115 L263,115" android:strokeColor="#FF5C8A" android:strokeWidth="6" android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="#00000000"/>
+</vector>

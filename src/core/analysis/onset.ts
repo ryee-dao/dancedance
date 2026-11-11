@@ -15,6 +15,11 @@ export const N_FFT = 1024;
 export const HOP = 512;
 export const FRAME_RATE = SAMPLE_RATE / HOP; // ~43.07 frames per second
 export const NUM_BANDS = 12;
+/** Pitch classes in the chroma descriptor (C = 0). */
+export const NUM_CHROMA = 12;
+/** Chroma uses bins between these frequencies (below ~200 Hz one bin spans several semitones). */
+const CHROMA_MIN_HZ = 190;
+const CHROMA_MAX_HZ = 4200;
 
 /** Magnitude compression: log(1 + GAMMA * |X| / (N/4)). */
 const GAMMA = 1000;
@@ -44,6 +49,13 @@ export interface Features {
   readonly lowDb: Float32Array;
   /** NUM_BANDS log-spaced band levels (dB), row-major [frame * NUM_BANDS + band]. */
   readonly bands: Float32Array;
+  /**
+   * Coarse chroma: compressed magnitude summed per pitch class (190 Hz - 4.2 kHz,
+   * each bin split between its two nearest pitch classes), row-major
+   * [frame * NUM_CHROMA + pitchClass]. Un-normalised; used for harmonic
+   * similarity between bars.
+   */
+  readonly chroma: Float32Array;
 }
 
 /** Growable store of per-frame features. */
@@ -56,6 +68,7 @@ export class FeatureStore {
   private en: Float32Array;
   private lo: Float32Array;
   private bd: Float32Array;
+  private ch: Float32Array;
 
   constructor(initialCapacity = 2048) {
     this.cap = Math.max(16, initialCapacity);
@@ -65,14 +78,23 @@ export class FeatureStore {
     this.en = new Float32Array(this.cap);
     this.lo = new Float32Array(this.cap);
     this.bd = new Float32Array(this.cap * NUM_BANDS);
+    this.ch = new Float32Array(this.cap * NUM_CHROMA);
   }
 
   get frames(): number {
     return this.n;
   }
 
-  /** Appends one frame; `bands` must hold NUM_BANDS values. */
-  push(fluxLow: number, fluxMid: number, fluxHigh: number, energyDb: number, lowDb: number, bands: ArrayLike<number>): void {
+  /** Appends one frame; `bands` must hold NUM_BANDS values, `chroma` (optional, default zeros) NUM_CHROMA. */
+  push(
+    fluxLow: number,
+    fluxMid: number,
+    fluxHigh: number,
+    energyDb: number,
+    lowDb: number,
+    bands: ArrayLike<number>,
+    chroma?: ArrayLike<number>,
+  ): void {
     if (this.n === this.cap) this.grow();
     const i = this.n++;
     this.fl[i] = fluxLow;
@@ -82,6 +104,10 @@ export class FeatureStore {
     this.lo[i] = lowDb;
     const b = i * NUM_BANDS;
     for (let k = 0; k < NUM_BANDS; k++) this.bd[b + k] = bands[k];
+    if (chroma) {
+      const c = i * NUM_CHROMA;
+      for (let k = 0; k < NUM_CHROMA; k++) this.ch[c + k] = chroma[k];
+    }
   }
 
   /** Zero-copy view of frames [start, end). */
@@ -96,6 +122,7 @@ export class FeatureStore {
       energyDb: this.en.subarray(s, e),
       lowDb: this.lo.subarray(s, e),
       bands: this.bd.subarray(s * NUM_BANDS, e * NUM_BANDS),
+      chroma: this.ch.subarray(s * NUM_CHROMA, e * NUM_CHROMA),
     };
   }
 
@@ -112,6 +139,7 @@ export class FeatureStore {
     this.en = g(this.en);
     this.lo = g(this.lo);
     this.bd = g(this.bd, NUM_BANDS);
+    this.ch = g(this.ch, NUM_CHROMA);
     this.cap = cap;
   }
 }
@@ -133,6 +161,11 @@ export class FeatureExtractor {
   private prevLog = new Float64Array(N_FFT / 2 + 1);
   private readonly bandVals = new Float64Array(NUM_BANDS);
   private readonly bandEdges: Int32Array;
+  private readonly chromaVals = new Float64Array(NUM_CHROMA);
+  /** Per chroma bin (from chromaLo): lower pitch class and weight of the upper one. */
+  private readonly chromaPc: Uint8Array;
+  private readonly chromaW: Float32Array;
+  private readonly chromaLo: number;
   private readonly lowEnd: number;
   private readonly midEnd: number;
   private flushed = false;
@@ -157,6 +190,18 @@ export class FeatureExtractor {
       prev = bin;
     }
     this.bandEdges[NUM_BANDS] = N_FFT / 2 + 1;
+    this.chromaLo = Math.ceil(CHROMA_MIN_HZ / binHz);
+    const chromaHi = Math.floor(CHROMA_MAX_HZ / binHz);
+    const nc = Math.max(0, chromaHi - this.chromaLo + 1);
+    this.chromaPc = new Uint8Array(nc);
+    this.chromaW = new Float32Array(nc);
+    for (let j = 0; j < nc; j++) {
+      // Fractional MIDI pitch of the bin centre; C = pitch class 0.
+      const midi = 69 + 12 * Math.log2(((this.chromaLo + j) * binHz) / 440);
+      const lo = Math.floor(midi);
+      this.chromaPc[j] = ((lo % 12) + 12) % 12;
+      this.chromaW[j] = midi - lo;
+    }
   }
 
   /** Push 22050 Hz mono samples; complete frames are appended to the store. */
@@ -232,9 +277,20 @@ export class FeatureExtractor {
       for (let k = edges[b]; k < edges[b + 1]; k++) s += pow[k];
       bv[b] = 10 * Math.log10(s * norm + 1e-10);
     }
+    const cv = this.chromaVals;
+    cv.fill(0);
+    const pcs = this.chromaPc;
+    const cw = this.chromaW;
+    for (let j = 0, k = this.chromaLo; j < pcs.length; j++, k++) {
+      const m = logMag[k];
+      const w = cw[j];
+      const pc = pcs[j];
+      cv[pc] += (1 - w) * m;
+      cv[pc === 11 ? 0 : pc + 1] += w * m;
+    }
     const energyDb = 10 * Math.log10(sumSq / N_FFT + 1e-10);
     const lowDb = 10 * Math.log10(lowPow + 1e-10);
-    this.store.push(fl, fm, fh, energyDb, lowDb, bv);
+    this.store.push(fl, fm, fh, energyDb, lowDb, bv, cv);
     // Swap log buffers.
     this.prevLog = logMag;
     this.logMag = prev;

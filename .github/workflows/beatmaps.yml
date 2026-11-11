@@ -1,0 +1,199 @@
+# Cloud beat maps: every hour, read the playlist (repo variable PLAYLIST_URL)
+# plus the starter pack, analyse songs that have no beat map yet, commit the
+# JSON under public/ and redeploy the site.
+#
+# Audio is downloaded to the runner's temp dir, decoded, analysed and deleted
+# straight away. It is never committed, cached or uploaded as an artifact.
+#
+# Note: GitHub disables scheduled workflows after 60 days without activity in
+# the repository. It emails you first; re-enable with the "Enable workflow"
+# button on this workflow's page under the Actions tab.
+#
+# "Add a song" (from the web app, or by hand under Run workflow): fill in
+# add_artist + add_title (and add_duration, the official length in seconds;
+# looked up on iTunes when empty). The job finds the best YouTube video for
+# it, makes its beat map and lists it in public/songs.json. Songs it can't
+# find are reported in public/songs-status.json. Such a run skips the
+# playlist; the next hourly run reads it as usual.
+#
+# Settings used (all optional):
+#   vars.PLAYLIST_URL     playlist link (Public or Unlisted)
+#   vars.YTDLP_VERSION    pin yt-dlp to a release tag, e.g. 2026.10.26 (default: latest)
+#   secrets.YT_COOKIES    cookies.txt from a SPARE Google account, if YouTube bot-blocks the runner
+name: Beat maps
+# Runs started by the app show the song, so you can find them under Actions.
+run-name: "${{ inputs.add_title && format('Add song: {0} - {1}', inputs.add_artist, inputs.add_title) || 'Beat maps' }}"
+
+on:
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+    inputs:
+      video_id:
+        description: Only this YouTube video ID (leave empty for the whole playlist)
+        type: string
+        required: false
+        default: ''
+      force:
+        description: Re-analyse even if a beat map already exists
+        type: boolean
+        required: false
+        default: false
+      add_artist:
+        description: 'Add a song by search: artist'
+        type: string
+        required: false
+        default: ''
+      add_title:
+        description: 'Add a song by search: song title'
+        type: string
+        required: false
+        default: ''
+      add_duration:
+        description: 'Add a song by search: official length in seconds (empty = look it up)'
+        type: string
+        required: false
+        default: ''
+      add_queue:
+        description: Used by the app (other songs it is still waiting for, as JSON); leave empty
+        type: string
+        required: false
+        default: ''
+
+# Never run two of these at once; a new run waits for the current one.
+concurrency:
+  group: beatmaps
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    permissions:
+      contents: write
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+      sha: ${{ steps.commit.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends ffmpeg
+          ffmpeg -hide_banner -version | head -n 1
+
+      # Current yt-dlp needs an external JavaScript runtime for YouTube; Deno is
+      # the one it enables by default (https://github.com/yt-dlp/yt-dlp/wiki/EJS).
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Install yt-dlp
+        env:
+          YTDLP_VERSION: ${{ vars.YTDLP_VERSION }}
+        run: |
+          set -euo pipefail
+          if [ -n "${YTDLP_VERSION:-}" ]; then
+            if ! printf '%s' "$YTDLP_VERSION" | grep -Eq '^[0-9]{4}\.[0-9]{2}\.[0-9]{2}(\.[0-9]+)?$'; then
+              echo "::error title=Bad YTDLP_VERSION::YTDLP_VERSION must look like 2026.10.26 (a yt-dlp release tag)"
+              exit 1
+            fi
+            base="https://github.com/yt-dlp/yt-dlp/releases/download/${YTDLP_VERSION}"
+          else
+            base="https://github.com/yt-dlp/yt-dlp/releases/latest/download"
+          fi
+          bin="$RUNNER_TEMP/bin"
+          mkdir -p "$bin"
+          cd "$bin"
+          # The standalone Linux build bundles the YouTube challenge solver scripts.
+          curl -fsSL --retry 3 -o yt-dlp_linux "$base/yt-dlp_linux"
+          curl -fsSL --retry 3 -o SHA2-256SUMS "$base/SHA2-256SUMS"
+          grep -E ' yt-dlp_linux$' SHA2-256SUMS | sha256sum --check --strict
+          mv yt-dlp_linux yt-dlp
+          chmod +x yt-dlp
+          echo "$bin" >> "$GITHUB_PATH"
+          ./yt-dlp --version
+
+      - name: Make beat maps
+        id: run
+        env:
+          PLAYLIST_URL: ${{ vars.PLAYLIST_URL }}
+          YT_COOKIES: ${{ secrets.YT_COOKIES }}
+          ONLY_VIDEO: ${{ inputs.video_id }}
+          FORCE: ${{ inputs.force }}
+          # Free text from the app or the form: only ever used as quoted arguments.
+          ADD_ARTIST: ${{ inputs.add_artist }}
+          ADD_TITLE: ${{ inputs.add_title }}
+          ADD_DURATION: ${{ inputs.add_duration }}
+          ADD_QUEUE: ${{ inputs.add_queue }}
+        run: |
+          set -euo pipefail
+          args=()
+          if [ -n "${ONLY_VIDEO:-}" ]; then args+=(--only "$ONLY_VIDEO"); fi
+          if [ "${FORCE:-}" = "true" ]; then args+=(--force); fi
+          if [ -n "${ADD_TITLE:-}" ] || [ -n "${ADD_ARTIST:-}" ]; then
+            args+=(--add-artist "${ADD_ARTIST:-}" --add-title "${ADD_TITLE:-}")
+            if [ -n "${ADD_DURATION:-}" ]; then args+=(--add-duration "$ADD_DURATION"); fi
+          fi
+          if [ -n "${ADD_QUEUE:-}" ]; then args+=(--add-queue "$ADD_QUEUE"); fi
+          npm run --silent beatmaps -- "${args[@]}"
+
+      # Runs even when the previous step failed (e.g. bot-blocked), so that
+      # status.json still records what happened and the app can show it.
+      - name: Commit beat maps
+        id: commit
+        if: ${{ !cancelled() }}
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          # Only JSON under public/ is ever staged: never audio, never anything else.
+          paths=(public/beatmaps)
+          for f in public/playlist.json public/songs.json public/songs-status.json; do
+            if [ -e "$f" ]; then paths+=("$f"); fi
+          done
+          git add -A -- "${paths[@]}"
+          if git diff --cached --name-only | grep -Ev '^public/(beatmaps/[A-Za-z0-9_-]+|playlist|songs|songs-status)\.json$'; then
+            echo "::error title=Unexpected files::Refusing to commit files other than beat-map JSON"
+            exit 1
+          fi
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          count=$(git diff --cached --name-only -- 'public/beatmaps/*.json' | grep -Evc '/(index|status)\.json$' || true)
+          msg="Update beat maps (${count} map file(s) changed)"
+          if ! git diff --cached --quiet -- public/songs.json 2>/dev/null; then msg="Add song(s) by search; ${msg}"; fi
+          git commit -q -m "$msg"
+          for attempt in 1 2 3; do
+            if git push -q origin "HEAD:${BRANCH}"; then break; fi
+            if [ "$attempt" = 3 ]; then exit 1; fi
+            git pull -q --rebase origin "$BRANCH"
+          done
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  # Pushes made with GITHUB_TOKEN don't trigger deploy.yml, so deploy from here.
+  deploy:
+    needs: update
+    if: ${{ always() && needs.update.outputs.changed == 'true' && github.ref == 'refs/heads/main' }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ref: ${{ needs.update.outputs.sha }}

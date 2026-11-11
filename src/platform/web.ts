@@ -15,6 +15,8 @@ export function createWebPlatform(): Platform {
     id: 'web',
     isTV: false,
     canPlayFiles: true,
+    beatmapBase: './',
+    liveSync: true,
     async getPlaylist(listId) {
       const ids = await readPlaylistIds(listId);
       return ids.map((videoId) => ({ videoId }));

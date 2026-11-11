@@ -1,0 +1,18 @@
+# DanceDance "add a song" relay (Cloudflare Worker). Setup steps are in the
+# project README under "Optional: Cloudflare relay". Never put the GitHub
+# token in this file: set it with `npx wrangler secret put GITHUB_TOKEN`.
+name = "dancedance-add-song"          # your Worker's name (part of its URL)
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+
+[vars]
+# Your repository, as owner/name.
+GITHUB_REPO = "ryee-dao/dancedance"
+# Pages origin (no path) plus the local dev server, comma-separated.
+ALLOWED_ORIGINS = "https://ryee-dao.github.io,http://localhost:5173"
+# Soft cap on songs added per 24 hours (counts the workflow's manual runs).
+DAILY_LIMIT = "30"
+
+# Secrets (not in this file):
+#   npx wrangler secret put GITHUB_TOKEN     fine-grained token: this repository only, Actions: Read and write
+#   npx wrangler secret put ADD_PASSPHRASE   optional; the app asks for it once per browser

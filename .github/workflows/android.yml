@@ -1,0 +1,141 @@
+# Build the Android TV app (android/) and publish it as a GitHub Release.
+#
+# Runs when you push a version tag (git tag v1.2.0 && git push origin v1.2.0)
+# or by hand (Actions -> Android TV app -> Run workflow). The APK is always
+# attached as `dancedance.apk`, so this URL stays the same for every release
+# and can be typed once into the Downloader app on the TV:
+#   https://github.com/<owner>/<repo>/releases/latest/download/dancedance.apk
+#
+# Signing (one-time setup, see README "Android TV"): repository secrets
+#   ANDROID_KEYSTORE_B64       the release keystore, base64-encoded
+#   ANDROID_KEYSTORE_PASSWORD  its password
+#   ANDROID_KEY_ALIAS          the key alias inside it
+#   ANDROID_KEY_PASSWORD       the key's password
+# Without them the APK is signed with a throwaway debug key: it installs, but
+# every update then has to be installed after uninstalling the old app.
+#
+# The GitHub Pages URL (cloud beat maps) and this repo's owner/name (TV ->
+# cloud trigger) are baked into the app from github.repository.
+name: Android TV app
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+concurrency:
+  group: android-release
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write # create the release and upload the APK
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build the web app (bundled into the APK)
+        run: |
+          npm ci
+          npm run build
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - uses: gradle/actions/wrapper-validation@v6
+
+      - name: Set up release signing
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ] && [ -n "$KEYSTORE_PASSWORD" ] && [ -n "$KEY_ALIAS" ]; then
+            printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/release.keystore"
+            echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+            echo "Release keystore found: the APK will be signed with it."
+          else
+            echo "::warning title=APK signed with a debug key::The ANDROID_KEYSTORE_B64 / ANDROID_KEYSTORE_PASSWORD / ANDROID_KEY_ALIAS / ANDROID_KEY_PASSWORD secrets are not set, so this APK uses a throwaway debug key. It installs, but to update you will have to uninstall the old app first (losing its settings). See the README to create a keystore once."
+            echo "## ⚠️ Debug-signed APK" >> "$GITHUB_STEP_SUMMARY"
+            echo "Signing secrets are missing. Updates of this APK require uninstalling the previous version first. See the README section *Android TV* to set up a release keystore." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Build the APK
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          owner_lc=$(printf '%s' "$OWNER" | tr '[:upper:]' '[:lower:]')
+          name=${REPO#*/}
+          name_lc=$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]')
+          if [ "$name_lc" = "$owner_lc.github.io" ]; then
+            pages="https://$owner_lc.github.io/"
+          else
+            pages="https://$owner_lc.github.io/$name/"
+          fi
+          export DANCEDANCE_PAGES_BASE_URL="$pages"
+          export DANCEDANCE_GITHUB_REPO="$REPO"
+
+          # Version: the tag (v1.2.0 -> 1.2.0) or a build number for manual runs.
+          # versionCode must grow with every release so updates install over the old app.
+          version="0.0.$RUN_NUMBER"
+          if [ "$REF_TYPE" = "tag" ]; then
+            candidate=${REF_NAME#v}
+            if printf '%s' "$candidate" | grep -Eq '^[0-9A-Za-z.+-]{1,40}$'; then version="$candidate"; fi
+          fi
+          export DANCEDANCE_VERSION_NAME="$version"
+          export DANCEDANCE_VERSION_CODE="$((1000 + RUN_NUMBER))"
+
+          echo "Pages URL: $pages · repo: $REPO · version $version ($DANCEDANCE_VERSION_CODE)"
+          ./gradlew --no-daemon --stacktrace assembleRelease
+          cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/dancedance.apk"
+          echo "DD_VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          RUN_NUMBER: ${{ github.run_number }}
+          SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ "$REF_TYPE" = "tag" ]; then tag="$REF_NAME"; else tag="tv-build-$RUN_NUMBER"; fi
+          apk="$RUNNER_TEMP/dancedance.apk"
+          notes="DanceDance for Android TV $DD_VERSION.
+
+          Install or update on the TV with the Downloader app using:
+          https://github.com/$REPO/releases/latest/download/dancedance.apk"
+          if gh release view "$tag" --repo "$REPO" > /dev/null 2>&1; then
+            gh release upload "$tag" "$apk" --repo "$REPO" --clobber
+          else
+            gh release create "$tag" "$apk" --repo "$REPO" --target "$SHA" \
+              --title "DanceDance TV $DD_VERSION" --notes "$notes" --latest
+          fi
+          size=$(du -k "$apk" | cut -f1)
+          {
+            echo "## DanceDance TV $DD_VERSION"
+            echo "APK: ${size} KB, release \`$tag\`."
+            echo "TV download URL: https://github.com/$REPO/releases/latest/download/dancedance.apk"
+          } >> "$GITHUB_STEP_SUMMARY"

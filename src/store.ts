@@ -6,6 +6,8 @@
  * working from an in-memory copy for the rest of the session.
  */
 
+import { DEFAULT_COACH_STYLE, parseCoachStyle, type CoachStyle } from './core/coach/styles';
+
 /** Every localStorage key the app uses. Later phases should add theirs here. */
 export const STORE_KEYS = {
   played: 'dd.played', // string[] of video IDs that have actually started playing
@@ -14,7 +16,29 @@ export const STORE_KEYS = {
   playlistCache: 'dd.playlistCache', // PlaylistCache | null: last successful read
   titles: 'dd.titles', // Record<videoId, TitleEntry>: oEmbed results
   settings: 'dd.settings', // Settings
+  levels: 'dd.levels', // Record<videoId, Intensity>: last level (Chill/Cardio/Sweaty) picked per song
+  bpm: 'dd.bpm', // Record<cacheKey, number>: tempo of beat maps cached on this device
+  githubToken: 'dd.githubToken', // string: fine-grained GitHub token for "Add a song" (web; never logged or put in a URL)
+  githubRepo: 'dd.githubRepo', // string "owner/repo", typed on the connect step when it can't be worked out
+  addRelay: 'dd.addRelay', // string: "add a song" relay (Cloudflare Worker) address, when not built in
+  addPassphrase: 'dd.addPassphrase', // string: the relay's optional shared passphrase
+  addPending: 'dd.addPending', // PendingAdd[]: songs sent to the cloud that haven't appeared in songs.json yet
+  addedHidden: 'dd.addedHidden', // string[]: video IDs removed from "My added songs" on this device only
 } as const;
+
+/** A song sent to the cloud job, waiting to show up in songs.json. */
+export interface PendingAdd {
+  /** songKey(artist, title) */
+  key: string;
+  artist: string;
+  title: string;
+  durationSec: number;
+  artworkUrl?: string;
+  /** iTunes track ID (the relay re-sends waiting songs by ID). */
+  trackId?: number;
+  /** Epoch ms of the last successful send to GitHub. */
+  sentAt: number;
+}
 
 export type BlockReason = 'embed' | 'gone';
 
@@ -48,15 +72,45 @@ export interface TitleEntry {
 }
 
 export type Intensity = 'chill' | 'cardio' | 'sweaty';
+export const INTENSITIES: readonly Intensity[] = ['chill', 'cardio', 'sweaty'];
+
+/**
+ * Live beat listening for songs without a beat map:
+ * 'ask' = show the one-time microphone explainer first; 'mic' = listen with
+ * the microphone; 'off' = the user said "Not now" (the pause menu still
+ * offers it).
+ */
+export type LiveSyncPref = 'ask' | 'mic' | 'off';
 
 export interface Settings {
-  /** Shifts everything synced to the music (later phase). */
+  /**
+   * Shifts everything synced to the music, ms, -500..500 in 10 ms steps.
+   * Positive = the coach moves later (speakers that lag).
+   */
   audioOffsetMs: number;
-  /** Choreography intensity (later phase). */
+  /** Choreography intensity. */
   intensity: Intensity;
+  liveSync: LiveSyncPref;
+  /** The coach's look (Options screen). A `?coach=` URL parameter overrides it. */
+  coachStyle: CoachStyle;
 }
 
-export const DEFAULT_SETTINGS: Settings = { audioOffsetMs: 0, intensity: 'cardio' };
+export const DEFAULT_SETTINGS: Settings = { audioOffsetMs: 0, intensity: 'cardio', liveSync: 'ask', coachStyle: DEFAULT_COACH_STYLE };
+
+/** Drop out-of-range or wrongly typed values (old versions, hand edits). */
+function sanitizeSettings(s: Partial<Record<keyof Settings, unknown>>): Settings {
+  const out: Settings = { ...DEFAULT_SETTINGS };
+  const off = s.audioOffsetMs;
+  if (typeof off === 'number' && Number.isFinite(off)) {
+    out.audioOffsetMs = Math.max(-500, Math.min(500, Math.round(off / 10) * 10)) || 0;
+  }
+  if (typeof s.intensity === 'string' && (INTENSITIES as readonly string[]).includes(s.intensity)) {
+    out.intensity = s.intensity as Intensity;
+  }
+  if (s.liveSync === 'ask' || s.liveSync === 'mic' || s.liveSync === 'off') out.liveSync = s.liveSync;
+  out.coachStyle = parseCoachStyle(s.coachStyle) ?? DEFAULT_COACH_STYLE;
+  return out;
+}
 
 // ---------------------------------------------------------------------------
 // Raw access with in-memory fallback
@@ -115,6 +169,8 @@ let played: Set<string> | null = null;
 let blocked: Record<string, BlockInfo> | null = null;
 let titles: Record<string, TitleEntry> | null = null;
 let titlesFlushTimer: ReturnType<typeof setTimeout> | null = null;
+let levels: Record<string, Intensity> | null = null;
+let localBpm: Record<string, number> | null = null;
 
 function flushTitles(): void {
   if (titlesFlushTimer !== null) clearTimeout(titlesFlushTimer);
@@ -193,13 +249,96 @@ export const store = {
     if (titlesFlushTimer === null) titlesFlushTimer = setTimeout(flushTitles, 500);
   },
 
+  // --- per-song level (Chill / Cardio / Sweaty) -------------------------
+  songLevel(videoId: string): Intensity | null {
+    if (!levels) levels = readJson(STORE_KEYS.levels, {}, isObj);
+    const v = levels[videoId];
+    return (INTENSITIES as readonly unknown[]).includes(v) ? v : null;
+  },
+  setSongLevel(videoId: string, level: Intensity): void {
+    this.songLevel(videoId);
+    if (levels![videoId] === level) return;
+    levels![videoId] = level;
+    writeJson(STORE_KEYS.levels, levels);
+  },
+
+  // --- tempo of locally cached beat maps (for BPM badges) ----------------
+  localBpm(key: string): number | null {
+    if (!localBpm) localBpm = readJson(STORE_KEYS.bpm, {}, isObj);
+    const v = localBpm[key];
+    return typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : null;
+  },
+  setLocalBpm(key: string, bpm: number): void {
+    if (!(bpm > 0) || !Number.isFinite(bpm)) return;
+    this.localBpm(key);
+    const r = Math.round(bpm * 10) / 10;
+    if (localBpm![key] === r) return;
+    localBpm![key] = r;
+    writeJson(STORE_KEYS.bpm, localBpm);
+  },
+
+  // --- "Add a song": GitHub connection (web) ------------------------------
+  githubToken(): string | null {
+    const v = rawGet(STORE_KEYS.githubToken);
+    return v && v.trim() ? v : null;
+  },
+  setGithubToken(token: string | null): void {
+    rawSet(STORE_KEYS.githubToken, token && token.trim() ? token.trim() : null);
+  },
+  githubRepo(): string | null {
+    const v = rawGet(STORE_KEYS.githubRepo);
+    return v && v.trim() ? v : null;
+  },
+  setGithubRepo(repo: string | null): void {
+    rawSet(STORE_KEYS.githubRepo, repo && repo.trim() ? repo.trim() : null);
+  },
+
+  addRelay(): string | null {
+    const v = rawGet(STORE_KEYS.addRelay);
+    return v && v.trim() ? v : null;
+  },
+  setAddRelay(url: string | null): void {
+    rawSet(STORE_KEYS.addRelay, url && url.trim() ? url.trim() : null);
+  },
+  addPassphrase(): string | null {
+    const v = rawGet(STORE_KEYS.addPassphrase);
+    return v ? v : null;
+  },
+  setAddPassphrase(p: string | null): void {
+    rawSet(STORE_KEYS.addPassphrase, p ? p : null);
+  },
+
+  // --- "Add a song": pending requests and locally hidden songs -------------
+  pendingAdds(): PendingAdd[] {
+    const arr = readJson<unknown[]>(STORE_KEYS.addPending, [], Array.isArray);
+    return arr.filter(
+      (p): p is PendingAdd =>
+        isObj(p) &&
+        typeof p.key === 'string' &&
+        typeof p.artist === 'string' &&
+        typeof p.title === 'string' &&
+        typeof p.durationSec === 'number' &&
+        typeof p.sentAt === 'number',
+    );
+  },
+  setPendingAdds(list: PendingAdd[]): void {
+    writeJson(STORE_KEYS.addPending, list.length ? list : null);
+  },
+  hiddenAdded(): Set<string> {
+    const arr = readJson<unknown[]>(STORE_KEYS.addedHidden, [], Array.isArray);
+    return new Set(arr.filter((x): x is string => typeof x === 'string'));
+  },
+  setHiddenAdded(ids: Set<string>): void {
+    writeJson(STORE_KEYS.addedHidden, ids.size ? [...ids] : null);
+  },
+
   // --- settings -----------------------------------------------------------
   settings(): Settings {
     const s = readJson<Partial<Settings>>(STORE_KEYS.settings, {}, isObj);
-    return { ...DEFAULT_SETTINGS, ...s };
+    return sanitizeSettings(s);
   },
   updateSettings(patch: Partial<Settings>): Settings {
-    const next = { ...this.settings(), ...patch };
+    const next = sanitizeSettings({ ...this.settings(), ...patch });
     writeJson(STORE_KEYS.settings, next);
     return next;
   },

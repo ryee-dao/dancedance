@@ -13,5 +13,5 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
     "types": ["vite/client"]
   },
-  "include": ["src", "tools", "vite.config.ts"]
+  "include": ["src", "tools", "cloudflare", "vite.config.ts"]
 }

@@ -1,0 +1,488 @@
+{
+  "analyzerVersion": "1.1.0",
+  "generatedAt": "2026-11-11T05:08:04.801Z",
+  "ids": [
+    "-7XnDlYY9qw",
+    "-qZxMY7FZf8",
+    "-sVB91NTa4A",
+    "0Bl8dDFsAQU",
+    "0Ui-QzihJGo",
+    "1j_XvebOg4c",
+    "4-TbQnONe_w",
+    "47NhAUUnIjs",
+    "4AqjqOqNrjw",
+    "4ZI8AC4AR5A",
+    "53tgVlXBZVg",
+    "5y_KJAg8bHI",
+    "7-x3uD5z1bQ",
+    "7CTJcHjkq0E",
+    "7Ya2U8XN_Zw",
+    "8YMkAW9TxDM",
+    "8xG7mH8i-WE",
+    "9lybsz-7TFM",
+    "AMNNqQpU-i4",
+    "BerNfXSuvJ0",
+    "D8j5Fm94_CE",
+    "DlSsIKn3HTU",
+    "EQzXwcZS-FU",
+    "FHo-g6DCTv4",
+    "GT1lysg-Kw4",
+    "GcHHjq8pXec",
+    "GchEVSx9XEA",
+    "GhH4rTap48M",
+    "HbzZPpWr4MI",
+    "HhwTF97OyX8",
+    "IgCHFfDFivc",
+    "IhP3J0j9JmY",
+    "JDHoc9qzC5I",
+    "JTBoLANhyVA",
+    "LhZ5GXCZtEw",
+    "Mzk6KkyxXC8",
+    "NU61CbO9u6o",
+    "NaQ083rNUwc",
+    "OjX4Fpb7LX8",
+    "PdKKoOiEgqY",
+    "Pmv8aQKO6k0",
+    "RwTwd5tAq1U",
+    "SRdlnO9gMIY",
+    "TIUwLfpufs0",
+    "UOQlKBlobRY",
+    "UfM-nM762ec",
+    "V1Z586zoeeE",
+    "WzsYtW8zyXU",
+    "XQG89cwhmJU",
+    "XZe_pV2rXuk",
+    "YgCYsJicgEU",
+    "_Vj092UgKwQ",
+    "_dK2tDK9grQ",
+    "aAizT0NOWkM",
+    "aeZnkEMIxBM",
+    "ahvkAPbPGKw",
+    "b3bkpyNiv8Y",
+    "bOq67Poe95w",
+    "bSwzZoLCoZ0",
+    "egpE0ysQ21Q",
+    "fH_OnJk6QqU",
+    "g9j5UzxEhEM",
+    "gx7GyiDZQms",
+    "hCLkVrp_4CE",
+    "hn6lonvIRsI",
+    "hyzGXmPQzEg",
+    "iFaKc8Bvk4Y",
+    "iSF26HsmeRI",
+    "i_SsnRdgitA",
+    "ic8j13piAhQ",
+    "id2-K3daNRQ",
+    "j5n5YzMm5LY",
+    "jRr5EasAq84",
+    "jgh8owCuX78",
+    "jz7C2W4m26U",
+    "mgT0N3tMP74",
+    "mwL1cohnHNE",
+    "niR2qJ3mGEE",
+    "nx3-XCtnEqU",
+    "o6ytLPKscrU",
+    "pd1_SxHh2vo",
+    "qJ_Tw0w3lLA",
+    "qX0cPZT3Lzg",
+    "sKtl7-_6AjE",
+    "sLqdRmwY6vc",
+    "t19wM1gn1Wo",
+    "u6lihZAcy4s",
+    "vXlyuCzZc4E",
+    "w4Xfg_MRH10",
+    "w5i-cwLH7s0",
+    "xjiYBGs0TUA",
+    "yvvamodXZbw",
+    "zIh5AHxh-Ok",
+    "zLxXqEZ5OoA",
+    "zd-h01o7LtI",
+    "zgEKLhvCCVA"
+  ],
+  "songs": {
+    "-7XnDlYY9qw": {
+      "bpm": 158.8,
+      "duration": 236
+    },
+    "-qZxMY7FZf8": {
+      "bpm": 110,
+      "duration": 188
+    },
+    "-sVB91NTa4A": {
+      "bpm": 100.6,
+      "duration": 234
+    },
+    "0Bl8dDFsAQU": {
+      "bpm": 120,
+      "duration": 198
+    },
+    "0Ui-QzihJGo": {
+      "bpm": 113,
+      "duration": 236
+    },
+    "1j_XvebOg4c": {
+      "bpm": 103,
+      "duration": 208
+    },
+    "4-TbQnONe_w": {
+      "bpm": 134.3,
+      "duration": 194
+    },
+    "47NhAUUnIjs": {
+      "bpm": 108,
+      "duration": 225
+    },
+    "4AqjqOqNrjw": {
+      "bpm": 111.1,
+      "duration": 187
+    },
+    "4ZI8AC4AR5A": {
+      "bpm": 162,
+      "duration": 214
+    },
+    "53tgVlXBZVg": {
+      "bpm": 94.9,
+      "duration": 255
+    },
+    "5y_KJAg8bHI": {
+      "bpm": 124.1,
+      "duration": 251
+    },
+    "7-x3uD5z1bQ": {
+      "bpm": 95.2,
+      "duration": 174
+    },
+    "7CTJcHjkq0E": {
+      "bpm": 117.2,
+      "duration": 294
+    },
+    "7Ya2U8XN_Zw": {
+      "bpm": 115,
+      "duration": 271
+    },
+    "8YMkAW9TxDM": {
+      "bpm": 126,
+      "duration": 245
+    },
+    "8xG7mH8i-WE": {
+      "bpm": 107.5,
+      "duration": 218
+    },
+    "9lybsz-7TFM": {
+      "bpm": 130.6,
+      "duration": 285
+    },
+    "AMNNqQpU-i4": {
+      "bpm": 120,
+      "duration": 190
+    },
+    "BerNfXSuvJ0": {
+      "bpm": 100,
+      "duration": 199
+    },
+    "D8j5Fm94_CE": {
+      "bpm": 104,
+      "duration": 176
+    },
+    "DlSsIKn3HTU": {
+      "bpm": 126.4,
+      "duration": 215
+    },
+    "EQzXwcZS-FU": {
+      "bpm": 130,
+      "duration": 205
+    },
+    "FHo-g6DCTv4": {
+      "bpm": 99.3,
+      "duration": 240
+    },
+    "GT1lysg-Kw4": {
+      "bpm": 120,
+      "duration": 195
+    },
+    "GcHHjq8pXec": {
+      "bpm": 96.9,
+      "duration": 330
+    },
+    "GchEVSx9XEA": {
+      "bpm": 128,
+      "duration": 217
+    },
+    "GhH4rTap48M": {
+      "bpm": 120,
+      "duration": 235
+    },
+    "HbzZPpWr4MI": {
+      "bpm": 90,
+      "duration": 225
+    },
+    "HhwTF97OyX8": {
+      "bpm": 79,
+      "duration": 173
+    },
+    "IgCHFfDFivc": {
+      "bpm": 120,
+      "duration": 207
+    },
+    "IhP3J0j9JmY": {
+      "bpm": 125,
+      "duration": 203
+    },
+    "JDHoc9qzC5I": {
+      "bpm": 120.8,
+      "duration": 216
+    },
+    "JTBoLANhyVA": {
+      "bpm": 81.5,
+      "duration": 232
+    },
+    "LhZ5GXCZtEw": {
+      "bpm": 107,
+      "duration": 226
+    },
+    "Mzk6KkyxXC8": {
+      "bpm": 114,
+      "duration": 198
+    },
+    "NU61CbO9u6o": {
+      "bpm": 67.5,
+      "duration": 163
+    },
+    "NaQ083rNUwc": {
+      "bpm": 169.3,
+      "duration": 228
+    },
+    "OjX4Fpb7LX8": {
+      "bpm": 128,
+      "duration": 201
+    },
+    "PdKKoOiEgqY": {
+      "bpm": 79.1,
+      "duration": 163
+    },
+    "Pmv8aQKO6k0": {
+      "bpm": 130.6,
+      "duration": 340
+    },
+    "RwTwd5tAq1U": {
+      "bpm": 100.2,
+      "duration": 197
+    },
+    "SRdlnO9gMIY": {
+      "bpm": 147,
+      "duration": 194
+    },
+    "TIUwLfpufs0": {
+      "bpm": 183.4,
+      "duration": 271
+    },
+    "UOQlKBlobRY": {
+      "bpm": 90,
+      "duration": 325
+    },
+    "UfM-nM762ec": {
+      "bpm": 119,
+      "duration": 219
+    },
+    "V1Z586zoeeE": {
+      "bpm": 174,
+      "duration": 166
+    },
+    "WzsYtW8zyXU": {
+      "bpm": 143.7,
+      "duration": 232
+    },
+    "XQG89cwhmJU": {
+      "bpm": 80,
+      "duration": 232
+    },
+    "XZe_pV2rXuk": {
+      "bpm": 85,
+      "duration": 203
+    },
+    "YgCYsJicgEU": {
+      "bpm": 117,
+      "duration": 186
+    },
+    "_Vj092UgKwQ": {
+      "bpm": 103.6,
+      "duration": 283
+    },
+    "_dK2tDK9grQ": {
+      "bpm": 96,
+      "duration": 235
+    },
+    "aAizT0NOWkM": {
+      "bpm": 117.9,
+      "duration": 199
+    },
+    "aeZnkEMIxBM": {
+      "bpm": 124.2,
+      "duration": 259
+    },
+    "ahvkAPbPGKw": {
+      "bpm": 127,
+      "duration": 240
+    },
+    "b3bkpyNiv8Y": {
+      "bpm": 124,
+      "duration": 226
+    },
+    "bOq67Poe95w": {
+      "bpm": 110,
+      "duration": 167
+    },
+    "bSwzZoLCoZ0": {
+      "bpm": 140,
+      "duration": 164
+    },
+    "egpE0ysQ21Q": {
+      "bpm": 105.1,
+      "duration": 335
+    },
+    "fH_OnJk6QqU": {
+      "bpm": 164,
+      "duration": 192
+    },
+    "g9j5UzxEhEM": {
+      "bpm": 105,
+      "duration": 216
+    },
+    "gx7GyiDZQms": {
+      "bpm": 116,
+      "duration": 370
+    },
+    "hCLkVrp_4CE": {
+      "bpm": 110,
+      "duration": 178
+    },
+    "hn6lonvIRsI": {
+      "bpm": 130,
+      "duration": 162
+    },
+    "hyzGXmPQzEg": {
+      "bpm": 75,
+      "duration": 215
+    },
+    "iFaKc8Bvk4Y": {
+      "bpm": 122,
+      "duration": 221
+    },
+    "iSF26HsmeRI": {
+      "bpm": 132,
+      "duration": 217
+    },
+    "i_SsnRdgitA": {
+      "bpm": 148.6,
+      "duration": 170
+    },
+    "ic8j13piAhQ": {
+      "bpm": 85,
+      "duration": 179
+    },
+    "id2-K3daNRQ": {
+      "bpm": 118.8,
+      "duration": 291
+    },
+    "j5n5YzMm5LY": {
+      "bpm": 109,
+      "duration": 192
+    },
+    "jRr5EasAq84": {
+      "bpm": 120.6,
+      "duration": 235
+    },
+    "jgh8owCuX78": {
+      "bpm": 113,
+      "duration": 227
+    },
+    "jz7C2W4m26U": {
+      "bpm": 116,
+      "duration": 176
+    },
+    "mgT0N3tMP74": {
+      "bpm": 122,
+      "duration": 257
+    },
+    "mwL1cohnHNE": {
+      "bpm": 180,
+      "duration": 224
+    },
+    "niR2qJ3mGEE": {
+      "bpm": 194,
+      "duration": 175
+    },
+    "nx3-XCtnEqU": {
+      "bpm": 128,
+      "duration": 200
+    },
+    "o6ytLPKscrU": {
+      "bpm": 171,
+      "duration": 204
+    },
+    "pd1_SxHh2vo": {
+      "bpm": 85.4,
+      "duration": 142
+    },
+    "qJ_Tw0w3lLA": {
+      "bpm": 122,
+      "duration": 302
+    },
+    "qX0cPZT3Lzg": {
+      "bpm": 115.3,
+      "duration": 164
+    },
+    "sKtl7-_6AjE": {
+      "bpm": 95.1,
+      "duration": 156
+    },
+    "sLqdRmwY6vc": {
+      "bpm": 119.4,
+      "duration": 208
+    },
+    "t19wM1gn1Wo": {
+      "bpm": 118,
+      "duration": 269
+    },
+    "u6lihZAcy4s": {
+      "bpm": 118,
+      "duration": 217
+    },
+    "vXlyuCzZc4E": {
+      "bpm": 92.4,
+      "duration": 190
+    },
+    "w4Xfg_MRH10": {
+      "bpm": 96.1,
+      "duration": 280
+    },
+    "w5i-cwLH7s0": {
+      "bpm": 64.9,
+      "duration": 234
+    },
+    "xjiYBGs0TUA": {
+      "bpm": 124,
+      "duration": 186
+    },
+    "yvvamodXZbw": {
+      "bpm": 122,
+      "duration": 203
+    },
+    "zIh5AHxh-Ok": {
+      "bpm": 129.8,
+      "duration": 264
+    },
+    "zLxXqEZ5OoA": {
+      "bpm": 146,
+      "duration": 258
+    },
+    "zd-h01o7LtI": {
+      "bpm": 66.5,
+      "duration": 187
+    },
+    "zgEKLhvCCVA": {
+      "bpm": 110,
+      "duration": 233
+    }
+  }
+}

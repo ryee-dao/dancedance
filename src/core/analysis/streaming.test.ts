@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { analyzeOffline } from './offline';
 import { StreamingAnalyzer } from './streaming';
-import { fMeasure, synthClickTrack, type SynthOptions } from './synth.testutil';
+import { fMeasure, synthClickTrack, synthPattern, type PatternEvent, type SynthOptions } from './synth.testutil';
 
 const CHUNKS = [128, 441, 4096];
 
@@ -123,5 +123,110 @@ describe('StreamingAnalyzer', () => {
     sa.push(new Float32Array(1000));
     sa.finalize('x', 1, 'mic');
     expect(() => sa.push(new Float32Array(10))).toThrow();
+  });
+
+  /**
+   * A 124 BPM pop groove with a 16 s kick-only half-time breakdown (one hit
+   * every other beat) in the middle, at -26 dB in a noisy room. Over the
+   * breakdown a 10 s window honestly measures 62 BPM; the old tracker followed
+   * it after ~2 s and stayed in the wrong octave.
+   */
+  function halfTimeBreakdown() {
+    const bpm = 124;
+    const P = 60 / bpm;
+    const sr = 22050;
+    const groove: PatternEvent[] = [
+      { at: 0, kind: 'kick' },
+      { at: 2, kind: 'kick' },
+      { at: 1, kind: 'snare' },
+      { at: 3, kind: 'snare' },
+      ...[0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5].map((at) => ({ at, kind: 'hat' as const, gain: 0.6 })),
+    ];
+    const half: PatternEvent[] = [{ at: 0, kind: 'kick' }, { at: 2, kind: 'kick' }];
+    const parts = [
+      synthPattern({ bpm, bars: 12, events: groove, seed: 1 }),
+      synthPattern({ bpm, bars: 8, events: half, seed: 2 }),
+      synthPattern({ bpm, bars: 12, events: groove, seed: 3 }),
+    ];
+    // Each part is 0.25 s + whole bars + 0.5 s long; splice them on the bar grid.
+    const barS = 4 * P;
+    const total = parts.reduce((n, p, i) => n + Math.round(((i === 0 ? 0.25 : 0) + (p.beats.length / 4) * barS) * sr), 0);
+    const pcm = new Float32Array(total + sr);
+    let at = 0;
+    parts.forEach((p, i) => {
+      const from = i === 0 ? 0 : Math.round(0.25 * sr);
+      const len = Math.round(((i === 0 ? 0.25 : 0) + (p.beats.length / 4) * barS) * sr);
+      pcm.set(p.pcm.subarray(from, from + len), at);
+      at += len;
+    });
+    const truth: number[] = [];
+    for (let t = 0.25; t < at / sr; t += P) truth.push(t);
+    // Quiet, noisy capture.
+    let seed = 5;
+    for (let i = 0; i < pcm.length; i++) {
+      seed = (seed * 1103515245 + 12345) >>> 0;
+      pcm[i] = 0.05 * (pcm[i] + 0.02 * (seed / 4294967296 - 0.5));
+    }
+    return { pcm, sr, truth, bpm };
+  }
+
+  it('holds the tempo octave through a half-time breakdown', () => {
+    const { pcm, sr, bpm } = halfTimeBreakdown();
+    const sa = new StreamingAnalyzer({ sampleRate: sr });
+    let lockAt = -1;
+    let minBpm = Infinity;
+    let maxBpm = 0;
+    for (let i = 0; i < pcm.length; i += 512) {
+      sa.push(pcm.subarray(i, Math.min(pcm.length, i + 512)));
+      const st = sa.state;
+      if (st.locked && lockAt < 0) lockAt = st.time;
+      if (lockAt >= 0 && st.locked) {
+        minBpm = Math.min(minBpm, st.bpm);
+        maxBpm = Math.max(maxBpm, st.bpm);
+      }
+    }
+    console.log(`[stream] half-time breakdown: lock at ${lockAt.toFixed(1)} s, bpm range after lock ${minBpm.toFixed(1)}-${maxBpm.toFixed(1)}`);
+    expect(lockAt).toBeGreaterThan(0);
+    expect(lockAt).toBeLessThan(12);
+    expect(minBpm / bpm).toBeGreaterThan(0.97);
+    expect(maxBpm / bpm).toBeLessThan(1.03);
+  });
+
+  it('committed beats are monotonic, unique and on the true grid (within 40 ms) after lock', () => {
+    for (const variant of ['breakdown', 'noisy hats'] as const) {
+      let pcm: Float32Array;
+      let sr: number;
+      let truth: number[];
+      let bpm: number;
+      if (variant === 'breakdown') ({ pcm, sr, truth, bpm } = halfTimeBreakdown());
+      else {
+        const s = synthClickTrack({ bpm: 124, duration: 40, hihat: true, hihatLevel: 0.6, snrDb: 8, accent: true, seed: 77, sampleRate: 44100, gain: 0.1 });
+        ({ pcm, sampleRate: sr } = s);
+        truth = s.beats;
+        bpm = 124;
+      }
+      const sa = new StreamingAnalyzer({ sampleRate: sr });
+      const sizes = [128, 441, 4096, 1000];
+      for (let i = 0, k = 0; i < pcm.length; k++) {
+        const n = sizes[k % sizes.length];
+        sa.push(pcm.subarray(i, Math.min(pcm.length, i + n)));
+        i += n;
+      }
+      const beats = sa.state.beats;
+      const P = 60 / bpm;
+      expect(beats.length).toBeGreaterThan(20);
+      let worst = 0;
+      for (let k = 0; k < beats.length; k++) {
+        if (k > 0) expect(beats[k] - beats[k - 1]).toBeGreaterThan(0.6 * P); // no duplicates / half-beat insertions
+        let d = Infinity;
+        for (const t of truth) d = Math.min(d, Math.abs(t - beats[k]));
+        worst = Math.max(worst, d);
+      }
+      console.log(`[stream] committed beats (${variant}): ${beats.length}, worst error ${(worst * 1000).toFixed(1)} ms`);
+      expect(worst).toBeLessThanOrEqual(0.04);
+      // And they cover the music after lock (no long holes).
+      const gaps = beats.slice(1).map((b, k) => b - beats[k]);
+      expect(Math.max(...gaps)).toBeLessThan(2.6 * P);
+    }
   });
 });

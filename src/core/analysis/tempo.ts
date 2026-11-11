@@ -5,12 +5,22 @@
  * 2. Every candidate tempo on a fine log grid is scored by a comb over the
  *    first four multiples of its period (harmonic evidence) times a
  *    log-normal perceptual prior centred near 120 BPM.
- * 3. 3:2 guard: the best candidate is compared with x1.5 and /1.5 on raw comb
- *    evidence; the prior only breaks near-ties.
+ * 3. 3:2 guard: the best candidate is compared with x1.5 and /1.5 on a
+ *    metrical score = beat-level comb + bar-level evidence (autocorrelation
+ *    one and two 4/4 bars later, i.e. at 4 and 8 periods). Syncopated pop
+ *    grooves (3+3+2 "tresillo" kicks, dotted-quarter stabs) put strong
+ *    autocorrelation peaks at 1.5, 3, 5 and 6.5 beats, which the beat-level
+ *    comb alone credits to the 2:3 relative (Thunder 168 -> 112, Shake It Off
+ *    160 -> 107). The groove still repeats every bar, and only the true
+ *    tempo's period divides that bar lag into 4 (or 8) parts, so the bar term
+ *    separates them.
  * 4. Half/double guard: instead of trusting the top peak, the envelope is
  *    folded on the slower grid in short windows and the strength of the
  *    in-between pulses is compared with the on-grid pulses. Strong in-between
  *    pulses mean the faster tempo; weak ones mean the slower tempo.
+ * 5. Dance range: a result below ~72 BPM is doubled when the in-between
+ *    pulses support the double (half-time feels with weak snares, e.g. rock
+ *    with kick-heavy mixes, otherwise come out at 66-68 BPM).
  *
  * Pure TypeScript: no DOM, Web Audio or Node APIs.
  */
@@ -22,6 +32,8 @@ export interface TempoOptions {
   priorBpm?: number;
   /** Width (standard deviation) of the prior in octaves. */
   priorOctaves?: number;
+  /** Results below this are doubled when the onsets support the double (default 72; 0 disables). */
+  danceMinBpm?: number;
 }
 
 export interface TempoEstimate {
@@ -31,7 +43,7 @@ export interface TempoEstimate {
   period: number;
   /** 0..1, how periodic the envelope is at this tempo. */
   confidence: number;
-  /** Raw comb evidence (normalised autocorrelation) at the chosen period. */
+  /** Raw evidence (normalised autocorrelation) at the chosen period: beat-level comb or bar-level, whichever is larger. */
   evidence: number;
 }
 
@@ -149,6 +161,33 @@ function fastThreshold(fastBpm: number): number {
 }
 /** Ratio below which the slower of an octave pair wins. */
 const SLOW_THRESHOLD = 0.35;
+/** In-between pulse ratio that is enough to double a tempo below the dance range. */
+const DANCE_DOUBLE_SUPPORT = 0.15;
+/** Weight of the bar-level term in the 3:2 metrical score. */
+const BAR_WEIGHT = 2;
+/** The 3:2 alternative must beat the incumbent's metrical score by this factor. */
+const RATIO_GUARD_MARGIN = 1.1;
+
+/**
+ * Bar-level evidence for a beat period: mean autocorrelation at 4 and 8
+ * periods (one and two 4/4 bars), using the lags that fit. Each lag takes the
+ * local maximum within +-1.5% (at least one frame), so a period that is a
+ * fraction of a percent off does not slide off the narrow long-lag peaks.
+ */
+export function barScore(r: Float64Array, period: number, maxUsable: number): number {
+  let s = 0;
+  let c = 0;
+  for (const k of [4, 8]) {
+    const lag = k * period;
+    if (lag > maxUsable) break;
+    const w = Math.max(1, 0.015 * lag);
+    let m = interp(r, lag);
+    for (let i = Math.ceil(lag - w); i <= Math.floor(lag + w); i++) if (i > 0 && i < r.length && r[i] > m) m = r[i];
+    s += m;
+    c++;
+  }
+  return c ? s / c : 0;
+}
 
 export function estimateTempo(env: ArrayLike<number>, frameRate: number, opts: TempoOptions = {}): TempoEstimate {
   const minBpm = opts.minBpm ?? 60;
@@ -183,12 +222,22 @@ export function estimateTempo(env: ArrayLike<number>, frameRate: number, opts: T
   if (best === 0 || !(bestScore > 0)) return none;
   best = refine(best, comb);
 
-  // 3:2 guard on raw evidence; prior only breaks near-ties.
-  for (const f of [1.5, 1 / 1.5]) {
-    const alt = best * f;
-    if (alt < minBpm || alt > maxBpm || periodOf(alt) > maxUsable) continue;
-    const altRefined = refine(alt, comb);
-    if (comb(altRefined) > 1.15 * comb(best)) best = altRefined;
+  // 3:2 guard on raw metrical evidence (beat comb + bar consistency); the
+  // prior only breaks near-ties.
+  const metrical = (bpm: number) => comb(bpm) + BAR_WEIGHT * barScore(r, periodOf(bpm), maxUsable);
+  {
+    const base = best;
+    let bestM = metrical(base);
+    for (const f of [1.5, 1 / 1.5]) {
+      const alt = base * f;
+      if (alt < minBpm || alt > maxBpm || periodOf(alt) > maxUsable) continue;
+      const altRefined = refine(alt, comb);
+      const m = metrical(altRefined);
+      if (m > RATIO_GUARD_MARGIN * bestM && m > 0) {
+        best = altRefined;
+        bestM = m;
+      }
+    }
   }
 
   // Half/double guard.
@@ -212,8 +261,17 @@ export function estimateTempo(env: ArrayLike<number>, frameRate: number, opts: T
     break;
   }
 
+  // Dance range: double slow results when the in-between pulses support it.
+  const danceMin = opts.danceMinBpm ?? 72;
+  while (best < danceMin && best * 2 <= maxBpm * 1.02) {
+    if (alternationRatio(env, periodOf(best * 2), frameRate) < DANCE_DOUBLE_SUPPORT) break;
+    best = refine(best * 2, comb);
+  }
+
   const period = peakPeriod(r, periodOf(best), maxUsable);
-  const evidence = Math.max(comb(best), combScore(r, period, maxUsable));
+  // Bar-level periodicity counts as evidence too: syncopated grooves can
+  // leave little on the beats themselves but still repeat every bar.
+  const evidence = Math.max(comb(best), combScore(r, period, maxUsable), barScore(r, period, maxUsable));
   const confidence = Math.max(0, Math.min(1, (evidence - 0.08) / 0.4));
   return { bpm: (60 * frameRate) / period, period, confidence, evidence };
 }
