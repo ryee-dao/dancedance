@@ -1,16 +1,6 @@
 {
-  "updatedAt": "2026-11-11T21:16:34.466Z",
+  "updatedAt": "2026-11-11T21:46:33.117Z",
   "requests": {
-    "evanescence - bring me to life": {
-      "state": "map-pending",
-      "artist": "Evanescence",
-      "title": "Bring Me to Life",
-      "durationSec": 236,
-      "videoId": "s8ZXJ5QUYvQ",
-      "message": "Listed. YouTube refused the cloud download, so there is no beat map yet: the app finds the beat by listening, and the job keeps trying.",
-      "attempts": 1,
-      "lastTried": "2026-11-11T17:11:29.488Z"
-    },
     "finger eleven - paralyzer": {
       "state": "map-pending",
       "artist": "Finger Eleven",
