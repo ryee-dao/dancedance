@@ -1,4 +1,15 @@
 {
-  "updatedAt": "2026-11-11T05:44:26.169Z",
-  "requests": {}
+  "updatedAt": "2026-11-11T17:11:29.488Z",
+  "requests": {
+    "evanescence - bring me to life": {
+      "state": "map-pending",
+      "artist": "Evanescence",
+      "title": "Bring Me to Life",
+      "durationSec": 236,
+      "videoId": "s8ZXJ5QUYvQ",
+      "message": "Listed. YouTube refused the cloud download, so there is no beat map yet: the app finds the beat by listening, and the job keeps trying.",
+      "attempts": 1,
+      "lastTried": "2026-11-11T17:11:29.488Z"
+    }
+  }
 }
