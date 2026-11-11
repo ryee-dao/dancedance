@@ -12,6 +12,23 @@ readable from the front, and distinct**. Quality beats quantity: do not pad.
 | `families/aerobic.ts` | aerobics / dance-fitness staples |
 | `families/cooldown.ts` | stretches (outro) |
 | `families/latin.ts`, `disco.ts`, `funk.ts`, `hiphop.ts`, `pop.ts`, `rock.ts`, `kpop.ts`, `party.ts` | one style family each (`party` = mime, sports, novelty) |
+| `families/afro.ts`, `retro.ts`, `world.ts` | traditions: afrobeats / dancehall / soca, swing / country / folk, Bollywood / hula / belly dance ... |
+| `families/named.ts` | named variations: recombinations promoted to first-class moves with their own names |
+
+## Two tiers: global and genre-exclusive
+
+Every move is either GLOBAL (used on any song, where the level allows) or
+exclusive to one GENRE set, listed by id in `genres.ts` (`GENRE_MOVES`):
+rock, hip-hop, Latin, disco & funk, K-pop, country, swing, afro, Caribbean,
+South Asian, folk, belly dance, hula, capoeira. A genre-exclusive move is only
+used on songs whose style opens that genre (`songGenres`: the style's
+tradition themes, and its leading families). When you add a move that only
+makes sense with its music (a headbang, a salsa step, a line-dance step, a
+K-pop point move), add its id to its genre set; otherwise it is global.
+Variations share their move's tier; a recombination takes the genre of a
+layer that belongs to one, and two genres are never mixed. A layer pattern
+used by any global move counts as global, so don't give a global move the
+arms of a genre move (that leaks the genre into every song's variations).
 
 Each file exports `patterns: PatternSet` and `moves: MoveDef[]`.
 `families/index.ts` collects every file (never edit it): it registers all
@@ -103,8 +120,14 @@ full({ id, name, tags, beats, level, d, parts, mirror?, travel?, jump?, impact?,
   together) for what layering can't express.
 - `level` = intensity (`low` / `mid` / `high`: how hard it works you).
   `d` = difficulty 1..3 (1 = one body part / very simple; 3 = coordinated,
-  travelling or fast changes). Easy (chill) only uses difficulty 1, no jumps,
-  no fast turns; Hard uses everything.
+  travelling or fast changes). Easy (chill) never jumps or turns fast (hard
+  rule) and strongly prefers difficulty 1; Medium rarely uses difficulty 3;
+  Hard leans toward hard and high-impact moves (soft weights, `weights.ts`).
+- Soft weights (`weights.ts`) are derived from the keyframes: impact (jumps,
+  squat depth, bounce, the `impact` flag), difficulty (`d`, off-beat keys,
+  changes per beat, travel, turns) and tempo suitability (slow / mid / fast:
+  jumps and percussive moves lean fast, smooth / flowing ones slow). If the
+  formula gets a move wrong, correct it in `OVERRIDES` there.
 - `tags`: `'families | focus | themes'`:
   - families (1+): `latin disco funk hiphop pop rock kpop party aerobic`
     (first = strongest; add others only where the move genuinely belongs)

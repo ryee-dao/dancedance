@@ -51,20 +51,27 @@ describe('song style -> routine', () => {
   });
 
   it('title themes boost the matching moves', () => {
-    const base = share(SONGS, 'cardio', { style: style({ pop: 1 }) }, (i) => i.move.themes.includes('hips'));
-    const themed = share(SONGS, 'cardio', { style: style({ pop: 1 }, { themes: ['hips'] }) }, (i) => i.move.themes.includes('hips'));
+    // A larger sample: a handful of songs is noisy now that palettes recur.
+    const ids = Array.from({ length: 16 }, (_, k) => `theme-${k}`);
+    const base = share(ids, 'cardio', { style: style({ pop: 1 }) }, (i) => i.move.themes.includes('hips'));
+    const themed = share(ids, 'cardio', { style: style({ pop: 1 }, { themes: ['hips'] }) }, (i) => i.move.themes.includes('hips'));
     expect(themed).toBeGreaterThan(base * 1.3);
   });
 
   it('keeps the level rules: Easy has no jumps and no fast turns, whatever the style', () => {
     for (const s of [style({ aerobic: 1 }, { themes: ['jump', 'spin'] }), style({ latin: 1 }, { themes: ['spin'] }), BALANCED_POP]) {
+      let n = 0, hard = 0;
       for (const id of SONGS) {
         for (const i of generateRoutine(songMap(126, id), 'chill', { style: s }).instances) {
           expect(i.move.jump, i.move.id).toBe(false);
           expect(i.move.fastTurn, i.move.id).toBe(false);
-          if (!i.move.cooldown && !i.move.idle) expect(i.move.difficulty, i.move.id).toBe(1);
+          if (i.move.cooldown || i.move.idle) continue;
+          n += i.span;
+          if (i.move.difficulty > 1) hard += i.span;
         }
       }
+      // Harder moves only now and then (a weight, not a rule).
+      expect(hard / n).toBeLessThan(0.12);
     }
   });
 

@@ -30,8 +30,8 @@
  */
 
 import type { BeatMap, SectionType } from '../analysis/beatmap';
-import type { Tradition } from './families';
-import { generateRoutine, hashString, mulberry32, specialtyFits, specialtyOf, styleTraditions, type Intensity, type MoveInstance, type Routine, type SigStep } from './generator';
+import type { Genre } from './genres';
+import { generateRoutine, genreFits, hashString, mulberry32, styleGenres, type Intensity, type MoveInstance, type Routine, type SigStep } from './generator';
 import type { SongStyle } from './songStyle';
 import { IDLE_MOVE, MOVES, type Move } from './moves';
 import { PARTNER_MOVES, partnerOf, type PartnerMove } from './duoMoves';
@@ -61,8 +61,8 @@ export interface DuoOpts {
   seedKey: string;
   intensity: Intensity;
   /**
-   * The song's style: P2's own moves follow the same specialty gating as the
-   * routine (generator.ts). Without it, only the traditions the routine itself
+   * The song's style: P2's own moves follow the same genre gating as the
+   * routine (generator.ts). Without it, only the genres the routine itself
    * uses are open.
    */
   style?: SongStyle;
@@ -195,7 +195,7 @@ export class DuoChoreographer {
   private recentPartners: PartnerMove[] = [];
   private familyW = new Map<string, number>();
   private sigRun = '';
-  private open: ReadonlySet<Tradition> | null = null;
+  private open: ReadonlySet<Genre> | null = null;
 
   constructor(private o: DuoOpts) {
     this.rng = mulberry32(hashString(`${o.seedKey}|duo|${o.intensity}`));
@@ -203,10 +203,11 @@ export class DuoChoreographer {
 
   build(r: Routine): DuoRoutine {
     const half = r.half;
-    if (this.o.style) this.open = styleTraditions(this.o.style);
+    if (this.o.style) this.open = styleGenres(this.o.style);
     else {
-      const open = new Set<Tradition>();
-      for (const inst of r.instances) for (const t of specialtyOf(inst.move)) open.add(t);
+      // No style given: the genres the single routine uses (its signature nod aside).
+      const open = new Set<Genre>();
+      for (const inst of r.instances) if (inst.move.genre && !inst.sig) open.add(inst.move.genre);
       this.open = open;
     }
     // The song's style, as the single routine expressed it: family weights from its moves.
@@ -369,7 +370,7 @@ export class DuoChoreographer {
     if (hit) return hit;
     const it = this.o.intensity;
     const pool = MOVES.filter(
-      (c) => !c.idle && !c.cooldown && c !== m && c.base !== m.base && c.beats === m.beats && c.travel === 0 && !c.fastTurn && difficultyOk(c.difficulty, it) && !(c.jump && it === 'chill') && c.level === m.level && (!this.open || specialtyFits(c, this.open)),
+      (c) => !c.idle && !c.cooldown && c !== m && c.base !== m.base && c.beats === m.beats && c.travel === 0 && !c.fastTurn && difficultyOk(c.difficulty, it) && !(c.jump && it === 'chill') && c.level === m.level && (!this.open || genreFits(c, this.open)),
     );
     let best: Move | undefined;
     let bestS = -Infinity;

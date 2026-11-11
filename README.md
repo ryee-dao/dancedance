@@ -452,15 +452,52 @@ Cookies expire after weeks to months. If the error returns, repeat and update th
 
 ### The move library
 
-The coach picks from **657 base moves** in nine families (Latin, disco, funk, hip-hop, pop, rock, K-pop, party and aerobics), defined in `src/core/choreo/families/*.ts`, plus about 1,100 variations of them that are generated and checked automatically. Two-player mode adds 24 partner-only moves.
+The coach's moves are in two tiers.
+
+- **Global moves (680)** suit any song and are used everywhere the level allows. They are the aerobics, pop, party and groove steps, plus style steps that read fine on any music. Of these, 338 are the original moves. **307 are named variations**: recombinations (one move's footwork under another's arms) that look clearly different. They were promoted to moves with their own names, such as *Grapevine Burst* or *Jumping Jack Curl*. The last 35 are new fitness moves: elbow strikes, uppercuts, front-kick combos and one-arm gym moves.
+- **Genre sets (431 moves)** only make sense with their own music, so they are used only on songs of that genre:
+
+| Genre set | Moves | Genre set | Moves |
+| --- | --- | --- | --- |
+| Rock | 51 | Country | 23 |
+| Hip-hop | 50 | Swing & rock-and-roll | 34 |
+| Latin | 51 | Afrobeats & amapiano | 19 |
+| Disco & funk | 59 | Dancehall, reggae & soca | 14 |
+| K-pop | 52 | Bollywood, bhangra & garba | 37 |
+| | | Folk | 30 |
+| | | Belly dance, hula, capoeira | 3, 6, 2 |
+
+Rock has headbangs and air guitar, Latin has salsa, cumbia and samba steps, and K-pop has the point moves. All moves are defined in `src/core/choreo/families/*.ts`. The genre sets are listed in `src/core/choreo/genres.ts`; any move not listed there is global.
+
+On top of these there are about 1,300 automatic variations. They are generated, checked and named "Move · variation", and each belongs to the same tier as its move. Two-player mode adds 24 partner-only moves.
+
+Every move has to look clearly different from every other move. The automatic checks require it (`AUTHORING.md`); named variations meet twice the usual bar.
+
+### How moves are weighted
+
+Every move carries soft weights, worked out from its keyframes:
+
+- **Tempo:** whether it suits slow, mid or fast songs. Hops, jogs and punchy moves suit fast songs; smooth, flowing ones suit slow songs.
+- **Impact:** how much it jumps, squats and bounces.
+- **Difficulty:** the authored difficulty, plus off-beat steps, travel and turns.
+
+These weights multiply with everything else the routine already considers: the song's style, the section and the energy of each bar. They make a move more or less likely but never rule it out. A hop comes up often on Sweaty and on fast songs, and only now and then elsewhere.
+
+Some rules are fixed:
+
+- **Chill never jumps** (and never turns fast).
+- **Genre moves appear only on songs of their genre.**
+- **A signature nod appears only on its own song.**
+
+`src/core/choreo/weights.ts` has the formulas and a short list of hand corrections.
 
 ### Levels
 
 | Level | What changes |
 | --- | --- |
-| **Chill** | Easiest moves only, each held 4–8 bars, no jumps, almost no variations. |
-| **Cardio** | Easy and medium moves, held 2–8 bars (about 4 on average), some variations and flourishes. |
-| **Sweaty** | All moves, more high-impact ones, a few more moves per section, the most variations. |
+| **Chill** | Low impact: never jumps, squats and stomps are rare. Nearly all simple moves, with a harder one now and then. Each move is held 4–8 bars, with almost no variations. |
+| **Cardio** | Mostly easy and medium moves; a hard move or a hop now and then. Each move is held 2–8 bars (about 4 on average), with some variations and flourishes. |
+| **Sweaty** | Leans toward hard, high-impact moves (jumps, squats), with a few more moves per section and the most variations. |
 
 Each move repeats long enough to pick up, and every chorus opens with the song's signature combo.
 
@@ -468,7 +505,7 @@ Each move repeats long enough to pick up, and every chorus opens with the song's
 
 Beat maps made since analyser 1.2.0 also say, for every bar, how loud it is, how much bass it has and how much the groove changes from the bars before, and where the drops are (a quiet stretch or build suddenly giving way to heavy bass). The routine uses this:
 
-- **The vibe.** Loud, bassy bars and drops lean toward vigorous moves (jumps, big arms, headbangs, within what the level allows; Chill never jumps); soft bars lean toward gentle ones. It's a weighting, not a rule.
+- **The vibe.** Loud, bassy bars and drops lean toward vigorous moves (jumps, big arms, headbangs, within what the level allows; Chill never jumps); soft bars lean toward gentle ones. It's a weighting, not a rule. The song's tempo adds its own lean (see above).
 - **When moves change.** Moves change on the music's phrase grid (every 2, 4 or 8 bars from the start of a section, never mid-phrase). A steady, loud passage such as a drop or a big chorus holds one move for 4–8 bars, switching to a variation of it half-way; a passage whose beat keeps changing gets shorter holds. A drop always starts a new move. It's seeded and weighted, so holds vary.
 - **Recurring moves.** Each kind of section (verse, chorus, ...) keeps a small set of moves for its soft, medium and heavy passages and comes back to them, sometimes as a variation, instead of a stream of new ones.
 
@@ -476,7 +513,14 @@ Older maps without these readings, and songs still being learned by listening, u
 
 ### Song styles
 
-Each song gets a style, shown on the coach's NOW label (for example "Latin groove"): which move families it leans toward, which body parts to favour, and a few themes. Most of the moves (roughly 60–70%) then come from the song's families. The style is decided in this order, first match wins:
+Each song gets a style, shown on the coach's NOW label (for example "Latin groove"). The style says which move families it leans toward, which body parts to favour, and a few themes. It also opens genre sets:
+
+- A **tradition theme** opens its set. For example, "country" opens the country set and "afro" opens Afrobeats & amapiano.
+- A **leading family** opens its set: rock, hip-hop, Latin, disco/funk or K-pop, when that family weighs at least 65% of the song's strongest one. When the song also has a tradition theme, only the strongest family counts. That keeps a country song from also getting headbangs.
+
+An unknown song opens no genre sets: it gets a balanced pop mix of global moves. On a song that opens a genre, that genre's moves get about a third of the picks. The song's family also favours the global moves tagged with it, so a rock song feels like rock without being all headbangs.
+
+The style is decided in this order, first match wins:
 
 1. The song's own `style` in `src/data/starter.json` (starter songs).
 2. The artist, from a built-in table in `src/core/choreo/songStyle.ts` (any credited artist counts).
@@ -495,7 +539,7 @@ Words in the title add themes ("Hips", "Jump", "Spin", "Clap" …), and the temp
 
 ### Signature nods
 
-A few famous songs open each chorus with the move everyone knows, for example Gangnam Style (gallop and lasso), Hips Don't Lie (hip sway and shake), The Twist, Stayin' Alive (disco point), U Can't Touch This, Party Rock Anthem (running-man shuffle) and Watch Me (whip and nae nae). The list is `SONG_SIGNATURES` in `src/core/choreo/songStyle.ts`.
+A few famous songs open each chorus with the move everyone knows, for example Gangnam Style (gallop and lasso), Hips Don't Lie (hip sway and shake), The Twist, Stayin' Alive (disco point), U Can't Touch This, Party Rock Anthem (running-man shuffle) and Watch Me (whip and nae nae). The list is `SONG_SIGNATURES` in `src/core/choreo/songStyle.ts`. A nod's moves can belong to a genre set (the gallop and lasso are in the country set), so they turn up on their own song even when it doesn't open that genre, and nowhere else outside their genre.
 
 ### Same routine or new
 

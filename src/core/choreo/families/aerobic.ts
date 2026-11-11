@@ -16,6 +16,8 @@ const jabA: PoseSpec = { twist: -14, turn: 8, r: ARM.jab, l: GUARD, ...FIST };
 const skyA: PoseSpec = { lean: 5, head: 3, nod: -6, r: ARM.sky, l: GUARD, ...FIST };
 const crossA: PoseSpec = { twist: -26, turn: 14, r: ARM.cross, l: GUARD, ...FIST };
 const upperA: PoseSpec = { twist: -12, turn: 6, nod: -4, r: hand(-0.09, 0.1, 0.17, [0.15, -1, 0.15]), l: GUARD, ...FIST };
+/** Elbow strike: fist at the chest, the elbow driving out to the side at shoulder height, chest turning into it. */
+const elbowA: PoseSpec = { twist: 16, lean: -3, r: at(1, 0.04, 0.8, 0.12, [1, 0.1, -0.1]), l: GUARD, ...FIST };
 const sidePunchA: PoseSpec = { lean: -3, head: -3, r: [90, 0, 90, 0], l: GUARD, ...FIST };
 const marchArmsA: PoseSpec = { r: ARM.swingBack, l: ARM.swingFwd, ...FIST };
 const airA: PoseSpec = { lean: 13, head: 5, r: [90, 0, 90, 0], l: [90, 0, 90, 0], ...OPEN };
@@ -198,6 +200,7 @@ export const patterns: PatternSet = {
     skyPunch: { beats: 2, parts: ['arms'], torso: true, keys: [[0, skyA], [1, mir(skyA)]] },
     crossJab: { beats: 2, parts: ['arms', 'torso'], torso: true, keys: [[0, crossA], [1, mir(crossA)]] },
     uppercut: { beats: 2, parts: ['arms', 'torso'], torso: true, keys: [[0, upperA], [1, mir(upperA)]] },
+    aeElbow: { beats: 2, parts: ['arms', 'torso'], torso: true, label: 'elbow strike', keys: [[0, elbowA], [1, mir(elbowA)]] },
     sidePunch: { beats: 2, parts: ['arms'], torso: true, keys: [[0, sidePunchA], [1, mir(sidePunchA)]] },
     shoulderPress: { beats: 2, parts: ['arms'], keys: [[0, { nod: -5, r: ARM.up, l: ARM.up, ...FIST }], [1, { r: ARM.goal, l: ARM.goal, ...FIST }]] },
     pushOut: { beats: 2, parts: ['arms'], keys: [[0, { r: [88, 0, 92, -5], l: [88, 0, 92, -5], ...OPEN }], [1, { r: CHEST_BOX, l: CHEST_BOX, ...FIST }]] },
@@ -247,6 +250,24 @@ export const patterns: PatternSet = {
     },
   },
 };
+
+/**
+ * Alternating single-arm versions of the gym arm moves: the right arm works,
+ * the left rests on the hip; repeats switch arms (mirror).
+ */
+function alternating(id: string, label: string): void {
+  const p = patterns.arms![id];
+  patterns.arms![`${id}Alt`] = {
+    ...p, mirror: true, torso: false, label: `alternating ${label}`,
+    keys: p.keys.map(([at, k]) => [at, { ...k, l: ARM.hip, handL: 0, lean: (k.lean ?? 0) - 2 }] as const),
+  };
+}
+alternating('bicepCurl', 'curl');
+alternating('shoulderPress', 'press');
+alternating('aeLateralRaise', 'raise');
+alternating('aeUprightRow', 'row');
+alternating('aeTricepExt', 'tricep press');
+alternating('latPull', 'pulldown');
 
 const skaterA: PoseSpec = {
   y: -0.08, x: 0.15, lean: 6, bend: 8, rf: [0.19, 0, 0], lf: [0.03, 0.09, -0.12],
@@ -506,4 +527,43 @@ export const moves: MoveDef[] = [
     desc: 'Feet together, fists up: hop a quarter turn to one side, hop back to the front, hop a quarter turn the other way, hop back.',
     keys: [[0, qtLand(0)], [0.5, qtAir(45)], [1, qtLand(90)], [1.5, qtAir(45)], [2, qtLand(0)], [2.5, qtAir(-45)], [3, qtLand(-90)], [3.5, qtAir(-45)]],
   }),
+
+  // Fitness combos added Nov 2026 (jab / uppercut / elbow strike / pulldown arms and the front kick).
+  combo('uppercuts', 'Uppercuts', 'plant', 'uppercut', 'mid', 1, 'aerobic rock | arms | punch', { desc: 'Power stance, guard up: drive one fist up under an imaginary chin, then the other, turning the chest into each.' }),
+  combo('elbow-strikes', 'Elbow Strikes', 'plant', 'aeElbow', 'mid', 1, 'aerobic rock | arms | punch', { desc: 'Fist at the chest, drive the elbow out to the side at shoulder height, turning into it; then the other side.' }),
+  combo('march-uppercut', 'March Uppercut', 'march', 'uppercut', 'mid', 1, 'aerobic rock | full | punch walk', { desc: 'March on the spot throwing uppercuts, one fist then the other.' }),
+  combo('side-lunge-uppercut', 'Side Lunge Uppercut', 'sideLunge', 'uppercut', 'mid', 2, 'aerobic rock | full | punch', { desc: 'Lunge out to the side and drive an uppercut as you sink.' }),
+  combo('side-kick-pulldown', 'Side Kick Pulldown', 'kickSide', 'latPull', 'mid', 2, 'aerobic | full | kick', { desc: 'Reach both arms up in a V, then pull the elbows down hard as one foot kicks out to the side.' }),
+  combo('step-touch-elbow', 'Step Touch Elbow', 'stepTouch', 'aeElbow', 'mid', 1, 'aerobic | full | punch walk', { desc: 'Step touch with an elbow strike out to the stepping side.' }),
+  combo('double-step-elbow', 'Double Step Elbow', 'doubleStep', 'aeElbow', 'mid', 2, 'aerobic | full | punch walk', { desc: 'Two step touches each way with elbow strikes out to the side.' }),
+  combo('march-elbow-strike', 'March Elbow Strike', 'march', 'aeElbow', 'mid', 1, 'aerobic | full | punch walk', { desc: 'March on the spot driving the elbows out to the sides in turn.' }),
+  combo('side-tap-elbow', 'Side Tap Elbow', 'tapSide', 'aeElbow', 'mid', 1, 'aerobic | full | punch', { desc: 'Tap a foot out to the side as the elbow strikes out that way.' }),
+  combo('front-kick-elbow', 'Front Kick Elbow', 'kickFront', 'aeElbow', 'mid', 2, 'aerobic rock | full | kick punch', { desc: 'Kick to the front, then strike an elbow out to the side.' }),
+  combo('squat-elbow-strike', 'Squat Elbow Strike', 'squat', 'aeElbow', 'high', 1, 'aerobic | full | punch', { desc: 'Squat, then rise with an elbow strike out to the side, alternating.' }),
+  combo('jumping-jack-elbow', 'Jumping Jack Elbow', 'jack', 'aeElbow', 'high', 2, 'aerobic | full | jump punch', { desc: 'Jumping jack feet with an elbow strike out to the side on each jump.' }),
+  combo('jog-elbow-strike', 'Jog Elbow Strike', 'jog', 'aeElbow', 'high', 2, 'aerobic | full | jump punch', { desc: 'Jog on the spot striking the elbows out to the sides in turn.' }),
+  combo('snap-kick-elbow', 'Snap Kick Elbow', 'rkSnapKick', 'aeElbow', 'mid', 2, 'aerobic rock | full | kick punch', { desc: 'Snap a low kick forward, then strike the elbow out to the side.' }),
+  combo('stomp-kick-elbow', 'Stomp Kick Elbow', 'rkSideStomp', 'aeElbow', 'mid', 2, 'aerobic rock | full | stomp punch', { desc: 'Stomp out to the side with an elbow strike the same way.' }),
+  combo('box-step-elbow', 'Box Step Elbow', 'boxStep', 'aeElbow', 'mid', 2, 'aerobic pop | full | punch walk', { desc: 'Walk the box step with an elbow strike on each step.' }),
+  combo('front-kick-punch-up', 'Front Kick Punch Up', 'kickFront', 'skyPunch', 'mid', 2, 'aerobic rock | full | kick punch', { desc: 'Kick to the front and punch the opposite fist up to the sky.' }),
+  combo('front-kick-jack-arms', 'Front Kick Jack Arms', 'kickFront', 'jackArms', 'mid', 2, 'aerobic | full | kick', { desc: 'Kick to the front as the arms sweep up overhead like a jumping jack, and down as the foot lands.' }),
+  combo('front-kick-get-up', 'Front Kick Get Up', 'kickFront', 'rkGetUp', 'mid', 2, 'aerobic rock | full | kick', { desc: 'Kick to the front with both arms thrown up overhead.' }),
+  combo('front-kick-cross-open', 'Front Kick Cross & Open', 'kickFront', 'xArms', 'mid', 2, 'aerobic | full | kick', { desc: 'Kick to the front, crossing the arms in front, then open them wide as the foot lands.' }),
+  combo('front-kick-touchdown', 'Front Kick Touchdown', 'kickFront', 'popTouchdown', 'mid', 2, 'aerobic pop | full | kick', { desc: 'Kick to the front with both arms shooting straight up like a touchdown signal.' }),
+  combo('front-kick-slap-clap', 'Front Kick Slap Clap', 'kickFront', 'popSlapClap', 'mid', 2, 'aerobic pop | full | kick clap', { desc: 'Kick to the front and clap, then slap the thighs as the foot lands.' }),
+
+  // Alternating one-arm gym moves (added Nov 2026).
+  combo('squat-one-arm-press', 'Squat One-Arm Press', 'squat', 'shoulderPressAlt', 'high', 1, 'aerobic | full |', { desc: 'Squat, then press one fist overhead as you rise, the other hand on the hip; switch arms each time.' }),
+  combo('lunge-one-arm-press', 'Lunge One-Arm Press', 'sideLunge', 'shoulderPressAlt', 'mid', 2, 'aerobic | full |', { desc: 'Side lunge with a one-arm overhead press, the free hand on the hip; switch sides each lunge.' }),
+  combo('step-touch-one-arm-raise', 'Step Touch One-Arm Raise', 'stepTouch', 'aeLateralRaiseAlt', 'low', 1, 'aerobic | full | walk', { desc: 'Step touch raising one straight arm out to the side, the other hand on the hip; alternate arms.' }),
+  combo('double-step-one-arm-raise', 'Double Step One-Arm Raise', 'doubleStep', 'aeLateralRaiseAlt', 'mid', 2, 'aerobic | full | walk', { desc: 'Double step touch with one-arm lateral raises, alternating arms.' }),
+  combo('march-one-arm-raise', 'March One-Arm Raise', 'march', 'aeLateralRaiseAlt', 'low', 1, 'aerobic | full | walk', { desc: 'March on the spot raising one arm out to the side at a time, the other hand on the hip.' }),
+  combo('side-tap-one-arm-raise', 'Side Tap One-Arm Raise', 'tapSide', 'aeLateralRaiseAlt', 'low', 1, 'aerobic | full |', { desc: 'Tap a foot out to the side as the same-side arm lifts out, the other hand on the hip.' }),
+  combo('squat-one-arm-raise', 'Squat One-Arm Raise', 'squat', 'aeLateralRaiseAlt', 'high', 1, 'aerobic | full |', { desc: 'Squat, then rise with one arm lifting out to the side, alternating arms.' }),
+  combo('one-arm-row', 'One-Arm Row', 'plant', 'aeUprightRowAlt', 'low', 1, 'aerobic | arms |', { desc: 'Wide stance, pull one fist straight up the front of the body to the chest, elbow high, the other hand on the hip; alternate.' }),
+  combo('step-touch-one-arm-row', 'Step Touch One-Arm Row', 'stepTouch', 'aeUprightRowAlt', 'low', 1, 'aerobic | full | walk', { desc: 'Step touch with one-arm upright rows, alternating arms.' }),
+  combo('double-step-one-arm-row', 'Double Step One-Arm Row', 'doubleStep', 'aeUprightRowAlt', 'mid', 2, 'aerobic | full | walk', { desc: 'Double step touch with one-arm upright rows, alternating arms.' }),
+  combo('march-one-arm-row', 'March One-Arm Row', 'march', 'aeUprightRowAlt', 'low', 1, 'aerobic | full | walk', { desc: 'March on the spot with one-arm upright rows, alternating arms.' }),
+  combo('squat-one-arm-row', 'Squat One-Arm Row', 'squat', 'aeUprightRowAlt', 'high', 1, 'aerobic | full |', { desc: 'Squat, then rise with a one-arm upright row, alternating arms.' }),
+  combo('one-arm-tricep-press', 'One-Arm Tricep Press', 'plant', 'aeTricepExtAlt', 'low', 1, 'aerobic | arms |', { desc: 'One arm up, lower the fist behind the head and press it back up, the other hand on the hip; alternate arms.' }),
 ];

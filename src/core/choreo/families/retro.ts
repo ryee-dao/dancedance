@@ -96,9 +96,8 @@ const logLoose: PoseSpec = { r: [26, 10, 40, 30], l: [26, 10, 40, 30], handR: 1,
 
 
 
-const messAt = (ph: number): PoseSpec => ({
-  r: at(1, 0.12 + 0.07 * Math.cos(ph), 1.12 + 0.06 * Math.sin(ph), 0.1, [1, 0.2, -0.2]), l: ARM.hip, handR: 0, handL: 0, formR: 'point',
-});
+/** Mess Around: both hands on the hips, the body does the work (the phase is unused since the 2026-11 fix). */
+const messAt = (_ph: number): PoseSpec => ({ r: ARM.hip, l: ARM.hip, handR: 0, handL: 0 });
 
 /** Stomp Off: stomp the right foot slightly forward, right arm lifting... */
 const stompOut: PoseSpec = {
@@ -161,11 +160,13 @@ const jigStep = (side: 1 | -1): PoseSpec => {
   return side > 0 ? s : mir(s);
 };
 
-const JIVE_HOLD: PoseSpec = { r: at(1, 0.13, 0.62, 0.22, [1, -0.5, -0.3]), l: at(-1, -0.13, 0.62, 0.22, [1, -0.5, -0.3]), handR: 0.4, handL: 0.4 };
+/** Chicken Walk (jive): knees kept bent, one foot slides forward on its toe, hips and shoulders turn to that side. */
 const chicken = (side: 1 | -1): PoseSpec => ({
-  y: -0.07, bend: 6, hips: 0.055 * side, tilt: 7 * side, shR: side > 0 ? 0.5 : 0, shL: side < 0 ? 0.5 : 0,
-  rf: side > 0 ? [0.06, 0, -0.09] : [0.06, 0, 0.03], lf: side < 0 ? [-0.06, 0, -0.09] : [-0.06, 0, 0.03],
-  slideR: true, slideL: true, kneeR: -0.3, kneeL: -0.3, ...JIVE_HOLD,
+  y: -0.07, bend: 4, twist: 14 * side, hipTwist: 10 * side, hips: 0.045 * side, tilt: 5 * side, shR: side > 0 ? 0.5 : 0, shL: side < 0 ? 0.5 : 0,
+  rf: side > 0 ? [0.07, 0, 0.1] : [0.06, 0, -0.02], lf: side < 0 ? [-0.07, 0, 0.1] : [-0.06, 0, -0.02],
+  pitchR: side > 0 ? 18 : 0, pitchL: side < 0 ? 18 : 0,
+  slideR: true, slideL: true, kneeR: -0.2, kneeL: -0.2,
+  r: [22, 20, 52, 60], l: [22, 20, 52, 60], handR: 0.5, handL: 0.5,
 });
 
 const strollSnap: PoseSpec = { l: at(-1, -0.27, 0.96, 0.06, [1, -0.2, -0.2]), r: [20, -10, 30, 0], handL: 0, handR: 1 };
@@ -247,7 +248,7 @@ export const moves: MoveDef[] = [
   // --- Swing / solo jazz -------------------------------------------------
   full({
     id: 'gaze-afar', name: 'Gaze Afar', tags: 'pop party | arms | swing point', beats: 4, level: 'low', d: 1, parts: ['arms', 'legs'], mirror: true,
-    desc: 'Step out to the side and shade your eyes with that hand, looking far off along it, then step back together.',
+    desc: 'Jazz step: step out and shade your eyes with that hand, looking off into the distance, then step back together.',
     keys: [
       [0, gazeOut],
       [1, { ...gazeOut, y: -0.06, turn: 36 }],
@@ -286,7 +287,7 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'mess-around', name: 'Mess Around', tags: 'pop latin | hips | swing hips', beats: 4, level: 'low', d: 2, parts: ['hips', 'arms'], mirror: true,
-    desc: 'A slow sitting hip circle, one hand on the hip and the other index finger stirring a circle above the head.',
+    desc: 'Black Bottom era: hands on the hips, feet loose in one place, and let the body roll round in a slow, sitting circle.',
     keys: [
       [0, { y: -0.05, hips: 0.07, tilt: 9, lean: -3, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], ...messAt(0) }],
       [1, { y: -0.11, hips: 0, bend: -4, kneeR: 0.2, kneeL: 0.2, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], ...messAt(Math.PI / 2) }],
@@ -326,7 +327,7 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'chicken-walk', name: 'Chicken Walk', tags: 'pop rock | hips legs | swing walk hips', beats: 2, level: 'mid', d: 2, parts: ['hips', 'legs'],
-    desc: 'Jive chicken walk: knees together, slide one foot back with the hip swinging out to that side, hands held low in front as if leading a partner.',
+    desc: 'Jive / swing chicken walk: knees kept bent, slide one foot forward with the toe on the floor and shift onto it, hips and shoulders turning to that side, then the other.',
     keys: [[0, chicken(1)], [0.5, { ...chicken(1), hips: 0, tilt: 0, y: -0.05, rf: [0.06, 0, -0.03], lf: [-0.06, 0, -0.03] }], [1, chicken(-1)], [1.5, { ...chicken(-1), hips: 0, tilt: 0, y: -0.05, rf: [0.06, 0, -0.03], lf: [-0.06, 0, -0.03] }]],
   }),
   full({
@@ -341,7 +342,7 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'hitch-kick', name: 'Hitch Kick', tags: 'rock pop | legs | swing kick jump', beats: 2, level: 'high', d: 3, parts: ['legs', 'jump'], mirror: true, jump: true,
-    desc: 'Lift one knee, hop and scissor the other leg forward in a low kick, land on the kicking side, one arm reaching up.',
+    desc: 'Jazz hitch kick: flick one leg up, then hop and pass the other leg through in a small scissor kick, one arm reaching up.',
     keys: [
       [0, { y: -0.06, rf: [0.09, 0, 0], lf: [-0.09, 0.14, 0.1], ...kickHi }],
       [0.5, { y: 0.06, bend: -4, lean: -3, rf: [0.09, 0.2, 0.28], lf: [-0.09, 0.08, 0.06], ...kickHi, r: [150, 8, 160, 8] }],

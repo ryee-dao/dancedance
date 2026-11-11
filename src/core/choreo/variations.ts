@@ -29,6 +29,7 @@ import { NEUTRAL, pose, type PoseSpec } from '../coach/poses';
 import { CH, J, createSkeleton, solveSkeleton } from '../coach/skeleton';
 import { ACCENT, ARMS, FOOT, finish, tile, track, type Difficulty, type Level, type Move, type MoveKey, type Pattern, type Tags, type Track } from './catalog';
 import { FAMILIES, type Family, type Focus, type Theme } from './families';
+import type { Genre } from './genres';
 import { MOVES } from './moves';
 import { spinKeys } from './families/shared';
 
@@ -66,6 +67,31 @@ interface LayerInfo {
   /** Canonical move (most representative) for naming. */
   canon: Move;
   moves: Move[];
+}
+
+/** Genre a layer pattern belongs to: set when every catalogue move using it is exclusive to that genre. */
+let patternGenre: Map<string, Genre | null> | null = null;
+
+/** The genre of a layer pattern ('foot' / 'arms'), or null for a pattern global moves use too. */
+export function layerGenre(kind: 'foot' | 'arms', id: string): Genre | null {
+  if (!patternGenre) {
+    const pg = new Map<string, Genre | null>();
+    const note = (k: string, g: Genre | null) => pg.set(k, pg.has(k) && pg.get(k) !== g ? null : g);
+    for (const m of MOVES) {
+      if (!m.layered || m.cooldown || m.idle || !m.foot || !m.arms) continue;
+      note(`foot:${m.foot}`, m.genre ?? null);
+      note(`arms:${m.arms}`, m.genre ?? null);
+    }
+    patternGenre = pg;
+  }
+  return patternGenre.get(`${kind}:${id}`) ?? null;
+}
+
+/** Genre of a recombination (the genre of a layer that has one); undefined = global, null = two different genres. */
+function comboGenre(foot: string, arms: string): Genre | undefined | null {
+  const f = layerGenre('foot', foot), a = layerGenre('arms', arms);
+  if (f && a && f !== a) return null;
+  return f ?? a ?? undefined;
 }
 
 let footIndex: Map<string, LayerInfo> | null = null;
@@ -178,6 +204,8 @@ export function variationCandidates(): VariationSpec[] {
       if (fp.torso && ap.torso) continue; // both want the torso
       const neutral = NEUTRAL_FEET.has(fId);
       if (!neutral && ![...fi.families].some((f) => ai.families.has(f))) continue;
+      // Never mix two genre sets (salsa feet under bhangra arms).
+      if (comboGenre(fId, aId) === null) continue;
       const base = neutral ? ai.canon : fi.canon;
       out.push({ id: `${base.id}~combo~${fId}+${aId}`, base: base.id, type: 'combo', foot: fId, arms: aId });
     }
@@ -401,8 +429,10 @@ export function buildVariation(v: VariationSpec): Move {
       const shared = [...fm.families].filter((f) => am.families.includes(f));
       const b = layers(nf, na, undefined, 0);
       const d = clampD(Math.max(fm.difficulty, am.difficulty) + (neutral ? 0 : 1));
+      const genre = comboGenre(v.foot!, v.arms!);
+      if (genre === null) throw new Error(`Variation ${v.id}: mixes two genre sets`);
       return finish(
-        { id: v.id, name: display, ...common, variant: neutral ? fl : al, tags: mergeTags(fm, am, shared.length ? shared : undefined), level: maxLevel(fm.level, am.level), difficulty: d },
+        { id: v.id, name: display, ...common, genre, variant: neutral ? fl : al, tags: mergeTags(fm, am, shared.length ? shared : undefined), level: maxLevel(fm.level, am.level), difficulty: d },
         b.beats,
         b.tracks,
         { mirror: b.mirror, travel: b.travel, jump: b.jump, impact: b.impact, parts: b.parts as Move['parts'], layered: true, foot: v.foot, arms: v.arms },
@@ -426,7 +456,7 @@ export function buildVariation(v: VariationSpec): Move {
       const parts = new Set(b.parts);
       if (v.type === 'spin') parts.add('turn');
       return finish(
-        { id: v.id, name: name(SUFFIX[v.type]), ...common, tags: v.type === 'spin' ? withTheme(m, 'spin') : mergeTags(m, null), level, difficulty: d },
+        { id: v.id, name: name(SUFFIX[v.type]), ...common, genre: m.genre, tags: v.type === 'spin' ? withTheme(m, 'spin') : mergeTags(m, null), level, difficulty: d },
         b.beats,
         b.tracks,
         { mirror: b.mirror, travel: b.travel, jump: b.jump, impact: b.impact, parts: [...parts] as Move['parts'], layered: true, foot: m.foot, arms: m.arms, accent: m.accent },
