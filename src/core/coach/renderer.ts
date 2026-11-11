@@ -72,6 +72,8 @@ export class FigurePainter {
   private readonly ps = new Float64Array(NUM_JOINTS);
   private readonly order = new Int8Array(6);
   private readonly zkey = new Float64Array(6);
+  private readonly wide = new Float64Array(8);
+  private sk3: Float64Array | null = null;
   // Headband tail state (spring).
   private tailA = 0;
   private tailV = 0;
@@ -101,6 +103,7 @@ export class FigurePainter {
 
   draw(ctx: CanvasRenderingContext2D, sk: Skeleton, cx: number, floorY: number, scale: number, t: number, o: FigureOptions = {}): void {
     this.project(sk, cx, floorY, scale);
+    this.sk3 = sk.p;
     const mini = !!o.mini;
     if (this.style !== 'classic') {
       const look = LOOKS[this.style];
@@ -275,6 +278,33 @@ export class FigurePainter {
     ctx.stroke();
   }
 
+  /**
+   * Screen points of joints a / b (left / right) into wide[o..o+3], spread to
+   * at least `minHalf` px from their midpoint across the body axis.
+   */
+  private widen(a: number, b: number, o: number, minHalf: number): void {
+    const px = this.px, W = this.wide;
+    const ax = px[a * 2], ay = px[a * 2 + 1], bx = px[b * 2], by = px[b * 2 + 1];
+    W[o] = ax; W[o + 1] = ay; W[o + 2] = bx; W[o + 3] = by;
+    const dx = bx - ax, dy = by - ay;
+    const half = Math.sqrt(dx * dx + dy * dy) * 0.5;
+    if (half >= minHalf) return;
+    // Across the body: perpendicular to pelvis -> chest, signed like a -> b.
+    let qx = px[J.PELVIS * 2 + 1] - px[J.CHEST * 2 + 1], qy = px[J.CHEST * 2] - px[J.PELVIS * 2];
+    const ql = Math.sqrt(qx * qx + qy * qy) || 1;
+    qx /= -ql;
+    qy /= -ql;
+    if (qx * dx + qy * dy < 0) {
+      qx = -qx;
+      qy = -qy;
+    }
+    const mx = (ax + bx) * 0.5, my = (ay + by) * 0.5;
+    W[o] = mx - qx * minHalf;
+    W[o + 1] = my - qy * minHalf;
+    W[o + 2] = mx + qx * minHalf;
+    W[o + 3] = my + qy * minHalf;
+  }
+
   private torso(ctx: CanvasRenderingContext2D, scale: number, ol: number): void {
     const px = this.px, ps = this.ps;
     // Shorts over the thigh tops.
@@ -307,11 +337,15 @@ export class FigurePainter {
     ctx.lineWidth = W_NECK * ps[J.NECK] * scale;
     ctx.stroke();
 
-    // Chest: a rounded trapezoid from the shoulders to the hips.
+    // Chest: a rounded trapezoid from the shoulders to the hips. Turned side-on
+    // (spins) the shoulder / hip lines collapse: keep a minimum body depth.
     const sl = J.SH_L, sr = J.SH_R;
-    const slx = px[sl * 2], sly = px[sl * 2 + 1], srx = px[sr * 2], sry = px[sr * 2 + 1];
     const wx = px[J.WAIST * 2], wy = px[J.WAIST * 2 + 1];
-    const hlx = px[hl * 2], hly = px[hl * 2 + 1], hrx = px[hr * 2], hry = px[hr * 2 + 1];
+    const W = this.wide;
+    this.widen(J.SH_L, J.SH_R, 0, 0.062 * scale);
+    this.widen(hl, hr, 4, 0.05 * scale);
+    const slx = W[0], sly = W[1], srx = W[2], sry = W[3];
+    const hlx = W[4], hly = W[5], hrx = W[6], hry = W[7];
     // Waist half-width follows the shoulder line direction.
     const dx = srx - slx, dy = sry - sly;
     const len = Math.sqrt(dx * dx + dy * dy) || 1;
@@ -334,12 +368,12 @@ export class FigurePainter {
     ctx.lineWidth = ol * 1.4;
     ctx.fillStyle = COLORS.left;
     ctx.beginPath();
-    ctx.arc(slx, sly, capR * ps[sl], 0, Math.PI * 2);
+    ctx.arc(px[sl * 2], px[sl * 2 + 1], capR * ps[sl], 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = COLORS.right;
     ctx.beginPath();
-    ctx.arc(srx, sry, capR * ps[sr], 0, Math.PI * 2);
+    ctx.arc(px[sr * 2], px[sr * 2 + 1], capR * ps[sr], 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     // Shorts top over the lower torso, with a waistband.
@@ -371,6 +405,10 @@ export class FigurePainter {
     const roll = Math.atan2(ux, -uy);
     const fx = (px[J.HEAD_FWD * 2] - hx) / scale; // + = facing screen right
     const fy = (px[J.HEAD_FWD * 2 + 1] - hy) / scale; // + = looking down
+    // Facing the viewer (1) .. side-on (0) .. back to the viewer (< 0), from the 3D forward axis.
+    const p3 = this.sk3;
+    const fz = p3 ? p3[J.HEAD_FWD * 3 + 2] - p3[J.HEAD * 3 + 2] : 1;
+    const back = fz < -0.25;
 
     ctx.fillStyle = COLORS.body;
     ctx.strokeStyle = COLORS.outline;
@@ -396,9 +434,10 @@ export class FigurePainter {
       this.lastHx = hx;
       this.lastHy = hy;
       this.lastT = t;
-      const side = fx >= 0 ? -1 : 1;
-      const bx = side * r * 0.92, by = -r * 0.3;
-      const a = 0.35 + this.tailA * side;
+      // Back to the viewer: the knot and both tails hang at the back of the head.
+      const side = back ? 0.08 : fx >= 0 ? -1 : 1;
+      const bx = side * r * 0.92, by = back ? -r * 0.62 : -r * 0.3;
+      const a = back ? 1.25 + this.tailA * 0.3 : 0.35 + this.tailA * side;
       ctx.strokeStyle = COLORS.outline;
       ctx.lineWidth = 0.034 * scale + ol * 1.6;
       ctx.beginPath();
@@ -421,13 +460,31 @@ export class FigurePainter {
     ctx.ellipse(0, 0, r - r * 0.17, r - r * 0.17, 0, Math.PI * 1.06, Math.PI * 1.94);
     ctx.stroke();
     ctx.lineCap = 'round';
-    if (!mini) {
-      // Eyes + smile, shifted toward where the face points.
+    if (back) {
+      // Back of the head: no face; a darker crown and the band's knot in the middle.
+      ctx.fillStyle = COLORS.muted;
+      ctx.beginPath();
+      ctx.arc(0, 0, r - ol, Math.PI * 1.12, Math.PI * 1.88);
+      ctx.lineTo(0, -r * 0.05);
+      ctx.closePath();
+      ctx.globalAlpha *= 0.35;
+      ctx.fill();
+      ctx.globalAlpha /= 0.35;
+      ctx.strokeStyle = COLORS.band;
+      ctx.lineWidth = r * 0.34;
+      ctx.lineCap = 'butt';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, r - r * 0.17, r - r * 0.17, 0, Math.PI * 1.06, Math.PI * 1.94);
+      ctx.stroke();
+      ctx.lineCap = 'round';
+    } else if (!mini) {
+      // Eyes + smile, shifted toward where the face points; closer together side-on.
       const ex = fo * 0.8, ey = r * 0.12 + lift * 0.5;
+      const sp = r * 0.32 * Math.max(0.3, Math.min(1, fz * 1.15));
       ctx.fillStyle = COLORS.outline;
       ctx.beginPath();
-      ctx.ellipse(ex - r * 0.32, ey, r * 0.1, r * 0.15, 0, 0, Math.PI * 2);
-      ctx.ellipse(ex + r * 0.32, ey, r * 0.1, r * 0.15, 0, 0, Math.PI * 2);
+      ctx.ellipse(ex - sp, ey, r * 0.1, r * 0.15, 0, 0, Math.PI * 2);
+      ctx.ellipse(ex + sp, ey, r * 0.1, r * 0.15, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = COLORS.outline;
       ctx.lineWidth = r * 0.09;

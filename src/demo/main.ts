@@ -5,7 +5,9 @@
  *   song     (default) synthetic song with sections, driven by performance.now()
  *   gallery  one move looping with its name (?move=<id>), or every move in turn
  *   sheet    contact sheet: rows of moves x frames across a loop
- *            (?set=catalogue|foot|arms|accent&page=0&per=12&frames=10)
+ *            (?set=catalogue|foot|arms|accent&page=0&per=12&frames=10;
+ *            ?family=<file> = the moves of one family file, ?tag=<family> =
+ *            moves tagged with a family, ?moves=id1,id2 = those moves)
  *   bench    times the figure drawing of every style (results in __demo.result)
  *
  *   preview  the style-chooser preview cards (drawCoachPreview) side by side
@@ -311,6 +313,11 @@ function sheetMoves(set: string): Move[] {
   if (set === 'accent') return Object.keys(ACCENT).map((a) => composeMove('bounce', 'rest', { accent: a }));
   const ids = q.get('moves');
   if (ids) return ids.split(',').map((id) => findMove(id)).filter((m): m is Move => !!m);
+  // ?family=<file>: the moves a family file defines; ?tag=<family>: moves tagged with it.
+  const fam = q.get('family');
+  if (fam) return MOVES.filter((m) => m.file === fam);
+  const tag = q.get('tag');
+  if (tag) return MOVES.filter((m) => (m.families as readonly string[]).includes(tag));
   return MOVES.slice();
 }
 
@@ -353,6 +360,8 @@ function runSheet(): void {
     ctx.fillText(m.id, 10, y0 + 48);
     ctx.fillText(`${m.beats}b ${m.level} d${m.difficulty}${m.mirror ? ' mir' : ''}${m.travel ? ' trv' : ''}${m.jump ? ' jump' : ''}`, 10, y0 + 66);
     ctx.fillText(m.layered ? `${m.foot}+${m.arms}${m.accent ? '+' + m.accent : ''}` : 'hand-authored', 10, y0 + 84);
+    ctx.fillText(`${m.file}: ${m.families.join(' ')}`, 10, y0 + 102);
+    ctx.fillText(`${m.focus.join(' ')}${m.themes.length ? ' / ' + m.themes.join(' ') : ''}`, 10, y0 + 120);
     for (let f = 0; f < frames; f++) {
       const b = (f / frames) * span;
       ev.evaluate(plan, b * period, pose);

@@ -44,6 +44,15 @@ export interface PoseSpec {
   lf?: FootSpec;
   handR?: number;
   handL?: number;
+  /** Pelvis tilt, deg (+ = user's right hip up). */
+  tilt?: number;
+  /** Rib-cage slide, units (+ = toward screen right). */
+  chestX?: number;
+  /** Whole-body turn, deg. */
+  spin?: number;
+  /** Knee / toe turn-out per leg (+ out, - in). */
+  kneeR?: number;
+  kneeL?: number;
 }
 
 const RAD = 180 / Math.PI;
@@ -176,6 +185,11 @@ export function pose(spec: PoseSpec): Pose {
   if (spec.lf) setFoot(p, CH.LFT_X, spec.lf);
   if (spec.handR !== undefined) p[CH.HAND_R] = spec.handR;
   if (spec.handL !== undefined) p[CH.HAND_L] = spec.handL;
+  if (spec.tilt !== undefined) p[CH.HIP_TILT] = spec.tilt;
+  if (spec.chestX !== undefined) p[CH.CHEST_X] = spec.chestX;
+  if (spec.spin !== undefined) p[CH.SPIN] = spec.spin;
+  if (spec.kneeR !== undefined) p[CH.KNEE_R] = spec.kneeR;
+  if (spec.kneeL !== undefined) p[CH.KNEE_L] = spec.kneeL;
   return p;
 }
 
@@ -220,8 +234,11 @@ const OVER_AMT = 0.07;
 const SNAPPY = new Uint8Array(NUM_CHANNELS);
 for (const c of [
   CH.LEAN, CH.TWIST, CH.BEND, CH.HIPS, CH.HIPTWIST, CH.HEAD_ROLL, CH.HEAD_NOD, CH.HEAD_TURN, CH.SH_R, CH.SH_L,
-  CH.RA_E, CH.RA_P, CH.RF_E, CH.RF_P, CH.LA_E, CH.LA_P, CH.LF_E, CH.LF_P, CH.Y,
+  CH.RA_E, CH.RA_P, CH.RF_E, CH.RF_P, CH.LA_E, CH.LA_P, CH.LF_E, CH.LF_P, CH.Y, CH.HIP_TILT, CH.CHEST_X,
 ]) SNAPPY[c] = 1;
+/** Channels interpolated at constant speed between keys (turns: no stop at every key). */
+const LINEAR = new Uint8Array(NUM_CHANNELS);
+LINEAR[CH.SPIN] = 1;
 const ANGULAR = new Uint8Array(NUM_CHANNELS);
 for (const c of ANGULAR_CHANNELS) ANGULAR[c] = 1;
 
@@ -248,7 +265,7 @@ export function interpolateKeys(pm1: Pose, p0: Pose, p1: Pose, u: number, out: P
   for (let c = 0; c < NUM_CHANNELS; c++) {
     const a = p0[c];
     const d = channelDelta(c, a, p1[c]);
-    let v = a + d * w;
+    let v = a + d * (LINEAR[c] ? u : w);
     if (SNAPPY[c]) {
       v += channelDelta(c, pm1[c], a) * ov - d * an;
     }
@@ -300,9 +317,9 @@ export const G_TORSO = 2;
 export const NUM_GROUPS = 3;
 
 export const GROUP_CHANNELS: readonly (readonly number[])[] = [
-  [CH.X, CH.Y, CH.HIPS, CH.HIPTWIST, CH.RFT_X, CH.RFT_Y, CH.RFT_Z, CH.LFT_X, CH.LFT_Y, CH.LFT_Z],
+  [CH.X, CH.Y, CH.HIPS, CH.HIPTWIST, CH.RFT_X, CH.RFT_Y, CH.RFT_Z, CH.LFT_X, CH.LFT_Y, CH.LFT_Z, CH.HIP_TILT, CH.SPIN, CH.KNEE_R, CH.KNEE_L],
   [CH.SH_R, CH.SH_L, CH.RA_E, CH.RA_P, CH.RF_E, CH.RF_P, CH.LA_E, CH.LA_P, CH.LF_E, CH.LF_P, CH.HAND_R, CH.HAND_L],
-  [CH.LEAN, CH.TWIST, CH.BEND, CH.HEAD_ROLL, CH.HEAD_NOD, CH.HEAD_TURN],
+  [CH.LEAN, CH.TWIST, CH.BEND, CH.HEAD_ROLL, CH.HEAD_NOD, CH.HEAD_TURN, CH.CHEST_X],
 ];
 
 /** Group of each channel. */
@@ -325,7 +342,7 @@ export function interpolateGroup(g: number, pm1: Pose, p0: Pose, p1: Pose, u: nu
     const c = chs[i];
     const a = p0[c];
     const d = channelDelta(c, a, p1[c]);
-    let v = a + d * w;
+    let v = a + d * (LINEAR[c] ? u : w);
     if (SNAPPY[c]) v += channelDelta(c, pm1[c], a) * ov - d * an;
     out[c] = v;
   }

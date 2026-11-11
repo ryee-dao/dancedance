@@ -155,6 +155,8 @@ export class HumanPainter {
   // Hem lines recorded by flat capsule ends: (x0, y0, x1, y1) * 4.
   private readonly hems = new Float64Array(16);
   private hemN = 0;
+  /** Head forward z of the current head draw (1 = facing the viewer). */
+  private faceZ = 1;
 
   constructor(look: HumanLook) {
     this.look = look;
@@ -563,7 +565,24 @@ export class HumanPainter {
     }
     this.paint(ctx, pass, L.top, true);
     if (pass !== PASS_FILL) return;
-    if (L.hood) {
+    if (L.hood && sk.rt[8] < 0) {
+      // Back to the viewer: the hood lies on the back of the hoodie.
+      ctx.beginPath();
+      this.local(p, J.CHEST, sk.rt, 0, -0.005, -0.04);
+      this.proj(this.wx, this.wy, this.wz);
+      const ox = this.qx, oy = this.qy;
+      this.local(p, J.CHEST, sk.rt, 0.07, -0.005, -0.04);
+      this.proj(this.wx, this.wy, this.wz);
+      const hr = Math.hypot(this.qx - ox, this.qy - oy);
+      ctx.ellipse(ox, oy, hr, hr * 0.75, Math.atan2(this.qy - oy, this.qx - ox), 0, Math.PI * 2);
+      ctx.strokeStyle = L.line;
+      ctx.lineWidth = this.lineW();
+      ctx.stroke();
+      ctx.fillStyle = L.hood;
+      ctx.fill();
+      return;
+    }
+    if (L.hood && sk.rt[8] > 0.35) {
       // Kangaroo pocket + drawstrings.
       const q = this.quad;
       for (let i = 0; i < 4; i++) {
@@ -956,6 +975,29 @@ export class HumanPainter {
     ctx.rotate(roll);
     const fo = Math.max(-0.6, Math.min(0.6, fx * 1.6)) * rx; // face shift with turn
     const lift = Math.max(-0.4, Math.min(0.4, -fy * 1.5)) * ry; // + = looking down
+    // Facing (1) .. side-on (0) .. back to the viewer (< 0), from the 3D forward axis.
+    const fz = p[J.HEAD_FWD * 3 + 2] - p[J.HEAD * 3 + 2];
+    if (fz < -0.25) {
+      // Back view (turns): no face; the hair covers the head, the ponytail hangs in front of it.
+      if (L.hairStyle !== 'ponytail') this.backHair(ctx, pass, rx, ry, g, s, mini);
+      ctx.beginPath();
+      this.face(ctx, rx + g, ry + g, 0);
+      ctx.fillStyle = pass === PASS_FILL ? L.hair : L.outline;
+      ctx.fill();
+      if (pass === PASS_FILL && L.band && L.hairStyle === 'puff') {
+        ctx.strokeStyle = L.band;
+        ctx.lineWidth = ry * 0.24;
+        ctx.lineCap = 'butt';
+        ctx.beginPath();
+        ctx.ellipse(0, -ry * 0.1, rx * 0.98, ry * 0.86, 0, Math.PI * 1.08, Math.PI * 1.92);
+        ctx.stroke();
+        ctx.lineCap = 'round';
+      }
+      if (L.hairStyle === 'ponytail') this.backHair(ctx, pass, rx, ry, g, s, mini);
+      ctx.restore();
+      return;
+    }
+    this.faceZ = fz;
 
     // Back hair (behind the head).
     this.backHair(ctx, pass, rx, ry, g, s, mini);
@@ -1091,7 +1133,8 @@ export class HumanPainter {
   private features(ctx: CanvasRenderingContext2D, rx: number, ry: number, fo: number, lift: number): void {
     const L = this.look;
     const ex = fo * 0.75, ey = ry * 0.06 + lift * 0.5;
-    const sp = rx * 0.4;
+    // Eyes close up when the head turns side-on.
+    const sp = rx * 0.4 * Math.max(0.3, Math.min(1, this.faceZ * 1.15));
     // Eyes.
     ctx.fillStyle = L.eye;
     ctx.beginPath();

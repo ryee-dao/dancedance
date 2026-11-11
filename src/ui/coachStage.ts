@@ -35,7 +35,15 @@ export interface CoachStageDeps {
   isTV: boolean;
   /** The coach's look (default 'classic'). A `?coach=<style>` URL parameter wins. */
   getStyle?: () => CoachStyle;
+  /** 'same' (default): a song always gets the same routine; 'fresh': a new one each play. */
+  getRoutineMode?: () => RoutineMode;
+  /** Completed plays of a song so far (mixed into the seed in 'fresh' mode). Read once per song. */
+  getPlayCount?: (videoId: string) => number;
+  /** iTunes primary genre of a song, when known (added songs). Read once per song. */
+  getGenre?: (videoId: string) => string | undefined;
 }
+
+export type RoutineMode = 'same' | 'fresh';
 
 export interface FrameStats {
   /** Average time between frames (ms) over the last ~second. */
