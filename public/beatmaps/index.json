@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.1.0",
-  "generatedAt": "2026-11-11T21:46:33.117Z",
+  "generatedAt": "2026-11-11T21:49:13.359Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -62,6 +62,7 @@
     "b3bkpyNiv8Y",
     "bOq67Poe95w",
     "bSwzZoLCoZ0",
+    "dWErisOfeyE",
     "egpE0ysQ21Q",
     "fH_OnJk6QqU",
     "fw-QRyQcFH8",
@@ -343,6 +344,11 @@
     "bSwzZoLCoZ0": {
       "bpm": 140,
       "duration": 164
+    },
+    "dWErisOfeyE": {
+      "bpm": 100,
+      "duration": 222,
+      "genre": "Pop"
     },
     "egpE0ysQ21Q": {
       "bpm": 105.1,

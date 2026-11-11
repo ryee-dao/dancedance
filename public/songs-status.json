@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-11T21:46:33.117Z",
+  "updatedAt": "2026-11-11T21:49:13.359Z",
   "requests": {
     "finger eleven - paralyzer": {
       "state": "map-pending",
@@ -10,16 +10,6 @@
       "message": "Listed. YouTube refused the cloud download, so there is no beat map yet: the app finds the beat by listening, and the job keeps trying.",
       "attempts": 1,
       "lastTried": "2026-11-11T21:16:05.704Z"
-    },
-    "shakira - hips don t lie feat wyclef jean": {
-      "state": "map-pending",
-      "artist": "Shakira",
-      "title": "Hips Don't Lie (feat. Wyclef Jean)",
-      "durationSec": 220,
-      "videoId": "dWErisOfeyE",
-      "message": "Listed. YouTube refused the cloud download, so there is no beat map yet: the app finds the beat by listening, and the job keeps trying.",
-      "attempts": 1,
-      "lastTried": "2026-11-11T17:41:56.174Z"
     }
   }
 }
