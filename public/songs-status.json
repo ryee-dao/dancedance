@@ -1,15 +1,4 @@
 {
-  "updatedAt": "2026-11-11T21:49:13.359Z",
-  "requests": {
-    "finger eleven - paralyzer": {
-      "state": "map-pending",
-      "artist": "Finger Eleven",
-      "title": "Paralyzer",
-      "durationSec": 208,
-      "videoId": "aF18NehJxos",
-      "message": "Listed. YouTube refused the cloud download, so there is no beat map yet: the app finds the beat by listening, and the job keeps trying.",
-      "attempts": 1,
-      "lastTried": "2026-11-11T21:16:05.704Z"
-    }
-  }
+  "updatedAt": "2026-11-11T22:36:33.524Z",
+  "requests": {}
 }

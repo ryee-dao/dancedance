@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-11T21:49:13.359Z",
+  "updatedAt": "2026-11-11T22:36:33.524Z",
   "songs": [
     {
       "videoId": "_Vj092UgKwQ",
@@ -41,7 +41,7 @@
       "artist": "Finger Eleven",
       "addedAt": "2026-11-11T21:16:05.704Z",
       "durationSec": 208,
-      "hasMap": false,
+      "hasMap": true,
       "genre": "Rock"
     }
   ]
