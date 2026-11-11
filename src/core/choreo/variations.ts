@@ -99,20 +99,62 @@ const COMBOS = new Set(MOVES.filter((m) => m.layered).map((m) => `${m.foot}|${m.
 
 const FOOT_LABEL: Record<string, string> = { bounce: 'bounce', plant: 'wide stance', sway: 'sway', groove: 'knee groove' };
 
-/** Family-file id prefixes ('rkDrums', 'fkKneePush', 'popSpinArms', 'hhWave'). */
-const ID_PREFIX = /^(?:pop|rk|fk|hh|kp|ds|lt|pa|pt)(?=[A-Z])/;
+/**
+ * Family-file id prefixes ('rkDrums', 'fkKneePush', 'popSpinArms', 'hhWave',
+ * 'aeSeal', 'latinOneUp', 'sambaDrum'): authors' namespaces, never shown.
+ */
+const ID_PREFIX = /^(?:pop|rk|fk|hh|kp|ds|lt|pa|pt|ae|latin|salsa|samba|flamenco|bachata|cumbia|folk|paso|bhangra)(?=[A-Z])/;
+/**
+ * Variation labels for layer patterns whose id (or canonical move name) reads
+ * badly on the NOW card. Short lowercase phrases saying what the dancer does.
+ */
+const LABEL: Readonly<Record<string, string>> = {
+  aeSeal: 'seal clap',
+  aeTricepExt: 'tricep extension',
+  latinOneUp: 'one arm up',
+  bhangraOneUp: 'one arm up',
+  latinCrossUp: 'arms crossed up',
+  latinFlow: 'flowing arms',
+  latinFan: 'hand fan',
+  latinSnake: 'snake arms',
+  rkLighter: 'lighter arm',
+  rkDrums: 'air drums',
+  rkVPump: 'V pump',
+  rkHammer: 'hammer fists',
+  clapEvery: 'clap each beat',
+  clapV: 'V clap',
+  popKickV: 'V arms',
+  popVMotions: 'V motions',
+  popTMotion: 'T motion',
+  lArms: 'L arms',
+  popDoubleClap: 'double clap',
+  popSpiritRise: 'spirit fingers',
+  popBurst: 'burst open',
+  cuteClasp: 'clasped hands',
+  pumpOpen: 'pump and open',
+  lightBulb: 'light bulb',
+  peaceEye: 'peace sign eyes',
+  reins: 'hold the reins',
+  sambaArms: 'swinging arms',
+  sambaDrum: 'drum hits',
+  sambaCarnival: 'carnival arms',
+  sambaWhiskArms: 'whisk arms',
+  bachataArms: 'low arm flick',
+  folkFaldeo: 'skirt swish',
+  pasoCape: 'cape swirl',
+};
 function humanize(id: string): string {
   return id.replace(ID_PREFIX, '').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
 }
 function title(s: string): string {
   return s.replace(/(^|\s)\S/g, (c) => c.toUpperCase());
 }
-/** Label of an arm pattern: its own label, the name of its move on neutral feet, or its id. */
+/** Label of an arm pattern: override, its own label, the name of its move on neutral feet, or its id. */
 function armLabel(id: string, canon: Move | undefined): string {
-  return ARMS[id]?.label ?? (canon && NEUTRAL_FEET.has(canon.foot!) ? canon.name.toLowerCase() : humanize(id));
+  return LABEL[id] ?? ARMS[id]?.label ?? (canon && NEUTRAL_FEET.has(canon.foot!) ? canon.name.toLowerCase() : humanize(id));
 }
 function footLabel(id: string, canon: Move | undefined): string {
-  return FOOT_LABEL[id] ?? FOOT[id]?.label ?? (canon && !isActiveArms(ARMS[canon.arms!]) ? canon.name.toLowerCase() : humanize(id));
+  return LABEL[id] ?? FOOT_LABEL[id] ?? FOOT[id]?.label ?? (canon && !isActiveArms(ARMS[canon.arms!]) ? canon.name.toLowerCase() : humanize(id));
 }
 
 // ---------------------------------------------------------------------------
