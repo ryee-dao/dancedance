@@ -124,7 +124,13 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
           pending.length > 0 && h('div', { class: 'pending-list' }, ...pending.map(pendingCard)),
           added.length > 0 && grid(added),
           added.length > 0 &&
-            h('p', { class: 'shelf-foot' }, 'Removing a song hides it on this device only. It stays in the repository’s song list.'),
+            h(
+              'p',
+              { class: 'shelf-foot' },
+              platform.removeLocalAddedSong
+                ? 'Removing a song added from your phone deletes it from this projector. Songs in your cloud song list are only hidden here.'
+                : 'Removing a song hides it on this device only. It stays in your song list in the cloud.',
+            ),
         ),
       );
     }
@@ -301,6 +307,36 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
     });
   }
 
+  /**
+   * "Remove from My added songs": a device song (TV) is removed for real, a
+   * cloud song is hidden here. Focus moves to a neighbouring tile first, so
+   * the re-render keeps it there instead of jumping to the top.
+   */
+  async function removeAdded(id: string, title: string): Promise<void> {
+    const from = tiles.get(id);
+    const next = from?.isConnected ? neighbourOf(from) : null;
+    if (next) focusEl(next, { instant: true });
+    const r = await addedSongs.remove(id);
+    toast(
+      r.removedLocal && r.hidden
+        ? `Removed “${title}” from this projector and hid it here. It stays in your song list in the cloud.`
+        : r.removedLocal
+          ? `Removed “${title}” from this projector.`
+          : `Hidden “${title}” on this device. It stays in your song list in the cloud.`,
+      6000,
+    );
+    ensureFocus();
+  }
+
+  /** Next tile in the same row, else the previous one, else the nearest tile anywhere, else Shuffle. */
+  function neighbourOf(btn: HTMLElement): HTMLElement | null {
+    const sib = btn.nextElementSibling ?? btn.previousElementSibling;
+    if (sib instanceof HTMLElement && sib.classList.contains('tile')) return sib;
+    const all = [...el.querySelectorAll<HTMLElement>('.tile')];
+    const i = all.indexOf(btn);
+    return (i >= 0 && (all[i + 1] ?? all[i - 1])) || el.querySelector<HTMLElement>('[data-action="shuffle"]');
+  }
+
   el.addEventListener('click', (e) => {
     const target = (e.target as HTMLElement).closest<HTMLElement>('button');
     if (!target || !el.contains(target)) return;
@@ -320,10 +356,7 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
         song.source === 'added'
           ? {
               label: 'Remove from My added songs',
-              onSelect: () => {
-                addedSongs.hide(id);
-                toast(`Removed “${song.title}” on this device. It stays in the repository.`, 6000);
-              },
+              onSelect: () => void removeAdded(id, song.title ?? 'This song'),
             }
           : undefined,
       );

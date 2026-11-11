@@ -63,6 +63,8 @@ export interface Platform {
   localAddedSongs?(): AddedSong[];
   /** Called whenever localAddedSongs() changes; returns an unsubscribe function. */
   onLocalAddedSongsChange?(fn: () => void): () => void;
+  /** Really remove a song added on this device (TV: through the bridge); true if it was there. */
+  removeLocalAddedSong?(videoId: string): boolean | Promise<boolean>;
 }
 
 export interface DeviceAnalysisNote {

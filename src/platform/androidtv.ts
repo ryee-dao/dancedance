@@ -371,6 +371,21 @@ export function createAndroidTvPlatform(): Platform {
       addedListeners.add(fn);
       return () => addedListeners.delete(fn);
     },
+    removeLocalAddedSong(videoId) {
+      let removed: boolean;
+      try {
+        removed = b.native.removeAddedSong(videoId) === true;
+      } catch (err) {
+        console.warn('[dd:tv] removeAddedSong failed', err);
+        return false;
+      }
+      // The native side also emits 'addedSongsChanged'; update now so the tile goes at once.
+      if (removed) {
+        localAdded = localAdded.filter((s) => s.videoId !== videoId);
+        for (const fn of addedListeners) fn();
+      }
+      return removed;
+    },
   };
 }
 

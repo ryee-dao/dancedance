@@ -21,7 +21,7 @@ import {
   type AddedSong,
   type SongRequestStatus,
 } from '../beat/cloud';
-import { getPlatform } from '../platform/platform';
+import { getPlatform, type Platform } from '../platform/platform';
 import { store, type PendingAdd } from '../store';
 
 export type PendingState = 'waiting' | 'slow' | 'retrying' | 'failed';
@@ -110,6 +110,26 @@ export function mergeLocal(cloud: AddedSong[], local: AddedSong[]): AddedSong[] 
   return [...cloud, ...extra].map((s, i) => ({ s, i })).sort((a, b) => t(a.s) - t(b.s) || a.i - b.i).map((x) => x.s);
 }
 
+/**
+ * Pure: what removing the shown song `videoId` touches. Device copies (the
+ * same video, or the same artist + title as the shown entry, which mergeLocal
+ * folded into the cloud one) can be removed for real; a songs.json entry can
+ * only be hidden on this device.
+ */
+export function removalPlan(videoId: string, cloud: AddedSong[], local: AddedSong[]): { localIds: string[]; hideCloud: boolean } {
+  const shown = cloud.find((s) => s.videoId === videoId) ?? local.find((s) => s.videoId === videoId);
+  if (!shown) return { localIds: [], hideCloud: false };
+  const key = songKey(shown.artist, shown.title);
+  const localIds = local.filter((s) => s.videoId === videoId || songKey(s.artist, s.title) === key).map((s) => s.videoId);
+  return { localIds, hideCloud: cloud.some((s) => s.videoId === videoId) };
+}
+
+/** removedLocal: a device copy was removed; hidden: the song (cloud copy) is now hidden here. */
+export interface RemoveOutcome {
+  removedLocal: boolean;
+  hidden: boolean;
+}
+
 export class AddedSongs extends EventTarget {
   private published: AddedSong[] = [];
   /** songs.json as published, and songs added on this device (Android TV). */
@@ -124,6 +144,7 @@ export class AddedSongs extends EventTarget {
   private base = './';
   private started = false;
   private lastSig = '';
+  private platform: Platform | null = null;
 
   constructor(private readonly fetchFn: FetchFn = (u, i) => fetch(u, i)) {
     super();
@@ -140,6 +161,7 @@ export class AddedSongs extends EventTarget {
     } catch {
       platform = null; // not initialised (tests)
     }
+    this.platform = platform;
     if (platform?.localAddedSongs) {
       const p = platform;
       const sync = () => this.setLocal(p.localAddedSongs?.() ?? []);
@@ -188,6 +210,35 @@ export class AddedSongs extends EventTarget {
     this.hidden.add(videoId);
     store.setHiddenAdded(this.hidden);
     this.emit();
+  }
+
+  /**
+   * Remove a shown song: device copies are removed through the platform
+   * (Android TV); a cloud song, or a device song the platform couldn't
+   * remove, is hidden on this device instead. Never rejects.
+   */
+  async remove(videoId: string): Promise<RemoveOutcome> {
+    const plan = removalPlan(videoId, this.cloud, this.local);
+    const platform = this.platform;
+    let removedLocal = false;
+    if (plan.localIds.length && platform?.removeLocalAddedSong) {
+      const gone = new Set<string>();
+      for (const id of plan.localIds) {
+        try {
+          if (await platform.removeLocalAddedSong(id)) gone.add(id);
+        } catch {
+          // falls back to hiding below
+        }
+      }
+      if (gone.size) {
+        removedLocal = true;
+        this.setLocal(this.local.filter((s) => !gone.has(s.videoId)));
+      }
+    }
+    const stillShown = this.published.some((s) => s.videoId === videoId);
+    const hidden = stillShown || !removedLocal;
+    if (hidden) this.hide(videoId);
+    return { removedLocal, hidden };
   }
 
   unhideAll(): void {

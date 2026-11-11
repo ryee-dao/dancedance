@@ -44,6 +44,10 @@ describe('AddedSongs model', () => {
     expect(m.find('bbbbbbbbbbb')).toBeNull();
     m.unhideAll();
     expect(m.songs()).toHaveLength(2);
+    // Web: remove() can only hide (songs live in the cloud list).
+    expect(await m.remove('abcdefghijk')).toEqual({ removedLocal: false, hidden: true });
+    expect(m.songs().map((s) => s.videoId)).toEqual(['bbbbbbbbbbb']);
+    m.unhideAll();
   });
 });
 

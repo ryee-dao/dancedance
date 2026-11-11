@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.1.0",
-  "generatedAt": "2026-11-11T05:08:04.801Z",
+  "generatedAt": "2026-11-11T05:36:18.131Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -37,6 +37,7 @@
     "JDHoc9qzC5I",
     "JTBoLANhyVA",
     "LhZ5GXCZtEw",
+    "Mr_uHJPUlO8",
     "Mzk6KkyxXC8",
     "NU61CbO9u6o",
     "NaQ083rNUwc",
@@ -81,6 +82,7 @@
     "mwL1cohnHNE",
     "niR2qJ3mGEE",
     "nx3-XCtnEqU",
+    "o6Tf-xcVB_o",
     "o6ytLPKscrU",
     "pd1_SxHh2vo",
     "qJ_Tw0w3lLA",
@@ -133,7 +135,7 @@
       "duration": 225
     },
     "4AqjqOqNrjw": {
-      "bpm": 111.1,
+      "bpm": 168,
       "duration": 187
     },
     "4ZI8AC4AR5A": {
@@ -165,7 +167,7 @@
       "duration": 245
     },
     "8xG7mH8i-WE": {
-      "bpm": 107.5,
+      "bpm": 160,
       "duration": 218
     },
     "9lybsz-7TFM": {
@@ -240,12 +242,16 @@
       "bpm": 107,
       "duration": 226
     },
+    "Mr_uHJPUlO8": {
+      "bpm": 183.3,
+      "duration": 273
+    },
     "Mzk6KkyxXC8": {
       "bpm": 114,
       "duration": 198
     },
     "NU61CbO9u6o": {
-      "bpm": 67.5,
+      "bpm": 134.9,
       "duration": 163
     },
     "NaQ083rNUwc": {
@@ -416,6 +422,10 @@
       "bpm": 128,
       "duration": 200
     },
+    "o6Tf-xcVB_o": {
+      "bpm": 168.2,
+      "duration": 179
+    },
     "o6ytLPKscrU": {
       "bpm": 171,
       "duration": 204
@@ -425,7 +435,7 @@
       "duration": 142
     },
     "qJ_Tw0w3lLA": {
-      "bpm": 122,
+      "bpm": 184,
       "duration": 302
     },
     "qX0cPZT3Lzg": {
@@ -457,7 +467,7 @@
       "duration": 280
     },
     "w5i-cwLH7s0": {
-      "bpm": 64.9,
+      "bpm": 130,
       "duration": 234
     },
     "xjiYBGs0TUA": {
@@ -477,7 +487,7 @@
       "duration": 258
     },
     "zd-h01o7LtI": {
-      "bpm": 66.5,
+      "bpm": 133,
       "duration": 187
     },
     "zgEKLhvCCVA": {
