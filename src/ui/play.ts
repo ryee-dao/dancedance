@@ -25,6 +25,7 @@ import { BeatPulseStage } from './beatStage';
 import { formatTime, h, type Nav, type Screen } from './dom';
 import { isOkKey, popScope, pushScope, type Scope } from './focusNav';
 import { library } from './library';
+import { liveGraphics } from './graphics';
 import { toast } from './toast';
 
 // ---------------------------------------------------------------------------
@@ -115,6 +116,8 @@ export function createPlay(
   const chipText = h('span', { class: 'sync-chip-text' });
   const chip = h('div', { class: 'sync-chip', hidden: true, role: 'status' }, h('i', { class: 'sync-dot' }), chipText);
   const offsetReadout = h('div', { class: 'offset-readout', hidden: true, 'aria-live': 'polite' });
+  // Options → Graphics → "Show the frame rate": a small live line in the corner.
+  const fpsReadout = h('div', { class: 'fps-readout', hidden: true, 'aria-hidden': 'true' });
   const helpTitle = h('p', { class: 'sync-help-title' });
   const helpBody = h('p', { class: 'sync-help-body' });
   const syncHelp = h('div', { class: 'sync-help', hidden: true, role: 'status' }, helpTitle, helpBody);
@@ -134,6 +137,7 @@ export function createPlay(
     ),
     nextPill,
     offsetReadout,
+    fpsReadout,
     overlay,
   );
 
@@ -543,6 +547,7 @@ export function createPlay(
     elapsed.textContent = '0:00';
     total.textContent = '0:00';
     fill.style.transform = 'scaleX(0)';
+    lastFill = 0;
 
     const p = playerFor(item);
     const s = new BeatSession(
@@ -697,6 +702,17 @@ export function createPlay(
 
   // --- frame loop --------------------------------------------------------
 
+  let lastFill = -1;
+  let fpsShownAt = 0;
+  function updateFps(): void {
+    fpsShownAt = performance.now();
+    const on = store.settings().showFps;
+    const g = liveGraphics.stats;
+    const text = on && g ? `${Math.round(1000 / Math.max(1, g.frameMs))} fps · ${g.frameMs.toFixed(1)} ms · drawn ${Math.round(g.drawnFps)}/s · ${g.tierName} · ${g.resolution}` : '';
+    if (fpsReadout.textContent !== text) fpsReadout.textContent = text;
+    fpsReadout.hidden = !text;
+  }
+
   let shownChip = '';
   let shownHelp = '';
   let helpShownAt = 0;
@@ -723,7 +739,13 @@ export function createPlay(
       lastDur = dur;
       total.textContent = formatTime(dur);
     }
-    fill.style.transform = `scaleX(${dur > 0 ? Math.min(1, t / dur) : 0})`;
+    // Only when it visibly moves (a style write every frame costs a repaint on slow TVs).
+    const fillQ = dur > 0 ? Math.round(Math.min(1, t / dur) * 2000) : 0;
+    if (fillQ !== lastFill) {
+      lastFill = fillQ;
+      fill.style.transform = `scaleX(${fillQ / 2000})`;
+    }
+    if (performance.now() - fpsShownAt > 500) updateFps();
 
     const showNext = hasNext() && dur > 0 && phase !== 'loading' && dur - t < NEXT_HINT_SEC;
     if (showNext && nextPill.hidden) nextPill.textContent = `Next: ${displayTitle(queue[index + 1])}`;

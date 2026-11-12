@@ -66,7 +66,15 @@ class MainActivity : Activity(), DanceBridge.Host {
     private fun createWebView(state: Bundle?) {
         val wv = WebView(this)
         wv.setBackgroundColor(Color.parseColor("#0F0D17"))
-        wv.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        // No View layer on the WebView (LAYER_TYPE_NONE, the default): a hardware layer makes the
+        // whole page render into an extra offscreen texture that is redrawn and copied every frame
+        // while the coach animates, a full-screen pass a weak projector GPU can't spare.
+        wv.setLayerType(View.LAYER_TYPE_NONE, null)
+        // The page is what the user is looking at: keep its renderer at full priority, even when
+        // the activity briefly loses focus (system overlays, the volume bar).
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            wv.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, false)
+        }
         wv.isFocusable = true
         wv.isFocusableInTouchMode = true
         wv.settings.apply {

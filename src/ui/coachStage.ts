@@ -14,8 +14,10 @@
  * relaxed generic tempo.
  *
  * Phases: loading / countdown show a breathing ready stance; paused freezes
- * the frame; playing dances. The canvas is capped at 1920x1080 (1280x720 on
- * TV) internally and upscaled by CSS.
+ * the frame; playing dances. The canvas is capped per graphics tier
+ * (core/coach/quality.ts: Full 1920x1080, or 1280x720 on TV; Smooth
+ * 1280x720; Smoothest 960x540 at 30 fps) and upscaled by CSS. The tier
+ * follows Options → Graphics and steps down by itself on a slow device.
  */
 
 import type { BeatSource } from '../beat/beatSource';
@@ -28,6 +30,8 @@ import { loopPlan, type LoopPlan } from '../core/coach/loop';
 import { blendPose } from '../core/coach/poses';
 import { StageRenderer2D, type SceneInfo, type StripInfo } from '../core/coach/renderer';
 import { CH, createPose, createSkeleton, solveSkeleton } from '../core/coach/skeleton';
+import { GraphicsMeter, graphicsPrefOf } from './graphics';
+import type { GraphicsPref, GraphicsStats } from '../core/coach/quality';
 import { DEFAULT_COACH_BUILD, DEFAULT_COACH_STYLE, parseCoachBuild, parseCoachStyle, type CoachBuild, type CoachStyle } from '../core/coach/styles';
 import type { FrameInfo, StageRenderer } from './play';
 import { createPlayersStage, hudTopFraction, urlPlayers } from './duoStage'; // two-player mode (duo agent)
@@ -52,6 +56,8 @@ export interface CoachStageDeps {
   getStyleOverride?: () => StyleOverride | undefined;
   /** Two-player mode (duoStage.ts): 1 or 2 players, read every frame. `?players=2` wins. */
   getPlayers?: () => 1 | 2;
+  /** Graphics setting (quality.ts), read every frame; default 'auto'. `?gfx=auto|smooth|full` wins. */
+  getGraphics?: () => GraphicsPref;
 }
 
 export type RoutineMode = 'same' | 'fresh';
@@ -67,6 +73,8 @@ export interface FrameStats {
 export interface CoachStage extends StageRenderer {
   /** Recent frame timing, for a diagnostics screen. */
   frameStats(): FrameStats;
+  /** Frame timing plus the graphics tier and resolution in use. */
+  graphicsStats(): GraphicsStats;
 }
 
 type InfoWithBeats = FrameInfo & { beats?: BeatSource | null };
@@ -109,16 +117,16 @@ class CoachStageImpl implements CoachStage {
   private nextCard = { name: '', skeleton: this.nextSk as typeof this.nextSk | null };
   private afterCard = { name: '', skeleton: this.afterSk as typeof this.afterSk | null };
   private scene: SceneInfo = { t: 0, beat: 0, half: false, energy: 0.3, strip: null };
-  // Stats.
-  private lastWall = 0;
-  private frameEma = 16.7;
-  private drawEma = 1;
+  // Stats + graphics tier.
+  private readonly meter: GraphicsMeter;
   private readonly urlStyle: CoachStyle | null = urlCoachStyle();
   // Song style + routine personalisation, resolved once per song (again when its beat map arrives).
   private songKey = '';
   private routine: RoutineInfo | null = null;
 
-  constructor(private deps: CoachStageDeps) {}
+  constructor(private deps: CoachStageDeps) {
+    this.meter = new GraphicsMeter(deps.isTV, 1);
+  }
 
   private style(): CoachStyle {
     return this.urlStyle ?? parseCoachStyle(this.deps.getStyle?.()) ?? DEFAULT_COACH_STYLE;
@@ -174,7 +182,11 @@ class CoachStageImpl implements CoachStage {
   }
 
   frameStats(): FrameStats {
-    return { frameMs: this.frameEma, drawMs: this.drawEma, fps: this.frameEma > 0 ? 1000 / this.frameEma : 0 };
+    return this.meter.frameStats();
+  }
+
+  graphicsStats(): GraphicsStats {
+    return this.meter.stats(this.canvas);
   }
 
   private resize(): void {
@@ -184,25 +196,25 @@ class CoachStageImpl implements CoachStage {
     const dpr = window.devicePixelRatio || 1;
     let w = Math.max(1, rect.width) * dpr;
     let h = Math.max(1, rect.height) * dpr;
-    const capW = this.deps.isTV ? 1280 : 1920;
-    const capH = this.deps.isTV ? 720 : 1080;
-    const k = Math.min(1, capW / w, capH / h);
+    const spec = this.meter.spec();
+    const k = Math.min(1, spec.maxW / w, spec.maxH / h);
     w *= k;
     h *= k;
     this.hudTop = hudTopFraction(this.host, rect);
     this.hudCheckAt = performance.now();
+    this.r.quality.cached = spec.cached;
     this.r.resize(w, h, true, this.hudTop);
+    if (this.canvas) this.meter.noteCanvas(this.canvas);
     this.frozenDrawn = false;
   }
 
   frame(timeSec: number, info: FrameInfo): void {
     const wall = performance.now();
-    if (this.lastWall) {
-      const d = wall - this.lastWall;
-      if (d > 0 && d < 500) this.frameEma += (d - this.frameEma) * 0.05;
-    }
-    this.lastWall = wall;
     if (!this.r) return;
+    const item0 = info.item;
+    const songKey = item0.kind === 'youtube' ? item0.videoId : `file:${item0.title}`;
+    const tick = this.meter.tick(wall, graphicsPrefOf(this.deps), info.phase === 'playing', songKey);
+    if (tick.changed) this.needResize = true;
     // The HUD can lay out after the stage was sized (fonts, a screen shown
     // late): re-check it now and then and re-layout if it moved.
     if (!this.needResize && this.host && wall - this.hudCheckAt > 1000) {
@@ -221,6 +233,8 @@ class CoachStageImpl implements CoachStage {
 
     const phase = info.phase;
     if (phase === 'paused' && this.lastPhase === 'paused' && this.frozenDrawn) return; // frozen
+    // 30 fps tiers: skip this display frame (the next drawn one reads the audio clock afresh).
+    if (!tick.draw && phase === this.lastPhase) return;
     const src = (info as InfoWithBeats).beats ?? null;
     const tl = src ? src.current() : null;
     const item = info.item;
@@ -320,8 +334,7 @@ class CoachStageImpl implements CoachStage {
     sc.strip = s;
     this.r.render(this.sk, sc);
     this.frozenDrawn = phase === 'paused';
-    const dt = performance.now() - wall;
-    this.drawEma += (dt - this.drawEma) * 0.05;
+    this.meter.drawn(wall, performance.now() - wall);
   }
 }
 

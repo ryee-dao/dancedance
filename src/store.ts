@@ -6,6 +6,7 @@
  * working from an in-memory copy for the rest of the session.
  */
 
+import { parseGraphicsPref, type GraphicsPref } from './core/coach/quality';
 import { DEFAULT_COACH_BUILD, DEFAULT_COACH_STYLE, parseCoachBuild, parseCoachStyle, type CoachBuild, type CoachStyle } from './core/coach/styles';
 
 /** Every localStorage key the app uses. Later phases should add theirs here. */
@@ -112,6 +113,10 @@ export interface Settings {
   routineMode: RoutineMode;
   /** Players dancing (level picker): 2 = two-player duo stage (ui/duoStage.ts). */
   players: 1 | 2;
+  /** Graphics (Options screen): 'auto' adapts to the device, 'smooth' is simpler, 'full' the full look (core/coach/quality.ts). */
+  graphics: GraphicsPref;
+  /** Frame rate, graphics tier and resolution in a corner of the play screen (Options screen). */
+  showFps: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -122,6 +127,8 @@ export const DEFAULT_SETTINGS: Settings = {
   coachBuild: DEFAULT_COACH_BUILD,
   routineMode: 'same',
   players: 1,
+  graphics: 'auto',
+  showFps: false,
 };
 
 /** Drop out-of-range or wrongly typed values (old versions, hand edits). */
@@ -139,6 +146,8 @@ function sanitizeSettings(s: Partial<Record<keyof Settings, unknown>>): Settings
   out.coachBuild = parseCoachBuild(s.coachBuild) ?? DEFAULT_COACH_BUILD;
   if (s.routineMode === 'same' || s.routineMode === 'fresh') out.routineMode = s.routineMode;
   if (s.players === 1 || s.players === 2) out.players = s.players;
+  out.graphics = parseGraphicsPref(s.graphics) ?? 'auto';
+  if (typeof s.showFps === 'boolean') out.showFps = s.showFps;
   return out;
 }
 

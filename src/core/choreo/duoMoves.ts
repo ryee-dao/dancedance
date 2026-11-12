@@ -815,7 +815,10 @@ export function partnerDepth(pm: PartnerMove, b: number, spin1: number, spin2: n
   const t0 = k0[0];
   let t1 = k1[0];
   if (t1 <= t0) t1 += L;
-  const u = (bb - t0 + (bb < t0 ? L : 0)) / (t1 - t0);
+  // A beat a hair before a key (float noise, e.g. 0.99999999999997) counts as on it, not a whole loop later.
+  let x = bb - t0;
+  if (x < 0) x = x > -1e-6 ? 0 : x + L;
+  const u = Math.max(0, Math.min(1, x / (t1 - t0)));
   const s = u * u * (3 - 2 * u);
   out[0] = k0[1] + (k1[1] - k0[1]) * s;
   out[1] = k0[2] + (k1[2] - k0[2]) * s;

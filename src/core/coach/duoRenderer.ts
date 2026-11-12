@@ -12,7 +12,8 @@
  */
 
 import { DUO_HOME } from '../choreo/duoMoves';
-import { COLORS, FigurePainter, fitText } from './renderer';
+import { DirtyRects, MAX_SLOTS, makeLayer } from './dirty';
+import { COLORS, FigurePainter, fitText, type StageQuality } from './renderer';
 import { J, type Skeleton } from './skeleton';
 import { CAM, DEFAULT_COACH_BUILD, duoBuilds, type CoachBuild, type CoachStyle } from './styles';
 
@@ -56,6 +57,16 @@ export class DuoFigure {
     this.hands[1] = fp.jy(J.HA_R);
     this.hands[2] = fp.jx(J.HA_L);
     this.hands[3] = fp.jy(J.HA_L);
+  }
+
+  /** Screen box that draw() with the same arguments (plus the P1 / P2 tag above the head) stays inside. */
+  bounds(sk: Skeleton, cx: number, floorY: number, scale: number, out: Float64Array): void {
+    const fp = this.fp;
+    fp.style = this.style;
+    fp.build = this.build;
+    fp.bounds(sk, cx, floorY, scale, out, 0);
+    // The tag pill + pointer sit above the head (see DuoRenderer2D.tag).
+    out[1] = Math.min(out[1], fp.jy(J.HEAD) - 0.33 * scale);
   }
 
   /** Redraw one forearm + hand on top (projection of the last draw). */
@@ -134,6 +145,19 @@ export const DEPTH_RISE = 0.5;
 
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
 
+/** Strip drawing passes (as in renderer.ts): everything, still parts only, moving parts only. */
+const ALL = 0;
+const STATIC = 1;
+const MOVING = 2;
+type Pass = typeof ALL | typeof STATIC | typeof MOVING;
+/** Dirty-rectangle slots. */
+const SLOT_FIG1 = 0;
+const SLOT_FIG2 = 1;
+const SLOT_MARK1 = 2;
+const SLOT_MARK2 = 3;
+const SLOT_STRIP = 4;
+const SLOT_STRIP_DYN = 5;
+
 export class DuoRenderer2D {
   private ctx: CanvasRenderingContext2D;
   private fig1 = new DuoFigure(1);
@@ -150,11 +174,28 @@ export class DuoRenderer2D {
   layout: DuoLayout = { w: 1, h: 1, cx: 0, floorY: 0, scale: 1, strip: null };
   private _style: CoachStyle = 'classic';
   private _build: CoachBuild = DEFAULT_COACH_BUILD;
+  /** Set by the stage; 'cached' switches to the Smooth drawing (see quality.ts). */
+  quality: StageQuality = { cached: false };
+  private readonly mainCtx: CanvasRenderingContext2D;
+  private base: ReturnType<typeof makeLayer> = null;
+  private glowLayer: ReturnType<typeof makeLayer> = null;
+  private staticLayer: ReturnType<typeof makeLayer> = null;
+  private bakedEnergy = NaN;
+  private stripKey = '';
+  private needFull = true;
+  private readonly dirty = new DirtyRects();
+  private readonly box = new Float64Array(4);
+  private readonly stripDyn = new Float64Array((MAX_SLOTS - SLOT_STRIP_DYN) * 4);
+  private stripDynN = 0;
+  private pass: Pass = ALL;
+  /** Pixels copied back from the static layer last frame (diagnostics / tests). */
+  restoredPx = 0;
 
   constructor(readonly canvas: HTMLCanvasElement, style: CoachStyle = 'classic', build: CoachBuild = DEFAULT_COACH_BUILD) {
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw new Error('Canvas 2D unavailable');
     this.ctx = ctx;
+    this.mainCtx = ctx;
     this._build = build;
     this.style = style;
   }
@@ -164,6 +205,7 @@ export class DuoRenderer2D {
     return this._style;
   }
   set style(s: CoachStyle) {
+    if (s !== this._style) this.needFull = true;
     this._style = s;
     for (const f of [this.fig1, this.fig2, this.mini1, this.mini2, this.mini3, this.mini4]) f.style = s;
     this.build = this._build;
@@ -174,6 +216,7 @@ export class DuoRenderer2D {
     return this._build;
   }
   set build(b: CoachBuild) {
+    if (b !== this._build) this.needFull = true;
     this._build = b;
     const [b1, b2] = duoBuilds(b);
     this.fig1.build = this.mini1.build = this.mini3.build = b1;
@@ -224,6 +267,21 @@ export class DuoRenderer2D {
     this.glow2 = c.createRadialGradient(0, 0, 0, 0, 0, 1);
     this.glow2.addColorStop(0, 'rgba(79, 195, 255, 0.42)');
     this.glow2.addColorStop(1, 'rgba(79, 195, 255, 0)');
+    // The still background, drawn once per size and copied every frame (cheaper than a full-screen gradient).
+    this.base = makeLayer(this.canvas, w, h);
+    if (this.base) {
+      const b = this.base.ctx;
+      b.fillStyle = this.bgGrad;
+      b.fillRect(0, 0, w, h);
+      b.fillStyle = COLORS.floor;
+      b.fillRect(0, floorY, w, h - floorY);
+    }
+    this.glowLayer = null;
+    this.staticLayer = null;
+    this.bakedEnergy = NaN;
+    this.stripKey = '';
+    this.needFull = true;
+    this.dirty.reset(w, h);
   }
 
   /** Screen x of a player's home spot. */
@@ -233,15 +291,19 @@ export class DuoRenderer2D {
   }
 
   render(sk1: Skeleton, sk2: Skeleton, scene: DuoSceneInfo): void {
-    const c = this.ctx;
+    const c = this.mainCtx;
     const L = this.layout;
     this.energy += (scene.energy - this.energy) * 0.03;
-    this.background(scene);
+    const cached = this.quality.cached && !!this.base && this.prepareCached(sk1, sk2, scene);
+    if (!cached) {
+      this.needFull = true; // back to cached drawing later: start from a clean copy
+      this.background(scene);
+    }
     // Floor markers at home (fixed: where each player stands).
     this.marker(1, sk1, scene);
     this.marker(2, sk2, scene);
     // Figures: back one first.
-    const order: (1 | 2)[] = scene.z1 > scene.z2 ? [2, 1] : [1, 2];
+    const order = scene.z1 > scene.z2 ? ORDER_21 : ORDER_12;
     for (const p of order) {
       const sk = p === 1 ? sk1 : sk2;
       const z = p === 1 ? scene.z1 : scene.z2;
@@ -253,22 +315,118 @@ export class DuoRenderer2D {
     if (scene.hook) drawHook(c, order[0] === 1 ? this.fig1 : this.fig2, order[0] === 1 ? sk1 : sk2, scene.hook);
     if (scene.prop === 'rope') drawRope(c, this.fig1, this.fig2, L.scale);
     for (const p of order) this.tag(p);
-    if (scene.strip && L.strip) this.strip(scene.strip, scene.t);
+    if (scene.strip && L.strip) {
+      if (cached) this.pass = MOVING;
+      this.strip(scene.strip, scene.t);
+      this.pass = ALL;
+    }
+  }
+
+  /**
+   * Smooth tiers: bring the static layer up to date and copy back the parts
+   * that move (last frame's and this frame's boxes). The caller then draws
+   * the moving parts. False when a layer couldn't be made (Full instead).
+   */
+  private prepareCached(sk1: Skeleton, sk2: Skeleton, scene: DuoSceneInfo): boolean {
+    const L = this.layout;
+    const main = this.mainCtx;
+    if (!this.glowLayer || !(Math.abs(this.energy - this.bakedEnergy) < 0.08)) {
+      this.glowLayer ??= makeLayer(this.canvas, L.w, L.h);
+      if (!this.glowLayer) return false;
+      const g = this.glowLayer.ctx;
+      g.globalAlpha = 1;
+      g.drawImage(this.base!.canvas, 0, 0);
+      // The beat pulse's average brightness (mean of the cubed cosine is 5/16).
+      this.glows(g, this.energy, 5 / 16);
+      g.globalAlpha = 1;
+      this.bakedEnergy = this.energy;
+      this.needFull = true;
+    }
+    this.staticLayer ??= makeLayer(this.canvas, L.w, L.h);
+    if (!this.staticLayer) return false;
+    const st = this.staticLayer;
+    const D = this.dirty;
+    const s = scene.strip && L.strip ? scene.strip : null;
+    const key = s ? duoStripKey(s) : '';
+    if (key !== this.stripKey || this.needFull) {
+      if (this.needFull) st.ctx.drawImage(this.glowLayer.canvas, 0, 0);
+      else if (L.strip) {
+        const r = boxOf(L.strip);
+        st.ctx.drawImage(this.glowLayer.canvas, r[0], r[1], r[2] - r[0], r[3] - r[1], r[0], r[1], r[2] - r[0], r[3] - r[1]);
+      }
+      this.stripDynN = 0;
+      if (s && L.strip) {
+        this.ctx = st.ctx;
+        this.pass = STATIC;
+        this.strip(s, scene.t);
+        this.pass = ALL;
+        this.ctx = main;
+        const r = boxOf(L.strip);
+        D.add(SLOT_STRIP, r[0], r[1], r[2], r[3]);
+      }
+      this.stripKey = key;
+    }
+    const b = this.box;
+    for (const p of ORDER_12) {
+      const sk = p === 1 ? sk1 : sk2;
+      const z = p === 1 ? scene.z1 : scene.z2;
+      const k = CAM / (CAM - z);
+      const hx = this.homeX(p);
+      (p === 1 ? this.fig1 : this.fig2).bounds(sk, L.cx + (hx - L.cx) * k, L.floorY + z * L.scale * DEPTH_RISE, L.scale * k, b);
+      if (scene.prop === 'rope') {
+        // The rope's slack hangs a little past the hands.
+        b[0] -= 0.14 * L.scale;
+        b[2] += 0.14 * L.scale;
+        b[3] += 0.1 * L.scale;
+      }
+      D.add(p === 1 ? SLOT_FIG1 : SLOT_FIG2, b[0], b[1], b[2], b[3]);
+      D.add(p === 1 ? SLOT_MARK1 : SLOT_MARK2, hx - L.scale * 0.36, L.floorY - L.scale * 0.06, hx + L.scale * 0.36, L.floorY + L.scale * (LABEL_BOTTOM + 0.03));
+    }
+    if (s) for (let i = 0; i < this.stripDynN; i++) D.add(SLOT_STRIP_DYN + i, this.stripDyn[i * 4], this.stripDyn[i * 4 + 1], this.stripDyn[i * 4 + 2], this.stripDyn[i * 4 + 3]);
+    main.globalAlpha = 1;
+    if (this.needFull) {
+      main.drawImage(st.canvas, 0, 0);
+      this.restoredPx = L.w * L.h;
+      this.needFull = false;
+    } else {
+      this.restoredPx = D.restore(main, st.canvas);
+    }
+    D.swap();
+    return true;
+  }
+
+  /** In a STATIC pass: remember a moving part's box so every frame repaints it. */
+  private dyn(x0: number, y0: number, x1: number, y1: number): void {
+    if (this.pass !== STATIC || this.stripDynN >= this.stripDyn.length / 4) return;
+    const o = this.stripDynN++ * 4;
+    this.stripDyn[o] = x0 - 2;
+    this.stripDyn[o + 1] = y0 - 2;
+    this.stripDyn[o + 2] = x1 + 2;
+    this.stripDyn[o + 3] = y1 + 2;
   }
 
   private background(scene: DuoSceneInfo): void {
     const c = this.ctx;
     const L = this.layout;
-    const e = this.energy;
     c.globalAlpha = 1;
-    c.fillStyle = this.bgGrad!;
-    c.fillRect(0, 0, L.w, L.h);
-    c.fillStyle = COLORS.floor;
-    c.fillRect(0, L.floorY, L.w, L.h - L.floorY);
+    if (this.base) c.drawImage(this.base.canvas, 0, 0);
+    else {
+      c.fillStyle = this.bgGrad!;
+      c.fillRect(0, 0, L.w, L.h);
+      c.fillStyle = COLORS.floor;
+      c.fillRect(0, L.floorY, L.w, L.h - L.floorY);
+    }
     const ph = scene.half ? scene.beat / 2 : scene.beat;
     const f = ph - Math.floor(ph);
     const pulse = Math.pow(0.5 + 0.5 * Math.cos(2 * Math.PI * f), 3);
-    for (const p of [1, 2] as const) {
+    this.glows(c, this.energy, pulse);
+    c.globalAlpha = 1;
+  }
+
+  /** Each player's back glow at energy `e` and beat pulse `pulse` (0..1). */
+  private glows(c: CanvasRenderingContext2D, e: number, pulse: number): void {
+    const L = this.layout;
+    for (const p of ORDER_12) {
       const gx = this.homeX(p), gy = L.floorY - L.scale * 0.6;
       const gr = L.scale * (0.6 + 0.2 * e);
       c.save();
@@ -279,7 +437,6 @@ export class DuoRenderer2D {
       c.fillRect(-1, -1, 2, 2);
       c.restore();
     }
-    c.globalAlpha = 1;
   }
 
   private marker(p: 1 | 2, _sk: Skeleton, scene: DuoSceneInfo): void {
@@ -351,6 +508,7 @@ export class DuoRenderer2D {
   }
 
   private panel(x: number, y: number, w: number, h: number, line: string): void {
+    if (this.pass === MOVING) return;
     const c = this.ctx;
     this.round(x, y, w, h, this.layout.h * 0.02);
     c.fillStyle = COLORS.panel;
@@ -371,6 +529,7 @@ export class DuoRenderer2D {
   }
 
   private text(text: string, x: number, y: number, size: number, weight: number, color: string, maxW: number): void {
+    if (this.pass === MOVING) return;
     const c = this.ctx;
     const fit = this.fit(text, maxW, size, weight);
     c.font = `${weight} ${fit.size}px ${FONT}`;
@@ -382,6 +541,7 @@ export class DuoRenderer2D {
   private chip(p: 1 | 2, x: number, y: number, size: number): number {
     const c = this.ctx;
     const w = size * 1.7, h = size * 1.05;
+    if (this.pass === MOVING) return w;
     c.fillStyle = PLAYER_COLORS[p].main;
     this.round(x, y - h * 0.78, w, h, h / 2);
     c.fill();
@@ -443,6 +603,11 @@ export class DuoRenderer2D {
   private progress(x: number, y: number, w: number, h: number, s: DuoStripInfo, soon: boolean, dotY: number): void {
     const c = this.ctx;
     const r = h / 2;
+    if (this.pass === STATIC) {
+      this.dyn(x, y, x + w, y + h);
+      this.dyn(x + w - h * 5.5, dotY - h * 0.5, x + w, dotY + h * 0.5);
+      return;
+    }
     c.fillStyle = 'rgba(255,255,255,0.14)';
     this.round(x, y, w, h, r);
     c.fill();
@@ -497,7 +662,8 @@ export class DuoRenderer2D {
         const by = ry + rowH / 2 + size * (p === 1 ? 0.75 : 0.45);
         const cw = this.chip(p, tx, by, size * 0.8);
         this.text(p === 1 ? card.name1 : card.name2, tx + cw + pad * 0.5, by, size, 850, PLAYER_COLORS[p].light, x + w - pad - tx - cw - pad * 0.5);
-        if (figW > 0 && sk) {
+        if (figW > 0 && sk && this.pass === STATIC) this.dyn(x + 2, ry + 2, x + 2 + figW + pad, ry + rowH - 2);
+        else if (figW > 0 && sk) {
           const top = ry + pad * (p === 1 ? 1.8 : 0.4);
           const bottom = ry + rowH - pad * 0.4;
           const sc = (bottom - top) / 1.2;
@@ -513,6 +679,10 @@ export class DuoRenderer2D {
   }
 
   private thumbs(card: DuoCard, x: number, y: number, figW: number, h: number, t: number, alpha: number): void {
+    if (this.pass === STATIC) {
+      this.dyn(x + 2, y + 2, x + 2 + figW, y + h - 2);
+      return;
+    }
     const c = this.ctx;
     const H = this.layout.h;
     const pad = H * 0.012;
@@ -534,6 +704,21 @@ export class DuoRenderer2D {
     }
     c.restore();
   }
+}
+
+const ORDER_12: readonly (1 | 2)[] = [1, 2];
+const ORDER_21: readonly (1 | 2)[] = [2, 1];
+
+/** What the strip's still parts show: when it changes, the static layer's strip is redrawn. */
+function duoStripKey(s: DuoStripInfo): string {
+  const soon = s.beatsToChange <= 4;
+  const card = (c: DuoCard | null) => (c ? `${c.shared ? 1 : 0}${c.pair ? 1 : 0}${c.sk1 ? 1 : 0}${c.sk2 ? 1 : 0}|${c.name1}|${c.name2}` : '-');
+  return `${s.label}\u0001${s.sig ? 1 : 0}${soon ? 1 : 0}${soon && Number.isFinite(s.beatsToChange) ? 1 : 0}\u0001${card(s.now)}\u0001${card(s.next)}\u0001${card(s.after)}`;
+}
+
+/** A strip rectangle with room for the panel outlines. */
+function boxOf(S: { x: number; y: number; w: number; h: number }): [number, number, number, number] {
+  return [Math.floor(S.x - 6), Math.floor(S.y - 6), Math.ceil(S.x + S.w + 6), Math.ceil(S.y + S.h + 6)];
 }
 
 /** A rope from P1's back (left) hand through both grips to P2's back (right) hand, with a little slack beyond. */

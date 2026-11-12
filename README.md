@@ -201,14 +201,17 @@ The song appears in **My added songs** on the TV right away. Songs added this wa
 
 ### Diagnostics
 
-If the projector feels slow or the coach looks choppy, go to **Add songs from your phone → Diagnostics**. Play a song first, then read:
+If the projector feels slow or the coach looks choppy, go to **Options → Graphics → Diagnostics** (also under **Add songs from your phone → Diagnostics**). Play a song first, then read:
 
 - **Frame time**: how long the projector takes to draw each frame. Under 20 ms (50+ fps) is smooth, 20–33 ms is fine, over 33 ms (under 30 fps) looks choppy. "Long frames" counts frames over 50 ms, which show as hitches.
+- **Graphics**: the drawing level in use (Full, Smooth or Smoothest), the picture's resolution, how many frames per second are actually drawn, and why that level was chosen.
 - **Last beat analysis**: how long the projector took to find the beats in the last new song. The target is under 15 seconds.
 - **Song cache**: how much downloaded audio is stored.
 - **Cloud trigger** and **Last trigger**: whether the TV can start the beat-map job and what GitHub answered last time. "Rejected the token" means the token needs replacing: re-link from your phone with a new one.
 
-If the frame time is consistently over 33 ms, note the numbers: drawing the coach natively on Android is the planned fallback.
+**Options → Graphics** sets how the coach is drawn: **Auto** (default), **Smooth (simpler)** or **Full**. On the TV, Auto starts with Smooth: the glows behind the coaches stay still instead of pulsing on the beat, and only the parts that move are redrawn each frame. If frames still take over about 22 ms for two seconds, it drops to **Smoothest**: 960×540, drawn 30 times a second (the moves still follow the music's clock exactly). It never steps back up during a song; the next song starts where the last one ended. **Show the frame rate on the play screen: On** puts the frame rate, level and resolution in the bottom corner while you dance.
+
+If the frame time is consistently over 33 ms even at Smoothest, note the numbers: drawing the coach natively on Android is the planned fallback.
 
 ### Updating the TV app
 

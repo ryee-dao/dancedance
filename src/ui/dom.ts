@@ -60,5 +60,7 @@ export interface Nav {
   /** "Add a song" search screen (web only). */
   addSong(): void;
   /** Options: coach look, audio offset, beat sync, links. */
-  options(): void;
+  options(opts?: { focusAction?: string }): void;
+  /** Android TV: the diagnostics readout (opened from Options; Back returns there). */
+  diagnostics?(): void;
 }

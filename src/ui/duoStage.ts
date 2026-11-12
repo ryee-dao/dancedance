@@ -25,6 +25,8 @@ import { CH, createPose, createSkeleton, solveSkeleton, type Skeleton } from '..
 import { DEFAULT_COACH_STYLE, parseCoachStyle, type CoachBuild, type CoachStyle } from '../core/coach/styles';
 import { coachBuildOf, routineInfo, type CoachStage, type CoachStageDeps, type FrameStats, type RoutineInfo } from './coachStage';
 import type { FrameInfo } from './play';
+import type { GraphicsStats } from '../core/coach/quality';
+import { GraphicsMeter, graphicsPrefOf } from './graphics';
 
 export type Players = 1 | 2;
 
@@ -98,6 +100,9 @@ class PlayersStage implements CoachStage {
   frameStats(): FrameStats {
     return this.cur?.frameStats() ?? { frameMs: 16.7, drawMs: 0, fps: 60 };
   }
+  graphicsStats(): GraphicsStats {
+    return this.cur?.graphicsStats() ?? { frameMs: 16.7, drawMs: 0, drawnFps: 0, tier: 0, tierName: 'Full', resolution: '', reason: '' };
+  }
 }
 
 function urlCoachStyle(): CoachStyle | null {
@@ -151,12 +156,12 @@ class DuoStageImpl implements CoachStage {
   private scene: DuoSceneInfo = { t: 0, beat: 0, half: false, energy: 0.3, z1: 0, z2: 0, prop: null, strip: null };
   private prop: 'rope' | null = null;
   private hook: 0 | 1 | -1 = 0;
-  private lastWall = 0;
-  private frameEma = 16.7;
-  private drawEma = 1;
+  private readonly meter: GraphicsMeter;
   private readonly urlStyle = urlCoachStyle();
 
-  constructor(private deps: CoachStageDeps) {}
+  constructor(private deps: CoachStageDeps) {
+    this.meter = new GraphicsMeter(deps.isTV, 2);
+  }
 
   private style(): CoachStyle {
     return this.urlStyle ?? parseCoachStyle(this.deps.getStyle?.()) ?? DEFAULT_COACH_STYLE;
@@ -198,7 +203,11 @@ class DuoStageImpl implements CoachStage {
   }
 
   frameStats(): FrameStats {
-    return { frameMs: this.frameEma, drawMs: this.drawEma, fps: this.frameEma > 0 ? 1000 / this.frameEma : 0 };
+    return this.meter.frameStats();
+  }
+
+  graphicsStats(): GraphicsStats {
+    return this.meter.stats(this.canvas);
   }
 
   /** Last measured top of the page's bottom HUD (fraction of the height); see hudTopFraction. */
@@ -212,14 +221,15 @@ class DuoStageImpl implements CoachStage {
     const dpr = window.devicePixelRatio || 1;
     let w = Math.max(1, rect.width) * dpr;
     let h = Math.max(1, rect.height) * dpr;
-    const capW = this.deps.isTV ? 1280 : 1920;
-    const capH = this.deps.isTV ? 720 : 1080;
-    const k = Math.min(1, capW / w, capH / h);
+    const spec = this.meter.spec();
+    const k = Math.min(1, spec.maxW / w, spec.maxH / h);
     w *= k;
     h *= k;
     this.hudTop = hudTopFraction(this.host, rect);
     this.hudCheckAt = performance.now();
+    this.r.quality.cached = spec.cached;
     this.r.resize(w, h, true, this.hudTop);
+    if (this.canvas) this.meter.noteCanvas(this.canvas);
     this.frozenDrawn = false;
   }
 
@@ -240,12 +250,10 @@ class DuoStageImpl implements CoachStage {
 
   frame(timeSec: number, info: FrameInfo): void {
     const wall = performance.now();
-    if (this.lastWall) {
-      const d = wall - this.lastWall;
-      if (d > 0 && d < 500) this.frameEma += (d - this.frameEma) * 0.05;
-    }
-    this.lastWall = wall;
     if (!this.r) return;
+    const item0 = info.item;
+    const tick = this.meter.tick(wall, graphicsPrefOf(this.deps), info.phase === 'playing', item0.kind === 'youtube' ? item0.videoId : `file:${item0.title}`);
+    if (tick.changed) this.needResize = true;
     // The HUD can lay out after the stage was sized (fonts, a screen shown
     // late): re-check it now and then and re-layout if it moved.
     if (!this.needResize && this.host && wall - this.hudCheckAt > 1000) {
@@ -263,6 +271,8 @@ class DuoStageImpl implements CoachStage {
     }
     const phase = info.phase;
     if (phase === 'paused' && this.lastPhase === 'paused' && this.frozenDrawn) return;
+    // 30 fps tiers: skip this display frame (the next drawn one reads the audio clock afresh).
+    if (!tick.draw && phase === this.lastPhase) return;
     const src = (info as InfoWithBeats).beats ?? null;
     const tl = src ? src.current() : null;
     const item = info.item;
@@ -343,8 +353,7 @@ class DuoStageImpl implements CoachStage {
     sc.strip = this.strip;
     this.r.render(this.sk1, this.sk2, sc);
     this.frozenDrawn = phase === 'paused';
-    const dt = performance.now() - wall;
-    this.drawEma += (dt - this.drawEma) * 0.05;
+    this.meter.drawn(wall, performance.now() - wall);
   }
 
   private updateStrip(t: number, waiting: boolean): void {

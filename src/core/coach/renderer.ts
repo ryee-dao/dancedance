@@ -19,6 +19,7 @@ import { findMove } from '../choreo/moves';
 import { PoseEvaluator } from './animator';
 import { HumanPainter, humanLook } from './humanPainter';
 import { loopPlan, type LoopPlan } from './loop';
+import { DirtyRects, MAX_SLOTS, makeLayer } from './dirty';
 import { BODY, J, NUM_JOINTS, createPose, createSkeleton, solveSkeleton, type Skeleton } from './skeleton';
 import { CAM, DEFAULT_COACH_BUILD, DEFAULT_COACH_STYLE, PIV_Y, type CoachBuild, type CoachStyle } from './styles';
 
@@ -163,6 +164,30 @@ export class FigurePainter {
       this.px[j * 2] = cx + x * s * scale;
       this.px[j * 2 + 1] = floorY - (PIV_Y + (y - PIV_Y) * s) * scale;
     }
+  }
+
+  /**
+   * Screen box (x0, y0, x1, y1 into out[o..o+3]) that draw() with the same
+   * arguments stays inside: the projected joints plus room for the look's
+   * outlines, hair, hands, feet and floor shadow. For dirty-rectangle redraws.
+   */
+  bounds(sk: Skeleton, cx: number, floorY: number, scale: number, out: Float64Array, o = 0): void {
+    this.project(sk, cx, floorY, scale);
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity, smax = 1;
+    for (let j = 0; j < NUM_JOINTS; j++) {
+      const x = this.px[j * 2], y = this.px[j * 2 + 1];
+      if (x < x0) x0 = x;
+      if (x > x1) x1 = x;
+      if (y < y0) y0 = y;
+      if (y > y1) y1 = y;
+      if (this.ps[j] > smax) smax = this.ps[j];
+    }
+    const m = (this.style === 'classic' ? 0.24 : 0.27) * scale * smax + 4;
+    out[o] = x0 - m;
+    out[o + 1] = y0 - m;
+    out[o + 2] = x1 + m;
+    // The floor shadow sits a little below the floor line.
+    out[o + 3] = Math.max(y1 + m, floorY + 0.06 * scale);
   }
 
   /** Screen position of joint j after project(). */
@@ -775,11 +800,31 @@ export interface Layout {
   strip: { x: number; y: number; w: number; h: number; vertical: boolean } | null;
 }
 
+/** Strip drawing passes: everything (Full), only the still parts (into the static layer), only the moving parts. */
+const ALL = 0;
+const STATIC = 1;
+const MOVING = 2;
+type Pass = typeof ALL | typeof STATIC | typeof MOVING;
+
+/** Dirty-rectangle slots (dirty.ts). */
+const SLOT_FIG = 0;
+const SLOT_RINGS = 1;
+const SLOT_STRIP = 2;
+/** First slot of the strip's moving parts (progress bar, countdown dots, NEXT figure). */
+const SLOT_STRIP_DYN = 3;
+
+/** Cached-tier knobs, set by the stage (quality.ts). */
+export interface StageQuality {
+  /** Glows baked into a cached background; only moving parts redrawn. */
+  cached: boolean;
+}
+
 export class StageRenderer2D {
   readonly painter = new FigurePainter();
   private readonly nextPainter = new FigurePainter();
   private readonly afterPainter = new FigurePainter();
   private ctx: CanvasRenderingContext2D;
+  private readonly mainCtx: CanvasRenderingContext2D;
   private bgGrad: CanvasGradient | null = null;
   private floorGrad: CanvasGradient | null = null;
   private glowGrad: CanvasGradient | null = null;
@@ -787,11 +832,29 @@ export class StageRenderer2D {
   layout: Layout = { w: 1, h: 1, figX: 0, floorY: 0, scale: 1, strip: null };
   private energy = 0.4;
   private fontCache = new Map<string, { size: number; text: string }>();
+  /** Set by the stage; 'cached' switches to the Smooth drawing (see quality.ts). */
+  quality: StageQuality = { cached: false };
+  // Layers: the background (gradient + floor), the baked glows on top of it, and that plus the strip's still parts.
+  private base: ReturnType<typeof makeLayer> = null;
+  private glowLayer: ReturnType<typeof makeLayer> = null;
+  private staticLayer: ReturnType<typeof makeLayer> = null;
+  private bakedEnergy = NaN;
+  private stripKey = '';
+  private needFull = true;
+  private readonly dirty = new DirtyRects();
+  private readonly box = new Float64Array(4);
+  /** Moving strip parts recorded by the last STATIC pass: x0, y0, x1, y1 each. */
+  private readonly stripDyn = new Float64Array((MAX_SLOTS - SLOT_STRIP_DYN) * 4);
+  private stripDynN = 0;
+  private pass: Pass = ALL;
+  /** Pixels copied back from the static layer last frame (diagnostics / tests). */
+  restoredPx = 0;
 
   constructor(readonly canvas: HTMLCanvasElement, style: CoachStyle = DEFAULT_COACH_STYLE, build: CoachBuild = DEFAULT_COACH_BUILD) {
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw new Error('Canvas 2D unavailable');
     this.ctx = ctx;
+    this.mainCtx = ctx;
     this.style = style;
     this.build = build;
   }
@@ -801,6 +864,7 @@ export class StageRenderer2D {
     return this.painter.style;
   }
   set style(s: CoachStyle) {
+    if (s !== this.painter.style) this.invalidate();
     this.painter.style = s;
     this.nextPainter.style = s;
     this.afterPainter.style = s;
@@ -811,9 +875,16 @@ export class StageRenderer2D {
     return this.painter.build;
   }
   set build(b: CoachBuild) {
+    if (b !== this.painter.build) this.invalidate();
     this.painter.build = b;
     this.nextPainter.build = b;
     this.afterPainter.build = b;
+  }
+
+  /** Forget the cached strip (its THEN figure shows the look) and redraw everything next frame. */
+  invalidate(): void {
+    this.stripKey = '';
+    this.needFull = true;
   }
 
   /**
@@ -861,6 +932,21 @@ export class StageRenderer2D {
     this.glowGrad2 = c.createRadialGradient(0, 0, 0, 0, 0, 1);
     this.glowGrad2.addColorStop(0, 'rgba(75, 227, 192, 0.45)');
     this.glowGrad2.addColorStop(1, 'rgba(75, 227, 192, 0)');
+    // The still background, drawn once per size and copied every frame (cheaper than a full-screen gradient).
+    this.base = makeLayer(this.canvas, w, h);
+    if (this.base) {
+      const b = this.base.ctx;
+      b.fillStyle = this.bgGrad;
+      b.fillRect(0, 0, w, h);
+      b.fillStyle = COLORS.floor;
+      b.fillRect(0, floorY, w, h - floorY);
+    }
+    this.glowLayer = null;
+    this.staticLayer = null;
+    this.bakedEnergy = NaN;
+    this.stripKey = '';
+    this.needFull = true;
+    this.dirty.reset(w, h);
   }
 
   render(sk: Skeleton, scene: SceneInfo): void {
@@ -868,25 +954,38 @@ export class StageRenderer2D {
     const L = this.layout;
     // Smooth the energy so section changes fade in over a couple of seconds.
     this.energy += (scene.energy - this.energy) * 0.03;
+    if (this.quality.cached && this.base && this.cachedRender(sk, scene)) return;
+    this.needFull = true; // back to cached drawing later: start from a clean copy
     this.background(scene);
     this.painter.draw(c, sk, L.figX, L.floorY, L.scale, scene.t);
     if (scene.strip && L.strip) this.strip(scene.strip, scene.t);
   }
 
+  /** Background with the glows following the beat (Full). */
   private background(scene: SceneInfo): void {
     const c = this.ctx;
     const L = this.layout;
-    const e = this.energy;
     c.globalAlpha = 1;
-    c.fillStyle = this.bgGrad!;
-    c.fillRect(0, 0, L.w, L.h);
-    // Floor plane.
-    c.fillStyle = COLORS.floor;
-    c.fillRect(0, L.floorY, L.w, L.h - L.floorY);
+    if (this.base) c.drawImage(this.base.canvas, 0, 0);
+    else {
+      c.fillStyle = this.bgGrad!;
+      c.fillRect(0, 0, L.w, L.h);
+      // Floor plane.
+      c.fillStyle = COLORS.floor;
+      c.fillRect(0, L.floorY, L.w, L.h - L.floorY);
+    }
     // Beat pulse: smooth, at most once per beat (every 2 at half time), small.
     const ph = scene.half ? scene.beat / 2 : scene.beat;
     const f = ph - Math.floor(ph);
     const pulse = Math.pow(0.5 + 0.5 * Math.cos(2 * Math.PI * f), 3);
+    this.glows(c, this.energy, pulse, scene.t);
+    this.rings(c, ph);
+    c.globalAlpha = 1;
+  }
+
+  /** Back glows + floor spotlight onto `c` at energy `e` and beat pulse `pulse` (0..1). */
+  private glows(c: CanvasRenderingContext2D, e: number, pulse: number, t: number): void {
+    const L = this.layout;
     // Back glow behind the coach.
     const gx = L.figX, gy = L.floorY - L.scale * 0.6;
     const gr = L.scale * (0.85 + 0.25 * e);
@@ -899,7 +998,7 @@ export class StageRenderer2D {
     c.restore();
     // A second, slowly drifting teal glow for depth in high-energy sections.
     if (e > 0.35) {
-      const drift = Math.sin(scene.t * 0.25) * L.scale * 0.5;
+      const drift = Math.sin(t * 0.25) * L.scale * 0.5;
       c.save();
       c.translate(gx + drift, gy - L.scale * 0.15);
       c.scale(gr * 0.9, gr * 0.75);
@@ -916,20 +1015,111 @@ export class StageRenderer2D {
     c.fillStyle = this.floorGrad!;
     c.fillRect(-1, -1, 2, 2);
     c.restore();
-    // Bar rings on the floor in energetic sections (one per bar: slow).
-    if (e > 0.5) {
+  }
+
+  /** Bar rings on the floor in energetic sections (one per bar: slow). `ph` = beat phase. */
+  private rings(c: CanvasRenderingContext2D, ph: number): void {
+    const e = this.energy;
+    if (e <= 0.5) return;
+    const L = this.layout;
+    const bar = ph / 4;
+    const bf = bar - Math.floor(bar);
+    c.save();
+    c.globalAlpha = (e - 0.5) * 0.9 * (1 - bf) * (1 - bf);
+    c.strokeStyle = COLORS.band;
+    c.lineWidth = Math.max(1, L.scale * 0.006);
+    c.beginPath();
+    c.ellipse(L.figX, L.floorY, L.scale * (0.25 + bf * 0.9), L.scale * (0.04 + bf * 0.14), 0, 0, Math.PI * 2);
+    c.stroke();
+    c.restore();
+  }
+
+  /**
+   * Smooth tiers: copy back only what changed from the static layer, then
+   * draw the moving parts. False when a layer couldn't be made (Full instead).
+   */
+  private cachedRender(sk: Skeleton, scene: SceneInfo): boolean {
+    const L = this.layout;
+    const main = this.mainCtx;
+    // (Re)bake the glows when the section energy has moved on (a few times a song).
+    if (!this.glowLayer || !(Math.abs(this.energy - this.bakedEnergy) < 0.08)) {
+      this.glowLayer ??= makeLayer(this.canvas, L.w, L.h);
+      if (!this.glowLayer) return false;
+      const g = this.glowLayer.ctx;
+      g.globalAlpha = 1;
+      g.drawImage(this.base!.canvas, 0, 0);
+      // The beat pulse's average brightness (mean of the cubed cosine is 5/16), no drift.
+      this.glows(g, this.energy, 5 / 16, 0);
+      g.globalAlpha = 1;
+      this.bakedEnergy = this.energy;
+      this.stripKey = '';
+      this.needFull = true;
+    }
+    this.staticLayer ??= makeLayer(this.canvas, L.w, L.h);
+    if (!this.staticLayer) return false;
+    const st = this.staticLayer;
+    const s = scene.strip && L.strip ? scene.strip : null;
+    const key = s ? stripKey(s) : '';
+    const D = this.dirty;
+    if (key !== this.stripKey || this.needFull) {
+      // The strip's still parts changed (new move, countdown): redraw them into the static layer.
+      if (this.needFull) st.ctx.drawImage(this.glowLayer.canvas, 0, 0);
+      else if (L.strip) {
+        const r = stripBox(L.strip);
+        st.ctx.drawImage(this.glowLayer.canvas, r[0], r[1], r[2] - r[0], r[3] - r[1], r[0], r[1], r[2] - r[0], r[3] - r[1]);
+      }
+      this.stripDynN = 0;
+      if (s && L.strip) {
+        this.ctx = st.ctx;
+        this.pass = STATIC;
+        this.strip(s, scene.t);
+        this.pass = ALL;
+        this.ctx = main;
+        const r = stripBox(L.strip);
+        D.add(SLOT_STRIP, r[0], r[1], r[2], r[3]);
+      }
+      this.stripKey = key;
+    }
+    // This frame's moving parts.
+    const ph = scene.half ? scene.beat / 2 : scene.beat;
+    const b = this.box;
+    this.painter.bounds(sk, L.figX, L.floorY, L.scale, b);
+    D.add(SLOT_FIG, b[0], b[1], b[2], b[3]);
+    if (this.energy > 0.5) {
       const bar = ph / 4;
       const bf = bar - Math.floor(bar);
-      c.save();
-      c.globalAlpha = (e - 0.5) * 0.9 * (1 - bf) * (1 - bf);
-      c.strokeStyle = COLORS.band;
-      c.lineWidth = Math.max(1, L.scale * 0.006);
-      c.beginPath();
-      c.ellipse(L.figX, L.floorY, L.scale * (0.25 + bf * 0.9), L.scale * (0.04 + bf * 0.14), 0, 0, Math.PI * 2);
-      c.stroke();
-      c.restore();
+      const rx = L.scale * (0.25 + bf * 0.9) + L.scale * 0.006 + 2, ry = L.scale * (0.04 + bf * 0.14) + L.scale * 0.006 + 2;
+      D.add(SLOT_RINGS, L.figX - rx, L.floorY - ry, L.figX + rx, L.floorY + ry);
     }
-    c.globalAlpha = 1;
+    if (s) for (let i = 0; i < this.stripDynN; i++) D.add(SLOT_STRIP_DYN + i, this.stripDyn[i * 4], this.stripDyn[i * 4 + 1], this.stripDyn[i * 4 + 2], this.stripDyn[i * 4 + 3]);
+    main.globalAlpha = 1;
+    if (this.needFull) {
+      main.drawImage(st.canvas, 0, 0);
+      this.restoredPx = L.w * L.h;
+      this.needFull = false;
+    } else {
+      this.restoredPx = D.restore(main, st.canvas);
+    }
+    D.swap();
+    this.rings(main, ph);
+    main.globalAlpha = 1;
+    this.painter.draw(main, sk, L.figX, L.floorY, L.scale, scene.t);
+    if (s) {
+      this.pass = MOVING;
+      this.strip(s, scene.t);
+      this.pass = ALL;
+    }
+    return true;
+  }
+
+  /** In a STATIC pass: remember a moving part's box so every frame repaints it. */
+  private dyn(x0: number, y0: number, x1: number, y1: number): void {
+    if (this.pass !== STATIC || this.stripDynN >= this.stripDyn.length / 4) return;
+    const o = this.stripDynN++ * 4;
+    this.stripDyn[o] = x0 - 2;
+    this.stripDyn[o + 1] = y0 - 2;
+    this.stripDyn[o + 2] = x1 + 2;
+    this.stripDyn[o + 3] = y1 + 2;
   }
 
   /**
@@ -948,6 +1138,7 @@ export class StageRenderer2D {
   }
 
   private text(text: string, x: number, y: number, size: number, weight: number, color: string, maxW: number): void {
+    if (this.pass === MOVING) return;
     const c = this.ctx;
     const fit = this.fitFont(text, maxW, size, weight);
     c.font = `${weight} ${fit.size}px ${FONT_STACK}`;
@@ -956,6 +1147,7 @@ export class StageRenderer2D {
   }
 
   private panel(x: number, y: number, w: number, h: number, r: number, line: string): void {
+    if (this.pass === MOVING) return;
     const c = this.ctx;
     c.beginPath();
     c.moveTo(x + r, y);
@@ -1014,6 +1206,12 @@ export class StageRenderer2D {
   private progress(x: number, y: number, w: number, h: number, s: StripInfo, soon: boolean, dotY: number): void {
     const c = this.ctx;
     const r = h / 2;
+    if (this.pass === STATIC) {
+      // Moving every frame: the bar, and the countdown dots at the end of the label row.
+      this.dyn(x, y, x + w, y + h);
+      this.dyn(x + w - h * 5.5, dotY - h * 0.5, x + w, dotY + h * 0.5);
+      return;
+    }
     c.fillStyle = 'rgba(255,255,255,0.14)';
     c.beginPath();
     c.arc(x + r, y + r, r, Math.PI / 2, Math.PI * 1.5);
@@ -1097,6 +1295,13 @@ export class StageRenderer2D {
       this.text(line, tx, ty, size, 850, COLORS.ink, tw);
     }
     if (card.skeleton) {
+      // The NEXT figure dances (moving part); THEN's is a still pose (part of the static layer).
+      const moving = painter === this.nextPainter;
+      if (this.pass === STATIC && moving) {
+        this.dyn(x + 2, y + 2, x + 2 + figW, y + h - 2);
+        return;
+      }
+      if (this.pass === MOVING && !moving) return;
       const top = y + pad * 0.6;
       const bottom = y + h - pad * 0.8;
       const sc = (bottom - top) / 1.18;
@@ -1108,6 +1313,19 @@ export class StageRenderer2D {
       this.ctx.restore();
     }
   }
+}
+
+/** What the strip's still parts show: when it changes, the static layer's strip is redrawn. */
+function stripKey(s: StripInfo): string {
+  const soon = s.beatsToChange <= 4;
+  const dots = soon && Number.isFinite(s.beatsToChange);
+  const card = (c: StripCard | null) => (c ? `${c.name}|${c.skeleton ? 1 : 0}` : '-');
+  return `${s.now}\u0001${s.sig ? 1 : 0}${soon ? 1 : 0}${dots ? 1 : 0}\u0001${s.style ?? ''}\u0001${card(s.next)}\u0001${card(s.after)}`;
+}
+
+/** The strip's rectangle with room for the panel outlines. */
+function stripBox(S: { x: number; y: number; w: number; h: number }): [number, number, number, number] {
+  return [Math.floor(S.x - 6), Math.floor(S.y - 6), Math.ceil(S.x + S.w + 6), Math.ceil(S.y + S.h + 6)];
 }
 
 // ---------------------------------------------------------------------------

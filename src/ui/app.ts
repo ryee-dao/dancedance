@@ -39,6 +39,7 @@ export function startApp(root: HTMLElement): void {
         getPlayCount: (id) => store.playCount(id),
         getGenre: (id) => songGenre(id),
         getPlayers: () => store.settings().players,
+        getGraphics: () => store.settings().graphics,
       }),
     );
   }
@@ -85,7 +86,8 @@ export function startApp(root: HTMLElement): void {
       if (tv) show(createHome(nav));
       else show(createAddSong(nav));
     },
-    options: () => show(createOptions(nav)),
+    options: (opts) => show(createOptions(nav, opts)),
+    ...(tv ? { diagnostics: () => show(createTvLink(nav, { view: 'diag', back: () => nav.options({ focusAction: 'diag' }) })) } : {}),
   };
 
   fileInput.addEventListener('change', () => {

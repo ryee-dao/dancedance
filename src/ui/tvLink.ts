@@ -19,6 +19,7 @@ import {
 import { getPlatform } from '../platform/platform';
 import { h, type Nav, type Screen } from './dom';
 import { ensureFocus, type Scope } from './focusNav';
+import { liveGraphics } from './graphics';
 import { library } from './library';
 import { toast } from './toast';
 
@@ -54,12 +55,17 @@ function injectCss(): void {
   document.head.appendChild(h('style', { 'data-owner': 'tvLink' }, CSS));
 }
 
-export function createTvLink(nav: Nav): Screen {
+/**
+ * `opts.view: 'diag'` opens straight on the diagnostics (from Options); then
+ * Back calls `opts.back` and no link server is started.
+ */
+export function createTvLink(nav: Nav, opts: { view?: 'link' | 'diag'; back?: () => void } = {}): Screen {
   injectCss();
   const b = tvBridge();
   const linked = library.link();
   let alive = true;
   let view: 'link' | 'diag' = 'link';
+  const diagOnly = opts.view === 'diag';
   const offs: (() => void)[] = [];
 
   const qrBox = h('div', { class: 'tvlink-qr' }, h('div', { class: 'tvlink-qr-ph', 'aria-hidden': 'true' }), h('p', { class: 'tvlink-url' }, 'Starting…'));
@@ -178,6 +184,10 @@ export function createTvLink(nav: Nav): Screen {
   }
 
   function showLink(): void {
+    if (diagOnly) {
+      (opts.back ?? (() => nav.options()))();
+      return;
+    }
     view = 'link';
     if (diagTimer !== null) clearInterval(diagTimer);
     diagTimer = null;
@@ -189,6 +199,7 @@ export function createTvLink(nav: Nav): Screen {
   function renderDiag(): void {
     const native = b ? b.json<NativeDiagnostics>(b.native.getDiagnostics()) : null;
     const f = tvState.frames;
+    const g = liveGraphics.stats;
     const a = tvState.lastAnalysis;
     const cloud = tvState.cloud;
     const mb = (n: number) => `${(n / (1024 * 1024)).toFixed(1)} MB`;
@@ -202,6 +213,12 @@ export function createTvLink(nav: Nav): Screen {
         tvState.framesLive ? 'Frame time (now)' : 'Frame time (last song)',
         f ? `${f.avgMs} ms avg = ${f.fps} fps · 95% under ${f.p95Ms} ms · ${f.longFrames} long frames` : 'Play a song first',
         f ? (f.fps >= 50 ? 'good' : f.fps < 30 ? 'bad' : undefined) : undefined,
+      ],
+      [
+        'Graphics',
+        g
+          ? `${g.tierName} (tier ${g.tier}) · ${g.resolution} · ${g.drawnFps} frames drawn per second · ${g.drawMs.toFixed(1)} ms script per frame${g.reason ? ` · ${g.reason}` : ''}`
+          : 'Play a song first',
       ],
       [
         'Last beat analysis',
@@ -286,7 +303,10 @@ export function createTvLink(nav: Nav): Screen {
         : linkPanel.querySelector<HTMLElement>('[data-action="home"]'),
   };
 
-  void startServer();
+  if (diagOnly) {
+    linkPanel.hidden = true;
+    showDiag();
+  } else void startServer();
 
   return {
     el,

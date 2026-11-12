@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { BeatMap } from '../analysis/beatmap';
 import { generateDuoRoutine, mirrorInstance, type DuoRoutine } from './duo';
 import { contactReport, jointWorld, partnerFrame, validatePartner } from './duoCheck';
-import { findPartnerMove, PARTNER_ERRORS, PARTNER_MOVES, partnerOf } from './duoMoves';
+import { findPartnerMove, PARTNER_ERRORS, PARTNER_MOVES, partnerDepth, partnerOf } from './duoMoves';
 import { J } from '../coach/skeleton';
 import { type Intensity, type MoveInstance } from './generator';
 import { MOVES } from './moves';
@@ -252,5 +252,29 @@ describe('duo routine', () => {
     expect(j.mirror).toBe(true);
     expect(j.origin).toBeCloseTo(-0.2);
     expect(j.start).toBe(4);
+  });
+});
+
+describe('partnerDepth', () => {
+  it('stays between its keys a hair before a key (float noise once sent the figures 16 units deep)', () => {
+    const out: [number, number] = [0, 0];
+    for (const pm of PARTNER_MOVES) {
+      if (pm.orbit > 0 || !pm.depth.length) continue;
+      const vals = pm.depth.flatMap((k) => [k[1], k[2]]);
+      const lo = Math.min(...vals) - 1e-9;
+      const hi = Math.max(...vals) + 1e-9;
+      for (const k of pm.depth) {
+        for (const b of [k[0] - 3e-14, k[0], k[0] + 3e-14, k[0] + 0.5]) {
+          partnerDepth(pm, b, 0, 0, out);
+          for (const z of out) {
+            expect(z).toBeGreaterThanOrEqual(lo);
+            expect(z).toBeLessThanOrEqual(hi);
+          }
+        }
+      }
+    }
+    const cross = findPartnerMove('duo-cross-over')!;
+    partnerDepth(cross, 0.99999999999997, 0, 0, out);
+    expect(out[0]).toBeCloseTo(0.2, 6);
   });
 });

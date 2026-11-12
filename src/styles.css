@@ -638,6 +638,22 @@ body {
   z-index: 6;
 }
 
+/* Options → Graphics → frame rate on screen */
+.fps-readout {
+  position: absolute;
+  right: var(--gutter);
+  bottom: 0.4rem;
+  padding: 0.1rem 0.6rem;
+  border-radius: 0.4rem;
+  background: rgba(10, 8, 16, 0.85);
+  color: var(--accent-2);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  z-index: 6;
+}
+
 .hud {
   position: absolute;
   left: var(--gutter);
@@ -1245,6 +1261,13 @@ body {
 .choice-btn.selected .choice-name::before {
   content: '✓ ';
   color: var(--accent-2);
+}
+/* Second row of choices in a section (Graphics): clear of the row above when focused (scaled). */
+.opt-subnote {
+  margin-top: 1.4rem;
+}
+.opt-subrow {
+  margin-top: 1.4rem;
 }
 /* Female / male choice under the coach cards: clear of a focused (scaled) card. */
 .build-note {

@@ -17,6 +17,7 @@ import { repoFromLocation } from '../platform/github';
 import { backgroundFill, describeFill } from '../beat/helperFill';
 import { helperDownloadUrl, setHelperOptIn, type HelperClient } from '../platform/helper';
 import { getPlatform } from '../platform/platform';
+import type { GraphicsPref } from '../core/coach/quality';
 import { store, type LiveSyncPref, type RoutineMode } from '../store';
 import { h, type Nav, type Screen } from './dom';
 import { focusEl, type Scope } from './focusNav';
@@ -33,12 +34,23 @@ const LIVE_SYNC: { value: LiveSyncPref; label: string; hint: string }[] = [
   { value: 'off', label: 'Off', hint: 'No live listening' },
 ];
 
+const GRAPHICS: { value: GraphicsPref; label: string; hint: string }[] = [
+  { value: 'auto', label: 'Auto', hint: 'Adapts to this device' },
+  { value: 'smooth', label: 'Smooth (simpler)', hint: 'Steadier on slow TVs' },
+  { value: 'full', label: 'Full', hint: 'Every effect, always' },
+];
+
+const FPS: { value: boolean; label: string; hint: string }[] = [
+  { value: false, label: 'Off', hint: 'Nothing extra on screen' },
+  { value: true, label: 'On', hint: 'Frame rate and graphics level in a corner' },
+];
+
 const ROUTINE: { value: RoutineMode; label: string; hint: string }[] = [
   { value: 'same', label: 'Same every time', hint: 'Learn a song’s routine by heart' },
   { value: 'fresh', label: 'New every time', hint: 'A different routine each play' },
 ];
 
-export function createOptions(nav: Nav): Screen {
+export function createOptions(nav: Nav, opts: { focusAction?: string } = {}): Screen {
   const platform = getPlatform();
   const urlStyle = new URLSearchParams(location.search).get('coach');
 
@@ -150,6 +162,24 @@ export function createOptions(nav: Nav): Screen {
     ),
   );
 
+  // --- graphics --------------------------------------------------------------------
+  const gfxButtons = GRAPHICS.map((o) =>
+    h(
+      'button',
+      { class: 'btn choice-btn', type: 'button', 'data-gfx': o.value, 'aria-pressed': 'false' },
+      h('span', { class: 'choice-name' }, o.label),
+      h('span', { class: 'choice-hint' }, o.hint),
+    ),
+  );
+  const fpsButtons = FPS.map((o) =>
+    h(
+      'button',
+      { class: 'btn choice-btn', type: 'button', 'data-fps': String(o.value), 'aria-pressed': 'false' },
+      h('span', { class: 'choice-name' }, o.label),
+      h('span', { class: 'choice-hint' }, o.hint),
+    ),
+  );
+
   // --- links -------------------------------------------------------------------
   const ghLine = h('div', { class: 'opt-row' });
 
@@ -181,6 +211,26 @@ export function createOptions(nav: Nav): Screen {
       'Audio offset',
       h('p', { class: 'note' }, 'If the coach looks early or late, which is common with Bluetooth speakers because they add a delay, nudge this. Positive makes the coach move later. You can also press Left or Right during a song.'),
       offsetRow,
+    ),
+    section(
+      'Graphics',
+      h(
+        'p',
+        { class: 'note' },
+        platform.isTV
+          ? 'How the coach is drawn. Auto starts with the simpler drawing on the TV (still glows behind the coach) and lowers the resolution if the projector still can’t keep up. Full shows every effect but can look choppy on a projector.'
+          : 'How the coach is drawn. Auto shows every effect and switches to the simpler drawing (still glows, lower resolution) only if this device can’t keep up.',
+      ),
+      h('div', { class: 'opt-row' }, ...gfxButtons),
+      h('p', { class: 'note opt-subnote' }, 'Show the frame rate on the play screen:'),
+      h('div', { class: 'opt-row' }, ...fpsButtons),
+      !!nav.diagnostics &&
+        h(
+          'div',
+          { class: 'opt-row opt-subrow' },
+          h('button', { class: 'btn', type: 'button', 'data-action': 'diag' }, 'Diagnostics'),
+          h('span', { class: 'opt-status' }, 'Versions, frame times, beat analysis and cloud status.'),
+        ),
     ),
     platform.liveSync &&
       section(
@@ -215,6 +265,16 @@ export function createOptions(nav: Nav): Screen {
     offsetValue.textContent = formatOffset(s.audioOffsetMs);
     for (const b of syncButtons) {
       const on = b.dataset.sync === s.liveSync;
+      b.classList.toggle('selected', on);
+      b.setAttribute('aria-pressed', String(on));
+    }
+    for (const b of gfxButtons) {
+      const on = b.dataset.gfx === s.graphics;
+      b.classList.toggle('selected', on);
+      b.setAttribute('aria-pressed', String(on));
+    }
+    for (const b of fpsButtons) {
+      const on = b.dataset.fps === String(s.showFps);
       b.classList.toggle('selected', on);
       b.setAttribute('aria-pressed', String(on));
     }
@@ -261,6 +321,16 @@ export function createOptions(nav: Nav): Screen {
       renderState();
       return;
     }
+    if (t.dataset.gfx) {
+      store.updateSettings({ graphics: t.dataset.gfx as GraphicsPref });
+      renderState();
+      return;
+    }
+    if (t.dataset.fps) {
+      store.updateSettings({ showFps: t.dataset.fps === 'true' });
+      renderState();
+      return;
+    }
     if (t.dataset.routine) {
       store.updateSettings({ routineMode: t.dataset.routine as RoutineMode });
       renderState();
@@ -282,6 +352,9 @@ export function createOptions(nav: Nav): Screen {
         break;
       case 'link':
         nav.link();
+        return;
+      case 'diag':
+        nav.diagnostics?.();
         return;
       case 'helper-check':
         setHelperOptIn(true);
@@ -358,7 +431,10 @@ export function createOptions(nav: Nav): Screen {
   const scope: Scope = {
     root: el,
     onBack: () => nav.home({ focusAction: 'options' }),
-    defaultFocus: () => cards.find((c) => c.classList.contains('selected')) ?? cards[0],
+    defaultFocus: () =>
+      (opts.focusAction && el.querySelector<HTMLElement>(`[data-action="${opts.focusAction}"]`)) ||
+      cards.find((c) => c.classList.contains('selected')) ||
+      cards[0],
   };
 
   return {
