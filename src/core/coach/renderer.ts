@@ -22,6 +22,8 @@ import { loopPlan, type LoopPlan } from './loop';
 import { DirtyRects, MAX_SLOTS, makeLayer } from './dirty';
 import { BODY, J, NUM_JOINTS, createPose, createSkeleton, solveSkeleton, type Skeleton } from './skeleton';
 import { CAM, DEFAULT_COACH_BUILD, DEFAULT_COACH_STYLE, PIV_Y, type CoachBuild, type CoachStyle } from './styles';
+import { lookIdOf, nullContext, scaleOf, sharedSpriteCache, spriteKey, type PieceArtist, type SpriteCache, type SpriteEntry } from './sprites';
+import { M, bandQuad, blitOrDraw, blitSegment, boneMatrix, fillClippedToQuad, fillGrown, flattenSegments, frameMatrix, qFigure, segBucket, segLength, spriteEllipse, spriteLine, spritePanel, spriteRing } from './spriteParts';
 
 export const COLORS = {
   bg0: '#0f0d17',
@@ -117,6 +119,48 @@ const CLASSIC: Record<CoachBuild, ClassicBuild> = {
 const W_FOOT = 0.054;
 const OUTLINE = 0.014;
 
+// Sprite mode (classic): bar width ids, piece kinds / artist ids, scratch.
+const W_UPPER = 0; // + 1 = forearm
+const W_THIGH = 2; // + 1 = shin
+const W_NECK_ID = 4;
+const W_SHORTS = 5;
+const KC_BAR = 32;
+const KC_HAND = 33;
+const KC_SHOE = 34;
+const KC_PIECE = 35;
+const PC_BAR = 1;
+const PC_HAND = 2;
+const PC_SHOE = 3;
+const PC_CAP = 4;
+const PC_HEAD = 5;
+const PC_BAND = 6;
+const PC_HAIR = 7;
+const PC_SMILE = 8;
+const PC_BROW = 9;
+const PC_MITT = 10;
+const CHEST_CMDS = new Float64Array(18);
+const BAND_Q = new Float64Array(8);
+
+/** Small index of a classic colour for sprite keys. */
+function classicColor(c: string): number {
+  switch (c) {
+    case COLORS.left:
+      return 1;
+    case COLORS.right:
+      return 2;
+    case COLORS.body:
+      return 3;
+    case COLORS.shorts:
+      return 4;
+    case COLORS.leftDark:
+      return 5;
+    case COLORS.rightDark:
+      return 6;
+    default:
+      return 0;
+  }
+}
+
 export interface FigureOptions {
   /** Simplified drawing for thumbnails (no face, thinner outline). */
   mini?: boolean;
@@ -129,11 +173,41 @@ export interface FigureOptions {
  * Draws a solved skeleton. Holds per-figure state (headband tails), so use one
  * painter per on-screen figure.
  */
-export class FigurePainter {
+export class FigurePainter implements PieceArtist {
   /** Look of the figure; 'classic' is the original cartoon. */
   style: CoachStyle = DEFAULT_COACH_STYLE;
   /** Female or male version of the look. */
   build: CoachBuild = DEFAULT_COACH_BUILD;
+  /**
+   * Sprite mode (the lighter graphics tiers): compose the figure from this
+   * cache's pre-drawn pieces (sprites.ts). null = draw paths (Full). Needs an
+   * identity transform on the target context.
+   */
+  sprites: SpriteCache | null = null;
+  /**
+   * Sprite mode: px per unit at which this figure's sprites are made (0 = its
+   * draw scale). The duo sets its layout scale, so depth changes during
+   * partner moves only change the blit scale, not the sprites.
+   */
+  spriteRef = 0;
+  private mini = false;
+  // Look id for sprite keys (cached per style / build / tint).
+  private lkStyle: CoachStyle | null = null;
+  private lkBuild: CoachBuild | null = null;
+  private lkTint: { top: string; hood: string } | null = null;
+  private lkId = 0;
+  // Parameters of the classic piece being drawn into the cache.
+  private pcW = 0;
+  private pcColor = '#000';
+  private pcLight = '#fff';
+  private pcPass = 0;
+  private pcLen = 0;
+  private pcR = 1;
+  private pcOl = 1;
+  private pcOpen = 0;
+  private pcForm = 0;
+  private pcSide = 0;
+  private pcAux = 0;
   /**
    * Recolour the top (two-player identity): the classic torso, or the human
    * looks' shirt (+ hood). null = the look's own colours.
@@ -202,10 +276,16 @@ export class FigurePainter {
     this.project(sk, cx, floorY, scale);
     this.sk3 = sk.p;
     const mini = !!o.mini;
+    this.mini = mini;
     if (this.style !== 'classic') {
       const look = this.lookNow();
       if (!this.human) this.human = new HumanPainter(look);
       else if (this.human.look !== look) this.human.setLook(look);
+      this.human.sprites = this.sprites;
+      if (this.sprites) {
+        this.human.spriteLook = this.lookKey();
+        this.human.spriteRef = this.spriteRef;
+      }
       ctx.save();
       if (o.alpha !== undefined) ctx.globalAlpha = o.alpha;
       ctx.lineCap = 'round';
@@ -292,6 +372,17 @@ export class FigurePainter {
     const el = side === 1 ? J.EL_R : J.EL_L, ha = side === 1 ? J.HA_R : J.HA_L;
     const col = side === 1 ? COLORS.right : COLORS.left, light = side === 1 ? COLORS.rightLight : COLORS.leftLight;
     const px = this.px, w = CLASSIC[this.build].fore * ((this.ps[el] + this.ps[ha]) * 0.5) * scale;
+    if (this.sprites) {
+      this.mini = false;
+      const pm = (this.ps[el] + this.ps[ha]) * 0.5;
+      for (let pass = 0; pass < 2; pass++) this.barC(ctx, px[el * 2], px[el * 2 + 1], px[ha * 2], px[ha * 2 + 1], pm, CLASSIC[this.build].fore, W_UPPER + 1, col, pass, scale, ol);
+      const open = side === 1 ? sk.handR : sk.handL;
+      this.pcLight = light;
+      this.pcOpen = Math.round(Math.max(0, Math.min(1, open)) * 16) / 16;
+      this.pieceC(ctx, PC_MITT, side === 1 ? 1 : 0, this.ps[ha], scale, ol, 1, 0, 0, 1, 0, 0, px[ha * 2], px[ha * 2 + 1], Math.round(this.pcOpen * 16));
+      ctx.restore();
+      return;
+    }
     for (const pass of [0, 1]) {
       ctx.strokeStyle = pass === 0 ? COLORS.outline : col;
       ctx.lineWidth = w + (pass === 0 ? ol * 2 : 0);
@@ -326,6 +417,13 @@ export class FigurePainter {
     const x = cx + ((sk.p[J.AN_L * 3] + sk.p[J.AN_R * 3]) * 0.5) * scale;
     const spread = Math.abs(sk.p[J.AN_R * 3] - sk.p[J.AN_L * 3]);
     const k = Math.max(0.35, 1 - air * 3.2);
+    if (this.sprites) {
+      const a = ctx.globalAlpha;
+      ctx.globalAlpha = a * 0.55 * k;
+      spriteEllipse(this.sprites, ctx, '#05040a', 1, 0, 0, 1, 0, 0, x, floorY + 0.01 * scale, (0.2 + spread * 0.5) * k * scale, 0.035 * k * scale, 0);
+      ctx.globalAlpha = a;
+      return;
+    }
     ctx.globalAlpha *= 0.55 * k;
     ctx.fillStyle = '#05040a';
     ctx.beginPath();
@@ -334,7 +432,11 @@ export class FigurePainter {
     ctx.globalAlpha /= 0.55 * k;
   }
 
-  private seg2(ctx: CanvasRenderingContext2D, a: number, b: number, c: number, w1: number, w2: number, color: string, ol: number, scale: number): void {
+  private seg2(ctx: CanvasRenderingContext2D, a: number, b: number, c: number, w1: number, w2: number, color: string, ol: number, scale: number, wid = 0): void {
+    if (this.sprites) {
+      this.seg2S(ctx, a, b, c, w1, w2, wid, color, ol, scale);
+      return;
+    }
     const px = this.px, ps = this.ps;
     const s1 = (ps[a] + ps[b]) * 0.5 * scale;
     const s2 = (ps[b] + ps[c]) * 0.5 * scale;
@@ -365,18 +467,31 @@ export class FigurePainter {
 
   private arm(ctx: CanvasRenderingContext2D, sh: number, el: number, ha: number, color: string, light: string, open: number, scale: number, ol: number, form = 0): void {
     const B = CLASSIC[this.build];
-    this.seg2(ctx, sh, el, ha, B.upper, B.fore, color, ol, scale);
+    this.seg2(ctx, sh, el, ha, B.upper, B.fore, color, ol, scale, W_UPPER);
     // Hand: a round mitt, bigger when open.
     const px = this.px;
     if (form > 0) open = 0;
-    const r = BODY.handR * this.ps[ha] * scale * (0.92 + 0.22 * (open < 0 ? 0 : open > 1 ? 1 : open));
+    const oc = open < 0 ? 0 : open > 1 ? 1 : open;
     const x = px[ha * 2], y = px[ha * 2 + 1];
+    let dx = 1, dy = 0;
     if (form > 0) {
-      // Pointing index finger / rock horns, out along the forearm.
-      let dx = x - px[el * 2], dy = y - px[el * 2 + 1];
+      dx = x - px[el * 2];
+      dy = y - px[el * 2 + 1];
       const dl = Math.sqrt(dx * dx + dy * dy) || 1;
       dx /= dl;
       dy /= dl;
+    }
+    if (this.sprites) {
+      this.handC(ctx, x, y, this.ps[ha], oc, form, dx, dy, color, light, scale, ol);
+      return;
+    }
+    this.classicHand(ctx, x, y, BODY.handR * this.ps[ha] * scale * (0.92 + 0.22 * oc), dx, dy, form, color, light, ol);
+  }
+
+  /** Classic hand at (x, y): mitt of radius r, cuff ring, pointing finger / horns along (dx, dy). */
+  private classicHand(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, dx: number, dy: number, form: number, color: string, light: string, ol: number): void {
+    if (form > 0) {
+      // Pointing index finger / rock horns, out along the forearm.
       const spread = form === 2 ? [0.42, -0.42] : [0];
       for (const pass of [0, 1]) {
         ctx.strokeStyle = pass === 0 ? COLORS.outline : light;
@@ -409,7 +524,7 @@ export class FigurePainter {
 
   private leg(ctx: CanvasRenderingContext2D, hip: number, kn: number, an: number, toe: number, color: string, dark: string, scale: number, ol: number): void {
     const B = CLASSIC[this.build];
-    this.seg2(ctx, hip, kn, an, B.thigh, B.shin, color, ol, scale);
+    this.seg2(ctx, hip, kn, an, B.thigh, B.shin, color, ol, scale, W_THIGH);
     // Shoe: seen from the front, perpendicular to the shin, toes outward.
     const px = this.px;
     const s = this.ps[an] * scale;
@@ -424,6 +539,15 @@ export class FigurePainter {
       qy = -qy;
     }
     const bx = px[an * 2] + sx * 0.024 * s, by = px[an * 2 + 1] + sy * 0.024 * s;
+    if (this.sprites) {
+      this.shoeC(ctx, bx, by, sx, sy, qx, qy, this.ps[an], dark, scale, ol);
+      return;
+    }
+    this.classicShoe(ctx, bx, by, sx, sy, qx, qy, s, dark, ol);
+  }
+
+  /** Classic shoe at b: a thick bar across the shin direction s, toes toward q, sole stripe. */
+  private classicShoe(ctx: CanvasRenderingContext2D, bx: number, by: number, sx: number, sy: number, qx: number, qy: number, s: number, dark: string, ol: number): void {
     const ax = bx - qx * 0.012 * s, ay = by - qy * 0.012 * s;
     const tx = bx + qx * 0.042 * s, ty = by + qy * 0.042 * s;
     ctx.strokeStyle = COLORS.outline;
@@ -485,28 +609,39 @@ export class FigurePainter {
     const lx = px[hl * 2] + (px[kl * 2] - px[hl * 2]) * k, ly = px[hl * 2 + 1] + (px[kl * 2 + 1] - px[hl * 2 + 1]) * k;
     const rx = px[hr * 2] + (px[kr * 2] - px[hr * 2]) * k, ry = px[hr * 2 + 1] + (px[kr * 2 + 1] - px[hr * 2 + 1]) * k;
     const sw = (B.thigh + (B.male ? 0.02 : 0.008)) * ps[hl] * scale;
-    ctx.strokeStyle = COLORS.outline;
-    ctx.lineWidth = sw + ol * 2;
-    ctx.beginPath();
-    ctx.moveTo(lx, ly);
-    ctx.lineTo(px[hl * 2], px[hl * 2 + 1]);
-    ctx.lineTo(px[hr * 2], px[hr * 2 + 1]);
-    ctx.lineTo(rx, ry);
-    ctx.stroke();
-    ctx.strokeStyle = COLORS.shorts;
-    ctx.lineWidth = sw;
-    ctx.stroke();
+    if (this.sprites) {
+      // The thick polyline = three round-capped segments (outline pass, then fill).
+      const sh = B.thigh + (B.male ? 0.02 : 0.008);
+      for (let pass = 0; pass < 2; pass++) {
+        this.barC(ctx, lx, ly, px[hl * 2], px[hl * 2 + 1], ps[hl], sh, W_SHORTS, COLORS.shorts, pass, scale, ol);
+        this.barC(ctx, px[hl * 2], px[hl * 2 + 1], px[hr * 2], px[hr * 2 + 1], ps[hl], sh, W_SHORTS, COLORS.shorts, pass, scale, ol);
+        this.barC(ctx, px[hr * 2], px[hr * 2 + 1], rx, ry, ps[hl], sh, W_SHORTS, COLORS.shorts, pass, scale, ol);
+      }
+      for (let pass = 0; pass < 2; pass++) this.barC(ctx, px[J.CHEST * 2], px[J.CHEST * 2 + 1], px[J.NECK * 2], px[J.NECK * 2 + 1], ps[J.NECK], W_NECK, W_NECK_ID, COLORS.body, pass, scale, ol);
+    } else {
+      ctx.strokeStyle = COLORS.outline;
+      ctx.lineWidth = sw + ol * 2;
+      ctx.beginPath();
+      ctx.moveTo(lx, ly);
+      ctx.lineTo(px[hl * 2], px[hl * 2 + 1]);
+      ctx.lineTo(px[hr * 2], px[hr * 2 + 1]);
+      ctx.lineTo(rx, ry);
+      ctx.stroke();
+      ctx.strokeStyle = COLORS.shorts;
+      ctx.lineWidth = sw;
+      ctx.stroke();
 
-    // Neck.
-    ctx.strokeStyle = COLORS.outline;
-    ctx.lineWidth = W_NECK * ps[J.NECK] * scale + ol * 2;
-    ctx.beginPath();
-    ctx.moveTo(px[J.CHEST * 2], px[J.CHEST * 2 + 1]);
-    ctx.lineTo(px[J.NECK * 2], px[J.NECK * 2 + 1]);
-    ctx.stroke();
-    ctx.strokeStyle = COLORS.body;
-    ctx.lineWidth = W_NECK * ps[J.NECK] * scale;
-    ctx.stroke();
+      // Neck.
+      ctx.strokeStyle = COLORS.outline;
+      ctx.lineWidth = W_NECK * ps[J.NECK] * scale + ol * 2;
+      ctx.beginPath();
+      ctx.moveTo(px[J.CHEST * 2], px[J.CHEST * 2 + 1]);
+      ctx.lineTo(px[J.NECK * 2], px[J.NECK * 2 + 1]);
+      ctx.stroke();
+      ctx.strokeStyle = COLORS.body;
+      ctx.lineWidth = W_NECK * ps[J.NECK] * scale;
+      ctx.stroke();
+    }
 
     // Chest: a rounded trapezoid from the shoulders to the hips. Turned side-on
     // (spins) the shoulder / hip lines collapse: keep a minimum body depth.
@@ -530,50 +665,98 @@ export class FigurePainter {
       srx += ux * o;
       sry += uy * o;
     }
-    ctx.beginPath();
-    ctx.moveTo(slx - ux * 0.01 * scale, sly - 0.012 * scale);
-    ctx.lineTo(srx + ux * 0.01 * scale, sry - 0.012 * scale);
-    ctx.quadraticCurveTo(wx + ux * ww * 1.05, wy + uy * ww, hrx + ux * 0.012 * scale, hry - 0.01 * scale);
-    ctx.lineTo(hlx - ux * 0.012 * scale, hly - 0.01 * scale);
-    ctx.quadraticCurveTo(wx - ux * ww * 1.05, wy - uy * ww, slx - ux * 0.01 * scale, sly - 0.012 * scale);
-    ctx.closePath();
+    if (!this.sprites) {
+      ctx.beginPath();
+      ctx.moveTo(slx - ux * 0.01 * scale, sly - 0.012 * scale);
+      ctx.lineTo(srx + ux * 0.01 * scale, sry - 0.012 * scale);
+      ctx.quadraticCurveTo(wx + ux * ww * 1.05, wy + uy * ww, hrx + ux * 0.012 * scale, hry - 0.01 * scale);
+      ctx.lineTo(hlx - ux * 0.012 * scale, hly - 0.01 * scale);
+      ctx.quadraticCurveTo(wx - ux * ww * 1.05, wy - uy * ww, slx - ux * 0.01 * scale, sly - 0.012 * scale);
+      ctx.closePath();
+    }
     ctx.fillStyle = this.tint ? this.tint.top : COLORS.body;
-    ctx.strokeStyle = COLORS.outline;
-    ctx.lineWidth = ol * 2;
-    ctx.stroke();
-    ctx.fill();
+    if (this.sprites) {
+      // Outline as the chest grown by ol (one fill, no stroke), then the chest.
+      const C = CHEST_CMDS;
+      C[0] = slx - ux * 0.01 * scale;
+      C[1] = sly - 0.012 * scale;
+      C[2] = 0;
+      C[3] = srx + ux * 0.01 * scale;
+      C[4] = sry - 0.012 * scale;
+      C[5] = 1;
+      C[6] = wx + ux * ww * 1.05;
+      C[7] = wy + uy * ww;
+      C[8] = hrx + ux * 0.012 * scale;
+      C[9] = hry - 0.01 * scale;
+      C[10] = 0;
+      C[11] = hlx - ux * 0.012 * scale;
+      C[12] = hly - 0.01 * scale;
+      C[13] = 1;
+      C[14] = wx - ux * ww * 1.05;
+      C[15] = wy - uy * ww;
+      C[16] = C[0];
+      C[17] = C[1];
+      flattenSegments(C, 18);
+      const fill = ctx.fillStyle;
+      fillGrown(ctx, ol, COLORS.outline);
+      ctx.beginPath();
+      ctx.moveTo(C[0], C[1]);
+      ctx.lineTo(C[3], C[4]);
+      ctx.quadraticCurveTo(C[6], C[7], C[8], C[9]);
+      ctx.lineTo(C[11], C[12]);
+      ctx.quadraticCurveTo(C[14], C[15], C[16], C[17]);
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+    } else {
+      ctx.strokeStyle = COLORS.outline;
+      ctx.lineWidth = ol * 2;
+      ctx.stroke();
+      ctx.fill();
+    }
     if (B.male) {
       // Jersey stripe across the chest, clipped to the torso.
-      ctx.save();
-      ctx.clip();
       const cy = 0.42;
       const ax = slx + (wx - ux * ww - slx) * cy, ay = sly + (wy - uy * ww - sly) * cy;
       const bx = srx + (wx + ux * ww - srx) * cy, by = sry + (wy + uy * ww - sry) * cy;
-      ctx.strokeStyle = COLORS.band;
-      ctx.lineCap = 'butt';
-      ctx.lineWidth = 0.04 * scale;
-      ctx.beginPath();
-      ctx.moveTo(ax - ux * scale, ay - uy * scale);
-      ctx.lineTo(bx + ux * scale, by + uy * scale);
-      ctx.stroke();
-      ctx.restore();
-      ctx.lineCap = 'round';
+      if (this.sprites) {
+        bandQuad(BAND_Q, ax - ux * scale, ay - uy * scale, bx + ux * scale, by + uy * scale, 0.04 * scale);
+        fillClippedToQuad(ctx, BAND_Q, COLORS.band);
+      } else {
+        ctx.save();
+        ctx.clip();
+        ctx.strokeStyle = COLORS.band;
+        ctx.lineCap = 'butt';
+        ctx.lineWidth = 0.04 * scale;
+        ctx.beginPath();
+        ctx.moveTo(ax - ux * scale, ay - uy * scale);
+        ctx.lineTo(bx + ux * scale, by + uy * scale);
+        ctx.stroke();
+        ctx.restore();
+        ctx.lineCap = 'round';
+      }
     }
     // Shoulder caps in the side colours (the arm colour starts at the shoulder).
     const capR = B.capR * scale;
-    ctx.lineWidth = ol * 1.4;
-    ctx.fillStyle = COLORS.left;
-    ctx.beginPath();
-    ctx.arc(px[sl * 2], px[sl * 2 + 1], capR * ps[sl], 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = COLORS.right;
-    ctx.beginPath();
-    ctx.arc(px[sr * 2], px[sr * 2 + 1], capR * ps[sr], 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
+    if (this.sprites) {
+      this.capC(ctx, px[sl * 2], px[sl * 2 + 1], ps[sl], -1, scale, ol);
+      this.capC(ctx, px[sr * 2], px[sr * 2 + 1], ps[sr], 1, scale, ol);
+    } else {
+      ctx.lineWidth = ol * 1.4;
+      ctx.fillStyle = COLORS.left;
+      ctx.beginPath();
+      ctx.arc(px[sl * 2], px[sl * 2 + 1], capR * ps[sl], 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = COLORS.right;
+      ctx.beginPath();
+      ctx.arc(px[sr * 2], px[sr * 2 + 1], capR * ps[sr], 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
     // Shorts top over the lower torso, with a waistband.
     const k2 = 0.42;
+    if (this.sprites) ctx.setTransform(1, 0, 0, 1, 0, 0);
     const blx = hlx + (wx - ux * ww * 0.95 - hlx) * k2, bly = hly + (wy - uy * ww - hly) * k2;
     const brx = hrx + (wx + ux * ww * 0.95 - hrx) * k2, bry = hry + (wy + uy * ww - hry) * k2;
     ctx.beginPath();
@@ -584,6 +767,10 @@ export class FigurePainter {
     ctx.closePath();
     ctx.fillStyle = COLORS.shorts;
     ctx.fill();
+    if (this.sprites) {
+      spriteLine(this.sprites, ctx, COLORS.band, blx + ux * ol, bly + uy * ol, brx - ux * ol, bry - uy * ol, 0.02 * scale, scale);
+      return;
+    }
     ctx.strokeStyle = COLORS.band;
     ctx.lineWidth = 0.02 * scale;
     ctx.beginPath();
@@ -605,6 +792,10 @@ export class FigurePainter {
     const p3 = this.sk3;
     const fz = p3 ? p3[J.HEAD_FWD * 3 + 2] - p3[J.HEAD * 3 + 2] : 1;
     const back = fz < -0.25;
+    if (this.sprites) {
+      this.headC(ctx, hx, hy, r, roll, fx, fy, fz, back, scale, ol, t, mini);
+      return;
+    }
 
     ctx.fillStyle = COLORS.body;
     ctx.strokeStyle = COLORS.outline;
@@ -620,17 +811,7 @@ export class FigurePainter {
     const male = CLASSIC[this.build].male;
     // Headband tails (behind the face side), swinging with head motion (the female version).
     if (!mini && !male) {
-      if (!Number.isNaN(this.lastT) && t > this.lastT && t - this.lastT < 0.2) {
-        const dt = t - this.lastT;
-        const vx = (hx - this.lastHx) / scale / dt;
-        const vy = (hy - this.lastHy) / scale / dt;
-        const target = Math.max(-0.9, Math.min(0.9, -vx * 0.6 + vy * 0.25));
-        this.tailV += ((target - this.tailA) * 90 - this.tailV * 9) * dt;
-        this.tailA += this.tailV * dt;
-      }
-      this.lastHx = hx;
-      this.lastHy = hy;
-      this.lastT = t;
+      this.tailSpring(hx, hy, scale, t);
       // Back to the viewer: the knot and both tails hang at the back of the head.
       const side = back ? 0.08 : fx >= 0 ? -1 : 1;
       const bx = side * r * 0.92, by = back ? -r * 0.62 : -r * 0.3;
@@ -656,6 +837,28 @@ export class FigurePainter {
       if (!back && !mini) this.face(ctx, hx, hy, roll, r, fo, lift, fz);
       return;
     }
+    this.classicBand(ctx, r, ol, back);
+    ctx.restore();
+    if (!back && !mini) this.face(ctx, hx, hy, roll, r, fo, lift, fz);
+  }
+
+  /** The headband tails' spring (follows head motion). */
+  private tailSpring(hx: number, hy: number, scale: number, t: number): void {
+    if (!Number.isNaN(this.lastT) && t > this.lastT && t - this.lastT < 0.2) {
+      const dt = t - this.lastT;
+      const vx = (hx - this.lastHx) / scale / dt;
+      const vy = (hy - this.lastHy) / scale / dt;
+      const target = Math.max(-0.9, Math.min(0.9, -vx * 0.6 + vy * 0.25));
+      this.tailV += ((target - this.tailA) * 90 - this.tailV * 9) * dt;
+      this.tailA += this.tailV * dt;
+    }
+    this.lastHx = hx;
+    this.lastHy = hy;
+    this.lastT = t;
+  }
+
+  /** The female classic's band across the forehead (local head frame); back view: darker crown + the band again. */
+  private classicBand(ctx: CanvasRenderingContext2D, r: number, ol: number, back: boolean): void {
     ctx.strokeStyle = COLORS.band;
     ctx.lineWidth = r * 0.34;
     ctx.lineCap = 'butt';
@@ -681,8 +884,6 @@ export class FigurePainter {
       ctx.stroke();
       ctx.lineCap = 'round';
     }
-    ctx.restore();
-    if (!back && !mini) this.face(ctx, hx, hy, roll, r, fo, lift, fz);
   }
 
   /** Eyes + smile, shifted toward where the face points; closer together side-on. */
@@ -700,20 +901,291 @@ export class FigurePainter {
     ctx.strokeStyle = COLORS.outline;
     ctx.lineWidth = r * 0.09;
     ctx.beginPath();
-    ctx.arc(ex, ey + r * 0.22, r * 0.26, Math.PI * 0.2, Math.PI * 0.8);
+    this.classicSmile(ctx, ex, ey, r);
     ctx.stroke();
     if (CLASSIC[this.build].male) {
       // Straight, heavier brows.
       ctx.lineWidth = r * 0.1;
       ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.moveTo(ex - sp - r * 0.14, ey - r * 0.27);
-      ctx.lineTo(ex - sp + r * 0.12, ey - r * 0.3);
-      ctx.moveTo(ex + sp - r * 0.12, ey - r * 0.3);
-      ctx.lineTo(ex + sp + r * 0.14, ey - r * 0.27);
+      this.classicBrow(ctx, ex - sp, ey, r, -1);
+      this.classicBrow(ctx, ex + sp, ey, r, 1);
       ctx.stroke();
     }
     ctx.restore();
+  }
+
+  private classicSmile(ctx: CanvasRenderingContext2D, ax: number, ay: number, r: number): void {
+    ctx.arc(ax, ay + r * 0.22, r * 0.26, Math.PI * 0.2, Math.PI * 0.8);
+  }
+
+  /** A male classic brow over the eye at (ax, ay); side -1 = screen left. */
+  private classicBrow(ctx: CanvasRenderingContext2D, ax: number, ay: number, r: number, side: number): void {
+    if (side < 0) {
+      ctx.moveTo(ax - r * 0.14, ay - r * 0.27);
+      ctx.lineTo(ax + r * 0.12, ay - r * 0.3);
+    } else {
+      ctx.moveTo(ax - r * 0.12, ay - r * 0.3);
+      ctx.lineTo(ax + r * 0.14, ay - r * 0.27);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Sprite mode (classic): the same parts in the same order, from cached
+  // pieces drawn by the code above. Round-capped bars (limb segments, neck,
+  // shorts) keyed by length; hands by openness / form; shoes, shoulder caps,
+  // head, band, hair (by face turn), smile and brows rigid. Classic outlines
+  // are a fixed px width while sizes follow perspective, so these keys also
+  // carry the perspective factor (2 % steps). Per frame still filled: the
+  // chest (grown by the outline width instead of stroked) and the shorts top.
+
+  private lookKey(): number {
+    if (this.lkStyle !== this.style || this.lkBuild !== this.build || this.lkTint !== this.tint) {
+      this.lkStyle = this.style;
+      this.lkBuild = this.build;
+      this.lkTint = this.tint;
+      this.lkId = lookIdOf(`${this.style}|${this.build}|${this.tint ? `${this.tint.top}|${this.tint.hood}` : ''}`);
+    }
+    return this.lkId;
+  }
+
+  private ckey(kind: number, qs: number, f1: number, f2: number, f3: number, main: number): number {
+    return spriteKey(kind, this.lookKey(), qs, f1, f2, f3, main + (this.mini ? 1024 : 0));
+  }
+
+  /**
+   * Classic outline width in sprite px for a part at perspective ps: sizes
+   * follow perspective (the blit scales by it) but the outline is a fixed px
+   * width, so sprites are made per 5 % perspective step.
+   */
+  private olFor(ps: number, R: number, ol: number, scale: number): { qp: number; olS: number } {
+    const qp = Math.max(0, Math.min(63, Math.round((ps - 0.6) / 0.05)));
+    this.olOut.qp = qp;
+    this.olOut.olS = ((ol / scale) * R) / (0.6 + qp * 0.05);
+    return this.olOut;
+  }
+
+  /** Sprite px per unit and blit scale for a part at perspective ps (sprites at the figure's scale). */
+  private partScale(ps: number, scale: number): number {
+    const R = scaleOf(qFigure(this.spriteRef || scale));
+    this.kOut = (ps * scale) / R;
+    return R;
+  }
+  private kOut = 1;
+  private readonly olOut = { qp: 0, olS: 0 };
+
+  /** A round-capped bar (limb segment, neck, shorts) from A to B: outline pass 0, fill pass 1. */
+  private barC(ctx: CanvasRenderingContext2D, ax: number, ay: number, bx: number, by: number, ps: number, w: number, wid: number, color: string, pass: number, scale: number, ol: number): void {
+    const sp = this.sprites!;
+    const R = this.partScale(ps, scale), k = this.kOut, qs = qFigure(this.spriteRef || scale);
+    const { qp, olS } = this.olFor(ps, R, ol, scale);
+    const dx = bx - ax, dy = by - ay;
+    const len = Math.sqrt(dx * dx + dy * dy) / k;
+    const cut = (w * R) / 2 + (pass === 0 ? olS : 0) + 1;
+    const b = segBucket(len, cut, true);
+    const lq = segLength(b);
+    // A fill bar has no outline: the same sprite serves every perspective.
+    const key = this.ckey(KC_BAR, qs, wid * 2 + pass, classicColor(color), pass === 0 ? qp : 0, b);
+    this.pcW = w;
+    this.pcColor = color;
+    this.pcPass = pass;
+    this.pcLen = lq;
+    this.pcR = R;
+    this.pcOl = olS;
+    let e: SpriteEntry | null = sp.get(key);
+    if (!e) e = sp.miss(key, -cut - 1, -cut - 1, lq + cut + 1, cut + 1, this, PC_BAR, lq);
+    if (e) {
+      blitSegment(ctx, e, ax, ay, bx, by, k, lq, cut, true);
+      return;
+    }
+    this.pcLen = len;
+    boneMatrix(M, ax, ay, bx, by, k, len, cut);
+    blitOrDraw(sp, ctx, null, this, PC_BAR);
+  }
+
+  /** seg2 in sprite mode: both bars' outlines, then both fills (no seam at the joint). */
+  private seg2S(ctx: CanvasRenderingContext2D, a: number, b: number, c: number, w1: number, w2: number, wid1: number, color: string, ol: number, scale: number): void {
+    const px = this.px, ps = this.ps;
+    for (let pass = 0; pass < 2; pass++) {
+      this.barC(ctx, px[a * 2], px[a * 2 + 1], px[b * 2], px[b * 2 + 1], (ps[a] + ps[b]) * 0.5, w1, wid1, color, pass, scale, ol);
+      this.barC(ctx, px[b * 2], px[b * 2 + 1], px[c * 2], px[c * 2 + 1], (ps[b] + ps[c]) * 0.5, w2, wid1 + 1, color, pass, scale, ol);
+    }
+  }
+
+  private handC(ctx: CanvasRenderingContext2D, x: number, y: number, ps: number, oc: number, form: number, dx: number, dy: number, color: string, light: string, scale: number, ol: number): void {
+    const sp = this.sprites!;
+    const R = this.partScale(ps, scale), k = this.kOut, qs = qFigure(this.spriteRef || scale);
+    const { qp, olS } = this.olFor(ps, R, ol, scale);
+    const ob = Math.round(oc * 8);
+    const f = form < 0 ? 0 : form > 2 ? 2 : form;
+    const key = this.ckey(KC_HAND, qs, f, classicColor(color), qp, ob);
+    this.pcOpen = ob / 8;
+    this.pcForm = f;
+    this.pcColor = color;
+    this.pcLight = light;
+    this.pcR = R;
+    this.pcOl = olS;
+    const r = BODY.handR * R * 1.14;
+    const m = (f > 0 ? r * 2.6 : r) + olS * 3 + 2;
+    let e: SpriteEntry | null = sp.get(key);
+    if (!e) e = sp.miss(key, -m, -m, m, m, this, PC_HAND);
+    frameMatrix(M, 1, 0, 0, 1, 0, 0, x, y, f > 0 ? Math.atan2(dy, dx) : 0, k, k);
+    blitOrDraw(sp, ctx, e, this, PC_HAND);
+  }
+
+  private shoeC(ctx: CanvasRenderingContext2D, bx: number, by: number, sx: number, sy: number, qx: number, qy: number, ps: number, dark: string, scale: number, ol: number): void {
+    const sp = this.sprites!;
+    const R = this.partScale(ps, scale), k = this.kOut, qs = qFigure(this.spriteRef || scale);
+    const { qp, olS } = this.olFor(ps, R, ol, scale);
+    const key = this.ckey(KC_SHOE, qs, 0, classicColor(dark), qp, 0);
+    this.pcColor = dark;
+    this.pcR = R;
+    this.pcOl = olS;
+    const hw = (W_FOOT * R) / 2 + olS + 2;
+    let e: SpriteEntry | null = sp.get(key);
+    if (!e) e = sp.miss(key, -0.012 * R - hw, -hw, 0.042 * R + hw, W_FOOT * R * 0.3 + hw, this, PC_SHOE);
+    // Sprite x = toe direction q, y = down the shin s (a mirrored foot flips with q).
+    M[0] = qx * k;
+    M[1] = qy * k;
+    M[2] = sx * k;
+    M[3] = sy * k;
+    M[4] = bx;
+    M[5] = by;
+    blitOrDraw(sp, ctx, e, this, PC_SHOE);
+  }
+
+  /** Shoulder cap (side -1 left, 1 right). */
+  private capC(ctx: CanvasRenderingContext2D, x: number, y: number, ps: number, side: number, scale: number, ol: number): void {
+    this.pieceC(ctx, PC_CAP, side, ps, scale, ol, 1, 0, 0, 1, x, y, 0, 0);
+  }
+
+  /** A rigid classic piece at (px, py) in frame F, turned by rot (`var` = a small variant, `main` = its bucket). */
+  private pieceC(ctx: CanvasRenderingContext2D, id: number, variant: number, ps: number, scale: number, ol: number, fa: number, fb: number, fc: number, fd: number, fe: number, ff: number, px: number, py: number, main = 0, rot = 0): void {
+    const sp = this.sprites!;
+    const R = this.partScale(ps, scale), k = this.kOut, qs = qFigure(this.spriteRef || scale);
+    const { qp, olS } = this.olFor(ps, R, ol, scale);
+    const key = this.ckey(KC_PIECE, qs, id, variant + 4, qp, main);
+    this.pcSide = variant;
+    this.pcAux = main;
+    this.pcR = R;
+    this.pcOl = olS;
+    let e: SpriteEntry | null = sp.get(key);
+    if (!e) {
+      const r = BODY.headR * R;
+      const m = id === PC_CAP ? CLASSIC[this.build].capR * R + olS + 2 : r * 1.6 + olS * 2 + 2;
+      e = sp.miss(key, -m, -m, m, m, this, id);
+    }
+    frameMatrix(M, fa, fb, fc, fd, fe, ff, px, py, rot, k, k);
+    blitOrDraw(sp, ctx, e, this, id);
+  }
+
+  private headC(ctx: CanvasRenderingContext2D, hx: number, hy: number, r: number, roll: number, fx: number, fy: number, fz: number, back: boolean, scale: number, ol: number, t: number, mini: boolean): void {
+    const sp = this.sprites!;
+    const ps = this.ps[J.HEAD];
+    this.pieceC(ctx, PC_HEAD, 0, ps, scale, ol, 1, 0, 0, 1, 0, 0, hx, hy);
+    const c = Math.cos(roll), s = Math.sin(roll);
+    const male = CLASSIC[this.build].male;
+    if (!mini && !male) {
+      this.tailSpring(hx, hy, scale, t);
+      const side = back ? 0.08 : fx >= 0 ? -1 : 1;
+      const bx = side * r * 0.92, by = back ? -r * 0.62 : -r * 0.3;
+      const a = back ? 1.25 + this.tailA * 0.3 : 0.35 + this.tailA * side;
+      const x0 = hx + c * bx - s * by, y0 = hy + s * bx + c * by;
+      const e1x = bx + side * Math.cos(a) * r * 0.85, e1y = by + Math.sin(a) * r * 0.85;
+      const e2x = bx + side * Math.cos(a + 0.5) * r * 0.7, e2y = by + Math.sin(a + 0.5) * r * 0.7;
+      const x1 = hx + c * e1x - s * e1y, y1 = hy + s * e1x + c * e1y;
+      const x2 = hx + c * e2x - s * e2y, y2 = hy + s * e2x + c * e2y;
+      const wo = 0.034 * scale + ol * 1.6, wb = 0.034 * scale;
+      spriteLine(sp, ctx, COLORS.outline, x0, y0, x1, y1, wo, scale);
+      spriteLine(sp, ctx, COLORS.outline, x0, y0, x2, y2, wo, scale);
+      spriteLine(sp, ctx, COLORS.band, x0, y0, x1, y1, wb, scale);
+      spriteLine(sp, ctx, COLORS.band, x0, y0, x2, y2, wb, scale);
+    }
+    const phi = Math.max(-0.5, Math.min(0.5, fx * 9));
+    const fo = phi * r;
+    const lift = Math.max(-0.4, Math.min(0.4, fy * 6)) * r;
+    if (male) this.pieceC(ctx, PC_HAIR, back ? 1 : 0, ps, scale, ol, c, s, -s, c, hx, hy, 0, 0, back ? 10 : Math.round((phi + 0.5) / 0.05));
+    else this.pieceC(ctx, PC_BAND, back ? 1 : 0, ps, scale, ol, c, s, -s, c, hx, hy, 0, 0);
+    if (back || mini) return;
+    const ex = fo * 0.8, ey = r * 0.12 + lift * 0.5;
+    const spc = r * 0.32 * Math.max(0.3, Math.min(1, fz * 1.15));
+    spriteEllipse(sp, ctx, COLORS.outline, c, s, -s, c, hx, hy, ex - spc, ey, r * 0.1, r * 0.15, 0);
+    spriteEllipse(sp, ctx, COLORS.outline, c, s, -s, c, hx, hy, ex + spc, ey, r * 0.1, r * 0.15, 0);
+    this.pieceC(ctx, PC_SMILE, 0, ps, scale, ol, c, s, -s, c, hx, hy, ex, ey);
+    if (male) {
+      this.pieceC(ctx, PC_BROW, 0, ps, scale, ol, c, s, -s, c, hx, hy, ex - spc, ey);
+      this.pieceC(ctx, PC_BROW, 1, ps, scale, ol, c, s, -s, c, hx, hy, ex + spc, ey);
+    }
+  }
+
+  /** Draw a cached classic piece around its anchor at pcR px per unit (PieceArtist). */
+  drawPiece(ctx: CanvasRenderingContext2D, id: number): void {
+    const R = this.pcR, olS = this.pcOl;
+    const r = BODY.headR * R;
+    switch (id) {
+      case PC_BAR:
+        ctx.strokeStyle = this.pcPass === 0 ? COLORS.outline : this.pcColor;
+        ctx.lineWidth = this.pcW * R + (this.pcPass === 0 ? olS * 2 : 0);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(this.pcLen, 0);
+        ctx.stroke();
+        break;
+      case PC_HAND:
+        this.classicHand(ctx, 0, 0, BODY.handR * R * (0.92 + 0.22 * this.pcOpen), 1, 0, this.pcForm, this.pcColor, this.pcLight, olS);
+        break;
+      case PC_MITT:
+        ctx.fillStyle = this.pcLight;
+        ctx.strokeStyle = COLORS.outline;
+        ctx.lineWidth = olS * 1.6;
+        ctx.beginPath();
+        ctx.arc(0, 0, BODY.handR * R * (0.92 + 0.22 * this.pcOpen), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        break;
+      case PC_SHOE:
+        this.classicShoe(ctx, 0, 0, 0, 1, 1, 0, R, this.pcColor, olS);
+        break;
+      case PC_CAP:
+        ctx.fillStyle = this.pcSide < 0 ? COLORS.left : COLORS.right;
+        ctx.strokeStyle = COLORS.outline;
+        ctx.lineWidth = olS * 1.4;
+        ctx.beginPath();
+        ctx.arc(0, 0, CLASSIC[this.build].capR * R, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        break;
+      case PC_HEAD:
+        ctx.fillStyle = COLORS.body;
+        ctx.strokeStyle = COLORS.outline;
+        ctx.lineWidth = olS * 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        break;
+      case PC_BAND:
+        this.classicBand(ctx, r, olS, this.pcSide === 1);
+        break;
+      case PC_HAIR:
+        this.maleHair(ctx, r, olS, (this.pcAux * 0.05 - 0.5) * r, this.pcSide === 1);
+        break;
+      case PC_SMILE:
+        ctx.strokeStyle = COLORS.outline;
+        ctx.lineWidth = r * 0.09;
+        ctx.beginPath();
+        this.classicSmile(ctx, 0, 0, r);
+        ctx.stroke();
+        break;
+      case PC_BROW:
+        ctx.strokeStyle = COLORS.outline;
+        ctx.lineWidth = r * 0.1;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        this.classicBrow(ctx, 0, 0, r, this.pcSide === 1 ? 1 : -1);
+        ctx.stroke();
+        break;
+    }
   }
 
   /**
@@ -817,7 +1289,16 @@ const SLOT_STRIP_DYN = 3;
 export interface StageQuality {
   /** Glows baked into a cached background; only moving parts redrawn. */
   cached: boolean;
+  /**
+   * With `cached`: compose the coaches, the NEXT / THEN figures and the
+   * strip's moving parts from pre-drawn sprites (sprites.ts) instead of
+   * paths. No effect on its own (Full never uses it).
+   */
+  sprites?: boolean;
 }
+
+/** New sprite entries a playing frame may make (path drawing is the slow part on weak chips). */
+export const SPRITE_BUDGET = 3;
 
 export class StageRenderer2D {
   readonly painter = new FigurePainter();
@@ -834,6 +1315,13 @@ export class StageRenderer2D {
   private fontCache = new Map<string, { size: number; text: string }>();
   /** Set by the stage; 'cached' switches to the Smooth drawing (see quality.ts). */
   quality: StageQuality = { cached: false };
+  /** The sprite cache in use this frame (sprite tiers), else null. */
+  sprites: SpriteCache | null = null;
+  /** Entries a frame may make (the stage raises it while waiting for the song). */
+  spriteBudget = SPRITE_BUDGET;
+  private readonly warmPainter = new FigurePainter();
+  private readonly warmMini = new FigurePainter();
+  private readonly nullCtx = nullContext();
   // Layers: the background (gradient + floor), the baked glows on top of it, and that plus the strip's still parts.
   private base: ReturnType<typeof makeLayer> = null;
   private glowLayer: ReturnType<typeof makeLayer> = null;
@@ -868,6 +1356,8 @@ export class StageRenderer2D {
     this.painter.style = s;
     this.nextPainter.style = s;
     this.afterPainter.style = s;
+    this.warmPainter.style = s;
+    this.warmMini.style = s;
   }
 
   /** Female or male version of the look (also the thumbnails). */
@@ -879,6 +1369,8 @@ export class StageRenderer2D {
     this.painter.build = b;
     this.nextPainter.build = b;
     this.afterPainter.build = b;
+    this.warmPainter.build = b;
+    this.warmMini.build = b;
   }
 
   /** Forget the cached strip (its THEN figure shows the look) and redraw everything next frame. */
@@ -954,6 +1446,13 @@ export class StageRenderer2D {
     const L = this.layout;
     // Smooth the energy so section changes fade in over a couple of seconds.
     this.energy += (scene.energy - this.energy) * 0.03;
+    const sp = this.quality.cached && this.quality.sprites && this.base ? sharedSpriteCache() : null;
+    if (sp !== this.sprites) {
+      this.sprites = sp;
+      this.painter.sprites = this.nextPainter.sprites = this.afterPainter.sprites = sp;
+      this.invalidate(); // the strip's still parts (THEN figure, panels) are drawn the other way
+    }
+    if (sp) sp.beginFrame(this.spriteBudget);
     if (this.quality.cached && this.base && this.cachedRender(sk, scene)) return;
     this.needFull = true; // back to cached drawing later: start from a clean copy
     this.background(scene);
@@ -1024,6 +1523,13 @@ export class StageRenderer2D {
     const L = this.layout;
     const bar = ph / 4;
     const bf = bar - Math.floor(bar);
+    if (this.sprites) {
+      c.globalAlpha = (e - 0.5) * 0.9 * (1 - bf) * (1 - bf);
+      spriteRing(this.sprites, c, COLORS.band, L.figX, L.floorY, L.scale * (0.25 + bf * 0.9), L.scale * (0.04 + bf * 0.14), Math.max(1, L.scale * 0.006));
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      c.globalAlpha = 1;
+      return;
+    }
     c.save();
     c.globalAlpha = (e - 0.5) * 0.9 * (1 - bf) * (1 - bf);
     c.strokeStyle = COLORS.band;
@@ -1149,6 +1655,11 @@ export class StageRenderer2D {
   private panel(x: number, y: number, w: number, h: number, r: number, line: string): void {
     if (this.pass === MOVING) return;
     const c = this.ctx;
+    if (this.sprites) {
+      spritePanel(this.sprites, c, x, y, w, h, r, COLORS.panel, line, Math.max(2, this.layout.h * 0.003));
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      return;
+    }
     c.beginPath();
     c.moveTo(x + r, y);
     c.arcTo(x + w, y, x + w, y + h, r);
@@ -1210,6 +1721,12 @@ export class StageRenderer2D {
       // Moving every frame: the bar, and the countdown dots at the end of the label row.
       this.dyn(x, y, x + w, y + h);
       this.dyn(x + w - h * 5.5, dotY - h * 0.5, x + w, dotY + h * 0.5);
+      // Sprite tiers: the bar's track and the unlit dots are still, so they live in the static layer.
+      if (this.sprites) this.progressS(x, y, w, h, s, soon, dotY, true);
+      return;
+    }
+    if (this.sprites) {
+      this.progressS(x, y, w, h, s, soon, dotY);
       return;
     }
     c.fillStyle = 'rgba(255,255,255,0.14)';
@@ -1241,6 +1758,66 @@ export class StageRenderer2D {
         c.fill();
       }
     }
+  }
+
+  /**
+   * Progress bar + countdown dots in sprite tiers: `still` (static layer) =
+   * the track and the unlit dots; else the fill (end-cap discs + a rect) and
+   * the lit dots. Same shapes as the path drawing.
+   */
+  private progressS(x: number, y: number, w: number, h: number, s: StripInfo, soon: boolean, dotY: number, still = false): void {
+    const c = this.ctx;
+    const sp = this.sprites!;
+    const r = h / 2;
+    const dots = soon && Number.isFinite(s.beatsToChange);
+    const dr = h * 0.5;
+    if (still) {
+      spritePanel(sp, c, x, y, w, h, r, 'rgba(255,255,255,0.14)', null, 0);
+      if (dots) for (let i = 0; i < 4; i++) spriteEllipse(sp, c, 'rgba(255,255,255,0.18)', 1, 0, 0, 1, 0, 0, x + w - dr - i * dr * 3, dotY, dr, dr, 0);
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      return;
+    }
+    const p = Math.max(0, Math.min(1, s.progress));
+    if (p > 0) {
+      const fw = Math.max(h, w * p);
+      const col = soon ? COLORS.band : COLORS.left;
+      spriteEllipse(sp, c, col, 1, 0, 0, 1, 0, 0, x + r, y + r, r, r, 0);
+      spriteEllipse(sp, c, col, 1, 0, 0, 1, 0, 0, x + fw - r, y + r, r, r, 0);
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      if (fw > h) {
+        c.fillStyle = col;
+        c.fillRect(x + r, y, fw - h, h);
+      }
+    }
+    if (dots) {
+      const left = Math.ceil(s.beatsToChange - 1e-6);
+      for (let i = 0; i < 4 && i < left; i++) spriteEllipse(sp, c, COLORS.band, 1, 0, 0, 1, 0, 0, x + w - dr - i * dr * 3, dotY, dr, dr, 0);
+    }
+    c.setTransform(1, 0, 0, 1, 0, 0);
+  }
+
+  /** Where the NEXT card's figure was last drawn (prewarming draws its poses there). */
+  private readonly nextFig = { x: 0, floorY: 0, scale: 0 };
+
+  /**
+   * Prewarm (sprite tiers): make the sprites the main coach needs for pose
+   * `sk`, within the frame's remaining budget. Draws nothing.
+   */
+  warm(sk: Skeleton, t: number): void {
+    const sp = this.sprites;
+    if (!sp || sp.budget <= 0) return;
+    const L = this.layout;
+    this.warmPainter.sprites = sp;
+    this.warmPainter.draw(this.nullCtx, sk, L.figX, L.floorY, L.scale, t);
+  }
+
+  /** Prewarm the NEXT card's figure for pose `sk` (once the card has been drawn at its size). */
+  warmNext(sk: Skeleton, t: number): void {
+    const sp = this.sprites;
+    const f = this.nextFig;
+    if (!sp || sp.budget <= 0 || !(f.scale > 0)) return;
+    this.warmMini.sprites = sp;
+    this.warmMini.draw(this.nullCtx, sk, f.x - sk.p[J.PELVIS * 3] * f.scale, f.floorY, f.scale, t, { mini: true, shadow: false });
   }
 
   private wrapCache = new Map<string, string[]>();
@@ -1305,7 +1882,13 @@ export class StageRenderer2D {
       const top = y + pad * 0.6;
       const bottom = y + h - pad * 0.8;
       const sc = (bottom - top) / 1.18;
+      if (moving) {
+        this.nextFig.x = x + pad * 0.5 + figW / 2;
+        this.nextFig.floorY = bottom - sc * 0.02;
+        this.nextFig.scale = sc;
+      }
       this.ctx.save();
+      if (this.sprites) this.ctx.setTransform(1, 0, 0, 1, 0, 0);
       this.ctx.beginPath();
       this.ctx.rect(x + 2, y + 2, figW, h - 4);
       this.ctx.clip();

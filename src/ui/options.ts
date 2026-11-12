@@ -37,7 +37,7 @@ const LIVE_SYNC: { value: LiveSyncPref; label: string; hint: string }[] = [
 
 const GRAPHICS: { value: GraphicsPref; label: string; hint: string }[] = [
   { value: 'auto', label: 'Auto', hint: 'Adapts to this device' },
-  { value: 'smooth', label: 'Smooth (simpler)', hint: 'Steadier on slow TVs' },
+  { value: 'smooth', label: 'Smooth (simpler)', hint: 'Pre-drawn coach, steadier on slow TVs' },
   { value: 'full', label: 'Full', hint: 'Every effect, always' },
 ];
 
@@ -295,8 +295,8 @@ export function createOptions(nav: Nav, opts: { focusAction?: string } = {}): Sc
         'p',
         { class: 'note' },
         platform.isTV
-          ? 'How the coach is drawn. Auto starts with the simpler drawing on the TV (still glows behind the coach) and lowers the resolution if the projector still can’t keep up. Full shows every effect but can look choppy on a projector.'
-          : 'How the coach is drawn. Auto shows every effect and switches to the simpler drawing (still glows, lower resolution) only if this device can’t keep up.',
+          ? 'How the coach is drawn. Auto starts with the simpler drawing on the TV: still glows behind the coach, and the coach put together from pre-drawn pieces, which slow TV chips draw much faster. If the projector still can’t keep up it lowers the resolution. Full draws every effect fresh each frame but can look choppy on a projector.'
+          : 'How the coach is drawn. Auto shows every effect and switches to the simpler drawing (still glows, the coach put together from pre-drawn pieces, then a lower resolution) only if this device can’t keep up.',
       ),
       h('div', { class: 'opt-row' }, ...gfxButtons),
       h('p', { class: 'note opt-subnote' }, 'Show the frame rate on the play screen:'),

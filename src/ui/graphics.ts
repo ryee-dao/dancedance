@@ -34,6 +34,16 @@ const urlTier: Tier | null = (() => {
   }
 })();
 
+/** `?gfxsprites=0|1`: force the sprite drawing off / on in the lighter tiers (comparisons). */
+export const urlSprites: boolean | null = (() => {
+  try {
+    const v = typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('gfxsprites');
+    return v === '0' ? false : v === '1' ? true : null;
+  } catch {
+    return null;
+  }
+})();
+
 function safe<T>(f: () => T): T | undefined {
   try {
     return f();

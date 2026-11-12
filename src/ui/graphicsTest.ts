@@ -143,7 +143,24 @@ function capsule(ctx: CanvasRenderingContext2D, w: number, len: number): void {
   ctx.closePath();
 }
 
-type ShapeKind = 'path' | 'rect' | 'sprite' | 'fill' | 'strokeRound' | 'strokeButt';
+type ShapeKind = 'path' | 'rect' | 'sprite' | 'fill' | 'strokeRound' | 'strokeButt' | 'concave' | 'thin';
+
+/**
+ * A torso-like closed outline (shoulders, pinched waist, hips, a neckline
+ * dip), as the coach's shirt is drawn: a smooth curve through the midpoints
+ * of these points (x, y pairs around the centre). Concave, so it can't use a
+ * GPU's fast convex-path fill.
+ */
+const TORSO = [-8, -55, -30, -54, -38, -40, -26, -12, -22, 10, -34, 40, -32, 55, 32, 55, 34, 40, 22, 10, 26, -12, 38, -40, 30, -54, 8, -55, 0, -45];
+
+function torsoPath(ctx: CanvasRenderingContext2D): void {
+  const n = TORSO.length / 2;
+  const mx = (i: number) => (TORSO[(i % n) * 2] + TORSO[((i + 1) % n) * 2]) / 2;
+  const my = (i: number) => (TORSO[(i % n) * 2 + 1] + TORSO[((i + 1) % n) * 2 + 1]) / 2;
+  ctx.moveTo(mx(n - 1), my(n - 1));
+  for (let i = 0; i < n; i++) ctx.quadraticCurveTo(TORSO[i * 2], TORSO[i * 2 + 1], mx(i), my(i));
+  ctx.closePath();
+}
 
 function shapeTest(kind: ShapeKind, n: number) {
   return async (c: Ctx): Promise<Prepared> => {
@@ -171,7 +188,7 @@ function shapeTest(kind: ShapeKind, n: number) {
       frame: (now) => {
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, W, H);
-        ctx.lineWidth = kind === 'path' ? 3 : 24;
+        ctx.lineWidth = kind === 'path' ? 3 : kind === 'thin' ? 1.5 : 24;
         ctx.strokeStyle = '#1a0610';
         ctx.lineCap = kind === 'strokeButt' ? 'butt' : 'round';
         ctx.lineJoin = kind === 'strokeButt' ? 'miter' : 'round';
@@ -194,7 +211,13 @@ function shapeTest(kind: ShapeKind, n: number) {
             continue;
           }
           ctx.beginPath();
-          if (kind === 'strokeRound' || kind === 'strokeButt') {
+          if (kind === 'concave') {
+            torsoPath(ctx);
+            ctx.fillStyle = it.col;
+            ctx.fill();
+            continue;
+          }
+          if (kind === 'strokeRound' || kind === 'strokeButt' || kind === 'thin') {
             ctx.moveTo(0, -LIMB_H / 2 + 12);
             ctx.lineTo(10, 0);
             ctx.lineTo(0, LIMB_H / 2 - 12);
@@ -262,6 +285,8 @@ interface CoachOpts {
   countAs?: string;
   /** Draw one frame only (then just the HUD ticks). */
   still?: boolean;
+  /** Sprite drawing on / off (the F rows: off, as measured before sprites existed). */
+  sprites?: boolean;
 }
 
 function coachTest(o: CoachOpts) {
@@ -278,9 +303,12 @@ function coachTest(o: CoachOpts) {
       c.stage.append(host);
     }
     const s = store.settings();
-    const st = m.benchStage({ players: o.players, tier: o.tier, isTV: c.isTV, style: s.coachStyle, build: s.coachBuild });
+    const st = m.benchStage({ players: o.players, tier: o.tier, isTV: c.isTV, style: s.coachStyle, build: s.coachBuild, sprites: o.sprites });
     st.mount(host);
     st.frame(0); // builds the routine
+    // Sprites: make the ones the measured stretch needs first (a real song's countdown does this).
+    if (o.sprites) st.prewarm(0, 0.4 + (WARM_MS + MEASURE_MS) / 1000 + 3);
+    const s0 = st.spriteStats();
     if (o.countAs) {
       const ops = countOps(() => {
         for (let i = 1; i <= 10; i++) st.frame(i / 30);
@@ -291,12 +319,19 @@ function coachTest(o: CoachOpts) {
     const t0 = performance.now();
     const note = st.describe().replace(/^\S+ /, ''); // the canvas size (the row names the tier)
     if (o.still) return { frame: tick, cleanup: () => st.unmount(), note };
+    const cleanup = (): string | void => {
+      const s1 = st.spriteStats();
+      st.unmount();
+      if (!s1 || !s0) return;
+      // New sprites / parts drawn with paths during the measurement, and the cache's size.
+      return `sprites ${s1.entries} (${Math.round(s1.usedBytes / 2 ** 20)} of ${Math.round(s1.bytes / 2 ** 20)} MB), new ${s1.made - s0.made}, paths ${s1.direct - s0.direct}`;
+    };
     return {
       frame: (now) => {
         tick?.(now);
         st.frame(0.4 + (now - t0) / 1000);
       },
-      cleanup: () => st.unmount(),
+      cleanup,
       note,
     };
   };
@@ -516,7 +551,7 @@ export const TESTS: readonly TestDef[] = [
       return { frame: null };
     },
   },
-  { id: 'A3', name: 'Play DOM + still coach, HUD ticks', run: coachTest({ players: 1, tier: 1, dom: 'play', still: true }) },
+  { id: 'A3', name: 'Play DOM + still coach, HUD ticks', run: coachTest({ players: 1, tier: 1, dom: 'play', still: true, sprites: false }) },
   { id: 'B1', name: 'CSS-animated box (rAF rate)', run: cssAnimTest },
   { id: 'C1', name: '2D 1280x720, clear + 1 rect', run: rectTest(1280, 720) },
   { id: 'C2', name: 'C1 opaque (alpha:false)', run: rectTest(1280, 720, 'full', { alpha: false }) },
@@ -533,10 +568,11 @@ export const TESTS: readonly TestDef[] = [
       return rectTest(Math.round(480 * d), Math.round(270 * d), [480, 270])(c);
     },
   },
-  { id: 'F1', name: 'Coach Smooth (play DOM)', run: coachTest({ players: 1, tier: 1, dom: 'play', countAs: 'coach' }) },
-  { id: 'F2', name: 'Coach Smoothest (draws 30/s)', run: coachTest({ players: 1, tier: 2, dom: 'play' }) },
-  { id: 'F3', name: 'Duo Smooth (play DOM)', run: coachTest({ players: 2, tier: 1, dom: 'play', countAs: 'duo' }) },
-  { id: 'F4', name: 'Coach Smooth, bare page', run: coachTest({ players: 1, tier: 1, dom: 'bare' }) },
+  // F: the coach drawn with paths (the Smooth tiers before sprites), for comparison with earlier runs.
+  { id: 'F1', name: 'Coach Smooth, paths (play DOM)', run: coachTest({ players: 1, tier: 1, dom: 'play', countAs: 'coach paths', sprites: false }) },
+  { id: 'F2', name: 'Coach Smoothest, paths (30/s)', run: coachTest({ players: 1, tier: 2, dom: 'play', sprites: false }) },
+  { id: 'F3', name: 'Duo Smooth, paths (play DOM)', run: coachTest({ players: 2, tier: 1, dom: 'play', countAs: 'duo paths', sprites: false }) },
+  { id: 'F4', name: 'Coach Smooth, paths, bare page', run: coachTest({ players: 1, tier: 1, dom: 'bare', sprites: false }) },
   { id: 'P1', name: 'Paths fill+stroke x20', run: shapeTest('path', 20) },
   { id: 'P2', name: 'Paths fill+stroke x60', run: shapeTest('path', 60) },
   { id: 'P3', name: 'Paths fill+stroke x180', run: shapeTest('path', 180) },
@@ -555,11 +591,20 @@ export const TESTS: readonly TestDef[] = [
   { id: 'I1', name: 'WebGL, 15 quads', run: webglTest },
   { id: 'J1', name: 'Empty loop + <audio>', run: withAudio(empty) },
   { id: 'J2', name: 'C1 + <audio>', run: withAudio(rectTest(1280, 720)) },
-  { id: 'J3', name: 'F1 + <audio> (like a song)', run: withAudio(coachTest({ players: 1, tier: 1, dom: 'play' })) },
+  { id: 'J3', name: 'F1 + <audio> (like a song)', run: withAudio(coachTest({ players: 1, tier: 1, dom: 'play', sprites: false })) },
   { id: 'K1', name: 'C1, hardware layer', run: withLayer('hardware', rectTest(1280, 720)) },
-  { id: 'K2', name: 'F1, hardware layer', run: withLayer('hardware', coachTest({ players: 1, tier: 1, dom: 'play' })) },
+  { id: 'K2', name: 'F1, hardware layer', run: withLayer('hardware', coachTest({ players: 1, tier: 1, dom: 'play', sprites: false })) },
   { id: 'K3', name: 'C1, software layer', run: withLayer('software', rectTest(1280, 720)) },
-  { id: 'K4', name: 'F1, software layer', run: withLayer('software', coachTest({ players: 1, tier: 1, dom: 'play' })) },
+  { id: 'K4', name: 'F1, software layer', run: withLayer('software', coachTest({ players: 1, tier: 1, dom: 'play', sprites: false })) },
+  // W: the coach and the duo as the Smooth tiers now draw them (pre-drawn sprites; prewarmed first, as a song's countdown does).
+  { id: 'W1', name: 'Coach Smooth, sprites (play DOM)', run: coachTest({ players: 1, tier: 1, dom: 'play', countAs: 'coach sprites', sprites: true }) },
+  { id: 'W2', name: 'Duo Smooth, sprites (play DOM)', run: coachTest({ players: 2, tier: 1, dom: 'play', countAs: 'duo sprites', sprites: true }) },
+  { id: 'W3', name: 'Coach Smoothest, sprites (30/s)', run: coachTest({ players: 1, tier: 2, dom: 'play', sprites: true }) },
+  { id: 'W4', name: 'Duo Smoothest, sprites (30/s)', run: coachTest({ players: 2, tier: 2, dom: 'play', sprites: true }) },
+  // Q: are non-convex fills slow too (the torsos are still filled per frame)? T: strokes as such, or their width?
+  { id: 'Q1', name: 'Concave fills, no stroke x60', run: shapeTest('concave', 60) },
+  { id: 'Q2', name: 'Concave fills, no stroke x180', run: shapeTest('concave', 180) },
+  { id: 'T1', name: 'Thin strokes 1.5 px x60', run: shapeTest('thin', 60) },
 ];
 
 // ---------------------------------------------------------------------------

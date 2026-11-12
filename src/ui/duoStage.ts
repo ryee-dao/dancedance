@@ -23,7 +23,9 @@ import { DuoTracks, KIND_LABEL, type DuoCue } from '../core/coach/duoTracks';
 import { blendPose } from '../core/coach/poses';
 import { CH, createPose, createSkeleton, solveSkeleton, type Skeleton } from '../core/coach/skeleton';
 import { DEFAULT_COACH_STYLE, parseCoachStyle, type CoachBuild, type CoachStyle } from '../core/coach/styles';
-import { coachBuildOf, routineInfo, type CoachStage, type CoachStageDeps, type FrameStats, type RoutineInfo } from './coachStage';
+import { WAIT_SPRITE_BUDGET, WARM_STEP_WAITING, coachBuildOf, planEnd, planStart, routineInfo, spritesFor, type CoachStage, type CoachStageDeps, type FrameStats, type RoutineInfo } from './coachStage';
+import { SPRITE_BUDGET } from '../core/coach/renderer';
+import type { SpriteStats } from '../core/coach/sprites';
 import type { FrameInfo } from './play';
 import type { GraphicsStats } from '../core/coach/quality';
 import { GraphicsMeter, graphicsPrefOf } from './graphics';
@@ -103,6 +105,9 @@ class PlayersStage implements CoachStage {
   graphicsStats(): GraphicsStats {
     return this.cur?.graphicsStats() ?? { frameMs: 16.7, drawMs: 0, drawnFps: 0, tier: 0, tierName: 'Full', resolution: '', reason: '' };
   }
+  spriteStats(): SpriteStats | null {
+    return this.cur?.spriteStats?.() ?? null;
+  }
 }
 
 function urlCoachStyle(): CoachStyle | null {
@@ -158,9 +163,57 @@ class DuoStageImpl implements CoachStage {
   private hook: 0 | 1 | -1 = 0;
   private readonly meter: GraphicsMeter;
   private readonly urlStyle = urlCoachStyle();
+  // Sprite prewarming (as the single stage): upcoming poses of both tracks drawn into the cache.
+  private wEv1 = new PoseEvaluator();
+  private wEv2 = new PoseEvaluator();
+  private wPose1 = createPose();
+  private wPose2 = createPose();
+  private wSk1 = createSkeleton();
+  private wSk2 = createSkeleton();
+  private wDepth: [number, number] = [0, 0];
+  private warmT = -Infinity;
+  private warmView: object | null = null;
 
   constructor(private deps: CoachStageDeps) {
     this.meter = new GraphicsMeter(deps.isTV, 2, deps.pinTier ?? null);
+  }
+
+  spriteStats(): SpriteStats | null {
+    return this.r?.sprites?.stats() ?? null;
+  }
+
+  /** Sprite tiers: draw both tracks' poses a little ahead into the sprite cache (see CoachStageImpl.prewarm). */
+  private prewarm(t: number, waiting: boolean): void {
+    const r = this.r;
+    const v1 = this.tracks.v1, v2 = this.tracks.v2, plan = this.tracks.plan;
+    if (!r?.sprites || !v1 || !v2 || !plan || plan.kind === 'idle') return;
+    if (v1 !== this.warmView) {
+      this.warmView = v1;
+      this.warmT = -Infinity;
+    }
+    const from = waiting ? planStart(plan) : t + 0.2;
+    if (this.warmT < from) this.warmT = from;
+    const until = waiting ? planEnd(plan) : t + 4;
+    const n = waiting ? 8 : 2;
+    for (let i = 0; i < n && r.sprites.budget > 0 && this.warmT < until; i++) {
+      const wt = this.warmT;
+      const e = plan.sectionAt(wt, null).energy;
+      this.wEv1.evaluate(v1, wt, this.wPose1, { energy: e });
+      this.wEv2.evaluate(v2, wt, this.wPose2, { energy: e });
+      this.wDepth[0] = this.wDepth[1] = 0;
+      let hook: 0 | 1 | -1 = 0;
+      const i1 = this.wEv1.inst(v1, this.wEv1.instIndex);
+      const own = partnerOf(i1.move);
+      if (own) {
+        hook = own.pm.hook;
+        const mb = own.part * 4 + (this.wEv1.beat - i1.start) / (i1.half ? 2 : 1);
+        partnerDepth(own.pm, mb, this.wPose1[CH.SPIN], this.wPose2[CH.SPIN], this.wDepth);
+      }
+      solveSkeleton(this.wPose1, this.wSk1);
+      solveSkeleton(this.wPose2, this.wSk2);
+      r.warm(this.wSk1, this.wSk2, this.wDepth[0], this.wDepth[1], hook, wt);
+      this.warmT += waiting ? WARM_STEP_WAITING : 1 / 30;
+    }
   }
 
   private style(): CoachStyle {
@@ -228,6 +281,7 @@ class DuoStageImpl implements CoachStage {
     this.hudTop = hudTopFraction(this.host, rect);
     this.hudCheckAt = performance.now();
     this.r.quality.cached = spec.cached;
+    this.r.quality.sprites = spritesFor(this.deps, spec.sprites);
     this.r.resize(w, h, true, this.hudTop);
     if (this.canvas) this.meter.noteCanvas(this.canvas);
     this.frozenDrawn = false;
@@ -272,7 +326,7 @@ class DuoStageImpl implements CoachStage {
     const phase = info.phase;
     if (phase === 'paused' && this.lastPhase === 'paused' && this.frozenDrawn) return;
     // 30 fps tiers: skip this display frame (the next drawn one reads the audio clock afresh).
-    if (!tick.draw && phase === this.lastPhase) return;
+    if (!tick.draw && !this.deps.drawEveryFrame && phase === this.lastPhase) return;
     const src = (info as InfoWithBeats).beats ?? null;
     const tl = src ? src.current() : null;
     const item = info.item;
@@ -351,7 +405,9 @@ class DuoStageImpl implements CoachStage {
     sc.prop = this.prop;
     sc.hook = this.hook;
     sc.strip = this.strip;
+    this.r.spriteBudget = this.deps.spriteBudget ?? (waiting || phase === 'paused' ? WAIT_SPRITE_BUDGET : SPRITE_BUDGET);
     this.r.render(this.sk1, this.sk2, sc);
+    this.prewarm(t, waiting);
     this.frozenDrawn = phase === 'paused';
     this.meter.drawn(wall, performance.now() - wall);
   }

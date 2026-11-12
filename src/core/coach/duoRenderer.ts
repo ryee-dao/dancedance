@@ -13,7 +13,9 @@
 
 import { DUO_HOME } from '../choreo/duoMoves';
 import { DirtyRects, MAX_SLOTS, makeLayer } from './dirty';
-import { COLORS, FigurePainter, fitText, type StageQuality } from './renderer';
+import { COLORS, FigurePainter, SPRITE_BUDGET, fitText, type StageQuality } from './renderer';
+import { nullContext, sharedSpriteCache, type PieceArtist, type SpriteCache } from './sprites';
+import { spriteBadge, spriteEllipse, spriteLine, spritePanel, spriteRing } from './spriteParts';
 import { J, type Skeleton } from './skeleton';
 import { CAM, DEFAULT_COACH_BUILD, duoBuilds, type CoachBuild, type CoachStyle } from './styles';
 
@@ -38,6 +40,20 @@ export class DuoFigure {
   readonly hands = new Float64Array(4);
   private lastScale = 1;
   private lastAlpha = 1;
+  /** The figure's last draw scale (prewarming the strip's mini figures). */
+  get scale(): number {
+    return this.lastScale;
+  }
+
+  /** Sprite mode (sprites.ts) or null for paths. */
+  set sprites(sp: SpriteCache | null) {
+    this.fp.sprites = sp;
+  }
+
+  /** px per unit the sprites are made at (the stage's layout scale; 0 = draw scale). */
+  set spriteRef(v: number) {
+    this.fp.spriteRef = v;
+  }
 
   constructor(player: 1 | 2) {
     const c = PLAYER_COLORS[player];
@@ -158,8 +174,20 @@ const SLOT_MARK2 = 3;
 const SLOT_STRIP = 4;
 const SLOT_STRIP_DYN = 5;
 
-export class DuoRenderer2D {
+export class DuoRenderer2D implements PieceArtist {
   private ctx: CanvasRenderingContext2D;
+  /** The sprite cache in use this frame (sprite tiers), else null. */
+  sprites: SpriteCache | null = null;
+  /** New sprites a frame may make (the stage raises it while waiting for the song). */
+  spriteBudget = SPRITE_BUDGET;
+  // Prewarming draws upcoming poses with these (own spring state) onto a context that draws nothing.
+  private warm1 = new DuoFigure(1);
+  private warm2 = new DuoFigure(2);
+  private warmMini1 = new DuoFigure(1);
+  private warmMini2 = new DuoFigure(2);
+  private readonly nullCtx = nullContext();
+  /** Badge keys per layout (labels, tags). */
+  private badgeKeys: string[] = ['', '', '', '', ''];
   private fig1 = new DuoFigure(1);
   private fig2 = new DuoFigure(2);
   private mini1 = new DuoFigure(1);
@@ -207,7 +235,7 @@ export class DuoRenderer2D {
   set style(s: CoachStyle) {
     if (s !== this._style) this.needFull = true;
     this._style = s;
-    for (const f of [this.fig1, this.fig2, this.mini1, this.mini2, this.mini3, this.mini4]) f.style = s;
+    for (const f of [this.fig1, this.fig2, this.mini1, this.mini2, this.mini3, this.mini4, this.warm1, this.warm2, this.warmMini1, this.warmMini2]) f.style = s;
     this.build = this._build;
   }
 
@@ -219,8 +247,8 @@ export class DuoRenderer2D {
     if (b !== this._build) this.needFull = true;
     this._build = b;
     const [b1, b2] = duoBuilds(b);
-    this.fig1.build = this.mini1.build = this.mini3.build = b1;
-    this.fig2.build = this.mini2.build = this.mini4.build = b2;
+    this.fig1.build = this.mini1.build = this.mini3.build = this.warm1.build = this.warmMini1.build = b1;
+    this.fig2.build = this.mini2.build = this.mini4.build = this.warm2.build = this.warmMini2.build = b2;
   }
 
   /**
@@ -282,6 +310,9 @@ export class DuoRenderer2D {
     this.stripKey = '';
     this.needFull = true;
     this.dirty.reset(w, h);
+    for (const f of [this.fig1, this.fig2, this.warm1, this.warm2]) f.spriteRef = scale;
+    const ls = Math.round(scale * LABEL_SIZE), ts = Math.round(scale * 70);
+    this.badgeKeys = ['', `duo-label|1|${ls}`, `duo-label|2|${ls}`, `duo-tag|1|${ts}`, `duo-tag|2|${ts}`];
   }
 
   /** Screen x of a player's home spot. */
@@ -294,6 +325,14 @@ export class DuoRenderer2D {
     const c = this.mainCtx;
     const L = this.layout;
     this.energy += (scene.energy - this.energy) * 0.03;
+    const sp = this.quality.cached && this.quality.sprites && this.base ? sharedSpriteCache() : null;
+    if (sp !== this.sprites) {
+      this.sprites = sp;
+      for (const f of [this.fig1, this.fig2, this.mini1, this.mini2, this.mini3, this.mini4]) f.sprites = sp;
+      this.needFull = true;
+      this.stripKey = '';
+    }
+    if (sp) sp.beginFrame(this.spriteBudget);
     const cached = this.quality.cached && !!this.base && this.prepareCached(sk1, sk2, scene);
     if (!cached) {
       this.needFull = true; // back to cached drawing later: start from a clean copy
@@ -313,8 +352,12 @@ export class DuoRenderer2D {
       fig.draw(c, sk, L.cx + (hx - L.cx) * k, L.floorY + z * L.scale * DEPTH_RISE, L.scale * k, scene.t);
     }
     if (scene.hook) drawHook(c, order[0] === 1 ? this.fig1 : this.fig2, order[0] === 1 ? sk1 : sk2, scene.hook);
-    if (scene.prop === 'rope') drawRope(c, this.fig1, this.fig2, L.scale);
+    if (scene.prop === 'rope') {
+      if (this.sprites) ropeS(this.sprites, c, this.fig1, this.fig2, L.scale);
+      else drawRope(c, this.fig1, this.fig2, L.scale);
+    }
     for (const p of order) this.tag(p);
+    if (this.sprites) c.setTransform(1, 0, 0, 1, 0, 0);
     if (scene.strip && L.strip) {
       if (cached) this.pass = MOVING;
       this.strip(scene.strip, scene.t);
@@ -446,6 +489,19 @@ export class DuoRenderer2D {
     const col = PLAYER_COLORS[p];
     const ph = scene.half ? scene.beat / 2 : scene.beat;
     const f = ph - Math.floor(ph);
+    if (this.sprites) {
+      const sp = this.sprites;
+      const y = L.floorY + L.scale * 0.012;
+      c.globalAlpha = 0.85;
+      spriteRing(sp, c, col.main, x, y, L.scale * 0.27, L.scale * 0.045, Math.max(2, L.scale * 0.012));
+      c.globalAlpha = 0.18 + 0.12 * (1 - f);
+      spriteEllipse(sp, c, col.main, 1, 0, 0, 1, 0, 0, x, y, L.scale * 0.27, L.scale * 0.045, 0);
+      c.globalAlpha = 1;
+      const s = L.scale * LABEL_SIZE;
+      spriteBadge(sp, c, this.badgeKeys[p], this, p, -s * 3.4, -s, s * 3.4, s, x, L.floorY + L.scale * LABEL_Y);
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      return;
+    }
     c.save();
     c.globalAlpha = 0.85;
     c.strokeStyle = col.main;
@@ -471,10 +527,22 @@ export class DuoRenderer2D {
     const c = this.ctx;
     const L = this.layout;
     const fig = p === 1 ? this.fig1 : this.fig2;
-    const col = PLAYER_COLORS[p];
     const s = L.scale * 0.07;
     const w = s * 1.9, hgt = s * 1.15;
     const x = fig.headX, y = Math.max(hgt, fig.headY - s * 0.9);
+    if (this.sprites) {
+      spriteBadge(this.sprites, c, this.badgeKeys[p + 2], this, p + 2, -w / 2 - s * 0.2, -hgt / 2 - s * 0.2, w / 2 + s * 0.2, hgt / 2 + s * 0.5, x, y, false);
+      return;
+    }
+    this.tagAt(p, x, y);
+  }
+
+  /** The P1 / P2 pill centred at (x, y). */
+  private tagAt(p: 1 | 2, x: number, y: number): void {
+    const c = this.ctx;
+    const col = PLAYER_COLORS[p];
+    const s = this.layout.scale * 0.07;
+    const w = s * 1.9, hgt = s * 1.15;
     c.save();
     c.fillStyle = col.main;
     c.strokeStyle = COLORS.outline;
@@ -496,6 +564,87 @@ export class DuoRenderer2D {
     c.restore();
   }
 
+  /** Badges for sprite tiers (PieceArtist): 1 / 2 = "PLAYER n" floor label, 3 / 4 = the P1 / P2 tag; drawn around (0, 0). */
+  drawPiece(ctx: CanvasRenderingContext2D, id: number): void {
+    const prev = this.ctx;
+    this.ctx = ctx;
+    if (id <= 2) {
+      ctx.font = `900 ${Math.round(this.layout.scale * LABEL_SIZE)}px ${FONT}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = PLAYER_COLORS[id as 1 | 2].main;
+      ctx.fillText(id === 1 ? 'PLAYER 1' : 'PLAYER 2', 0, 0);
+    } else this.tagAt((id - 2) as 1 | 2, 0, 0);
+    this.ctx = prev;
+  }
+
+  /** Progress bar + countdown dots in sprite tiers (`still`: the track + unlit dots, for the static layer). */
+  private progressS(x: number, y: number, w: number, h: number, s: DuoStripInfo, soon: boolean, dotY: number, still: boolean): void {
+    const c = this.ctx;
+    const sp = this.sprites!;
+    const r = h / 2;
+    const dots = soon && Number.isFinite(s.beatsToChange);
+    if (still) {
+      spritePanel(sp, c, x, y, w, h, r, 'rgba(255,255,255,0.14)', null, 0);
+      if (dots) for (let i = 0; i < 4; i++) spriteEllipse(sp, c, 'rgba(255,255,255,0.18)', 1, 0, 0, 1, 0, 0, x + w - r - i * r * 3, dotY, r, r, 0);
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      return;
+    }
+    const p = Math.max(0, Math.min(1, s.progress));
+    if (p > 0) {
+      const fw = Math.max(h, w * p);
+      const col = soon ? COLORS.band : COLORS.left;
+      spriteEllipse(sp, c, col, 1, 0, 0, 1, 0, 0, x + r, y + r, r, r, 0);
+      spriteEllipse(sp, c, col, 1, 0, 0, 1, 0, 0, x + fw - r, y + r, r, r, 0);
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      if (fw > h) {
+        c.fillStyle = col;
+        c.fillRect(x + r, y, fw - h, h);
+      }
+    }
+    if (dots) {
+      const left = Math.ceil(s.beatsToChange - 1e-6);
+      for (let i = 0; i < 4 && i < left; i++) spriteEllipse(sp, c, COLORS.band, 1, 0, 0, 1, 0, 0, x + w - r - i * r * 3, dotY, r, r, 0);
+    }
+    c.setTransform(1, 0, 0, 1, 0, 0);
+  }
+
+  /** Mini-figure scales drawn recently (prewarming draws upcoming poses at them). */
+  private readonly miniScales = new Float64Array(3);
+
+  private noteMini(scale: number): void {
+    const m = this.miniScales;
+    for (let i = 0; i < m.length; i++) if (Math.abs(m[i] - scale) < 0.5) return;
+    m[2] = m[1];
+    m[1] = m[0];
+    m[0] = scale;
+  }
+
+  /**
+   * Prewarm (sprite tiers): make the sprites both coaches need for these
+   * poses (depths z1 / z2, hooked arms), and their strip thumbnails, within
+   * the frame's remaining budget. Draws nothing.
+   */
+  warm(sk1: Skeleton, sk2: Skeleton, z1: number, z2: number, hook: 0 | 1 | -1, t: number): void {
+    const sp = this.sprites;
+    if (!sp || sp.budget <= 0) return;
+    const L = this.layout;
+    const c = this.nullCtx;
+    this.warm1.sprites = this.warm2.sprites = this.warmMini1.sprites = this.warmMini2.sprites = sp;
+    for (const p of ORDER_12) {
+      const z = p === 1 ? z1 : z2;
+      const k = CAM / (CAM - z);
+      const hx = this.homeX(p);
+      (p === 1 ? this.warm1 : this.warm2).draw(c, p === 1 ? sk1 : sk2, L.cx + (hx - L.cx) * k, L.floorY + z * L.scale * DEPTH_RISE, L.scale * k, t);
+    }
+    if (hook) drawHook(c, z1 > z2 ? this.warm2 : this.warm1, z1 > z2 ? sk2 : sk1, hook);
+    for (const m of this.miniScales) {
+      if (!(m > 0) || sp.budget <= 0) continue;
+      this.warmMini1.draw(c, sk1, 0, 0, m, t, true);
+      this.warmMini2.draw(c, sk2, 0, 0, m, t, true);
+    }
+  }
+
   private round(x: number, y: number, w: number, h: number, r: number): void {
     const c = this.ctx;
     c.beginPath();
@@ -510,6 +659,11 @@ export class DuoRenderer2D {
   private panel(x: number, y: number, w: number, h: number, line: string): void {
     if (this.pass === MOVING) return;
     const c = this.ctx;
+    if (this.sprites) {
+      spritePanel(this.sprites, c, x, y, w, h, this.layout.h * 0.02, COLORS.panel, line, Math.max(2, this.layout.h * 0.003));
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      return;
+    }
     this.round(x, y, w, h, this.layout.h * 0.02);
     c.fillStyle = COLORS.panel;
     c.fill();
@@ -606,6 +760,11 @@ export class DuoRenderer2D {
     if (this.pass === STATIC) {
       this.dyn(x, y, x + w, y + h);
       this.dyn(x + w - h * 5.5, dotY - h * 0.5, x + w, dotY + h * 0.5);
+      if (this.sprites) this.progressS(x, y, w, h, s, soon, dotY, true);
+      return;
+    }
+    if (this.sprites) {
+      this.progressS(x, y, w, h, s, soon, dotY, false);
       return;
     }
     c.fillStyle = 'rgba(255,255,255,0.14)';
@@ -668,10 +827,12 @@ export class DuoRenderer2D {
           const bottom = ry + rowH - pad * 0.4;
           const sc = (bottom - top) / 1.2;
           c.save();
+          if (this.sprites) c.setTransform(1, 0, 0, 1, 0, 0);
           c.beginPath();
           c.rect(x + 2, ry + 2, figW + pad, rowH - 4);
           c.clip();
           (p === 1 ? this.mini1 : this.mini2).draw(c, sk, x + pad * 0.5 + figW / 2 - sk.p[J.PELVIS * 3] * sc, bottom - sc * 0.02, sc, t, true, alpha);
+          this.noteMini(sc);
           c.restore();
         }
       }
@@ -689,6 +850,7 @@ export class DuoRenderer2D {
     const top = y + pad;
     const bottom = y + h - pad;
     c.save();
+    if (this.sprites) c.setTransform(1, 0, 0, 1, 0, 0);
     c.beginPath();
     c.rect(x + 2, y + 2, figW, h - 4);
     c.clip();
@@ -696,17 +858,52 @@ export class DuoRenderer2D {
       const sc = Math.min((bottom - top) / 1.2, figW / (DUO_HOME + 0.75));
       const mid = x + figW / 2;
       this.mini3.draw(c, card.sk1, mid - (DUO_HOME / 2) * sc, bottom - sc * 0.02, sc, t, true, alpha);
+      this.noteMini(sc);
       this.mini4.draw(c, card.sk2, mid + (DUO_HOME / 2) * sc, bottom - sc * 0.02, sc, t, true, alpha);
     } else {
       const sk = card.sk1 ?? card.sk2!;
       const sc = (bottom - top) / 1.2;
       this.mini3.draw(c, sk, x + figW / 2 - sk.p[J.PELVIS * 3] * sc, bottom - sc * 0.02, sc, t, true, alpha);
+      this.noteMini(sc);
     }
     c.restore();
   }
 }
 
 const ORDER_12: readonly (1 | 2)[] = [1, 2];
+
+/** The rope from sprites: its curve flattened into short round-capped segments (dark pass, then the light one). */
+function ropeS(sp: SpriteCache, c: CanvasRenderingContext2D, f1: DuoFigure, f2: DuoFigure, scale: number): void {
+  const x1 = f1.hands[2], y1 = f1.hands[3];
+  const x2 = f2.hands[0], y2 = f2.hands[1];
+  const dx = x2 - x1, dy = y2 - y1;
+  const ext = 0.12 * scale;
+  const len = Math.hypot(dx, dy) || 1;
+  const ux = dx / len, uy = dy / len;
+  const P = ROPE_PTS;
+  let n = 0;
+  const quad = (ax: number, ay: number, cx: number, cy: number, bx: number, by: number, first: boolean) => {
+    for (let i = first ? 0 : 1; i <= 4; i++) {
+      const t = i / 4, u = 1 - t;
+      P[n++] = u * u * ax + 2 * u * t * cx + t * t * bx;
+      P[n++] = u * u * ay + 2 * u * t * cy + t * t * by;
+    }
+  };
+  quad(x1 - ux * ext, y1 - uy * ext + ext * 0.5, x1 - ux * ext * 0.5, y1, x1, y1, true);
+  quad(x2, y2, x2 + ux * ext * 0.5, y2, x2 + ux * ext, y2 + uy * ext + ext * 0.5, false);
+  // P now holds the left hook (5 points) then the right hook (4 more after x2, y2 is implied by the line).
+  const pts = n / 2;
+  for (let pass = 0; pass < 2; pass++) {
+    const col = pass === 0 ? '#120e1f' : '#e8c27a';
+    const w = pass === 0 ? Math.max(3, scale * 0.03) : Math.max(2, scale * 0.018);
+    for (let i = 0; i < 4; i++) spriteLine(sp, c, col, P[i * 2], P[i * 2 + 1], P[i * 2 + 2], P[i * 2 + 3], w, scale);
+    spriteLine(sp, c, col, x1, y1, x2, y2, w, scale);
+    for (let i = 5; i < pts - 1; i++) spriteLine(sp, c, col, P[i * 2], P[i * 2 + 1], P[i * 2 + 2], P[i * 2 + 3], w, scale);
+    spriteLine(sp, c, col, x2, y2, P[10], P[11], w, scale);
+  }
+  c.setTransform(1, 0, 0, 1, 0, 0);
+}
+const ROPE_PTS = new Float64Array(32);
 const ORDER_21: readonly (1 | 2)[] = [2, 1];
 
 /** What the strip's still parts show: when it changes, the static layer's strip is redrawn. */

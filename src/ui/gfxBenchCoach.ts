@@ -15,6 +15,7 @@ import type { Tier } from '../core/coach/quality';
 import { FigurePainter } from '../core/coach/renderer';
 import { createPose, createSkeleton, solveSkeleton } from '../core/coach/skeleton';
 import type { CoachBuild, CoachStyle } from '../core/coach/styles';
+import type { SpriteStats } from '../core/coach/sprites';
 import { synthMap } from '../demo/synth';
 import { createCoachStage, type CoachStage } from './coachStage';
 import { createDuoStage } from './duoStage';
@@ -31,6 +32,14 @@ export interface BenchStage {
   unmount(): void;
   /** e.g. "Smooth 1280x720". */
   describe(): string;
+  /**
+   * Sprite tiers: draw this stretch of the song once with no limit on new
+   * sprites (what the countdown's prewarming does for a real song), so the
+   * measurement sees the steady state.
+   */
+  prewarm(fromSec: number, toSec: number): void;
+  /** Sprite cache counters (null without sprites). */
+  spriteStats(): SpriteStats | null;
 }
 
 export interface BenchStageOptions {
@@ -39,6 +48,8 @@ export interface BenchStageOptions {
   isTV: boolean;
   style: CoachStyle;
   build: CoachBuild;
+  /** Sprite drawing on / off (default: the tier's). */
+  sprites?: boolean;
 }
 
 /** Build the routine generator's caches now (they would otherwise fill in idle time during the test). */
@@ -61,6 +72,9 @@ export function benchStage(o: BenchStageOptions): BenchStage {
     getRoutineMode: () => 'same' as const,
     getGraphics: () => (o.tier === 0 ? 'full' : 'smooth') as 'full' | 'smooth',
     pinTier: o.tier,
+    sprites: o.sprites,
+    spriteBudget: undefined as number | undefined,
+    drawEveryFrame: false,
   };
   const stage: CoachStage = o.players === 2 ? createDuoStage(deps) : createCoachStage(deps);
   const info: FrameInfo = {
@@ -80,6 +94,14 @@ export function benchStage(o: BenchStageOptions): BenchStage {
       const g = stage.graphicsStats();
       return `${g.tierName} ${g.resolution}`;
     },
+    prewarm: (fromSec, toSec) => {
+      deps.spriteBudget = Infinity;
+      deps.drawEveryFrame = true;
+      for (let t = fromSec; t < toSec; t += 1 / 60) stage.frame(START_SEC + t, info);
+      deps.spriteBudget = undefined;
+      deps.drawEveryFrame = false;
+    },
+    spriteStats: () => stage.spriteStats?.() ?? null,
   };
 }
 

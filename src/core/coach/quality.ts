@@ -2,13 +2,16 @@
  * Graphics tiers for the coach stage, and the governor that picks one.
  *
  *   tier 0  Full      the original drawing (beat-pulsing glows, full res:
- *                     1920x1080 on the web, 1280x720 on TV), redrawn whole
- *                     every frame.
+ *                     1920x1080 on the web, 1280x720 on TV), every path drawn
+ *                     fresh, whole canvas redrawn every frame.
  *   tier 1  Smooth    the same figures, strip and floor rings, but the glows
  *                     behind the coaches are baked into a cached background
- *                     (they follow the section energy, no beat pulse), and
- *                     only the parts that move are redrawn each frame (dirty
- *                     rectangles). 1280x720 at most.
+ *                     (they follow the section energy, no beat pulse), only
+ *                     the parts that move are redrawn each frame (dirty
+ *                     rectangles), and the coaches are composed from
+ *                     pre-drawn pieces (sprites.ts: image blits instead of
+ *                     stroked / filled paths, which are what weak TV chips
+ *                     are slow at). 1280x720 at most.
  *   tier 2  Smoothest tier 1 at 960x540, drawn at 30 fps (the pose is still
  *                     taken from the audio clock at every drawn frame, so the
  *                     moves stay exactly on the beat).
@@ -18,6 +21,14 @@
  * steps down when frames keep missing their budget. It never steps back up
  * during a song; the next song starts from the lowest tier reached (per
  * player count), so a weak device settles after one song.
+ *
+ * Sprites or paths in tiers 1 / 2: sprites by default (GPU-rastered canvases
+ * draw bitmaps far faster than stroked paths). Which is faster depends on
+ * the device, though (a canvas rastered on the CPU samples transformed
+ * bitmaps slowly and fills paths quickly), so it is measured, not assumed:
+ * the first time a lighter tier misses its budget, the other method is
+ * tried for one window and the faster one is kept (remembered like the
+ * tier) before any further step down. No device is detected by name.
  *
  * Pure TypeScript (no DOM).
  */
@@ -40,6 +51,8 @@ export interface TierSpec {
   maxH: number;
   /** Glows baked into the cached background, only moving parts redrawn. */
   cached: boolean;
+  /** Coaches and moving strip parts composed from pre-drawn sprites (with `cached`). */
+  sprites: boolean;
   /** Frames drawn per second (the display may run faster; extra frames are skipped). */
   fps: 60 | 30;
 }
@@ -47,11 +60,11 @@ export interface TierSpec {
 export function tierSpec(tier: Tier, isTV: boolean): TierSpec {
   switch (tier) {
     case 0:
-      return { tier, name: 'Full', maxW: isTV ? 1280 : 1920, maxH: isTV ? 720 : 1080, cached: false, fps: 60 };
+      return { tier, name: 'Full', maxW: isTV ? 1280 : 1920, maxH: isTV ? 720 : 1080, cached: false, sprites: false, fps: 60 };
     case 1:
-      return { tier, name: 'Smooth', maxW: 1280, maxH: 720, cached: true, fps: 60 };
+      return { tier, name: 'Smooth', maxW: 1280, maxH: 720, cached: true, sprites: true, fps: 60 };
     default:
-      return { tier: 2, name: 'Smoothest', maxW: 960, maxH: 540, cached: true, fps: 30 };
+      return { tier: 2, name: 'Smoothest', maxW: 960, maxH: 540, cached: true, sprites: true, fps: 30 };
   }
 }
 
@@ -63,10 +76,13 @@ export const SETTLE_MS = 1500;
 
 /** Lowest tier reached per (pref, TV, players) this session: where the next song starts. */
 const floors = new Map<string, Tier>();
+/** Sprites or paths, once measured per (pref, TV, players). */
+const methods = new Map<string, boolean>();
 
 /** Test hook: forget what earlier songs learned. */
 export function resetGraphicsMemory(): void {
   floors.clear();
+  methods.clear();
 }
 
 export class TierGovernor {
@@ -77,6 +93,10 @@ export class TierGovernor {
   private winFrames = 0;
   private winSum = 0;
   private settleUntil = 0;
+  /** Sprites (true) or paths in tiers 1 / 2; see the note at the top. */
+  private spritesOn = true;
+  /** Mean frame time of the other method while the current one is on trial (NaN = no trial). */
+  private trialOther = NaN;
   /** Why the tier last changed (diagnostics). */
   reason = '';
 
@@ -92,7 +112,9 @@ export class TierGovernor {
   }
 
   spec(): TierSpec {
-    return tierSpec(this._tier, this.isTV);
+    const s = tierSpec(this._tier, this.isTV);
+    if (s.sprites && !this.spritesOn) s.sprites = false;
+    return s;
   }
 
   /** The tier a song starts at for this setting. */
@@ -124,8 +146,13 @@ export class TierGovernor {
       this._tier = t;
       this.reason = pref === 'full' ? 'setting: Full' : pref === 'smooth' ? 'setting: Smooth' : this.isTV ? 'TV default' : 'default';
       if (floors.has(this.memKey(pref)) && t === floors.get(this.memKey(pref)) && t > 0) this.reason = 'learned on an earlier song';
+      const m = methods.get(this.memKey(pref));
+      const sp = this.pinned !== null || m === undefined ? true : m;
+      const methodChanged = sp !== this.spritesOn;
+      this.spritesOn = sp;
+      this.trialOther = NaN;
       this.restart(now);
-      return changed;
+      return changed || methodChanged;
     }
     if (!active || !(intervalMs > 0) || intervalMs > 500) {
       // Paused, hidden, or a long gap (tab switch): measure afresh afterwards.
@@ -142,10 +169,36 @@ export class TierGovernor {
     this.winStart = now;
     this.winFrames = 0;
     this.winSum = 0;
-    if (mean <= budget || this.pref === 'full' || this._tier >= 2 || this.pinned !== null) return false;
+    if (this.pref === 'full' || this.pinned !== null) return false;
+    const mk = this.memKey(this.pref);
+    if (!Number.isNaN(this.trialOther)) {
+      // The other method's window is over: keep the faster one.
+      const other = this.trialOther;
+      this.trialOther = NaN;
+      if (mean > other) this.spritesOn = !this.spritesOn;
+      methods.set(mk, this.spritesOn);
+      const best = Math.min(mean, other);
+      this.reason = `${this.spritesOn ? 'pre-drawn pieces' : 'paths'} faster here (${Math.round(Math.min(mean, other))} vs ${Math.round(Math.max(mean, other))} ms)`;
+      if (best > budget && this._tier < 2) {
+        this._tier = (this._tier + 1) as Tier;
+        this.reason += `; stepped down: ${Math.round(best)} ms frames`;
+        if ((floors.get(mk) ?? 0) < this._tier) floors.set(mk, this._tier);
+      }
+      this.restart(now);
+      return true;
+    }
+    if (mean <= budget) return false;
+    if (this._tier >= 1 && !methods.has(mk)) {
+      // First miss in a lighter tier: try the other drawing method for a window.
+      this.trialOther = mean;
+      this.spritesOn = !this.spritesOn;
+      this.reason = `trying ${this.spritesOn ? 'pre-drawn pieces' : 'paths'}: ${Math.round(mean)} ms frames`;
+      this.restart(now);
+      return true;
+    }
+    if (this._tier >= 2) return false;
     this._tier = (this._tier + 1) as Tier;
     this.reason = `stepped down: ${Math.round(mean)} ms frames`;
-    const mk = this.memKey(this.pref);
     if ((floors.get(mk) ?? 0) < this._tier) floors.set(mk, this._tier);
     this.restart(now);
     return true;
