@@ -29,6 +29,7 @@ import org.json.JSONObject
  * from the phone page's "Find a song").
  * Version 3 added: setAudioFormats() and PreparedAudio.primingSec (beat-map alignment; WebM/Opus
  * downloaded by default, see [AudioPick] / [Mp4Priming]).
+ * Version 4 added: getGraphicsInfo() and setWebViewLayerType() (the page's graphics test).
  */
 class DanceBridge(private val app: DanceApp, private val host: Host) {
     interface Host {
@@ -37,10 +38,14 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
         fun setKeepScreenOn(on: Boolean)
         fun exitApp()
         fun webViewVersion(): String?
+        /** v4, graphics test: display mode, the WebView view's acceleration and layer type (JSON). */
+        fun graphicsInfo(): JSONObject
+        /** v4, graphics test: set the WebView's View layer type; returns the type now set or an error text. */
+        fun setWebViewLayerType(type: String): String
     }
 
     companion object {
-        const val VERSION = 3
+        const val VERSION = 4
         private const val TAG = "DanceDance"
         private val ID_RE = Regex("^[A-Za-z0-9_-]{1,40}$")
         private val VIDEO_RE = Regex("^[A-Za-z0-9_-]{11}$")
@@ -136,6 +141,14 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
 
     @JavascriptInterface
     fun setKeepScreenOn(on: Boolean) = host.setKeepScreenOn(on)
+
+    /** Graphics test: {android, device, viewHardwareAccelerated, windowHardwareAccelerated, layerType, viewPx, displayMode, modes, density}. */
+    @JavascriptInterface
+    fun getGraphicsInfo(): String = host.graphicsInfo().toString()
+
+    /** Graphics test: "none" | "hardware" | "software". The page puts it back to "none" afterwards. */
+    @JavascriptInterface
+    fun setWebViewLayerType(type: String?): String = host.setWebViewLayerType(type ?: "")
 
     /** Called by the page when BACK is pressed on its home screen. */
     @JavascriptInterface

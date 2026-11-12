@@ -24,6 +24,7 @@
  * v2: songs added from the phone page ("Find a song"): getAddedSongs(),
  * removeAddedSong(), and the 'addedSongsChanged' event.
  * v3: setAudioFormats() and PreparedAudio.primingSec (beat alignment, below).
+ * v4: getGraphicsInfo() and setWebViewLayerType() for the graphics test.
  *
  * Beat alignment. Cloud maps are made from YouTube's WebM/Opus stream, so the
  * shell downloads that by default: WebView decodes and plays it sample-aligned
@@ -46,7 +47,7 @@ import type { DeviceAnalysisNote, Platform, PlaylistEntry } from './platform';
 // ---------------------------------------------------------------------------
 // Contract types
 
-export const BRIDGE_VERSION = 3;
+export const BRIDGE_VERSION = 4;
 
 /** The raw object the shell injects as `window.DanceBridge`. */
 export interface DanceBridgeNative {
@@ -70,6 +71,10 @@ export interface DanceBridgeNative {
   stopLinkServer(): void;
   /** v3: download format order, e.g. "webm,m4a"; returns the order in effect. */
   setAudioFormats?(csv: string): string;
+  /** v4: JSON NativeGraphicsInfo (graphics test). */
+  getGraphicsInfo?(): string;
+  /** v4: the WebView's View layer type ('none' | 'hardware' | 'software'); returns the type now set, or an error text. */
+  setWebViewLayerType?(type: string): string;
   // async: answer delivered later by request id
   /** value: BridgePlaylistEntry[] in playlist order (all pages). */
   getPlaylist(requestId: string, listIdOrUrl: string): void;
@@ -112,6 +117,24 @@ export interface NativeDiagnostics {
   hasGithubToken: boolean;
   tokenStorage: 'keystore' | 'plain' | 'none';
   lastCloudTrigger: (CloudTriggerResult & { at: number }) | null;
+}
+
+/** v4: what the graphics test shows about the device's display and the WebView's view. */
+export interface NativeGraphicsInfo {
+  /** e.g. "12 (API 31)". */
+  android: string;
+  /** Manufacturer and model. */
+  device: string;
+  viewHardwareAccelerated: boolean;
+  windowHardwareAccelerated: boolean;
+  layerType: string;
+  /** The WebView's size in device pixels, e.g. "1920x1080". */
+  viewPx: string;
+  /** Current display mode, e.g. "3840x2160@60Hz". */
+  displayMode: string;
+  /** Supported modes, comma-separated (shortened). */
+  modes: string;
+  density: number;
 }
 
 /** `title` is YouTube's raw title and `artist` the uploader; cleaned up on this side. */

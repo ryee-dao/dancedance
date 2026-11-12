@@ -40,6 +40,7 @@ const CSS = `
 .tvdiag { width:min(64rem,100%); padding:1.4rem 2.2rem; border:2px solid var(--line); border-radius:1.4rem; background:var(--bg-2); }
 .tvdiag-head { display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:.8rem; }
 .tvdiag-head .panel-title { margin:0; font-size:1.6rem; }
+.tvdiag-actions { display:flex; gap:.8rem; }
 .tvdiag dl { display:grid; grid-template-columns:max-content 1fr; gap:.1rem 1.4rem; margin:0 0 .8rem; font-size:.92rem; }
 .tvdiag dt { color:var(--muted); }
 .tvdiag dd { margin:0; font-weight:700; font-variant-numeric:tabular-nums; }
@@ -59,7 +60,7 @@ function injectCss(): void {
  * `opts.view: 'diag'` opens straight on the diagnostics (from Options); then
  * Back calls `opts.back` and no link server is started.
  */
-export function createTvLink(nav: Nav, opts: { view?: 'link' | 'diag'; back?: () => void } = {}): Screen {
+export function createTvLink(nav: Nav, opts: { view?: 'link' | 'diag'; back?: () => void; focusAction?: string } = {}): Screen {
   injectCss();
   const b = tvBridge();
   const linked = library.link();
@@ -251,7 +252,13 @@ export function createTvLink(nav: Nav, opts: { view?: 'link' | 'diag'; back?: ()
         'div',
         { class: 'tvdiag-head' },
         h('h1', { class: 'panel-title' }, 'Diagnostics'),
-        h('button', { class: 'btn btn-primary', type: 'button', 'data-action': 'diag-back' }, 'Back'),
+        h(
+          'div',
+          { class: 'tvdiag-actions' },
+          !!nav.graphicsTest && h('button', { class: 'btn', type: 'button', 'data-action': 'gfxtest' }, 'Run graphics test'),
+          !!nav.graphicsTest && hasGraphicsResults() && h('button', { class: 'btn', type: 'button', 'data-action': 'gfxlast' }, 'Last test results'),
+          h('button', { class: 'btn btn-primary', type: 'button', 'data-action': 'diag-back' }, 'Back'),
+        ),
       ),
       h(
         'dl',
@@ -264,7 +271,8 @@ export function createTvLink(nav: Nav, opts: { view?: 'link' | 'diag'; back?: ()
         'Frame time: under 20 ms (50+ fps) is smooth; above 33 ms (under 30 fps) the coach will look choppy. Analysis: under 15 s is the target.',
       ),
     );
-    if (focusedAction === 'diag-back') diagPanel.querySelector<HTMLElement>('[data-action="diag-back"]')?.focus();
+    // The panel was rebuilt: keep the remote's focus on the same button.
+    if (focusedAction) diagPanel.querySelector<HTMLElement>(`[data-action="${focusedAction}"]`)?.focus();
   }
 
   // --- events -----------------------------------------------------------------------
@@ -291,6 +299,12 @@ export function createTvLink(nav: Nav, opts: { view?: 'link' | 'diag'; back?: ()
       case 'diag-back':
         showLink();
         break;
+      case 'gfxtest':
+        nav.graphicsTest?.({ run: true });
+        break;
+      case 'gfxlast':
+        nav.graphicsTest?.();
+        break;
     }
   });
 
@@ -299,7 +313,8 @@ export function createTvLink(nav: Nav, opts: { view?: 'link' | 'diag'; back?: ()
     onBack: () => (view === 'diag' ? showLink() : nav.home({ focusAction: 'link' })),
     defaultFocus: () =>
       view === 'diag'
-        ? diagPanel.querySelector<HTMLElement>('[data-action="diag-back"]')
+        ? (opts.focusAction && diagPanel.querySelector<HTMLElement>(`[data-action="${opts.focusAction}"]`)) ||
+          diagPanel.querySelector<HTMLElement>('[data-action="diag-back"]')
         : linkPanel.querySelector<HTMLElement>('[data-action="home"]'),
   };
 
@@ -318,6 +333,15 @@ export function createTvLink(nav: Nav, opts: { view?: 'link' | 'diag'; back?: ()
       b?.native.stopLinkServer();
     },
   };
+}
+
+/** A graphics test has been run on this device (its results are stored). */
+function hasGraphicsResults(): boolean {
+  try {
+    return !!localStorage.getItem('dd.gfxtest.v1');
+  } catch {
+    return false;
+  }
 }
 
 function describeCloud(c: NonNullable<typeof tvState.cloud>): string {

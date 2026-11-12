@@ -66,6 +66,8 @@ export interface Nav {
   addSong(): void;
   /** Options: coach look, audio offset, beat sync, links. */
   options(opts?: { focusAction?: string }): void;
-  /** Android TV: the diagnostics readout (opened from Options; Back returns there). */
-  diagnostics?(): void;
+  /** Android TV: the diagnostics readout (opened from Options; Back returns there). `focusAction`: button to focus. */
+  diagnostics?(opts?: { focusAction?: string }): void;
+  /** The graphics test (from Diagnostics; Back returns there). `run`: start a run straight away. */
+  graphicsTest?(opts?: { run?: boolean }): void;
 }

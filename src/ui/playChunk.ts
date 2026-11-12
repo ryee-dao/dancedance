@@ -11,3 +11,5 @@ export { createPlay, setStageRenderer } from './play';
 export { createCoachStage } from './coachStage';
 export { createOptions } from './options';
 export { warmGenerator } from '../core/choreo/generator';
+// The graphics test's coach rows (graphicsTest.ts).
+export { benchStage, benchFigure, warmAll } from './gfxBenchCoach';

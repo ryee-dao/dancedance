@@ -55,8 +55,9 @@ export class GraphicsMeter {
   private publishedAt = 0;
   private readonly out = { changed: false, draw: true };
 
-  constructor(isTV: boolean, players: 1 | 2) {
-    this.gov = new TierGovernor(isTV, players, urlTier);
+  /** `pinned`: always this tier (the graphics test); else `?gfxtier=`, else the governor decides. */
+  constructor(isTV: boolean, players: 1 | 2, pinned: Tier | null = null) {
+    this.gov = new TierGovernor(isTV, players, pinned ?? urlTier);
   }
 
   spec(): TierSpec {

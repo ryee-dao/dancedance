@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.util.Log
+import android.view.Display
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
@@ -25,6 +26,9 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.webkit.WebViewAssetLoader
+import org.json.JSONObject
+import java.util.concurrent.FutureTask
+import java.util.concurrent.TimeUnit
 
 /**
  * The whole app: one full-screen WebView running the bundled web build from
@@ -182,6 +186,58 @@ class MainActivity : Activity(), DanceBridge.Host {
     }
 
     override fun webViewVersion(): String? = webViewVersionOf(this)
+
+    override fun graphicsInfo(): JSONObject = onUi {
+        val wv = webView
+        val d = currentDisplay()
+        val mode = d?.mode
+        JSONObject()
+            .put("android", "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
+            .put("device", "${Build.MANUFACTURER} ${Build.MODEL}")
+            .put("viewHardwareAccelerated", wv?.isHardwareAccelerated ?: false)
+            .put("windowHardwareAccelerated", (window.attributes.flags and WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED) != 0)
+            .put("layerType", layerName(wv?.layerType ?: View.LAYER_TYPE_NONE))
+            .put("viewPx", if (wv != null) "${wv.width}x${wv.height}" else "no view")
+            .put("displayMode", if (mode != null) "${mode.physicalWidth}x${mode.physicalHeight}@${"%.0f".format(mode.refreshRate)}Hz" else "unknown")
+            .put(
+                "modes",
+                d?.supportedModes?.joinToString(",") { "${it.physicalWidth}x${it.physicalHeight}@${"%.0f".format(it.refreshRate)}" }?.take(120) ?: "unknown",
+            )
+            .put("density", resources.displayMetrics.densityDpi)
+    } ?: JSONObject().put("android", "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})").put("device", "${Build.MANUFACTURER} ${Build.MODEL}")
+
+    override fun setWebViewLayerType(type: String): String {
+        val t = when (type) {
+            "none" -> View.LAYER_TYPE_NONE
+            "hardware" -> View.LAYER_TYPE_HARDWARE
+            "software" -> View.LAYER_TYPE_SOFTWARE
+            else -> return "unknown layer type '$type'"
+        }
+        return onUi {
+            val wv = webView ?: return@onUi "no WebView"
+            wv.setLayerType(t, null)
+            Log.i(TAG, "Graphics test: WebView layer type ${layerName(wv.layerType)}")
+            layerName(wv.layerType)
+        } ?: "timed out"
+    }
+
+    private fun layerName(t: Int) = when (t) {
+        View.LAYER_TYPE_HARDWARE -> "hardware"
+        View.LAYER_TYPE_SOFTWARE -> "software"
+        else -> "none"
+    }
+
+    @Suppress("DEPRECATION")
+    private fun currentDisplay(): Display? =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) display else windowManager.defaultDisplay
+
+    /** Run on the UI thread and wait (bridge calls arrive on a WebView background thread); null on timeout. */
+    private fun <T> onUi(f: () -> T): T? {
+        if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) return f()
+        val task = FutureTask(f)
+        runOnUiThread(task)
+        return runCatching { task.get(1500, TimeUnit.MILLISECONDS) }.getOrNull()
+    }
 
     // --- lifecycle -------------------------------------------------------------------------
 

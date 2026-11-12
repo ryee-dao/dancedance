@@ -129,7 +129,32 @@ export function startApp(root: HTMLElement): void {
       else show(createAddSong(nav));
     },
     options: (opts) => showLazy((m) => m.createOptions(nav, opts)),
-    ...(tv ? { diagnostics: () => show(createTvLink(nav, { view: 'diag', back: () => nav.options({ focusAction: 'diag' }) })) } : {}),
+    ...(tv
+      ? {
+          diagnostics: (o?: { focusAction?: string }) =>
+            show(createTvLink(nav, { view: 'diag', focusAction: o?.focusAction, back: () => nav.options({ focusAction: 'diag' }) })),
+        }
+      : {}),
+    // Graphics test (its own small chunk; the coach rows load the play chunk through loadChunk).
+    graphicsTest: (o) => {
+      const no = ++navNo;
+      import('./graphicsTest').then(
+        (m) => {
+          if (no !== navNo) return;
+          show(
+            m.createGraphicsTest({
+              loadChunk,
+              isTV: getPlatform().isTV,
+              autostart: !!o?.run,
+              back: () => (nav.diagnostics ? nav.diagnostics({ focusAction: 'gfxtest' }) : nav.options()),
+            }),
+          );
+        },
+        () => {
+          if (no === navNo) toast("Couldn't load the graphics test.", 5000);
+        },
+      );
+    },
   };
 
   fileInput.addEventListener('change', () => {
@@ -149,7 +174,10 @@ export function startApp(root: HTMLElement): void {
     fill.start();
   }
   // TV, first run without a playlist: offer phone linking straight away.
-  if (tv && shouldOfferTvLink()) nav.link();
+  // `?gfxtest=1` opens the graphics test (`?gfxtest=run` starts it).
+  const gfxTest = new URLSearchParams(location.search).get('gfxtest');
+  if (gfxTest) nav.graphicsTest?.({ run: gfxTest === 'run' });
+  else if (tv && shouldOfferTvLink()) nav.link();
   else nav.home();
 
   // Each time the remote has been left alone for a moment, one step: build

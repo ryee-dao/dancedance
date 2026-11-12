@@ -160,7 +160,7 @@ class DuoStageImpl implements CoachStage {
   private readonly urlStyle = urlCoachStyle();
 
   constructor(private deps: CoachStageDeps) {
-    this.meter = new GraphicsMeter(deps.isTV, 2);
+    this.meter = new GraphicsMeter(deps.isTV, 2, deps.pinTier ?? null);
   }
 
   private style(): CoachStyle {

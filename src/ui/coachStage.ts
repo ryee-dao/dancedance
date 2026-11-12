@@ -31,7 +31,7 @@ import { blendPose } from '../core/coach/poses';
 import { StageRenderer2D, type SceneInfo, type StripInfo } from '../core/coach/renderer';
 import { CH, createPose, createSkeleton, solveSkeleton } from '../core/coach/skeleton';
 import { GraphicsMeter, graphicsPrefOf } from './graphics';
-import type { GraphicsPref, GraphicsStats } from '../core/coach/quality';
+import type { GraphicsPref, GraphicsStats, Tier } from '../core/coach/quality';
 import { DEFAULT_COACH_BUILD, DEFAULT_COACH_STYLE, parseCoachBuild, parseCoachStyle, type CoachBuild, type CoachStyle } from '../core/coach/styles';
 import type { FrameInfo, StageRenderer } from './play';
 import { createPlayersStage, hudTopFraction, urlPlayers } from './duoStage'; // two-player mode (duo agent)
@@ -58,6 +58,8 @@ export interface CoachStageDeps {
   getPlayers?: () => 1 | 2;
   /** Graphics setting (quality.ts), read every frame; default 'auto'. `?gfx=auto|smooth|full` wins. */
   getGraphics?: () => GraphicsPref;
+  /** Graphics test only: always draw at this tier (no stepping down). */
+  pinTier?: Tier;
 }
 
 export type RoutineMode = 'same' | 'fresh';
@@ -125,7 +127,7 @@ class CoachStageImpl implements CoachStage {
   private routine: RoutineInfo | null = null;
 
   constructor(private deps: CoachStageDeps) {
-    this.meter = new GraphicsMeter(deps.isTV, 1);
+    this.meter = new GraphicsMeter(deps.isTV, 1, deps.pinTier ?? null);
   }
 
   private style(): CoachStyle {
