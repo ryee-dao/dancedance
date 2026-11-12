@@ -27,6 +27,15 @@ val githubRepo: String? = setting("dancedance.githubRepo", "DANCEDANCE_GITHUB_RE
     }
 }
 
+// Debug builds only: check this URL instead of GitHub's "latest release" (a local server, to try
+// the updater), e.g. -Pdancedance.updateReleaseUrl=http://127.0.0.1:8765/latest.json. The APK it
+// lists must come from the same origin. Release builds always ask GitHub for githubRepo.
+val updateReleaseUrl: String? = setting("dancedance.updateReleaseUrl", "DANCEDANCE_UPDATE_RELEASE_URL")?.also {
+    require(Regex("^(https://[A-Za-z0-9.-]+|http://(127\\.0\\.0\\.1|localhost|10\\.0\\.2\\.2))(:[0-9]{1,5})?/[A-Za-z0-9._~/-]*$").matches(it)) {
+        "dancedance.updateReleaseUrl must be an https URL or http on localhost, got: $it"
+    }
+}
+
 // Audio cache cap (MB). 300 by default; a small value is handy for testing eviction.
 val audioCacheMb = setting("dancedance.audioCacheMb", "DANCEDANCE_AUDIO_CACHE_MB")?.toInt() ?: 300
 
@@ -53,6 +62,7 @@ android {
         buildConfigField("String", "PAGES_BASE_URL", javaString(pagesBaseUrl))
         buildConfigField("String", "GITHUB_REPO", javaString(githubRepo))
         buildConfigField("int", "AUDIO_CACHE_MB", audioCacheMb.toString())
+        buildConfigField("String", "UPDATE_RELEASE_URL", "null")
     }
 
     signingConfigs {
@@ -67,6 +77,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "UPDATE_RELEASE_URL", javaString(updateReleaseUrl))
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -154,4 +167,6 @@ dependencies {
     implementation(libs.nanohttpd)
     implementation(libs.zxing.core)
     testImplementation(libs.junit)
+    // The real org.json for JVM unit tests (android.jar only has stubs): release-JSON parsing.
+    testImplementation(libs.json)
 }

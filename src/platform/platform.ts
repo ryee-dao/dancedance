@@ -8,6 +8,7 @@
  */
 
 import type { AddedSong } from '../beat/cloud';
+import type { AppUpdates } from './appUpdate';
 import type { MediaPlayer, PlayItem } from '../player/types';
 import type { LocalHelper } from './helper';
 
@@ -71,6 +72,8 @@ export interface Platform {
   onLocalAddedSongsChange?(fn: () => void): () => void;
   /** Really remove a song added on this device (TV: through the bridge); true if it was there. */
   removeLocalAddedSong?(videoId: string): boolean | Promise<boolean>;
+  /** Android TV (shell bridge v5+): check for, download and install a new app version. */
+  readonly appUpdates?: AppUpdates;
 }
 
 export interface DeviceAnalysisNote {

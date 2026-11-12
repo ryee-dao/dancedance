@@ -75,6 +75,7 @@ The **Options** button on the home screen has:
 | **Songs without a beat map** | Website only. **Ask first** (explain, then ask), **Microphone** (listen straight away) or **Off** (no live listening). See [How the beat is found](#how-the-beat-is-found). |
 | **Helper app** | Website on a computer. Shows whether the [helper app](#helper-app-for-computers) is running, with **Get the helper** and **Check again**. |
 | **Songs** | **Link playlist** or **Change playlist**. On the website, also how songs are added (on this site: "Songs are added through your relay"). |
+| **App update** | TV app only. The installed version and **Up to date**, **Update available: 0.6.0** with an **Update** button, or **Couldn't check (reason)** with **Retry**. See [Updating the TV app](#updating-the-tv-app). |
 
 Everything applies as soon as you choose it.
 
@@ -215,10 +216,17 @@ If the frame time is consistently over 33 ms even at Smoothest, note the numbers
 
 ### Updating the TV app
 
-1. The owner makes a new release (see [TV releases](#tv-app-releases)).
-2. On the projector, open **Downloader**, enter the same address again (it's in Downloader's history) and install.
+Once the owner has made a new release (see [TV releases](#tv-app-releases)), the app finds it by itself: a small **Update available: 0.6.0** button appears next to **Options** on the song list a few seconds after the app opens. It never takes the focus or interrupts a song; press Right from **Options** to reach it.
 
-With the signing key set up, the update installs over the old version and keeps your playlist and settings. If the projector says **App not installed**, the old and new versions have different signing keys (a release was built without the signing secrets). Uninstall DanceDance (**Settings → Apps → DanceDance → Uninstall**), install again and re-link your playlist.
+1. Choose **Update available** (or **Options → App update**).
+2. Choose **Update**. The download takes a minute; the bar shows how far it is. **Back** or **Cancel** stops it.
+3. The app checks the download: it must be DanceDance, newer than what's installed, and signed with the same key. Otherwise it refuses and says why.
+4. **The first time only**, Android asks whether DanceDance may install apps. The app opens that settings screen for you: turn on **DanceDance** (**Allow from this source**), then press **Back**. The update carries on by itself.
+5. Android shows **Do you want to update this app?**: choose **Update** (or **Install**). DanceDance closes while it updates. If it doesn't open again by itself, start it from the **Apps** row. It says **Updated to 0.6.0** once.
+
+Your playlist and settings are kept. The app asks GitHub at most once each time it opens (without any token); **Check again** or **Retry** in Options asks again.
+
+**Still needs Downloader:** the very first install, and any update over a build signed with a different key (installs from before the signing key was set up used a temporary key). Then **Options → App update** says this one update needs a manual reinstall and shows the address: uninstall DanceDance (**Settings → Apps → DanceDance → Uninstall**), install it with Downloader as in [Install on the Epson projector](#install-on-the-epson-projector) (the address is in Downloader's history) and re-link your playlist. The same applies if Downloader ever says **App not installed**.
 
 ### TV troubleshooting
 
@@ -314,7 +322,9 @@ To make a newer build:
    git tag v0.2.0 && git push origin v0.2.0
    ```
    Or use **Actions → Android TV app → Run workflow**, which publishes a release named `tv-build-<run number>`.
-2. After a few minutes `dancedance.apk` is on the **Releases** page. Then update the TV.
+2. After a few minutes `dancedance.apk` is on the **Releases** page. The TV shows **Update available** the next time the app opens (see [Updating the TV app](#updating-the-tv-app)).
+
+The app compares versions through the release: the tag gives the version name (`v0.6.0` → 0.6.0) and a hidden `dancedance-version-code` line the workflow writes into the release notes gives the build number, which decides. Don't edit that line out. Drafts and pre-releases are ignored.
 
 The build bakes in the Pages address (where beat maps live) and the repository name (for the TV's trigger), so there's nothing to configure in the app.
 
@@ -577,7 +587,9 @@ cd android
 ./gradlew assembleDebug            # app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Builds made this way don't know the Pages address, so they have no cloud beat maps and no TV trigger; everything else works, including on-device analysis. To include them, add `-Pdancedance.pagesBaseUrl=https://ryee-dao.github.io/dancedance/ -Pdancedance.githubRepo=ryee-dao/dancedance` (or your fork's).
+Builds made this way don't know the Pages address, so they have no cloud beat maps, no TV trigger and no update check; everything else works, including on-device analysis. To include them, add `-Pdancedance.pagesBaseUrl=https://ryee-dao.github.io/dancedance/ -Pdancedance.githubRepo=ryee-dao/dancedance` (or your fork's).
+
+To try the updater locally, a debug build can ask a local server instead of GitHub: build with `-Pdancedance.versionCode=2 -Pdancedance.updateReleaseUrl=http://127.0.0.1:8765/latest.json`, serve a `latest.json` shaped like GitHub's release answer (`tag_name`, `body` with `<!-- dancedance-version-code: 3 -->`, `assets[0].browser_download_url` = `http://127.0.0.1:8765/…/dancedance.apk`) next to a debug APK built with `-Pdancedance.versionCode=3`, and run `adb reverse tcp:8765 tcp:8765`. Release builds ignore this setting.
 
 ### Setting up a fork
 

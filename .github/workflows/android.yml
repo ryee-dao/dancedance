@@ -15,7 +15,12 @@
 # every update then has to be installed after uninstalling the old app.
 #
 # The GitHub Pages URL (cloud beat maps) and this repo's owner/name (TV ->
-# cloud trigger) are baked into the app from github.repository.
+# cloud trigger, and the app's Options -> App update check) are baked into the
+# app from github.repository.
+#
+# The in-app updater reads the latest release through the GitHub API: the tag
+# gives the version name, and the hidden `dancedance-version-code` line in the
+# release notes gives the versionCode (keep both as they are).
 name: Android TV app
 
 on:
@@ -111,6 +116,7 @@ jobs:
           ./gradlew --no-daemon --stacktrace assembleRelease
           cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/dancedance.apk"
           echo "DD_VERSION=$version" >> "$GITHUB_ENV"
+          echo "DD_VERSION_CODE=$DANCEDANCE_VERSION_CODE" >> "$GITHUB_ENV"
 
       - name: Publish the release
         env:
@@ -125,10 +131,15 @@ jobs:
           apk="$RUNNER_TEMP/dancedance.apk"
           notes="DanceDance for Android TV $DD_VERSION.
 
-          Install or update on the TV with the Downloader app using:
-          https://github.com/$REPO/releases/latest/download/dancedance.apk"
+          Update from the app: Options -> App update -> Update.
+          First install (or after a differently-signed build), with the Downloader app:
+          https://github.com/$REPO/releases/latest/download/dancedance.apk
+
+          <!-- dancedance-version-code: $DD_VERSION_CODE -->"
           if gh release view "$tag" --repo "$REPO" > /dev/null 2>&1; then
             gh release upload "$tag" "$apk" --repo "$REPO" --clobber
+            # A rebuild of the same tag has a new versionCode: keep the notes in step.
+            gh release edit "$tag" --repo "$REPO" --notes "$notes"
           else
             gh release create "$tag" "$apk" --repo "$REPO" --target "$SHA" \
               --title "DanceDance TV $DD_VERSION" --notes "$notes" --latest

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only: allow plain http to this machine / the emulator host, so the updater can be
+     tried against a local server (-Pdancedance.updateReleaseUrl, see app/build.gradle.kts). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:networkSecurityConfig="@xml/network_security_config" />
+</manifest>

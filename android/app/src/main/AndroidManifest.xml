@@ -3,6 +3,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Options -> App update: hand a downloaded, verified release APK to the system installer. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <!-- A TV app that also installs on non-TV devices; no touchscreen needed. -->
     <uses-feature android:name="android.software.leanback" android:required="false" />
@@ -33,5 +35,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- App update: the PackageInstaller session's result (only our own PendingIntent). -->
+        <receiver
+            android:name=".UpdateInstallReceiver"
+            android:exported="false" />
+
+        <!-- App update: reopen the app after it replaced itself (where Android allows it). -->
+        <receiver
+            android:name=".PackageReplacedReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

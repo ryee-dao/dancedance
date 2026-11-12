@@ -9,7 +9,7 @@
  * then the cloud (GitHub Pages), then on-device analysis of that file.
  *
  * ===========================================================================
- * Bridge contract, version 2. Mirrored in
+ * Bridge contract, version 5. Mirrored in
  * android/app/src/main/java/app/dancedance/tv/DanceBridge.kt; keep in sync.
  * ===========================================================================
  *
@@ -25,6 +25,10 @@
  * removeAddedSong(), and the 'addedSongsChanged' event.
  * v3: setAudioFormats() and PreparedAudio.primingSec (beat alignment, below).
  * v4: getGraphicsInfo() and setWebViewLayerType() for the graphics test.
+ * v5: the in-app updater (Options -> App update): getUpdateState(),
+ * checkForUpdate(), startUpdate(), cancelUpdate(), openInstallSettings(),
+ * takeUpdatedNotice() and the 'updateState' event. Feature-detected, so this
+ * build still runs in an older installed shell (which then shows no updater).
  *
  * Beat alignment. Cloud maps are made from YouTube's WebM/Opus stream, so the
  * shell downloads that by default: WebView decodes and plays it sample-aligned
@@ -36,6 +40,7 @@
  */
 
 import type { AddedSong } from '../beat/cloud';
+import { parseUpdateState, type AppUpdates, type UpdateState } from './appUpdate';
 import { fetchVideoInfo, limitConcurrency, cleanTitle } from '../player/playlistReader';
 import { ANALYSIS_RATE } from '../beat/analyzeAudio';
 import { SmoothClock } from '../player/clock';
@@ -47,7 +52,7 @@ import type { DeviceAnalysisNote, Platform, PlaylistEntry } from './platform';
 // ---------------------------------------------------------------------------
 // Contract types
 
-export const BRIDGE_VERSION = 4;
+export const BRIDGE_VERSION = 5;
 
 /** The raw object the shell injects as `window.DanceBridge`. */
 export interface DanceBridgeNative {
@@ -75,6 +80,18 @@ export interface DanceBridgeNative {
   getGraphicsInfo?(): string;
   /** v4: the WebView's View layer type ('none' | 'hardware' | 'software'); returns the type now set, or an error text. */
   setWebViewLayerType?(type: string): string;
+  /** v5: JSON UpdateState (see appUpdate.ts). */
+  getUpdateState?(): string;
+  /** v5: ask GitHub for a newer release; without `force` only once per app start. Emits 'updateState'. */
+  checkForUpdate?(force: boolean): void;
+  /** v5: download, verify and install the available update. Emits 'updateState'. */
+  startUpdate?(): void;
+  /** v5: stop the download / pending install. */
+  cancelUpdate?(): void;
+  /** v5: open Android's "install unknown apps" switch for DanceDance. */
+  openInstallSettings?(): void;
+  /** v5: the version name once after an update ("Updated to X"), else "". */
+  takeUpdatedNotice?(): string;
   // async: answer delivered later by request id
   /** value: BridgePlaylistEntry[] in playlist order (all pages). */
   getPlaylist(requestId: string, listIdOrUrl: string): void;
@@ -193,7 +210,8 @@ export type BridgeEvent =
   | { name: 'linkVisited'; data: Record<string, never> }
   | { name: 'linkSubmitted'; data: { input: string; listId: string; songCount: number; token: 'saved' | 'removed' | 'unchanged' } }
   | { name: 'lifecycle'; data: { state: 'pause' | 'resume' } }
-  | { name: 'addedSongsChanged'; data: { songs: TvAddedSong[]; added: TvAddedSong | null; removedVideoId: string | null } };
+  | { name: 'addedSongsChanged'; data: { songs: TvAddedSong[]; added: TvAddedSong | null; removedVideoId: string | null } }
+  | { name: 'updateState'; data: unknown };
 
 export type BridgeErrorCode =
   | 'network'
@@ -356,6 +374,7 @@ export function createAndroidTvPlatform(): Platform {
   installLifecycle(b);
   installAddedSongs(b);
   installFrameSampler();
+  const appUpdates = createAppUpdates(b);
 
   return {
     id: 'androidtv',
@@ -364,6 +383,7 @@ export function createAndroidTvPlatform(): Platform {
     // Local builds have no Pages URL: the maps bundled in the APK still work.
     beatmapBase: config?.pagesBaseUrl ?? './',
     liveSync: false,
+    ...(appUpdates ? { appUpdates } : {}),
     async getPlaylist(listId) {
       let raw: BridgePlaylistEntry[];
       try {
@@ -427,6 +447,60 @@ export function createAndroidTvPlatform(): Platform {
       }
       return removed;
     },
+  };
+}
+
+// --- app update (bridge v5) ----------------------------------------------------
+
+/** The shell's updater, or null in shells older than bridge v5. */
+function createAppUpdates(b: BridgeClient): AppUpdates | null {
+  const n = b.native;
+  if (
+    typeof n.getUpdateState !== 'function' ||
+    typeof n.checkForUpdate !== 'function' ||
+    typeof n.startUpdate !== 'function' ||
+    typeof n.cancelUpdate !== 'function'
+  ) {
+    return null;
+  }
+  const read = (): UpdateState | null => {
+    try {
+      return parseUpdateState(n.getUpdateState?.());
+    } catch {
+      return null;
+    }
+  };
+  let state = read();
+  if (!state) return null;
+  const listeners = new Set<(s: UpdateState) => void>();
+  b.on('updateState', (data) => {
+    const next = parseUpdateState(data);
+    if (!next) return;
+    state = next;
+    for (const fn of listeners) fn(next);
+  });
+  const safe = (f: () => void) => {
+    try {
+      f();
+    } catch (err) {
+      console.warn('[dd:tv] update call failed', err);
+    }
+  };
+  // "Updated to X", once, after the shell replaced itself.
+  safe(() => {
+    const v = n.takeUpdatedNotice?.();
+    if (typeof v === 'string' && v) setTimeout(() => toast(`Updated to ${v.slice(0, 40)}`, 6000), 1200);
+  });
+  return {
+    state: () => state!,
+    onChange(fn) {
+      listeners.add(fn);
+      return () => listeners.delete(fn);
+    },
+    check: (force = false) => safe(() => n.checkForUpdate?.(force)),
+    start: () => safe(() => n.startUpdate?.()),
+    cancel: () => safe(() => n.cancelUpdate?.()),
+    openSettings: () => safe(() => n.openInstallSettings?.()),
   };
 }
 

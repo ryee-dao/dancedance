@@ -23,13 +23,16 @@ import org.json.JSONObject
  * so slow calls take a request id, return immediately, and later deliver
  *   {"type":"result","id":...,"ok":true,"value":...} or {"type":"result","id":...,"ok":false,"error":{code,message}}
  * through `window.__danceBridgeReceive(jsonString)`. Events use the same channel:
- *   {"type":"event","name":"audioProgress"|"linkVisited"|"linkSubmitted"|"lifecycle"|"addedSongsChanged","data":{...}}
+ *   {"type":"event","name":"audioProgress"|"linkVisited"|"linkSubmitted"|"lifecycle"|"addedSongsChanged"|"updateState","data":{...}}
  *
  * Version 2 added: getAddedSongs(), removeAddedSong(), the addedSongsChanged event (songs added
  * from the phone page's "Find a song").
  * Version 3 added: setAudioFormats() and PreparedAudio.primingSec (beat-map alignment; WebM/Opus
  * downloaded by default, see [AudioPick] / [Mp4Priming]).
  * Version 4 added: getGraphicsInfo() and setWebViewLayerType() (the page's graphics test).
+ * Version 5 added: the in-app updater ([Updates]): getUpdateState(), checkForUpdate(),
+ * startUpdate(), cancelUpdate(), openInstallSettings(), takeUpdatedNotice() and the
+ * updateState event. Only status strings and progress numbers cross; never the token.
  */
 class DanceBridge(private val app: DanceApp, private val host: Host) {
     interface Host {
@@ -45,7 +48,7 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
     }
 
     companion object {
-        const val VERSION = 4
+        const val VERSION = 5
         private const val TAG = "DanceDance"
         private val ID_RE = Regex("^[A-Za-z0-9_-]{1,40}$")
         private val VIDEO_RE = Regex("^[A-Za-z0-9_-]{11}$")
@@ -66,8 +69,11 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
         )
     }
 
+    private val updateListener: (JSONObject) -> Unit = { event("updateState", it) }
+
     init {
         app.onAddedSongsChanged = addedListener
+        app.updates.listener = updateListener
     }
 
     // ---------------------------------------------------------------------------------------
@@ -149,6 +155,32 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
     /** Graphics test: "none" | "hardware" | "software". The page puts it back to "none" afterwards. */
     @JavascriptInterface
     fun setWebViewLayerType(type: String?): String = host.setWebViewLayerType(type ?: "")
+
+    // --- v5: app update (see [Updates]; state changes arrive as the updateState event) ------
+
+    /** JSON {phase, installed, installedCode, latest, message, stage, manualUrl, received, total}. */
+    @JavascriptInterface
+    fun getUpdateState(): String = app.updates.stateJson().toString()
+
+    /** Ask GitHub for a newer release. Without `force`, only the first call per app start does. */
+    @JavascriptInterface
+    fun checkForUpdate(force: Boolean) = app.updates.check(force)
+
+    /** Download, verify and install the available update. */
+    @JavascriptInterface
+    fun startUpdate() = app.updates.start()
+
+    /** Stop a download (or a pending install) and go back to "Update available". */
+    @JavascriptInterface
+    fun cancelUpdate() = app.updates.cancel()
+
+    /** Open Android's "install unknown apps" switch for DanceDance. */
+    @JavascriptInterface
+    fun openInstallSettings() = app.updates.openInstallSettings()
+
+    /** The version name once after this app was updated ("Updated to X"), else "". */
+    @JavascriptInterface
+    fun takeUpdatedNotice(): String = app.updates.takeUpdatedNotice()
 
     /** Called by the page when BACK is pressed on its home screen. */
     @JavascriptInterface
@@ -259,6 +291,7 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
 
     fun dispose() {
         if (app.onAddedSongsChanged === addedListener) app.onAddedSongsChanged = null
+        if (app.updates.listener === updateListener) app.updates.listener = null
         scope.cancel()
     }
 
