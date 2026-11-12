@@ -55,6 +55,11 @@ export interface Nav {
    * `intensity`: the level picked for this run (default: the last used).
    */
   play(queue: PlayItem[], opts?: { shuffle?: boolean; intensity?: Intensity }): void;
+  /**
+   * Start loading the play screen's code now (a song is being chosen), so
+   * play() can start straight away. Optional; harmless to call again.
+   */
+  prepare?(): void;
   /** Open the file picker ("Play a file"). */
   pickFile(): void;
   /** "Add a song" search screen (web only). */

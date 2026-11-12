@@ -54,9 +54,9 @@ import type { Pose } from '../coach/skeleton';
 import { FAMILIES } from './families';
 import { FAMILY_GENRE, THEME_GENRES, songGenres, type Genre } from './genres';
 import { IDLE_MOVE, MOVES, keysOf, type Level, type Move } from './moves';
-import { getPool } from './pool';
+import { getPool, warmPool } from './pool';
 import { BALANCED_POP, styleKey, type SongStyle } from './songStyle';
-import { difficultyFactor, impactFactor, moveVigour, poseStepCost, tempoFactor } from './weights';
+import { difficultyFactor, impactFactor, moveVigour, moveWeights, poseStepCost, tempoFactor } from './weights';
 
 export { moveVigour, moveWeights, tempoFactor } from './weights';
 
@@ -310,6 +310,28 @@ function withShortName(m: Move): Move {
     SHORT.set(m, s);
   }
   return s;
+}
+
+let warmMoves: readonly Move[] | null = null;
+let warmNext = 0;
+
+/**
+ * Fill the generator's caches ahead of the first routine, for about
+ * `budgetMs` per call (idle time on the home screen): the variation pool,
+ * then every pickable move's soft weights. Only caches that the first
+ * routine would otherwise fill itself, so routines are unchanged. True when done.
+ */
+export function warmGenerator(budgetMs: number): boolean {
+  const until = performance.now() + budgetMs;
+  if (!warmPool(budgetMs)) return false;
+  const moves = (warmMoves ??= [...dancePool(true).moves, ...COOLDOWN_MOVES]);
+  while (warmNext < moves.length) {
+    const m = moves[warmNext++];
+    moveWeights(m);
+    moveVigour(m);
+    if ((warmNext & 15) === 0 && performance.now() >= until) break;
+  }
+  return warmNext >= moves.length;
 }
 
 /** Base moves + variations (variations get a per-level share). */
@@ -1078,6 +1100,19 @@ export function usableBpm(bpm: number): boolean {
  */
 export function isUsableBeatMap(map: BeatMap | null | undefined): boolean {
   if (!map || !Array.isArray(map.beats)) return false;
+  // The play screen asks every frame: answer from the last check while the beats are unchanged.
+  const b = map.beats;
+  const n = b.length;
+  const hit = USABLE.get(map);
+  if (hit && hit.beats === b && hit.n === n && hit.first === b[0] && hit.last === b[n - 1] && hit.bpm === map.bpm) return hit.ok;
+  const ok = checkBeatMap(map);
+  USABLE.set(map, { beats: b, n, first: b[0], last: b[n - 1], bpm: map.bpm, ok });
+  return ok;
+}
+
+const USABLE = new WeakMap<BeatMap, { beats: readonly number[]; n: number; first: number; last: number; bpm: number | undefined; ok: boolean }>();
+
+function checkBeatMap(map: BeatMap): boolean {
   const b = map.beats;
   const n = b.length;
   if (n < 2 || n > MAX_MAP_BEATS) return false;
