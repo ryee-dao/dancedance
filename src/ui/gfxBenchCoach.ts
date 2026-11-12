@@ -74,6 +74,7 @@ export function benchStage(o: BenchStageOptions): BenchStage {
     pinTier: o.tier,
     sprites: o.sprites,
     spriteBudget: undefined as number | undefined,
+    drawEveryFrame: false,
   };
   const stage: CoachStage = o.players === 2 ? createDuoStage(deps) : createCoachStage(deps);
   const info: FrameInfo = {
@@ -95,8 +96,10 @@ export function benchStage(o: BenchStageOptions): BenchStage {
     },
     prewarm: (fromSec, toSec) => {
       deps.spriteBudget = Infinity;
+      deps.drawEveryFrame = true;
       for (let t = fromSec; t < toSec; t += 1 / 60) stage.frame(START_SEC + t, info);
       deps.spriteBudget = undefined;
+      deps.drawEveryFrame = false;
     },
     spriteStats: () => stage.spriteStats?.() ?? null,
   };

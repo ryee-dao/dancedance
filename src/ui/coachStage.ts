@@ -66,6 +66,8 @@ export interface CoachStageDeps {
   sprites?: boolean;
   /** Tests / bench: new sprites a frame may make (default SPRITE_BUDGET, more while waiting). */
   spriteBudget?: number;
+  /** Bench prewarming: draw every call even in a 30 fps tier. */
+  drawEveryFrame?: boolean;
 }
 
 /** New sprites a frame may make while the song hasn't started (the countdown frames are cheap). */
@@ -75,6 +77,8 @@ const WARM_SAMPLES = 2;
 const WARM_SAMPLES_WAITING = 8;
 const WARM_AHEAD = 4;
 const WARM_STEP = 1 / 30;
+/** While waiting the whole routine is scanned, more coarsely (the playing lookahead fills in between). */
+export const WARM_STEP_WAITING = 1 / 10;
 
 export type RoutineMode = 'same' | 'fresh';
 
@@ -98,6 +102,12 @@ export interface CoachStage extends StageRenderer {
 /** The sprite setting for a stage: the bench / URL override, else the tier's. */
 export function spritesFor(deps: Pick<CoachStageDeps, 'sprites'>, tierSprites: boolean): boolean {
   return deps.sprites ?? urlSprites ?? tierSprites;
+}
+
+/** Time the plan's last planned move ends. */
+export function planEnd(plan: Plan): number {
+  const n = plan.instances.length;
+  return n ? timeOfBeat(plan, plan.instances[n - 1].start + plan.instances[n - 1].span) : 0;
 }
 
 /** Time of a plan's first planned move (prewarming starts there while waiting). */
@@ -236,20 +246,21 @@ class CoachStageImpl implements CoachStage {
     const r = this.r;
     const plan = this.conductor.plan;
     if (!r?.sprites || !plan || plan.kind === 'idle') return;
+    if (waiting && this.warmT > planEnd(plan)) return;
     if (plan !== this.warmPlan) {
       this.warmPlan = plan;
       this.warmT = -Infinity;
     }
     const from = waiting ? planStart(plan) : t + 0.2;
     if (this.warmT < from) this.warmT = from;
-    const until = (waiting ? from : t) + WARM_AHEAD * (waiting ? 4 : 1);
+    const until = waiting ? Infinity : t + WARM_AHEAD;
     const n = waiting ? WARM_SAMPLES_WAITING : WARM_SAMPLES;
     for (let i = 0; i < n && r.sprites.budget > 0 && this.warmT < until; i++) {
       this.warmEv.evaluate(plan, this.warmT, this.warmPose, { energy: plan.sectionAt(this.warmT, null).energy });
       solveSkeleton(this.warmPose, this.warmSk);
       r.warm(this.warmSk, this.warmT);
       r.warmNext(this.warmSk, this.warmT);
-      this.warmT += WARM_STEP;
+      this.warmT += waiting ? WARM_STEP_WAITING : WARM_STEP;
     }
   }
 
@@ -299,7 +310,7 @@ class CoachStageImpl implements CoachStage {
     const phase = info.phase;
     if (phase === 'paused' && this.lastPhase === 'paused' && this.frozenDrawn) return; // frozen
     // 30 fps tiers: skip this display frame (the next drawn one reads the audio clock afresh).
-    if (!tick.draw && phase === this.lastPhase) return;
+    if (!tick.draw && !this.deps.drawEveryFrame && phase === this.lastPhase) return;
     const src = (info as InfoWithBeats).beats ?? null;
     const tl = src ? src.current() : null;
     const item = info.item;

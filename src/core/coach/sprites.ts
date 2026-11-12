@@ -10,15 +10,15 @@
  * transform (rotation, uniform scale, translation are free).
  *
  * Parts whose shape depends on continuous pose parameters are keyed by
- * quantised parameters (see the painters: bone length, hand openness, face
- * turn, ...); scale is always quantised in 3 % steps (log scale) and the
- * blit applies the small residual, so one cache serves every figure size.
+ * quantised parameters (see the painters and spriteParts.ts: segment length
+ * in 20 % steps with the middle stretched, hand openness / foreshortening,
+ * face turn, ...). Sprites are made at the figure's scale (6 % steps); the
+ * part's perspective and the residual are the blit's uniform scale.
  *
  * Budget: making an entry draws paths, which is exactly what is slow on the
  * devices this is for, so a frame may make only `budget` new entries; a miss
- * past the budget uses a neighbouring bucket if one exists, else draws that
- * part with its paths for that frame. Prewarming (the stages) fills the cache
- * in idle time from the routine's upcoming poses.
+ * past the budget draws that part with its paths for that frame. Prewarming
+ * (the stages) fills the cache from the routine's upcoming poses.
  *
  * Memory: entries live in atlas pages (1024x1024, 4 MB each); when the page
  * limit is reached the least recently used page is cleared and reused (its
@@ -95,8 +95,7 @@ export interface SpriteStats {
   made: number;
   /** Lookups that found no entry for their exact key. */
   misses: number;
-  /** Misses served by a neighbouring bucket / drawn with paths (budget used up). */
-  near: number;
+  /** Parts drawn with their paths because no sprite could be made that frame (budget used up). */
   direct: number;
   /** Pages cleared to make room. */
   evictions: number;
@@ -116,7 +115,7 @@ export class SpriteCache {
   private frameNo = 1;
   private madeThisFrame = 0;
   private usedArea = 0;
-  private st = { made: 0, misses: 0, near: 0, direct: 0, evictions: 0, maxMadePerFrame: 0 };
+  private st = { made: 0, misses: 0, direct: 0, evictions: 0, maxMadePerFrame: 0 };
 
   constructor(
     private readonly makeCanvas: MakeCanvas = defaultMakeCanvas,
@@ -151,25 +150,13 @@ export class SpriteCache {
 
   /**
    * After get(key) found nothing: make the entry now if the frame's budget
-   * allows. The piece covers x0..x1, y0..y1 in sprite-local px. Null: no
+   * allows (else the caller draws that part with its paths this frame). The piece covers x0..x1, y0..y1 in sprite-local px. Null: no
    * budget (or no canvas available).
    */
   miss(key: SpriteKey, x0: number, y0: number, x1: number, y1: number, artist: PieceArtist, id: number, aux = 0): SpriteEntry | null {
     this.st.misses++;
     if (this.budget <= 0) return null;
     return this.make(key, x0, y0, x1, y1, artist, id, aux);
-  }
-
-  /** A neighbouring bucket: key ± step, ± 2 step (the caller re-derives the geometry from entry.aux). */
-  near(key: number, step: number): SpriteEntry | null {
-    for (let d = 1; d <= 2; d++) {
-      const e = this.get(key - d * step) ?? this.get(key + d * step);
-      if (e) {
-        this.st.near++;
-        return e;
-      }
-    }
-    return null;
   }
 
   /** Count a part drawn with its paths because no entry was available. */
@@ -309,7 +296,7 @@ export class SpriteCache {
   }
 
   resetStats(): void {
-    this.st = { made: 0, misses: 0, near: 0, direct: 0, evictions: 0, maxMadePerFrame: 0 };
+    this.st = { made: 0, misses: 0, direct: 0, evictions: 0, maxMadePerFrame: 0 };
   }
 
   stats(): SpriteStats {

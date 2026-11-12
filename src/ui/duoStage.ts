@@ -23,7 +23,7 @@ import { DuoTracks, KIND_LABEL, type DuoCue } from '../core/coach/duoTracks';
 import { blendPose } from '../core/coach/poses';
 import { CH, createPose, createSkeleton, solveSkeleton, type Skeleton } from '../core/coach/skeleton';
 import { DEFAULT_COACH_STYLE, parseCoachStyle, type CoachBuild, type CoachStyle } from '../core/coach/styles';
-import { WAIT_SPRITE_BUDGET, coachBuildOf, planStart, routineInfo, spritesFor, type CoachStage, type CoachStageDeps, type FrameStats, type RoutineInfo } from './coachStage';
+import { WAIT_SPRITE_BUDGET, WARM_STEP_WAITING, coachBuildOf, planEnd, planStart, routineInfo, spritesFor, type CoachStage, type CoachStageDeps, type FrameStats, type RoutineInfo } from './coachStage';
 import { SPRITE_BUDGET } from '../core/coach/renderer';
 import type { SpriteStats } from '../core/coach/sprites';
 import type { FrameInfo } from './play';
@@ -193,7 +193,7 @@ class DuoStageImpl implements CoachStage {
     }
     const from = waiting ? planStart(plan) : t + 0.2;
     if (this.warmT < from) this.warmT = from;
-    const until = (waiting ? from : t) + (waiting ? 16 : 4);
+    const until = waiting ? planEnd(plan) : t + 4;
     const n = waiting ? 8 : 2;
     for (let i = 0; i < n && r.sprites.budget > 0 && this.warmT < until; i++) {
       const wt = this.warmT;
@@ -212,7 +212,7 @@ class DuoStageImpl implements CoachStage {
       solveSkeleton(this.wPose1, this.wSk1);
       solveSkeleton(this.wPose2, this.wSk2);
       r.warm(this.wSk1, this.wSk2, this.wDepth[0], this.wDepth[1], hook, wt);
-      this.warmT += 1 / 30;
+      this.warmT += waiting ? WARM_STEP_WAITING : 1 / 30;
     }
   }
 
@@ -326,7 +326,7 @@ class DuoStageImpl implements CoachStage {
     const phase = info.phase;
     if (phase === 'paused' && this.lastPhase === 'paused' && this.frozenDrawn) return;
     // 30 fps tiers: skip this display frame (the next drawn one reads the audio clock afresh).
-    if (!tick.draw && phase === this.lastPhase) return;
+    if (!tick.draw && !this.deps.drawEveryFrame && phase === this.lastPhase) return;
     const src = (info as InfoWithBeats).beats ?? null;
     const tl = src ? src.current() : null;
     const item = info.item;

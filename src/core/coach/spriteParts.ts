@@ -323,9 +323,6 @@ export function spriteBadge(cache: SpriteCache, ctx: CanvasRenderingContext2D, k
 // ---------------------------------------------------------------------------
 // Round-capped lines (thin detail strokes that move: drawstrings, ...).
 
-/** Length bucket step for limb / line sprites (sprite px). */
-export const LEN_STEP = 1.25;
-
 class LineArtist implements PieceArtist {
   color = '#000';
   width = 1;
@@ -536,13 +533,13 @@ export function fillClippedToQuad(ctx: CanvasRenderingContext2D, q: Float64Array
   for (let e = 0; e < 4 && n > 0; e++) {
     const ax = q[e * 2], ay = q[e * 2 + 1];
     const bx = q[((e + 1) & 3) * 2], by = q[((e + 1) & 3) * 2 + 1];
-    const inside = (x: number, y: number) => ((bx - ax) * (y - ay) - (by - ay) * (x - ax)) * sg >= 0;
     let m = 0;
     for (let i = 0; i < n; i++) {
       const px = src[i * 2], py = src[i * 2 + 1];
       const j = i + 1 < n ? i + 1 : 0;
       const qx = src[j * 2], qy = src[j * 2 + 1];
-      const pin = inside(px, py), qin = inside(qx, qy);
+      const pin = ((bx - ax) * (py - ay) - (by - ay) * (px - ax)) * sg >= 0;
+      const qin = ((bx - ax) * (qy - ay) - (by - ay) * (qx - ax)) * sg >= 0;
       if (pin) {
         dst[m++] = px;
         dst[m++] = py;

@@ -44,7 +44,13 @@ describe('graphics tiers', () => {
     expect(g.tier).toBe(0); // not a full window yet
     t = run(g, 'auto', t, 400, 40);
     expect(g.tier).toBe(1);
-    // Smooth now, still slow: the next step after settling + a window.
+    expect(g.spec().sprites).toBe(true);
+    // Smooth now, still slow: first the other drawing method gets a window...
+    t = run(g, 'auto', t, SETTLE_MS + WINDOW_MS + 100, 40);
+    expect(g.tier).toBe(1);
+    expect(g.spec().sprites).toBe(false);
+    expect(g.reason).toMatch(/trying paths/);
+    // ...then (just as slow) the next step down.
     t = run(g, 'auto', t, SETTLE_MS + WINDOW_MS + 100, 40);
     expect(g.tier).toBe(2);
     // Fast frames don't bring it back up.
@@ -62,7 +68,7 @@ describe('graphics tiers', () => {
 
   it('starts the next song where the last one ended up (per player count)', () => {
     const g = new TierGovernor(false, 2);
-    run(g, 'auto', 0, 8000, 45);
+    run(g, 'auto', 0, 12_000, 45);
     expect(g.tier).toBe(2);
     const next = new TierGovernor(false, 2);
     next.update('auto', 0, 16, true, 's2');
@@ -71,6 +77,48 @@ describe('graphics tiers', () => {
     const single = new TierGovernor(false, 1);
     single.update('auto', 0, 16, true, 's2');
     expect(single.tier).toBe(0);
+  });
+
+  it('measures sprites against paths once and keeps the faster (remembered for the next song)', () => {
+    // A device where the sprite drawing is the slow one (e.g. a CPU-rastered canvas).
+    const g = new TierGovernor(true);
+    let t = 0;
+    const step = (dur: number) => {
+      const end = t + dur;
+      while (t < end) {
+        const ms = g.spec().sprites ? 45 : 18;
+        t += ms;
+        g.update('auto', t, ms, true, 'a');
+      }
+    };
+    step(SETTLE_MS + WINDOW_MS + 200); // sprites: over budget -> try paths
+    expect(g.tier).toBe(1);
+    expect(g.spec().sprites).toBe(false);
+    step(SETTLE_MS + WINDOW_MS + 200); // paths on budget: keep them, no step down
+    expect(g.tier).toBe(1);
+    expect(g.spec().sprites).toBe(false);
+    expect(g.reason).toMatch(/paths faster here/);
+    step(10_000);
+    expect(g.tier).toBe(1);
+    const next = new TierGovernor(true);
+    next.update('auto', 0, 16, true, 'b');
+    expect(next.spec().sprites).toBe(false);
+    // Full ignores it; a pinned tier (graphics test) always uses sprites.
+    const pinned = new TierGovernor(true, 1, 1);
+    pinned.update('auto', 0, 16, true, 'c');
+    expect(pinned.spec().sprites).toBe(true);
+  });
+
+  it('keeps sprites when they are the faster method', () => {
+    const g = new TierGovernor(true);
+    let t = 0;
+    for (let i = 0; i < 1000; i++) {
+      const ms = g.spec().sprites ? 30 : 60;
+      t += ms;
+      g.update('auto', t, ms, true, 'a');
+    }
+    expect(g.spec().sprites).toBe(true);
+    expect(g.tier).toBe(2); // 30 ms is still over budget at 60 fps: stepped down, sprites kept
   });
 
   it('Full never steps down; Smooth starts at 1', () => {

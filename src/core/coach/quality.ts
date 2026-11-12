@@ -22,6 +22,14 @@
  * during a song; the next song starts from the lowest tier reached (per
  * player count), so a weak device settles after one song.
  *
+ * Sprites or paths in tiers 1 / 2: sprites by default (GPU-rastered canvases
+ * draw bitmaps far faster than stroked paths). Which is faster depends on
+ * the device, though (a canvas rastered on the CPU samples transformed
+ * bitmaps slowly and fills paths quickly), so it is measured, not assumed:
+ * the first time a lighter tier misses its budget, the other method is
+ * tried for one window and the faster one is kept (remembered like the
+ * tier) before any further step down. No device is detected by name.
+ *
  * Pure TypeScript (no DOM).
  */
 
@@ -68,10 +76,13 @@ export const SETTLE_MS = 1500;
 
 /** Lowest tier reached per (pref, TV, players) this session: where the next song starts. */
 const floors = new Map<string, Tier>();
+/** Sprites or paths, once measured per (pref, TV, players). */
+const methods = new Map<string, boolean>();
 
 /** Test hook: forget what earlier songs learned. */
 export function resetGraphicsMemory(): void {
   floors.clear();
+  methods.clear();
 }
 
 export class TierGovernor {
@@ -82,6 +93,10 @@ export class TierGovernor {
   private winFrames = 0;
   private winSum = 0;
   private settleUntil = 0;
+  /** Sprites (true) or paths in tiers 1 / 2; see the note at the top. */
+  private spritesOn = true;
+  /** Mean frame time of the other method while the current one is on trial (NaN = no trial). */
+  private trialOther = NaN;
   /** Why the tier last changed (diagnostics). */
   reason = '';
 
@@ -97,7 +112,9 @@ export class TierGovernor {
   }
 
   spec(): TierSpec {
-    return tierSpec(this._tier, this.isTV);
+    const s = tierSpec(this._tier, this.isTV);
+    if (s.sprites && !this.spritesOn) s.sprites = false;
+    return s;
   }
 
   /** The tier a song starts at for this setting. */
@@ -129,8 +146,13 @@ export class TierGovernor {
       this._tier = t;
       this.reason = pref === 'full' ? 'setting: Full' : pref === 'smooth' ? 'setting: Smooth' : this.isTV ? 'TV default' : 'default';
       if (floors.has(this.memKey(pref)) && t === floors.get(this.memKey(pref)) && t > 0) this.reason = 'learned on an earlier song';
+      const m = methods.get(this.memKey(pref));
+      const sp = this.pinned !== null || m === undefined ? true : m;
+      const methodChanged = sp !== this.spritesOn;
+      this.spritesOn = sp;
+      this.trialOther = NaN;
       this.restart(now);
-      return changed;
+      return changed || methodChanged;
     }
     if (!active || !(intervalMs > 0) || intervalMs > 500) {
       // Paused, hidden, or a long gap (tab switch): measure afresh afterwards.
@@ -147,10 +169,36 @@ export class TierGovernor {
     this.winStart = now;
     this.winFrames = 0;
     this.winSum = 0;
-    if (mean <= budget || this.pref === 'full' || this._tier >= 2 || this.pinned !== null) return false;
+    if (this.pref === 'full' || this.pinned !== null) return false;
+    const mk = this.memKey(this.pref);
+    if (!Number.isNaN(this.trialOther)) {
+      // The other method's window is over: keep the faster one.
+      const other = this.trialOther;
+      this.trialOther = NaN;
+      if (mean > other) this.spritesOn = !this.spritesOn;
+      methods.set(mk, this.spritesOn);
+      const best = Math.min(mean, other);
+      this.reason = `${this.spritesOn ? 'pre-drawn pieces' : 'paths'} faster here (${Math.round(Math.min(mean, other))} vs ${Math.round(Math.max(mean, other))} ms)`;
+      if (best > budget && this._tier < 2) {
+        this._tier = (this._tier + 1) as Tier;
+        this.reason += `; stepped down: ${Math.round(best)} ms frames`;
+        if ((floors.get(mk) ?? 0) < this._tier) floors.set(mk, this._tier);
+      }
+      this.restart(now);
+      return true;
+    }
+    if (mean <= budget) return false;
+    if (this._tier >= 1 && !methods.has(mk)) {
+      // First miss in a lighter tier: try the other drawing method for a window.
+      this.trialOther = mean;
+      this.spritesOn = !this.spritesOn;
+      this.reason = `trying ${this.spritesOn ? 'pre-drawn pieces' : 'paths'}: ${Math.round(mean)} ms frames`;
+      this.restart(now);
+      return true;
+    }
+    if (this._tier >= 2) return false;
     this._tier = (this._tier + 1) as Tier;
     this.reason = `stepped down: ${Math.round(mean)} ms frames`;
-    const mk = this.memKey(this.pref);
     if ((floors.get(mk) ?? 0) < this._tier) floors.set(mk, this._tier);
     this.restart(now);
     return true;
