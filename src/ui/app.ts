@@ -186,6 +186,10 @@ export function startApp(root: HTMLElement): void {
   // Choosing a song then waits for none of it. (A song chosen sooner loads
   // whatever is missing itself.)
   const quietMs = 1500;
+  // TV: one update check per app start, natively, once the remote has been left alone (the
+  // home screen then shows a small hint if there's a new version; nothing pops up).
+  const appUpdates = getPlatform().appUpdates;
+  if (appUpdates) setTimeout(() => whenQuiet(() => appUpdates.check(false), 3000), 5000);
   whenQuiet(() => {
     void import('../core/choreo/moves').then(
       () =>

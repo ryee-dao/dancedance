@@ -11,6 +11,7 @@
 
 import { bpmEvents, knownBpm } from '../beat/bpmIndex';
 import { getPlatform } from '../platform/platform';
+import { updateHint } from '../platform/appUpdate';
 import type { PlayItem } from '../player/types';
 import { store, type Intensity } from '../store';
 import { addedSongs, type PendingView } from './addedSongs';
@@ -47,6 +48,26 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
       h('button', { class: 'btn', 'data-action': 'file', type: 'button' }, icon('file'), 'Play a file'),
     h('button', { class: 'btn', 'data-action': 'options', type: 'button' }, icon('options'), 'Options'),
   );
+  // TV: a small "Update available" pill after Options once the shell's check finds one. It only
+  // appears; it never takes focus (Right from Options reaches it) and opens Options -> App update.
+  const updates = platform.isTV ? platform.appUpdates : undefined;
+  const updateBtn = h('button', { class: 'btn btn-small update-hint', 'data-action': 'update', type: 'button', hidden: true });
+  const renderUpdateHint = () => {
+    const text = updateHint(updates?.state() ?? null);
+    if (!text) {
+      // Gone while focused (e.g. it's being installed): hand focus to Options next to it.
+      if (document.activeElement === updateBtn) actions.querySelector<HTMLElement>('[data-action="options"]')?.focus({ preventScroll: true });
+      updateBtn.hidden = true;
+      return;
+    }
+    if (updateBtn.textContent !== text) updateBtn.textContent = text;
+    updateBtn.hidden = false;
+  };
+  const offUpdate = updates?.onChange(renderUpdateHint);
+  if (updates) {
+    actions.append(updateBtn);
+    renderUpdateHint();
+  }
   const header = h(
     'header',
     { class: 'home-header' },
@@ -472,6 +493,9 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
       case 'options':
         nav.options();
         break;
+      case 'update':
+        nav.options({ focusAction: 'update' });
+        break;
       case 'unhide':
         addedSongs.unhideAll();
         break;
@@ -517,6 +541,7 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
     scope,
     mounted: useThumbs,
     destroy() {
+      offUpdate?.();
       closePicker?.();
       bpmEvents.removeEventListener('change', onBpm);
       library.removeEventListener('change', onChange);

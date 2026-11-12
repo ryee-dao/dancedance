@@ -63,6 +63,7 @@ class MainActivity : Activity(), DanceBridge.Host {
             .addPathHandler("/", WebViewAssetLoader.AssetsPathHandler(this))
             .build()
         bridge = DanceBridge(app, this)
+        app.updates.attach(this)
         createWebView(savedInstanceState)
     }
 
@@ -275,6 +276,8 @@ class MainActivity : Activity(), DanceBridge.Host {
         super.onResume()
         webView?.onResume()
         bridge.event("lifecycle", org.json.JSONObject().put("state", "resume"))
+        app.updates.attach(this)
+        app.updates.onActivityResumed() // back from "install unknown apps": carry on installing
     }
 
     override fun onPause() {
@@ -297,6 +300,7 @@ class MainActivity : Activity(), DanceBridge.Host {
     }
 
     override fun onDestroy() {
+        app.updates.detach(this)
         bridge.dispose()
         app.link.stop()
         if (isFinishing) app.audio.cancelAll()

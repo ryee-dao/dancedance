@@ -15,6 +15,7 @@ webkit = "1.12.1"
 nanohttpd = "2.3.1"
 zxing = "3.5.4"
 junit = "4.13.2"
+json = "20250517"
 
 [libraries]
 newpipe-extractor = { module = "com.github.TeamNewPipe:NewPipeExtractor", version.ref = "newpipeExtractor" }
@@ -25,6 +26,7 @@ androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
 nanohttpd = { module = "org.nanohttpd:nanohttpd", version.ref = "nanohttpd" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
 junit = { module = "junit:junit", version.ref = "junit" }
+json = { module = "org.json:json", version.ref = "json" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

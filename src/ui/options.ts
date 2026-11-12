@@ -2,8 +2,8 @@
  * Options: the coach's look (live preview cards) and which version of it
  * dances (female / male; two players get both), routine (same / new each
  * play), audio offset, beat-sync
- * fallback (web), and links to playlist linking and the GitHub connection.
- * Everything applies as soon as it is chosen.
+ * fallback (web), links to playlist linking and the GitHub connection, and
+ * on the TV the app update row. Everything applies as soon as it is chosen.
  */
 
 import { formatOffset, stepOffset } from '../beat/audioOffset';
@@ -17,6 +17,7 @@ import { repoFromLocation } from '../platform/github';
 import { backgroundFill, describeFill } from '../beat/helperFill';
 import { helperDownloadUrl, setHelperOptIn, type HelperClient } from '../platform/helper';
 import { getPlatform } from '../platform/platform';
+import { describeUpdate, type UpdateAction, type UpdateState } from '../platform/appUpdate';
 import type { GraphicsPref } from '../core/coach/quality';
 import { store, type LiveSyncPref, type RoutineMode } from '../store';
 import { h, type Nav, type Screen } from './dom';
@@ -180,6 +181,82 @@ export function createOptions(nav: Nav, opts: { focusAction?: string } = {}): Sc
     ),
   );
 
+  // --- app update (TV, shell bridge v5+) ---------------------------------------
+  const updates = platform.isTV ? platform.appUpdates : undefined;
+  const updStatus = h('span', { class: 'opt-status update-status', 'aria-live': 'polite' });
+  const updButtons = h('span', { class: 'update-buttons' });
+  const updRow = h('div', { class: 'opt-row update-row' }, updStatus, updButtons);
+  const updBar = h('div', { class: 'update-bar', hidden: true }, h('div', { class: 'update-bar-fill' }));
+  const updDetail = h('p', { class: 'note update-detail', hidden: true });
+  const updUrl = h('p', { class: 'update-url', hidden: true });
+  const updSection = h(
+    'section',
+    { class: 'opt-section', 'data-section': 'update' },
+    h('h2', { class: 'opt-title' }, 'App update'),
+    h('p', { class: 'note' }, 'New versions come from DanceDance’s releases on GitHub. Your playlist and settings stay.'),
+    updRow,
+    updBar,
+    updDetail,
+    updUrl,
+  );
+  /** Keep the whole row in view (its note and the Downloader address sit under the buttons). */
+  const revealUpdate = () => {
+    if (updRow.contains(document.activeElement)) updSection.scrollIntoView({ block: 'nearest' });
+  };
+  let updKey = '';
+  function renderUpdate(s: UpdateState): void {
+    const v = describeUpdate(s);
+    updStatus.textContent = v.status;
+    updDetail.hidden = !v.detail;
+    updDetail.textContent = v.detail ?? '';
+    updUrl.hidden = !v.url;
+    updUrl.textContent = v.url ?? '';
+    updBar.hidden = v.progress === null;
+    (updBar.firstElementChild as HTMLElement).style.width = `${Math.round((v.progress ?? 0) * 100)}%`;
+    // Rebuild the buttons only when they change (progress ticks keep the focused one as it is).
+    const key = v.buttons.map((b) => `${b.action}:${b.label}`).join('|');
+    if (key === updKey) {
+      revealUpdate();
+      return;
+    }
+    updKey = key;
+    const active = document.activeElement as HTMLElement | null;
+    const hadFocus = !!active && updRow.contains(active);
+    const was = active?.dataset.action;
+    updButtons.replaceChildren(
+      ...v.buttons.map((b) =>
+        h(
+          'button',
+          { class: `btn btn-small${b.primary ? ' btn-primary' : ''}${b.quiet ? ' btn-quiet' : ''}`, type: 'button', 'data-action': b.action },
+          b.label,
+        ),
+      ),
+    );
+    // With no button (checking), the status line holds focus so it doesn't jump to the top.
+    if (v.buttons.length) updStatus.removeAttribute('data-focusable');
+    else updStatus.setAttribute('data-focusable', '');
+    updStatus.tabIndex = v.buttons.length ? -1 : 0;
+    if (hadFocus) focusEl(updateFocusTarget(was), { instant: true });
+    revealUpdate();
+  }
+  /** The next step (primary button) first, else the button that had focus, else the first one. */
+  function updateFocusTarget(prefer?: string): HTMLElement {
+    return (
+      updButtons.querySelector<HTMLElement>('.btn-primary') ||
+      (prefer && updButtons.querySelector<HTMLElement>(`[data-action="${prefer}"]`)) ||
+      updButtons.querySelector<HTMLElement>('button') ||
+      updStatus
+    );
+  }
+  const offUpdate = updates?.onChange(renderUpdate);
+  if (updates) {
+    renderUpdate(updates.state());
+    updates.check(false); // at most once per app start; then the cached result
+  }
+  const updateSection = !!updates && updSection;
+  updRow.addEventListener('focusin', () => requestAnimationFrame(revealUpdate));
+  const updateBusy = () => !!updates && describeUpdate(updates.state()).cancellable;
+
   // --- links -------------------------------------------------------------------
   const ghLine = h('div', { class: 'opt-row' });
 
@@ -248,6 +325,7 @@ export function createOptions(nav: Nav, opts: { focusAction?: string } = {}): Sc
       ),
       !platform.isTV && ghLine,
     ),
+    updateSection,
   );
 
   function renderState(): void {
@@ -334,6 +412,24 @@ export function createOptions(nav: Nav, opts: { focusAction?: string } = {}): Sc
     if (t.dataset.routine) {
       store.updateSettings({ routineMode: t.dataset.routine as RoutineMode });
       renderState();
+      return;
+    }
+    if (updates && t.dataset.action?.startsWith('update-')) {
+      switch (t.dataset.action as UpdateAction) {
+        case 'update-start':
+          updates.start();
+          break;
+        case 'update-retry':
+        case 'update-check':
+          updates.check(true);
+          break;
+        case 'update-cancel':
+          updates.cancel();
+          break;
+        case 'update-settings':
+          updates.openSettings();
+          break;
+      }
       return;
     }
     const off = store.settings().audioOffsetMs;
@@ -430,8 +526,16 @@ export function createOptions(nav: Nav, opts: { focusAction?: string } = {}): Sc
 
   const scope: Scope = {
     root: el,
-    onBack: () => nav.home({ focusAction: 'options' }),
+    // Back while an update downloads (or waits) cancels it and stays here.
+    onBack: () => {
+      if (updateBusy()) {
+        updates?.cancel();
+        return;
+      }
+      nav.home({ focusAction: 'options' });
+    },
     defaultFocus: () =>
+      (opts.focusAction === 'update' && updateSection ? updateFocusTarget() : null) ||
       (opts.focusAction && el.querySelector<HTMLElement>(`[data-action="${opts.focusAction}"]`)) ||
       cards.find((c) => c.classList.contains('selected')) ||
       cards[0],
@@ -444,6 +548,9 @@ export function createOptions(nav: Nav, opts: { focusAction?: string } = {}): Sc
       raf = requestAnimationFrame(draw);
     },
     destroy() {
+      offUpdate?.();
+      // Leaving Options stops a download that nobody can see any more.
+      if (updates && ['downloading', 'verifying'].includes(updates.state().phase)) updates.cancel();
       helper?.removeEventListener('change', onHelperChange);
       fill?.removeEventListener('change', onHelperChange);
       if (raf) cancelAnimationFrame(raf);

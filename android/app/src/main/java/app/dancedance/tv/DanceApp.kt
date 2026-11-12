@@ -29,6 +29,8 @@ class DanceApp : Application() {
         private set
     lateinit var addedSongs: AddedSongsStore
         private set
+    lateinit var updates: Updates
+        private set
 
     /** Set by the current bridge: told whenever the added songs change (phone add / remove). */
     @Volatile var onAddedSongsChanged: ((added: AddedSongsStore.Song?, removedId: String?) -> Unit)? = null
@@ -57,6 +59,8 @@ class DanceApp : Application() {
         )
         cloud = CloudTrigger(http, prefs)
         link = LinkController(this)
+        updates = Updates(this, http, scope)
+        updates.onAppStart()
     }
 }
 
