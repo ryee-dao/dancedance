@@ -157,7 +157,9 @@ describe('sprite tiers: per-frame draw calls (steady state)', () => {
         scene.beat = i / 30;
         scene.z1 = f.z1;
         scene.z2 = f.z2;
-        scene.hook = f.hook;
+        // The routine may not schedule the elbow swing in these windows, so the
+        // interlocked-forearm redraw is also exercised directly now and then.
+        scene.hook = f.hook || (i % 60 < 20 ? 1 : 0);
         scene.prop = f.rope || i % 90 < 30 ? 'rope' : null; // the rope too, now and then
         strip.progress = (i % 120) / 120;
         card.sk1 = duos[(i + 40) % duos.length].sk1;
@@ -178,7 +180,7 @@ describe('sprite tiers: per-frame draw calls (steady state)', () => {
         expect(ops.fillText).toBe(0); // labels and tags are badges
         expect(ops.clip).toBeLessThanOrEqual(1);
         maxFill = Math.max(maxFill, ops.fill);
-        if (duos[i].hook) hooks++;
+        if (scene.hook) hooks++;
         add(total, ops);
       }
       const st = cache.stats();
