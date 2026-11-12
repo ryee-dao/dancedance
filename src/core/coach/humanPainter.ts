@@ -16,10 +16,18 @@
  * look uses a light outline for a layered paper cut-out feel).
  *
  * The per-frame path allocates nothing (scratch arrays, constant colours).
+ *
+ * Sprite mode (`sprites` set; the lighter graphics tiers): the same parts in
+ * the same order, but each limb segment, hand, shoe and head piece is drawn
+ * once by the code below into the sprite cache (sprites.ts) and blitted with
+ * a transform; only the torso shapes are still filled per frame (as grown
+ * polygons, no strokes). See the "Sprite mode" section at the end.
  */
 
 import { BODY, J, NUM_JOINTS, type Skeleton } from './skeleton';
 import { CAM, PIV_Y, type CoachBuild } from './styles';
+import { scaleOf, spriteKey, type PieceArtist, type SpriteCache, type SpriteEntry } from './sprites';
+import { M, bandQuad, blitOrDraw, blitSegment, boneMatrix, fillClippedToQuad, fillGrown, flattenSmooth, frameMatrix, qFigure, segBucket, segLength, spriteEllipse, spriteLine } from './spriteParts';
 
 /** ponytail / puff: the female looks; crop (short hair) / beanie (knit cap over short hair): the male looks. */
 export type HairStyle = 'ponytail' | 'puff' | 'crop' | 'beanie';
@@ -113,8 +121,61 @@ const SHIRT_N = 9;
 const WAIST_Y = -0.185; // chest frame; = BODY.torso + WAIST_Y in the pelvis frame
 const SHORTS_N = 4;
 
-export class HumanPainter {
+// Limb layers (one fill each, in path order): outline, skin, covers.
+const A_LINE = 0;
+const A_SKIN = 1;
+const A_SLEEVE = 2;
+const A_CUFF = 3;
+const L_LINE = 4;
+const L_SKIN = 5;
+const L_COVER = 6;
+const L_SHORTS = 7;
+const L_SHORTS_LINE = 8;
+/** The torso's shorts legs (legs behind it / raised): outline, fill. */
+const T_SHORTS_LINE = 9;
+const T_SHORTS = 10;
+/** Sprite mode: one bone's fill layers in path order (arm: skin, sleeve, cuff; leg: skin, cover, + shorts). */
+const A_FILL = 11;
+const L_FILL = 12;
+
+// Sprite piece kinds (key field 1) and artist ids.
+const K_BONE = 16;
+const K_HAND = 17;
+const K_SHOE = 18;
+const K_NECK = 19;
+const K_HEAD = 20;
+const P_BONE = 1;
+const P_HAND = 2;
+const P_SHOE = 3;
+const P_NECK = 4;
+const P_HEAD = 5;
+// Head pieces (key field f1).
+const H_FACE = 1;
+const H_FACE_BACK = 2;
+const H_FRONT_HAIR = 3;
+const H_PONYTAIL = 4;
+const H_PUFF = 5;
+const H_BEANIE_BACK = 6;
+const H_BEANIE = 7;
+const H_PUFF_BAND_BACK = 8;
+const H_INNER_EAR = 9;
+const H_BROW_L = 10;
+const H_BROW_R = 11;
+const H_NOSE = 12;
+const H_SMILE = 13;
+/** Face-turn bucket: fo / rx in steps of 0.04 (-0.6..0.6 -> 0..30). */
+const PHI_STEP = 0.04;
+/** Shoe length buckets (log, 6 %). */
+const SHOE_STEP = Math.log(1.06);
+
+export class HumanPainter implements PieceArtist {
   look: HumanLook;
+  /** Sprite mode: compose from this cache (null = draw paths, the Full tier). */
+  sprites: SpriteCache | null = null;
+  /** The look's id in sprite keys (set together with `sprites`). */
+  spriteLook = 0;
+  /** px per unit the sprites are made at (0 = the draw scale); see FigurePainter.spriteRef. */
+  spriteRef = 0;
   // Projection.
   private cx = 0;
   private floorY = 0;
@@ -162,6 +223,29 @@ export class HumanPainter {
   private hemN = 0;
   /** Head forward z of the current head draw (1 = facing the viewer). */
   private faceZ = 1;
+  // Sprite mode: limb() draws only the part of a chain inside clipA..clipB (one bone).
+  private clipA = 0;
+  private clipB = 2;
+  private mini = false;
+  private readonly synP = new Float64Array(NUM_JOINTS * 3);
+  /** Scale bucket of the figure being drawn (sprite mode). */
+  private qFig = 0;
+  private readonly saveDir = new Float64Array(10);
+  // Parameters of the piece being drawn into the cache (drawPiece).
+  private pcLimb = 0;
+  private pcBone = 0;
+  private pcLayer = 0;
+  private pcSide = 1;
+  private pcFrom = 0;
+  private pcFront = false;
+  private pcLen = 0;
+  private pcR = 1;
+  private pcPass = PASS_FILL;
+  private pcForm = 0;
+  private pcOpen = 0;
+  private pcHxy = 1;
+  private pcHead = 0;
+  private pcPhi = 0;
 
   constructor(look: HumanLook) {
     this.look = look;
@@ -279,8 +363,11 @@ export class HumanPainter {
   private limb(ctx: CanvasRenderingContext2D, p: Float64Array, j0: number, j1: number, j2: number, k: Float64Array, a: number, b: number, extra: number, hem = false, hemStart = true): void {
     for (let i = 0; i < 6; i += 2) {
       const t0 = k[i], t1 = k[i + 2];
-      const ta = a > t0 ? a : t0;
-      const tb = b < t1 ? b : t1;
+      let ta = a > t0 ? a : t0;
+      let tb = b < t1 ? b : t1;
+      // Sprite pieces draw one bone of the chain (0..1 or 1..2); else 0..2 (no-op).
+      if (ta < this.clipA) ta = this.clipA;
+      if (tb > this.clipB) tb = this.clipB;
       if (tb <= ta) continue;
       const r0 = k[i + 1] + (k[i + 3] - k[i + 1]) * ((ta - t0) / (t1 - t0));
       const r1 = k[i + 1] + (k[i + 3] - k[i + 1]) * ((tb - t0) / (t1 - t0));
@@ -327,6 +414,8 @@ export class HumanPainter {
     this.cx = cx;
     this.floorY = floorY;
     this.scale = scale;
+    this.mini = mini;
+    if (this.sprites) this.qFig = qFigure(this.spriteRef || scale);
     const L = this.look;
     const p = sk.p;
     this.olPx = L.ol * (mini ? 0.75 : 1) * scale;
@@ -511,6 +600,10 @@ export class HumanPainter {
   }
 
   private torso(ctx: CanvasRenderingContext2D, sk: Skeleton, pass: number): void {
+    if (this.sprites) {
+      this.torsoS(ctx, sk, pass);
+      return;
+    }
     const L = this.look;
     const p = sk.p;
     const nP = SHORTS_N * 2 + 2;
@@ -557,6 +650,10 @@ export class HumanPainter {
   }
 
   private shirtPart(ctx: CanvasRenderingContext2D, sk: Skeleton, pass: number): void {
+    if (this.sprites) {
+      this.shirtS(ctx, sk, pass);
+      return;
+    }
     const L = this.look;
     const p = sk.p;
     const nS = SHIRT_N * 2 + 2;
@@ -686,34 +783,95 @@ export class HumanPainter {
   }
 
   private arm(ctx: CanvasRenderingContext2D, sk: Skeleton, side: number, pass: number, from = 0): void {
-    const L = this.look;
+    if (this.sprites) {
+      this.armS(ctx, sk, side, pass, from);
+      return;
+    }
     const p = sk.p;
     const sh = side === 1 ? J.SH_R : J.SH_L;
     const el = side === 1 ? J.EL_R : J.EL_L;
     const ha = side === 1 ? J.HA_R : J.HA_L;
     const open = side === 1 ? sk.handR : sk.handL;
-    const col = side === 1 ? SIDE.right : SIDE.left;
-    const dark = side === 1 ? SIDE.rightDark : SIDE.leftDark;
-    const k = this.armK;
     const fill = pass === PASS_FILL;
-    const g = fill ? 0 : this.grow;
 
     // Skin arm (+ the cloth radius where a sleeve covers it, so the outline fits).
     ctx.beginPath();
     if (!fill) {
-      ctx.beginPath();
-      this.limb(ctx, p, sh, el, ha, k, from, 2, g);
-      if (L.sleeve && L.sleeve[1] > from) this.limb(ctx, p, sh, el, ha, k, Math.max(from, L.sleeve[0]), L.sleeve[1] + 0.03, 0.004 + g, true, L.sleeve[0] >= from);
-      if (L.cuff && L.cuff[1] > from) this.limb(ctx, p, sh, el, ha, k, Math.max(from, L.cuff[0] - 0.03), L.cuff[1] + 0.03, 0.006 + g, true);
-      this.paint(ctx, pass, L.skin, false);
+      this.armLayer(ctx, p, sh, el, ha, A_LINE, side, from);
       this.hand(ctx, p, ha, side, open, pass, side === 1 ? sk.formR : sk.formL);
       return;
     }
     // The hand covers the last bit of the forearm, so a sleeve to the wrist hides the skin.
-    this.skin(ctx, p, sh, el, ha, k, from, L.sleeve, 0.07);
-    if (L.sleeve && L.sleeve[1] > from) this.cover(ctx, p, sh, el, ha, k, Math.max(from, L.sleeve[0]), L.sleeve[1], 0.004, col, L.sleeve[0] >= from);
-    if (L.cuff && L.cuff[1] > from) this.cover(ctx, p, sh, el, ha, k, Math.max(from, L.cuff[0]), L.cuff[1], 0.006, dark);
+    this.armLayer(ctx, p, sh, el, ha, A_SKIN, side, from);
+    this.armLayer(ctx, p, sh, el, ha, A_SLEEVE, side, from);
+    this.armLayer(ctx, p, sh, el, ha, A_CUFF, side, from);
     this.hand(ctx, p, ha, side, open, pass, side === 1 ? sk.formR : sk.formL);
+  }
+
+  /** One layer of an arm (chain sh -> el -> ha), each one fill. */
+  private armLayer(ctx: CanvasRenderingContext2D, p: Float64Array, sh: number, el: number, ha: number, layer: number, side: number, from: number): void {
+    const L = this.look;
+    const k = this.armK;
+    switch (layer) {
+      case A_LINE: {
+        const g = this.grow;
+        ctx.beginPath();
+        this.limb(ctx, p, sh, el, ha, k, from, 2, g);
+        if (L.sleeve && L.sleeve[1] > from) this.limb(ctx, p, sh, el, ha, k, Math.max(from, L.sleeve[0]), L.sleeve[1] + 0.03, 0.004 + g, true, L.sleeve[0] >= from);
+        if (L.cuff && L.cuff[1] > from) this.limb(ctx, p, sh, el, ha, k, Math.max(from, L.cuff[0] - 0.03), L.cuff[1] + 0.03, 0.006 + g, true);
+        this.paint(ctx, PASS_LINE, L.skin, false);
+        break;
+      }
+      case A_SKIN:
+        this.skin(ctx, p, sh, el, ha, k, from, L.sleeve, 0.07);
+        break;
+      case A_SLEEVE:
+        if (L.sleeve && L.sleeve[1] > from) this.cover(ctx, p, sh, el, ha, k, Math.max(from, L.sleeve[0]), L.sleeve[1], 0.004, side === 1 ? SIDE.right : SIDE.left, L.sleeve[0] >= from);
+        break;
+      case A_CUFF:
+        if (L.cuff && L.cuff[1] > from) this.cover(ctx, p, sh, el, ha, k, Math.max(from, L.cuff[0]), L.cuff[1], 0.006, side === 1 ? SIDE.rightDark : SIDE.leftDark);
+        break;
+    }
+  }
+
+  /** One layer of a leg (chain hip -> kn -> an). t0: where the thigh starts (raised knee). */
+  private legLayer(ctx: CanvasRenderingContext2D, p: Float64Array, hip: number, kn: number, an: number, layer: number, side: number, t0: number): void {
+    const L = this.look;
+    const k = this.legK;
+    switch (layer) {
+      case L_LINE: {
+        const g = this.grow;
+        ctx.beginPath();
+        this.limb(ctx, p, hip, kn, an, k, t0, 2, g);
+        if (L.legCover) this.limb(ctx, p, hip, kn, an, k, Math.max(t0, L.legCover[0] - 0.03), L.legCover[1], 0.004 + g, true);
+        this.paint(ctx, PASS_LINE, L.skin, false);
+        break;
+      }
+      case L_SKIN:
+        // The shoe hides the ankle, so leggings to the ankle hide the skin.
+        this.skin(ctx, p, hip, kn, an, k, t0, L.legCover, 0.08);
+        break;
+      case L_COVER:
+        if (L.legCover) {
+          const a = Math.max(t0, L.legCover[0]);
+          this.cover(ctx, p, hip, kn, an, k, a, L.legCover[1], 0.004, side === 1 ? SIDE.right : SIDE.left, a > t0);
+        }
+        break;
+      case L_SHORTS:
+        this.cover(ctx, p, hip, kn, an, k, 0, L.shortsLen, 0.006, L.shorts);
+        break;
+      case L_SHORTS_LINE:
+        ctx.beginPath();
+        this.limb(ctx, p, hip, kn, an, k, 0, L.shortsLen + 0.03, 0.006 + this.grow, true);
+        this.paint(ctx, PASS_LINE, L.shorts, false);
+        break;
+      case T_SHORTS_LINE:
+      case T_SHORTS:
+        ctx.beginPath();
+        this.limb(ctx, p, hip, kn, an, k, 0, L.shortsLen + (layer === T_SHORTS_LINE ? 0.03 : 0), 0.006 + (layer === T_SHORTS_LINE ? this.grow : 0), true);
+        this.paint(ctx, layer === T_SHORTS_LINE ? PASS_LINE : PASS_FILL, L.shorts, false);
+        break;
+    }
   }
 
   /** A side-colour cover on a limb, with a thin line across each hem. */
@@ -838,6 +996,10 @@ export class HumanPainter {
   }
 
   private leg(ctx: CanvasRenderingContext2D, sk: Skeleton, side: number, pass: number): void {
+    if (this.sprites) {
+      this.legS(ctx, sk, side, pass);
+      return;
+    }
     const L = this.look;
     const p = sk.p;
     const hip = side === 1 ? J.HIP_R : J.HIP_L;
@@ -846,39 +1008,27 @@ export class HumanPainter {
     const toe = side === 1 ? J.TOE_R : J.TOE_L;
     const col = side === 1 ? SIDE.right : SIDE.left;
     const dark = side === 1 ? SIDE.rightDark : SIDE.leftDark;
-    const k = this.legK;
     const fill = pass === PASS_FILL;
-    const g = fill ? 0 : this.grow;
     const front = this.legFront[side === 1 ? 1 : 0] === 1;
     // A thigh raised toward the viewer (knee lifts) is in front of its own
     // shorts leg, which the torso already drew: start the thigh past the hem.
     const raised = this.legRaised[side === 1 ? 1 : 0] === 1;
-    const t0 = raised ? Math.max(0.15, L.shortsLen * 0.85) : 0;
+    const t0 = this.thighStart(raised);
 
     if (!fill) {
-      ctx.beginPath();
-      this.limb(ctx, p, hip, kn, an, k, t0, 2, g);
-      if (L.legCover) this.limb(ctx, p, hip, kn, an, k, Math.max(t0, L.legCover[0] - 0.03), L.legCover[1], 0.004 + g, true);
-      this.paint(ctx, pass, L.skin, false);
+      this.legLayer(ctx, p, hip, kn, an, L_LINE, side, t0);
     } else {
-      // The shoe hides the ankle, so leggings to the ankle hide the skin.
-      this.skin(ctx, p, hip, kn, an, k, t0, L.legCover, 0.08);
-      if (L.legCover) {
-        const a = Math.max(t0, L.legCover[0]);
-        this.cover(ctx, p, hip, kn, an, k, a, L.legCover[1], 0.004, col, a > t0);
-      }
+      this.legLayer(ctx, p, hip, kn, an, L_SKIN, side, t0);
+      this.legLayer(ctx, p, hip, kn, an, L_COVER, side, t0);
     }
     // Shorts leg (the torso draws it for legs behind it).
-    if (front && !raised && L.shortsLen > 0) {
-      if (fill) this.cover(ctx, p, hip, kn, an, k, 0, L.shortsLen, 0.006, L.shorts);
-      else {
-        ctx.beginPath();
-        this.limb(ctx, p, hip, kn, an, k, 0, L.shortsLen + 0.03, 0.006 + g, true);
-        this.paint(ctx, pass, L.shorts, false);
-      }
-    }
+    if (front && !raised && L.shortsLen > 0) this.legLayer(ctx, p, hip, kn, an, fill ? L_SHORTS : L_SHORTS_LINE, side, t0);
     // Shoe last: its collar wraps the ankle.
     this.shoe(ctx, p, an, kn, toe, side, pass, col, dark);
+  }
+
+  private thighStart(raised: boolean): number {
+    return raised ? Math.max(0.15, this.look.shortsLen * 0.85) : 0;
   }
 
   /**
@@ -887,7 +1037,12 @@ export class HumanPainter {
    * out and toward the viewer; a lifted foot turns with the shin.
    */
   private shoe(ctx: CanvasRenderingContext2D, p: Float64Array, an: number, kn: number, toe: number, side: number, pass: number, col: string, dark: string): void {
-    const L = this.look;
+    this.shoeFrame(p, an, kn, toe, side);
+    this.shoeDraw(ctx, pass, col, dark);
+  }
+
+  /** The shoe's screen frame (heel origin, along / up axes, length, px per unit) into sh*, sL, sS. */
+  private shoeFrame(p: Float64Array, an: number, kn: number, toe: number, side: number): void {
     const ax = p[an * 3], ay = p[an * 3 + 1], az = p[an * 3 + 2];
     const FLOOR = 0.034;
     this.proj(ax, ay < FLOOR ? FLOOR : ay, az - 0.008);
@@ -920,6 +1075,12 @@ export class HumanPainter {
     this.sny = ny;
     this.sL = len;
     this.sS = s;
+  }
+
+  /** The shoe in the frame shoeFrame() set. */
+  private shoeDraw(ctx: CanvasRenderingContext2D, pass: number, col: string, dark: string): void {
+    const L = this.look;
+    const s = this.sS;
     const sole = 0.01 * s;
     ctx.beginPath();
     this.shoePath(ctx, -sole);
@@ -1016,6 +1177,10 @@ export class HumanPainter {
   }
 
   private head(ctx: CanvasRenderingContext2D, sk: Skeleton, pass: number, mini: boolean): void {
+    if (this.sprites) {
+      this.headS(ctx, sk, pass, mini);
+      return;
+    }
     const L = this.look;
     const p = sk.p;
     this.headCentre(p);
@@ -1108,19 +1273,11 @@ export class HumanPainter {
     const fill = pass === PASS_FILL;
     if (L.hairStyle === 'ponytail') {
       // High ponytail: a teardrop hanging from the crown, swinging with the spring.
-      const a = 0.62 + (mini ? 0 : this.tailA) * 0.9;
+      const a = this.tailAngle(mini);
       const bx = rx * 0.15, by = -ry * 0.82;
-      const len = ry * 2.5;
       const dx = Math.sin(a), dy = Math.cos(a);
-      const nx = -dy, ny = dx;
-      const w0 = rx * 0.32 + g, w1 = rx * 0.48 + g;
-      const mx = bx + dx * len * 0.45, my = by + dy * len * 0.45;
-      const tx = bx + dx * (len + g), ty = by + dy * (len + g);
       ctx.beginPath();
-      ctx.moveTo(bx + nx * w0, by + ny * w0);
-      ctx.quadraticCurveTo(mx + nx * w1 * 1.5, my + ny * w1 * 1.5, tx, ty);
-      ctx.quadraticCurveTo(mx - nx * w1 * 1.5, my - ny * w1 * 1.5, bx - nx * w0, by - ny * w0);
-      ctx.closePath();
+      this.ponytailPath(ctx, bx, by, dx, dy, rx, ry, g);
       this.flat(ctx, pass, L.hair);
       if (fill && L.band) {
         ctx.beginPath();
@@ -1132,18 +1289,8 @@ export class HumanPainter {
       // Curly puff: a scalloped cloud behind and above the head.
       const bounce = mini ? 0 : this.tailA * 0.06;
       const pcx = this.tailA * rx * (mini ? 0 : 0.1), pcy = -ry * (0.55 + bounce);
-      const R = rx * 1.42;
       ctx.beginPath();
-      ctx.moveTo(pcx + R * 0.8 + g, pcy);
-      ctx.arc(pcx, pcy, R * 0.8 + g, 0, Math.PI * 2);
-      const n = 11;
-      for (let i = 0; i < n; i++) {
-        const an = (i / n) * Math.PI * 2 + 0.2;
-        const bx = pcx + Math.cos(an) * R * 0.78, by = pcy + Math.sin(an) * R * 0.72;
-        const br = R * 0.3 + g;
-        ctx.moveTo(bx + br, by);
-        ctx.arc(bx, by, br, 0, Math.PI * 2);
-      }
+      this.puffPath(ctx, pcx, pcy, rx * 1.42, g);
       this.flat(ctx, pass, L.hair);
     } else if (L.hairStyle === 'crop') {
       // Short crop: a little volume over the crown (the outline shows it).
@@ -1159,6 +1306,38 @@ export class HumanPainter {
       this.flat(ctx, pass, L.band ?? L.hair);
     }
     void s;
+  }
+
+  /** Ponytail swing angle (0.62 rad at rest, the spring adds to it). */
+  private tailAngle(mini: boolean): number {
+    return 0.62 + (mini ? 0 : this.tailA) * 0.9;
+  }
+
+  /** Ponytail teardrop from the crown point (bx, by) along (dx, dy), grown by g. */
+  private ponytailPath(ctx: CanvasRenderingContext2D, bx: number, by: number, dx: number, dy: number, rx: number, ry: number, g: number): void {
+    const len = ry * 2.5;
+    const nx = -dy, ny = dx;
+    const w0 = rx * 0.32 + g, w1 = rx * 0.48 + g;
+    const mx = bx + dx * len * 0.45, my = by + dy * len * 0.45;
+    const tx = bx + dx * (len + g), ty = by + dy * (len + g);
+    ctx.moveTo(bx + nx * w0, by + ny * w0);
+    ctx.quadraticCurveTo(mx + nx * w1 * 1.5, my + ny * w1 * 1.5, tx, ty);
+    ctx.quadraticCurveTo(mx - nx * w1 * 1.5, my - ny * w1 * 1.5, bx - nx * w0, by - ny * w0);
+    ctx.closePath();
+  }
+
+  /** Curly puff around (pcx, pcy), R = its size, grown by g. */
+  private puffPath(ctx: CanvasRenderingContext2D, pcx: number, pcy: number, R: number, g: number): void {
+    ctx.moveTo(pcx + R * 0.8 + g, pcy);
+    ctx.arc(pcx, pcy, R * 0.8 + g, 0, Math.PI * 2);
+    const n = 11;
+    for (let i = 0; i < n; i++) {
+      const an = (i / n) * Math.PI * 2 + 0.2;
+      const bx = pcx + Math.cos(an) * R * 0.78, by = pcy + Math.sin(an) * R * 0.72;
+      const br = R * 0.3 + g;
+      ctx.moveTo(bx + br, by);
+      ctx.arc(bx, by, br, 0, Math.PI * 2);
+    }
   }
 
   /** Beanie dome outline (local head frame, y down), shifted by `f` toward where the face points. */
@@ -1305,10 +1484,8 @@ export class HumanPainter {
     ctx.strokeStyle = L.hair;
     ctx.lineWidth = ry * 0.07 * L.brow;
     ctx.beginPath();
-    ctx.moveTo(ex - sp - rx * 0.17, ey - ry * 0.2);
-    ctx.quadraticCurveTo(ex - sp, ey - ry * 0.28, ex - sp + rx * 0.16, ey - ry * 0.21);
-    ctx.moveTo(ex + sp - rx * 0.16, ey - ry * 0.21);
-    ctx.quadraticCurveTo(ex + sp, ey - ry * 0.28, ex + sp + rx * 0.17, ey - ry * 0.2);
+    this.browL(ctx, ex - sp, ey, rx, ry);
+    this.browR(ctx, ex + sp, ey, rx, ry);
     ctx.stroke();
     // Blush.
     if (L.blush) {
@@ -1323,16 +1500,685 @@ export class HumanPainter {
     ctx.strokeStyle = L.skinLine;
     ctx.lineWidth = ry * 0.06;
     ctx.beginPath();
-    ctx.moveTo(ex * 1.15 + rx * 0.02, ey + ry * 0.12);
-    ctx.quadraticCurveTo(ex * 1.15 + rx * 0.1, ey + ry * 0.26, ex * 1.15 - rx * 0.04, ey + ry * 0.3);
+    this.nose(ctx, ex * 1.15, ey, rx, ry);
     ctx.stroke();
     ctx.strokeStyle = L.eye;
     ctx.lineWidth = ry * 0.07;
     ctx.beginPath();
-    const mx = ex * 1.1, my = ey + ry * 0.45;
+    this.smile(ctx, ex * 1.1, ey + ry * 0.45, rx, ry);
+    ctx.stroke();
+  }
+
+  // Face features as sub-paths around an anchor (so a sprite can hold one).
+  private browL(ctx: CanvasRenderingContext2D, ax: number, ay: number, rx: number, ry: number): void {
+    ctx.moveTo(ax - rx * 0.17, ay - ry * 0.2);
+    ctx.quadraticCurveTo(ax, ay - ry * 0.28, ax + rx * 0.16, ay - ry * 0.21);
+  }
+  private browR(ctx: CanvasRenderingContext2D, ax: number, ay: number, rx: number, ry: number): void {
+    ctx.moveTo(ax - rx * 0.16, ay - ry * 0.21);
+    ctx.quadraticCurveTo(ax, ay - ry * 0.28, ax + rx * 0.17, ay - ry * 0.2);
+  }
+  private nose(ctx: CanvasRenderingContext2D, ax: number, ay: number, rx: number, ry: number): void {
+    ctx.moveTo(ax + rx * 0.02, ay + ry * 0.12);
+    ctx.quadraticCurveTo(ax + rx * 0.1, ay + ry * 0.26, ax - rx * 0.04, ay + ry * 0.3);
+  }
+  private smile(ctx: CanvasRenderingContext2D, mx: number, my: number, rx: number, ry: number): void {
     ctx.moveTo(mx - rx * 0.26, my - ry * 0.02);
     ctx.quadraticCurveTo(mx, my + ry * 0.16, mx + rx * 0.26, my - ry * 0.02);
-    ctx.stroke();
+  }
+
+  // -------------------------------------------------------------------------
+  // Sprite mode: the parts above, composed from cached pieces drawn by the
+  // same code. Order and layering are the path drawing's. Pieces:
+  //   limb segment layers  one sprite per (bone, layer), keyed by length
+  //                        (1.25 px steps) and scale (3 % steps); rotated
+  //   hand                 keyed by openness, form and foreshortening; rotated
+  //   shoe                 keyed by length; rotated / mirrored
+  //   neck                 keyed by length
+  //   head pieces          rigid in the head frame (hair, features), the face
+  //                        outline and front hair keyed by the face turn
+  //   ellipses             ears, eyes, blush, crop, hood (spriteEllipse)
+  // Still filled per frame (as polygons, no strokes): the shorts body, the
+  // shirt (+ its chest stripe, pocket); see shirtS / torsoS.
+
+  private key(kind: number, qs: number, f1: number, f2: number, f3: number, main: number): number {
+    return spriteKey(kind, this.spriteLook, qs, f1, f2, f3, main + (this.mini ? 1024 : 0));
+  }
+
+  /** Draw a cached piece into the cache's atlas, or as a fallback onto the target (PieceArtist). */
+  drawPiece(ctx: CanvasRenderingContext2D, id: number): void {
+    const cx = this.cx, fy = this.floorY, sc = this.scale, ol = this.olPx;
+    // Canonical projection: the anchor (at the perspective pivot height, so
+    // points off the picture plane scale about it) at (0, 0), pcR px per unit.
+    this.cx = 0;
+    this.floorY = PIV_Y * this.pcR;
+    this.scale = this.pcR;
+    this.olPx = this.look.ol * (this.mini ? 0.75 : 1) * this.pcR;
+    const L = this.look;
+    switch (id) {
+      case P_BONE: {
+        const q = this.synP;
+        const len = this.pcLen;
+        q.fill(0, 0, 9);
+        q[1] = q[4] = q[7] = PIV_Y;
+        if (this.pcBone === 0) {
+          q[3] = len;
+          q[6] = len + 1;
+        } else {
+          q[0] = -1;
+          q[6] = len;
+        }
+        this.clipA = this.pcBone;
+        this.clipB = this.pcBone + 1;
+        if (this.pcLimb === 0) {
+          if (this.pcLayer === A_FILL) for (let l = A_SKIN; l <= A_CUFF; l++) this.armLayer(ctx, q, 0, 1, 2, l, this.pcSide, this.pcFrom);
+          else this.armLayer(ctx, q, 0, 1, 2, this.pcLayer, this.pcSide, this.pcFrom);
+        } else if (this.pcLayer === L_FILL) {
+          this.legLayer(ctx, q, 0, 1, 2, L_SKIN, this.pcSide, this.pcFrom);
+          this.legLayer(ctx, q, 0, 1, 2, L_COVER, this.pcSide, this.pcFrom);
+          if (this.pcFront && this.pcBone === 0) this.legLayer(ctx, q, 0, 1, 2, L_SHORTS, this.pcSide, this.pcFrom);
+        } else {
+          this.legLayer(ctx, q, 0, 1, 2, this.pcLayer, this.pcSide, this.pcFrom);
+          if (this.pcLayer === L_LINE && this.pcFront && this.pcBone === 0) this.legLayer(ctx, q, 0, 1, 2, L_SHORTS_LINE, this.pcSide, this.pcFrom);
+        }
+        this.clipA = 0;
+        this.clipB = 2;
+        break;
+      }
+      case P_HAND: {
+        const d = this.handDir;
+        const b = this.pcSide === 1 ? 0 : 5;
+        for (let i = 0; i < 5; i++) this.saveDir[i] = d[b + i];
+        const h = this.pcHxy;
+        d[b] = h;
+        d[b + 1] = 0;
+        d[b + 2] = Math.sqrt(Math.max(0, 1 - h * h));
+        d[b + 3] = 0;
+        d[b + 4] = this.pcSide * h;
+        this.synP.fill(0, 0, 3);
+        this.synP[1] = PIV_Y;
+        this.hand(ctx, this.synP, 0, this.pcSide, this.pcOpen, this.pcPass, this.pcForm);
+        for (let i = 0; i < 5; i++) d[b + i] = this.saveDir[i];
+        break;
+      }
+      case P_SHOE: {
+        const a = this.shx, b = this.shy, c = this.sax, d = this.say, e = this.snx, f = this.sny, g = this.sL, h = this.sS;
+        this.shx = 0;
+        this.shy = 0;
+        this.sax = 1;
+        this.say = 0;
+        this.snx = 0;
+        this.sny = -1;
+        this.sL = this.pcLen;
+        this.sS = this.pcR;
+        const side = this.pcSide;
+        this.shoeDraw(ctx, this.pcPass, side === 1 ? SIDE.right : SIDE.left, side === 1 ? SIDE.rightDark : SIDE.leftDark);
+        this.shx = a;
+        this.shy = b;
+        this.sax = c;
+        this.say = d;
+        this.snx = e;
+        this.sny = f;
+        this.sL = g;
+        this.sS = h;
+        break;
+      }
+      case P_NECK: {
+        const g = this.pcPass === PASS_FILL ? 0 : this.grow;
+        ctx.beginPath();
+        this.cap(ctx, 0, 0, (L.neckR + g) * this.pcR, this.pcLen, 0, (L.neckR * 0.92 + g) * this.pcR);
+        this.paint(ctx, this.pcPass, L.skin, false);
+        break;
+      }
+      case P_HEAD:
+        this.headPieceDraw(ctx);
+        break;
+    }
+    this.cx = cx;
+    this.floorY = fy;
+    this.scale = sc;
+    this.olPx = ol;
+  }
+
+  /**
+   * Blit one layer of one bone of a limb chain (bone 0: j0 -> j1, 1: j1 -> j2).
+   * limb: 0 arm, 1 leg. `flags` (0..31) tells key variants apart (hook redraw,
+   * raised thigh, shorts outline); `rUnits` bounds the layer's radius.
+   */
+  private boneS(ctx: CanvasRenderingContext2D, p: Float64Array, j0: number, j1: number, j2: number, limb: number, bone: number, layer: number, side: number, flags: number, from: number, front: boolean, rUnits: number): void {
+    const ja = bone === 0 ? j0 : j1, jb = bone === 0 ? j1 : j2;
+    this.proj(p[ja * 3], p[ja * 3 + 1], p[ja * 3 + 2]);
+    const ax = this.qx, ay = this.qy, sa = this.qs;
+    this.proj(p[jb * 3], p[jb * 3 + 1], p[jb * 3 + 2]);
+    const bx = this.qx, by = this.qy;
+    // Sprites at the figure's scale; this segment's perspective is the blit's (uniform) scale.
+    const qs = this.qFig, R = scaleOf(qs), k = (sa + this.qs) * 0.5 / R;
+    const dx = bx - ax, dy = by - ay;
+    const len = Math.sqrt(dx * dx + dy * dy) / k;
+    const cut = rUnits * R + 1;
+    const b = segBucket(len, cut);
+    const lq = segLength(b);
+    const key = this.key(K_BONE, qs, limb * 2 + bone, layer, (side === 1 ? 32 : 0) + flags, b);
+    const sp = this.sprites!;
+    this.pcLimb = limb;
+    this.pcBone = bone;
+    this.pcLayer = layer;
+    this.pcSide = side;
+    this.pcFrom = from;
+    this.pcFront = front;
+    this.pcLen = lq / R;
+    this.pcR = R;
+    let e: SpriteEntry | null = sp.get(key);
+    if (!e) e = sp.miss(key, -cut - 1, -cut - 1, lq + cut + 1, cut + 1, this, P_BONE, lq);
+    if (e) {
+      blitSegment(ctx, e, ax, ay, bx, by, k, lq, cut);
+      return;
+    }
+    // No sprite yet and no budget: this segment's paths, at its exact length.
+    this.pcLen = len / R;
+    boneMatrix(M, ax, ay, bx, by, k, len, cut);
+    blitOrDraw(sp, ctx, null, this, P_BONE);
+  }
+
+  /** Does `layer` draw anything between t = w0 and w1 (starting at `from`)? */
+  private layerHits(layer: number, from: number, w0: number, w1: number): boolean {
+    const L = this.look;
+    let lo = 0, hi = 0;
+    switch (layer) {
+      case A_LINE:
+      case L_LINE:
+        lo = from;
+        hi = 2;
+        break;
+      case A_SKIN:
+      case L_SKIN: {
+        const cov = layer === A_SKIN ? L.sleeve : L.legCover;
+        const minEnd = layer === A_SKIN ? 0.07 : 0.08;
+        const a = cov ? cov[0] : 2, b = cov ? cov[1] : 2;
+        const first = a > from + 0.001, second = !!cov && 2 - b > minEnd;
+        if (!first && !second) return false;
+        lo = first ? from : Math.max(from, b - 0.04);
+        hi = second ? 2 : Math.min(2, a + 0.04);
+        break;
+      }
+      case A_SLEEVE:
+        if (!L.sleeve || !(L.sleeve[1] > from)) return false;
+        lo = Math.max(from, L.sleeve[0]);
+        hi = L.sleeve[1];
+        break;
+      case A_CUFF:
+        if (!L.cuff || !(L.cuff[1] > from)) return false;
+        lo = Math.max(from, L.cuff[0]);
+        hi = L.cuff[1];
+        break;
+      case L_COVER:
+        if (!L.legCover) return false;
+        lo = Math.max(from, L.legCover[0]);
+        hi = L.legCover[1];
+        break;
+      default:
+        lo = 0;
+        hi = L.shortsLen + 0.03;
+    }
+    return lo < w1 && hi > w0;
+  }
+
+  private armS(ctx: CanvasRenderingContext2D, sk: Skeleton, side: number, pass: number, from: number): void {
+    const p = sk.p;
+    const sh = side === 1 ? J.SH_R : J.SH_L;
+    const el = side === 1 ? J.EL_R : J.EL_L;
+    const ha = side === 1 ? J.HA_R : J.HA_L;
+    const fl = from > 0 ? 1 : 0;
+    const rU = this.look.arm[0] + 0.007 + (pass === PASS_FILL ? 0 : this.grow);
+    if (pass !== PASS_FILL) {
+      for (let b = 0; b < 2; b++) if (this.layerHits(A_LINE, from, b, b + 1)) this.boneS(ctx, p, sh, el, ha, 0, b, A_LINE, 0, fl, from, false, rU);
+      this.handS(ctx, sk, side, pass);
+      return;
+    }
+    // One sprite per bone for skin + sleeve + cuff, forearm first: at the elbow the
+    // upper arm's layers end on top, as when all skin is drawn before the covers.
+    for (let b = 1; b >= 0; b--) {
+      if (this.layerHits(A_SKIN, from, b, b + 1) || this.layerHits(A_SLEEVE, from, b, b + 1) || this.layerHits(A_CUFF, from, b, b + 1)) this.boneS(ctx, p, sh, el, ha, 0, b, A_FILL, side, fl, from, false, rU);
+    }
+    this.handS(ctx, sk, side, pass);
+  }
+
+  private legS(ctx: CanvasRenderingContext2D, sk: Skeleton, side: number, pass: number): void {
+    const L = this.look;
+    const p = sk.p;
+    const hip = side === 1 ? J.HIP_R : J.HIP_L;
+    const kn = side === 1 ? J.KN_R : J.KN_L;
+    const an = side === 1 ? J.AN_R : J.AN_L;
+    const toe = side === 1 ? J.TOE_R : J.TOE_L;
+    const front = this.legFront[side === 1 ? 1 : 0] === 1;
+    const raised = this.legRaised[side === 1 ? 1 : 0] === 1;
+    const t0 = this.thighStart(raised);
+    const shortsHere = front && !raised && L.shortsLen > 0;
+    const rU = L.leg[0] + 0.007 + (pass === PASS_FILL ? 0 : this.grow);
+    const rf = raised ? 1 : 0;
+    if (pass !== PASS_FILL) {
+      // Leg outline (+ the shorts leg's outline on the thigh, same colour).
+      for (let b = 0; b < 2; b++) {
+        if (this.layerHits(L_LINE, t0, b, b + 1)) this.boneS(ctx, p, hip, kn, an, 1, b, L_LINE, 0, rf + (shortsHere && b === 0 ? 2 : 0), t0, shortsHere, rU);
+      }
+    } else {
+      // One sprite per bone (skin, cover, + the shorts leg on the thigh), shin first.
+      for (let b = 1; b >= 0; b--) {
+        const sh = shortsHere && b === 0;
+        if (sh || this.layerHits(L_SKIN, t0, b, b + 1) || this.layerHits(L_COVER, t0, b, b + 1)) this.boneS(ctx, p, hip, kn, an, 1, b, L_FILL, side, rf + (sh ? 2 : 0), t0, sh, rU);
+      }
+    }
+    this.shoeFrame(p, an, kn, toe, side);
+    this.shoeS(ctx, side, pass);
+  }
+
+  private handS(ctx: CanvasRenderingContext2D, sk: Skeleton, side: number, pass: number): void {
+    const p = sk.p;
+    const ha = side === 1 ? J.HA_R : J.HA_L;
+    const open = side === 1 ? sk.handR : sk.handL;
+    const form = side === 1 ? sk.formR : sk.formL;
+    const o = form > 0 ? 0 : open < 0 ? 0 : open > 1 ? 1 : open;
+    const d = this.handDir;
+    const b = side === 1 ? 0 : 5;
+    const hx = d[b], hy = d[b + 1];
+    const hxy = Math.sqrt(hx * hx + hy * hy);
+    this.proj(p[ha * 3], p[ha * 3 + 1], p[ha * 3 + 2]);
+    const wx = this.qx, wy = this.qy;
+    const qs = this.qFig, R = scaleOf(qs), k = this.qs / R;
+    const ob = Math.round(o * 3), hb = Math.round(Math.min(1, hxy) * 8);
+    const f = form < 0 ? 0 : form > 2 ? 2 : form;
+    const key = this.key(K_HAND, qs, (side === 1 ? 32 : 0) + f * 2 + (pass === PASS_FILL ? 1 : 0), ob, 0, hb);
+    this.pcSide = side;
+    this.pcPass = pass;
+    this.pcForm = f;
+    this.pcOpen = ob / 3;
+    this.pcHxy = hb / 8;
+    this.pcR = R;
+    const hs = this.look.hand, g = (this.grow + 0.004) * R + 2;
+    const sp = this.sprites!;
+    let e: SpriteEntry | null = sp.get(key);
+    if (!e) e = sp.miss(key, -0.035 * hs * R - g, -0.05 * hs * R - g, (0.035 + 0.09 * this.pcHxy) * hs * R + g, 0.05 * hs * R + g, this, P_HAND);
+    // Foreshortening between buckets: stretch along the hand (at most a few %).
+    const st = hb >= 2 ? Math.max(0.85, Math.min(1.15, Math.min(1, hxy) / this.pcHxy)) : 1;
+    frameMatrix(M, 1, 0, 0, 1, 0, 0, wx, wy, Math.atan2(-hy, hx), k * st, k);
+    blitOrDraw(sp, ctx, e, this, P_HAND);
+  }
+
+  /** The shoe in the frame shoeFrame() set: one sprite per length (1 px steps), rotated / mirrored. */
+  private shoeS(ctx: CanvasRenderingContext2D, side: number, pass: number): void {
+    const qs = this.qFig, R = scaleOf(qs), k = this.sS / R;
+    // Length in 6 % steps, the rest stretched along the shoe (its toe stays round within a few tenths of a px).
+    const lb = Math.round(Math.log(Math.max(4, this.sL / k)) / SHOE_STEP);
+    const lq = Math.exp(lb * SHOE_STEP);
+    const st = this.sL / k / lq;
+    const key = this.key(K_SHOE, qs, side === 1 ? 1 : 0, pass === PASS_FILL ? 1 : 0, 0, lb);
+    this.pcSide = side;
+    this.pcPass = pass;
+    this.pcLen = lq;
+    this.pcR = R;
+    const g = this.grow * R + 2;
+    const sp = this.sprites!;
+    let e: SpriteEntry | null = sp.get(key);
+    if (!e) e = sp.miss(key, -0.036 * R - g, -0.022 * R - g, lq + 0.036 * R + g, 0.036 * R + g, this, P_SHOE);
+    // Sprite frame: x along the shoe, y = down (the shoe's "up" n is -y).
+    M[0] = this.sax * k * st;
+    M[1] = this.say * k * st;
+    M[2] = -this.snx * k;
+    M[3] = -this.sny * k;
+    M[4] = this.shx;
+    M[5] = this.shy;
+    blitOrDraw(sp, ctx, e, this, P_SHOE);
+  }
+
+  private torsoS(ctx: CanvasRenderingContext2D, sk: Skeleton, pass: number): void {
+    const L = this.look;
+    const p = sk.p;
+    const sp = this.sprites!;
+    const fill = pass === PASS_FILL;
+    const grow = fill ? 0 : this.grow;
+    this.local(p, J.CHEST, sk.rt, 0, -0.01, 0);
+    this.proj(this.wx, this.wy, this.wz);
+    const nx = this.qx, ny = this.qy, ns = this.qs;
+    this.headCentre(p);
+    this.proj(this.wx, this.wy, this.wz);
+    const hx = this.qx, hy = this.qy, hs = this.qs;
+    if (L.hood) {
+      // Hood resting behind the neck.
+      this.local(p, J.CHEST, sk.rt, 0, 0.035, -0.03);
+      this.proj(this.wx, this.wy, this.wz);
+      const ox = this.qx, oy = this.qy;
+      this.local(p, J.CHEST, sk.rt, 0.078, 0.035, -0.03);
+      this.proj(this.wx, this.wy, this.wz);
+      const rx = Math.hypot(this.qx - ox, this.qy - oy);
+      const rot = Math.atan2(this.qy - oy, this.qx - ox);
+      const gp = grow * this.scale;
+      spriteEllipse(sp, ctx, fill ? L.hood : L.outline, 1, 0, 0, 1, 0, 0, ox, oy, rx + gp, rx * 0.5 + gp, rot);
+    }
+    // Neck.
+    const qs = this.qFig, R = scaleOf(qs), k = (ns + hs) * 0.5 / R;
+    const bx = nx + (hx - nx) * 0.7, by = ny + (hy - ny) * 0.7;
+    const len = Math.hypot(bx - nx, by - ny) / k;
+    const cut = (L.neckR + grow) * R + 1;
+    const b = segBucket(len, cut);
+    const lq = segLength(b);
+    const key = this.key(K_NECK, qs, fill ? 1 : 0, 0, 0, b);
+    this.pcPass = pass;
+    this.pcLen = lq;
+    this.pcR = R;
+    let e: SpriteEntry | null = sp.get(key);
+    if (!e) e = sp.miss(key, -cut - 1, -cut - 1, lq + cut + 1, cut + 1, this, P_NECK, lq);
+    if (e) blitSegment(ctx, e, nx, ny, bx, by, k, lq, cut);
+    else {
+      this.pcLen = len;
+      boneMatrix(M, nx, ny, bx, by, k, len, cut);
+      blitOrDraw(sp, ctx, null, this, P_NECK);
+    }
+    // Shorts body: filled per frame (its outline as the shape grown, no stroke).
+    const nP = SHORTS_N * 2 + 2;
+    if (!fill) {
+      flattenSmooth(this.shortsP, nP);
+      fillGrown(ctx, this.grow * this.scale, L.outline);
+    } else {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.beginPath();
+      this.smooth(ctx, this.shortsP, nP);
+      ctx.fillStyle = L.shorts;
+      ctx.fill();
+    }
+    if (L.shortsLen > 0) {
+      const layer = fill ? T_SHORTS : T_SHORTS_LINE;
+      const rU = L.leg[0] + 0.007 + (fill ? 0 : this.grow);
+      if (!this.legFront[0] || this.legRaised[0]) this.boneS(ctx, p, J.HIP_L, J.KN_L, J.AN_L, 1, 0, layer, 0, 0, 0, false, rU);
+      if (!this.legFront[1] || this.legRaised[1]) this.boneS(ctx, p, J.HIP_R, J.KN_R, J.AN_R, 1, 0, layer, 0, 0, 0, false, rU);
+    }
+  }
+
+  private shirtS(ctx: CanvasRenderingContext2D, sk: Skeleton, pass: number): void {
+    const L = this.look;
+    const p = sk.p;
+    const sp = this.sprites!;
+    const nS = SHIRT_N * 2 + 2;
+    flattenSmooth(this.shirt, nS);
+    if (pass !== PASS_FILL) {
+      fillGrown(ctx, this.grow * this.scale, L.outline);
+      return;
+    }
+    // Thin line where the shirt overlaps the neck and shorts (invisible when it is the outline's colour).
+    if (L.hem && L.line !== L.outline) fillGrown(ctx, this.lineW() * 0.6, L.line);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.beginPath();
+    this.smooth(ctx, this.shirt, nS);
+    ctx.fillStyle = L.top;
+    ctx.fill();
+    if (L.stripe) {
+      const q = this.quad;
+      this.torsoPt(p, sk.rt, J.CHEST, -(L.shoulderW + 0.04), -0.1, 0, L.depth);
+      this.proj(this.wx, this.wy, this.wz);
+      const x0 = this.qx, y0 = this.qy;
+      this.torsoPt(p, sk.rt, J.CHEST, L.shoulderW + 0.04, -0.1, 0, L.depth);
+      this.proj(this.wx, this.wy, this.wz);
+      bandQuad(q, x0, y0, this.qx, this.qy, 0.034 * this.scale);
+      fillClippedToQuad(ctx, q, L.stripe);
+    }
+    if (L.hood && sk.rt[8] < -0.35) {
+      // Back to the viewer: the hood lies on the back of the hoodie.
+      this.local(p, J.CHEST, sk.rt, 0, -0.005, -0.04);
+      this.proj(this.wx, this.wy, this.wz);
+      const ox = this.qx, oy = this.qy;
+      this.local(p, J.CHEST, sk.rt, 0.07, -0.005, -0.04);
+      this.proj(this.wx, this.wy, this.wz);
+      const hr = Math.hypot(this.qx - ox, this.qy - oy);
+      const rot = Math.atan2(this.qy - oy, this.qx - ox);
+      const lw = this.lineW() * 0.5;
+      spriteEllipse(sp, ctx, L.line, 1, 0, 0, 1, 0, 0, ox, oy, hr + lw, hr * 0.75 + lw, rot);
+      spriteEllipse(sp, ctx, L.hood, 1, 0, 0, 1, 0, 0, ox, oy, hr, hr * 0.75, rot);
+      return;
+    }
+    if (L.hood && sk.rt[8] > 0.35) {
+      // Kangaroo pocket + drawstrings.
+      const q = this.quad;
+      for (let i = 0; i < 4; i++) {
+        const sx = i === 0 || i === 3 ? -1 : 1;
+        const top = i < 2;
+        this.torsoPt(p, sk.rp, J.PELVIS, sx * (top ? 0.052 : 0.074), top ? 0.1 : 0.025, 0, L.depth);
+        this.proj(this.wx, this.wy, this.wz);
+        q[i * 2] = this.qx;
+        q[i * 2 + 1] = this.qy;
+      }
+      flattenSmooth(q, 4);
+      fillGrown(ctx, this.lineW() * 0.5, L.line);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.beginPath();
+      this.smooth(ctx, q, 4);
+      ctx.fillStyle = L.hood;
+      ctx.fill();
+      for (let sd = -1; sd <= 1; sd += 2) {
+        this.local(p, J.CHEST, sk.rt, sd * 0.02, 0.012, 0.01);
+        this.proj(this.wx, this.wy, this.wz);
+        const x0 = this.qx, y0 = this.qy;
+        this.local(p, J.CHEST, sk.rt, sd * 0.025, -0.07, 0.01);
+        this.proj(this.wx, this.wy, this.wz);
+        spriteLine(sp, ctx, '#ffffff', x0, y0, this.qx, this.qy, 0.008 * this.scale, this.scale);
+      }
+    }
+  }
+
+  // Head frame (canvas px of the head, rotated) for head pieces.
+  private hfC = 1;
+  private hfS = 0;
+  private hfX = 0;
+  private hfY = 0;
+  private hfQ = 0;
+
+  private headS(ctx: CanvasRenderingContext2D, sk: Skeleton, pass: number, mini: boolean): void {
+    const L = this.look;
+    const p = sk.p;
+    const sp = this.sprites!;
+    this.headCentre(p);
+    this.proj(this.wx, this.wy, this.wz);
+    const hx = this.qx, hy = this.qy, s = this.qs;
+    const ux = p[J.HEAD_UP * 3] - p[J.HEAD * 3], uy = p[J.HEAD_UP * 3 + 1] - p[J.HEAD * 3 + 1];
+    const roll = Math.atan2(ux, uy);
+    const fx = p[J.HEAD_FWD * 3] - p[J.HEAD * 3];
+    const fy = p[J.HEAD_FWD * 3 + 1] - p[J.HEAD * 3 + 1];
+    const rx = L.headRx * s, ry = L.headRy * s;
+    const g = pass === PASS_FILL ? 0 : this.grow * this.scale;
+    const phi = Math.max(-0.6, Math.min(0.6, fx * 1.6));
+    const fo = phi * rx;
+    const lift = Math.max(-0.4, Math.min(0.4, -fy * 1.5)) * ry;
+    const fz = p[J.HEAD_FWD * 3 + 2] - p[J.HEAD * 3 + 2];
+    const qs = this.qFig, k = s / scaleOf(qs);
+    this.hfC = Math.cos(roll);
+    this.hfS = Math.sin(roll);
+    this.hfX = hx;
+    this.hfY = hy;
+    this.hfQ = qs;
+    this.pcPass = pass;
+    const C = this.hfC, Sn = this.hfS;
+    const phiB = Math.round((phi + 0.6) / PHI_STEP);
+    if (fz < -0.25) {
+      if (L.hairStyle !== 'ponytail') this.backHairS(ctx, pass, rx, ry, g, k, mini);
+      this.headPiece(ctx, H_FACE_BACK, 0, 0, 0, 0, k);
+      if (pass === PASS_FILL && L.band && L.hairStyle === 'puff') this.headPiece(ctx, H_PUFF_BAND_BACK, 0, 0, 0, 0, k);
+      if (L.hairStyle === 'ponytail') this.backHairS(ctx, pass, rx, ry, g, k, mini);
+      if (pass === PASS_FILL && L.hairStyle === 'beanie') this.headPiece(ctx, H_BEANIE, 0, 0, 0, 0, k);
+      return;
+    }
+    this.faceZ = fz;
+    this.backHairS(ctx, pass, rx, ry, g, k, mini);
+    // Ears + face.
+    const ex = rx * 0.97;
+    const ey = ry * 0.08 + lift * 0.3;
+    const col = pass === PASS_FILL ? L.skin : L.outline;
+    spriteEllipse(sp, ctx, col, C, Sn, -Sn, C, hx, hy, -ex - fo * 0.4, ey, rx * 0.17 + g, ry * 0.2 + g, 0);
+    spriteEllipse(sp, ctx, col, C, Sn, -Sn, C, hx, hy, ex - fo * 0.4, ey, rx * 0.17 + g, ry * 0.2 + g, 0);
+    this.headPiece(ctx, H_FACE, phiB, 0, 0, 0, k);
+    if (pass !== PASS_FILL) return;
+    // Inner ear lines, front hair, face.
+    this.headPiece(ctx, H_INNER_EAR, 0, -ex - fo * 0.4 + rx * 0.06, ey - ry * 0.08, 0, k);
+    this.headPiece(ctx, H_INNER_EAR, 0, ex - fo * 0.4 - rx * 0.06, ey - ry * 0.08, 0, k);
+    this.headPiece(ctx, H_FRONT_HAIR, phiB, 0, 0, 0, k);
+    if (mini) return;
+    const fex = fo * 0.75, fey = ry * 0.06 + lift * 0.5;
+    const spc = rx * 0.4 * Math.max(0.3, Math.min(1, this.faceZ * 1.15));
+    spriteEllipse(sp, ctx, L.eye, C, Sn, -Sn, C, hx, hy, fex - spc, fey, rx * 0.105, ry * 0.12, 0);
+    spriteEllipse(sp, ctx, L.eye, C, Sn, -Sn, C, hx, hy, fex + spc, fey, rx * 0.105, ry * 0.12, 0);
+    this.headPiece(ctx, H_BROW_L, 0, fex - spc, fey, 0, k);
+    this.headPiece(ctx, H_BROW_R, 0, fex + spc, fey, 0, k);
+    if (L.blush) {
+      spriteEllipse(sp, ctx, L.blush, C, Sn, -Sn, C, hx, hy, fex - spc * 1.2, fey + ry * 0.26, rx * 0.15, ry * 0.08, 0);
+      spriteEllipse(sp, ctx, L.blush, C, Sn, -Sn, C, hx, hy, fex + spc * 1.2, fey + ry * 0.26, rx * 0.15, ry * 0.08, 0);
+    }
+    this.headPiece(ctx, H_NOSE, 0, fex * 1.15, fey, 0, k);
+    this.headPiece(ctx, H_SMILE, 0, fex * 1.1, fey + ry * 0.45, 0, k);
+  }
+
+  private backHairS(ctx: CanvasRenderingContext2D, pass: number, rx: number, ry: number, g: number, k: number, mini: boolean): void {
+    const L = this.look;
+    const sp = this.sprites!;
+    const C = this.hfC, Sn = this.hfS, X = this.hfX, Y = this.hfY;
+    if (L.hairStyle === 'ponytail') {
+      const a = this.tailAngle(mini);
+      const bx = rx * 0.15, by = -ry * 0.82;
+      // The sprite hangs straight down from the crown point; turned by -a it swings like the path.
+      this.headPiece(ctx, H_PONYTAIL, 0, bx, by, -a, k);
+      if (pass === PASS_FILL && L.band) spriteEllipse(sp, ctx, L.band, C, Sn, -Sn, C, X, Y, bx + Math.sin(a) * rx * 0.1, by + Math.cos(a) * rx * 0.1, rx * 0.26, rx * 0.17, a);
+    } else if (L.hairStyle === 'puff') {
+      const bounce = mini ? 0 : this.tailA * 0.06;
+      this.headPiece(ctx, H_PUFF, 0, this.tailA * rx * (mini ? 0 : 0.1), -ry * (0.55 + bounce), 0, k);
+    } else if (L.hairStyle === 'crop') {
+      spriteEllipse(sp, ctx, pass === PASS_FILL ? L.hair : L.outline, C, Sn, -Sn, C, X, Y, 0, -ry * 0.42, rx * 1.05 + g, ry * 0.74 + g, 0);
+    } else if (L.hairStyle === 'beanie') {
+      this.headPiece(ctx, H_BEANIE_BACK, 0, 0, 0, 0, k);
+    }
+  }
+
+  /** Blit head piece `id` at (px, py) of the head frame, turned by `rot`, k screen px per sprite px. */
+  private headPiece(ctx: CanvasRenderingContext2D, id: number, phiB: number, px: number, py: number, rot: number, k: number): void {
+    const sp = this.sprites!;
+    const qs = this.hfQ;
+    const R = scaleOf(qs);
+    const pass = this.pcPass;
+    // Pieces whose look doesn't depend on the pass share one key.
+    const passKey = id === H_FACE || id === H_FACE_BACK || id === H_PONYTAIL || id === H_PUFF || id === H_BEANIE_BACK ? (pass === PASS_FILL ? 1 : 0) : 1;
+    const key = this.key(K_HEAD, qs, id, passKey, 0, phiB);
+    this.pcHead = id;
+    this.pcPhi = phiB;
+    this.pcR = R;
+    let e: SpriteEntry | null = sp.get(key);
+    if (!e) {
+      const rx = this.look.headRx * R, ry = this.look.headRy * R;
+      const g = (this.grow + 0.01) * R + 2;
+      // Each piece's box around its anchor (head centre unless noted).
+      let x0 = -1.2 * rx - g, x1 = 1.2 * rx + g, y0 = -1.65 * ry - g, y1 = 1.05 * ry + g;
+      if (id === H_FACE || id === H_FACE_BACK) {
+        y0 = -1.05 * ry - g;
+        x0 = -1.05 * rx - g;
+        x1 = 1.05 * rx + g;
+      } else if (id === H_PONYTAIL) {
+        x0 = -0.9 * rx - g;
+        x1 = 0.9 * rx + g;
+        y0 = -0.6 * rx - g;
+        y1 = 2.6 * ry + g;
+      } else if (id === H_PUFF) {
+        x0 = y0 = -1.6 * 1.42 * rx - g;
+        x1 = y1 = 1.6 * 1.42 * rx + g;
+      } else if (id >= H_INNER_EAR) {
+        x0 = y0 = -0.45 * rx - 3;
+        x1 = y1 = 0.45 * rx + 3;
+      }
+      e = sp.miss(key, x0, y0, x1, y1, this, P_HEAD);
+    }
+    frameMatrix(M, this.hfC, this.hfS, -this.hfS, this.hfC, this.hfX, this.hfY, px, py, rot, k, k);
+    blitOrDraw(sp, ctx, e, this, P_HEAD);
+  }
+
+  /** Draw head piece pcHead at the sprite's scale (pcR) around its anchor. */
+  private headPieceDraw(ctx: CanvasRenderingContext2D): void {
+    const L = this.look;
+    const R = this.pcR;
+    const rx = L.headRx * R, ry = L.headRy * R;
+    const pass = this.pcPass;
+    const g = pass === PASS_FILL ? 0 : this.grow * R;
+    const fo = (this.pcPhi * PHI_STEP - 0.6) * rx;
+    switch (this.pcHead) {
+      case H_FACE:
+        ctx.beginPath();
+        this.face(ctx, rx + g, ry + g, fo * 0.25);
+        ctx.fillStyle = pass === PASS_FILL ? L.skin : L.outline;
+        ctx.fill();
+        break;
+      case H_FACE_BACK:
+        ctx.beginPath();
+        this.face(ctx, rx + g, ry + g, 0);
+        ctx.fillStyle = pass === PASS_FILL ? L.hair : L.outline;
+        ctx.fill();
+        break;
+      case H_FRONT_HAIR:
+        this.frontHair(ctx, rx, ry, fo, R);
+        break;
+      case H_PONYTAIL:
+        ctx.beginPath();
+        this.ponytailPath(ctx, 0, 0, 0, 1, rx, ry, g);
+        this.flat(ctx, pass, L.hair);
+        break;
+      case H_PUFF:
+        ctx.beginPath();
+        this.puffPath(ctx, 0, 0, rx * 1.42, g);
+        this.flat(ctx, pass, L.hair);
+        break;
+      case H_BEANIE_BACK:
+        ctx.beginPath();
+        this.beanieDome(ctx, rx + g, ry + g, 0);
+        ctx.moveTo(rx * 0.24 + g, -ry * 1.24);
+        ctx.arc(0, -ry * 1.24, rx * 0.24 + g, 0, Math.PI * 2);
+        this.flat(ctx, pass, L.band ?? L.hair);
+        break;
+      case H_BEANIE:
+        this.beanie(ctx, rx, ry, 0, false);
+        break;
+      case H_PUFF_BAND_BACK:
+        if (!L.band) break;
+        ctx.strokeStyle = L.band;
+        ctx.lineWidth = ry * 0.24;
+        ctx.lineCap = 'butt';
+        ctx.beginPath();
+        ctx.ellipse(0, -ry * 0.1, rx * 0.98, ry * 0.86, 0, Math.PI * 1.08, Math.PI * 1.92);
+        ctx.stroke();
+        ctx.lineCap = 'round';
+        break;
+      case H_INNER_EAR:
+        ctx.strokeStyle = L.skinLine;
+        ctx.lineWidth = Math.max(1, this.olPx * 0.5);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, ry * 0.14);
+        ctx.stroke();
+        break;
+      case H_BROW_L:
+      case H_BROW_R:
+        ctx.strokeStyle = L.hair;
+        ctx.lineWidth = ry * 0.07 * L.brow;
+        ctx.beginPath();
+        if (this.pcHead === H_BROW_L) this.browL(ctx, 0, 0, rx, ry);
+        else this.browR(ctx, 0, 0, rx, ry);
+        ctx.stroke();
+        break;
+      case H_NOSE:
+        ctx.strokeStyle = L.skinLine;
+        ctx.lineWidth = ry * 0.06;
+        ctx.beginPath();
+        this.nose(ctx, 0, 0, rx, ry);
+        ctx.stroke();
+        break;
+      case H_SMILE:
+        ctx.strokeStyle = L.eye;
+        ctx.lineWidth = ry * 0.07;
+        ctx.beginPath();
+        this.smile(ctx, 0, 0, rx, ry);
+        ctx.stroke();
+        break;
+    }
   }
 }
 

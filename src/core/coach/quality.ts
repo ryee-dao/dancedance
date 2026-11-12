@@ -2,13 +2,16 @@
  * Graphics tiers for the coach stage, and the governor that picks one.
  *
  *   tier 0  Full      the original drawing (beat-pulsing glows, full res:
- *                     1920x1080 on the web, 1280x720 on TV), redrawn whole
- *                     every frame.
+ *                     1920x1080 on the web, 1280x720 on TV), every path drawn
+ *                     fresh, whole canvas redrawn every frame.
  *   tier 1  Smooth    the same figures, strip and floor rings, but the glows
  *                     behind the coaches are baked into a cached background
- *                     (they follow the section energy, no beat pulse), and
- *                     only the parts that move are redrawn each frame (dirty
- *                     rectangles). 1280x720 at most.
+ *                     (they follow the section energy, no beat pulse), only
+ *                     the parts that move are redrawn each frame (dirty
+ *                     rectangles), and the coaches are composed from
+ *                     pre-drawn pieces (sprites.ts: image blits instead of
+ *                     stroked / filled paths, which are what weak TV chips
+ *                     are slow at). 1280x720 at most.
  *   tier 2  Smoothest tier 1 at 960x540, drawn at 30 fps (the pose is still
  *                     taken from the audio clock at every drawn frame, so the
  *                     moves stay exactly on the beat).
@@ -40,6 +43,8 @@ export interface TierSpec {
   maxH: number;
   /** Glows baked into the cached background, only moving parts redrawn. */
   cached: boolean;
+  /** Coaches and moving strip parts composed from pre-drawn sprites (with `cached`). */
+  sprites: boolean;
   /** Frames drawn per second (the display may run faster; extra frames are skipped). */
   fps: 60 | 30;
 }
@@ -47,11 +52,11 @@ export interface TierSpec {
 export function tierSpec(tier: Tier, isTV: boolean): TierSpec {
   switch (tier) {
     case 0:
-      return { tier, name: 'Full', maxW: isTV ? 1280 : 1920, maxH: isTV ? 720 : 1080, cached: false, fps: 60 };
+      return { tier, name: 'Full', maxW: isTV ? 1280 : 1920, maxH: isTV ? 720 : 1080, cached: false, sprites: false, fps: 60 };
     case 1:
-      return { tier, name: 'Smooth', maxW: 1280, maxH: 720, cached: true, fps: 60 };
+      return { tier, name: 'Smooth', maxW: 1280, maxH: 720, cached: true, sprites: true, fps: 60 };
     default:
-      return { tier: 2, name: 'Smoothest', maxW: 960, maxH: 540, cached: true, fps: 30 };
+      return { tier: 2, name: 'Smoothest', maxW: 960, maxH: 540, cached: true, sprites: true, fps: 30 };
   }
 }
 

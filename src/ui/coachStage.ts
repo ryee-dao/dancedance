@@ -25,12 +25,14 @@ import type { Intensity } from '../core/choreo/generator';
 import { READY_POSE, type Move } from '../core/choreo/moves';
 import { resolveSongStyle, styleKey, styleLabel, type SongStyle, type StyleOverride } from '../core/choreo/songStyle';
 import { PoseEvaluator } from '../core/coach/animator';
-import { Conductor } from '../core/coach/conductor';
+import { Conductor, type Plan } from '../core/coach/conductor';
+import { timeOfBeat } from '../core/coach/animator';
+import type { SpriteStats } from '../core/coach/sprites';
 import { loopPlan, type LoopPlan } from '../core/coach/loop';
 import { blendPose } from '../core/coach/poses';
-import { StageRenderer2D, type SceneInfo, type StripInfo } from '../core/coach/renderer';
+import { SPRITE_BUDGET, StageRenderer2D, type SceneInfo, type StripInfo } from '../core/coach/renderer';
 import { CH, createPose, createSkeleton, solveSkeleton } from '../core/coach/skeleton';
-import { GraphicsMeter, graphicsPrefOf } from './graphics';
+import { GraphicsMeter, graphicsPrefOf, urlSprites } from './graphics';
 import type { GraphicsPref, GraphicsStats, Tier } from '../core/coach/quality';
 import { DEFAULT_COACH_BUILD, DEFAULT_COACH_STYLE, parseCoachBuild, parseCoachStyle, type CoachBuild, type CoachStyle } from '../core/coach/styles';
 import type { FrameInfo, StageRenderer } from './play';
@@ -60,7 +62,19 @@ export interface CoachStageDeps {
   getGraphics?: () => GraphicsPref;
   /** Graphics test only: always draw at this tier (no stepping down). */
   pinTier?: Tier;
+  /** Graphics test / comparisons: sprite drawing on or off in the lighter tiers (default: the tier's). `?gfxsprites=` wins. */
+  sprites?: boolean;
+  /** Tests / bench: new sprites a frame may make (default SPRITE_BUDGET, more while waiting). */
+  spriteBudget?: number;
 }
+
+/** New sprites a frame may make while the song hasn't started (the countdown frames are cheap). */
+export const WAIT_SPRITE_BUDGET = 16;
+/** Upcoming poses sampled per frame for prewarming (1/30 s apart), and how far ahead (s). */
+const WARM_SAMPLES = 2;
+const WARM_SAMPLES_WAITING = 8;
+const WARM_AHEAD = 4;
+const WARM_STEP = 1 / 30;
 
 export type RoutineMode = 'same' | 'fresh';
 
@@ -77,6 +91,18 @@ export interface CoachStage extends StageRenderer {
   frameStats(): FrameStats;
   /** Frame timing plus the graphics tier and resolution in use. */
   graphicsStats(): GraphicsStats;
+  /** Sprite cache counters (sprite tiers; null otherwise). */
+  spriteStats?(): SpriteStats | null;
+}
+
+/** The sprite setting for a stage: the bench / URL override, else the tier's. */
+export function spritesFor(deps: Pick<CoachStageDeps, 'sprites'>, tierSprites: boolean): boolean {
+  return deps.sprites ?? urlSprites ?? tierSprites;
+}
+
+/** Time of a plan's first planned move (prewarming starts there while waiting). */
+export function planStart(plan: Plan): number {
+  return plan.instances.length ? timeOfBeat(plan, plan.instances[0].start) : plan.grid.length ? plan.grid[0] : 0;
 }
 
 type InfoWithBeats = FrameInfo & { beats?: BeatSource | null };
@@ -125,6 +151,12 @@ class CoachStageImpl implements CoachStage {
   // Song style + routine personalisation, resolved once per song (again when its beat map arrives).
   private songKey = '';
   private routine: RoutineInfo | null = null;
+  // Sprite prewarming: upcoming poses drawn into the sprite cache (not the screen).
+  private warmEv = new PoseEvaluator();
+  private warmPose = createPose();
+  private warmSk = createSkeleton();
+  private warmT = -Infinity;
+  private warmPlan: Plan | null = null;
 
   constructor(private deps: CoachStageDeps) {
     this.meter = new GraphicsMeter(deps.isTV, 1, deps.pinTier ?? null);
@@ -191,6 +223,36 @@ class CoachStageImpl implements CoachStage {
     return this.meter.stats(this.canvas);
   }
 
+  spriteStats(): SpriteStats | null {
+    return this.r?.sprites?.stats() ?? null;
+  }
+
+  /**
+   * Sprite tiers: draw poses a little ahead of the playhead (from the start
+   * of the routine while waiting) into the sprite cache, using what is left
+   * of this frame's budget of new sprites.
+   */
+  private prewarm(t: number, waiting: boolean): void {
+    const r = this.r;
+    const plan = this.conductor.plan;
+    if (!r?.sprites || !plan || plan.kind === 'idle') return;
+    if (plan !== this.warmPlan) {
+      this.warmPlan = plan;
+      this.warmT = -Infinity;
+    }
+    const from = waiting ? planStart(plan) : t + 0.2;
+    if (this.warmT < from) this.warmT = from;
+    const until = (waiting ? from : t) + WARM_AHEAD * (waiting ? 4 : 1);
+    const n = waiting ? WARM_SAMPLES_WAITING : WARM_SAMPLES;
+    for (let i = 0; i < n && r.sprites.budget > 0 && this.warmT < until; i++) {
+      this.warmEv.evaluate(plan, this.warmT, this.warmPose, { energy: plan.sectionAt(this.warmT, null).energy });
+      solveSkeleton(this.warmPose, this.warmSk);
+      r.warm(this.warmSk, this.warmT);
+      r.warmNext(this.warmSk, this.warmT);
+      this.warmT += WARM_STEP;
+    }
+  }
+
   private resize(): void {
     this.needResize = false;
     if (!this.host || !this.r) return;
@@ -205,6 +267,7 @@ class CoachStageImpl implements CoachStage {
     this.hudTop = hudTopFraction(this.host, rect);
     this.hudCheckAt = performance.now();
     this.r.quality.cached = spec.cached;
+    this.r.quality.sprites = spritesFor(this.deps, spec.sprites);
     this.r.resize(w, h, true, this.hudTop);
     if (this.canvas) this.meter.noteCanvas(this.canvas);
     this.frozenDrawn = false;
@@ -334,7 +397,9 @@ class CoachStageImpl implements CoachStage {
     sc.half = !!plan?.half;
     sc.energy = waiting ? 0.25 : sec.energy;
     sc.strip = s;
+    this.r.spriteBudget = this.deps.spriteBudget ?? (waiting || phase === 'paused' ? WAIT_SPRITE_BUDGET : SPRITE_BUDGET);
     this.r.render(this.sk, sc);
+    this.prewarm(t, waiting || phase === 'paused');
     this.frozenDrawn = phase === 'paused';
     this.meter.drawn(wall, performance.now() - wall);
   }
