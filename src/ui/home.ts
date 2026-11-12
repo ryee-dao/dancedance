@@ -3,8 +3,10 @@
  * added by search, plus ones still being added), and the starter pack in
  * rows (eras, plus one row per artist with 5+ songs).
  *
- * Rendering: a full render on library 'change'; on 'song' only that tile is
- * patched so focus and scroll stay put while titles stream in.
+ * Rendering: a full render on library 'change' (skipped when the shelves and
+ * their songs are unchanged; tiles are reused, not rebuilt); on 'song' only
+ * that tile is patched so focus and scroll stay put while titles stream in.
+ * Patching a tile with what it already shows touches nothing.
  */
 
 import { bpmEvents, knownBpm } from '../beat/bpmIndex';
@@ -16,12 +18,17 @@ import { h, type HomeOptions, type Nav, type Screen } from './dom';
 import { isConnected, openConnectDialog, sendSong } from './githubConnect';
 import { ensureFocus, focusEl, type Scope } from './focusNav';
 import { openLevelPicker } from './levelPicker';
-import { library, thumbnailUrl, type Song } from './library';
+import { library, thumbnailUrl, type Song, type ThumbSize } from './library';
 import { toast } from './toast';
 
 export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
   const platform = getPlatform();
-  const tiles = new Map<string, HTMLButtonElement>();
+  /** Tiles by video ID. Kept across renders: a re-render moves them, it doesn't rebuild them (or reload their thumbnails). */
+  let tiles = new Map<string, HTMLButtonElement>();
+  /** Tiles placed by the render in progress. */
+  let placed = new Map<string, HTMLButtonElement>();
+  /** What the last render laid out; a 'change' that leaves it the same only refreshes the tiles. */
+  let lastLayout = '';
   let closePicker: (() => void) | null = null;
 
   const linkBtn = h('button', { class: 'btn', 'data-action': 'link', type: 'button' });
@@ -64,15 +71,37 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
     const keepId = el.contains(active) ? active?.dataset.id : undefined;
     const keepAction = el.contains(active) ? active?.dataset.action : undefined;
 
-    // TV: one entry for everything done from the phone (link a playlist, add songs).
-    if (platform.isTV) linkBtn.replaceChildren(icon('add'), 'Add songs from your phone');
-    else linkBtn.replaceChildren(icon('link'), library.link() ? 'Change playlist' : 'Link playlist');
-    tiles.clear();
-    const sections: HTMLElement[] = [];
     const status = library.playlistStatus();
+    const playlist = status.kind !== 'none' ? library.playlistSongs() : [];
+    const added = library.addedSongs();
+    const pending = platform.isTV ? [] : addedSongs.pending();
+    const hiddenCount = addedSongs.hiddenCount();
+    const groups = library.starterGroups();
+    const linkLabel = platform.isTV ? 'Add songs from your phone' : library.link() ? 'Change playlist' : 'Link playlist';
+    const ids = (songs: Song[]) => songs.map((s) => s.videoId);
+    const layout = JSON.stringify([
+      linkLabel,
+      status,
+      ids(playlist),
+      ids(added),
+      pending,
+      hiddenCount,
+      groups.map((g) => [g.id, g.title, ids(g.songs)]),
+    ]);
+    if (layout === lastLayout) {
+      // Same shelves and songs (e.g. the added-songs list arrived unchanged): just refresh the tiles.
+      refreshTiles();
+      return;
+    }
+    lastLayout = layout;
+
+    // TV: one entry for everything done from the phone (link a playlist, add songs).
+    linkBtn.replaceChildren(icon(platform.isTV ? 'add' : 'link'), linkLabel);
+    placed = new Map();
+    const sections: HTMLElement[] = [];
 
     if (status.kind !== 'none') {
-      const songs = library.playlistSongs();
+      const songs = playlist;
       const heading = h(
         'h2',
         { class: 'shelf-title' },
@@ -105,9 +134,6 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
       sections.push(h('section', { class: 'shelf', 'aria-label': 'My playlist' }, ...parts));
     }
 
-    const added = library.addedSongs();
-    const pending = platform.isTV ? [] : addedSongs.pending();
-    const hiddenCount = addedSongs.hiddenCount();
     if (added.length || pending.length || hiddenCount) {
       sections.push(
         h(
@@ -135,7 +161,6 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
       );
     }
 
-    const groups = library.starterGroups();
     sections.push(
       h(
         'section',
@@ -152,6 +177,8 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
       ),
     );
     body.replaceChildren(...sections);
+    tiles = placed;
+    useThumbs();
 
     const restore =
       (keepId && tiles.get(keepId)) ||
@@ -209,39 +236,103 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
   }
 
   function tile(song: Song): HTMLButtonElement {
-    const btn = h(
-      'button',
-      { class: 'tile', type: 'button', 'data-id': song.videoId, role: 'listitem' },
-      h(
-        'span',
-        { class: 'thumb' },
-        h('img', { src: thumbnailUrl(song.videoId), alt: '', loading: 'lazy', decoding: 'async' }),
-        h('span', { class: 'badges' }),
-        h('span', { class: 'bpm-badge', hidden: true }),
-      ),
-      h('span', { class: 'meta' }, h('span', { class: 'title' }), h('span', { class: 'artist' })),
-    );
-    tiles.set(song.videoId, btn);
+    let btn = tiles.get(song.videoId);
+    if (!btn) {
+      // The thumbnail's src is set once its size is known (useThumbs).
+      const img = h('img', { alt: '', loading: 'lazy', decoding: 'async' });
+      unsized.push([img, song.videoId]);
+      btn = h(
+        'button',
+        { class: 'tile', type: 'button', 'data-id': song.videoId, role: 'listitem' },
+        h('span', { class: 'thumb' }, img, h('span', { class: 'badges' }), h('span', { class: 'bpm-badge', hidden: true })),
+        h('span', { class: 'meta' }, h('span', { class: 'title' }), h('span', { class: 'artist' })),
+      );
+    }
+    placed.set(song.videoId, btn);
     patchTile(btn, song);
     return btn;
   }
 
+  /** Thumbnails waiting for their src. */
+  const unsized: [HTMLImageElement, string][] = [];
+
+  /** Lazy thumbnails not loaded yet, in page order (prefetchThumbs). */
+  const notLoaded: HTMLImageElement[] = [];
+  let prefetching = false;
+
+  /**
+   * Give new thumbnails their src. On TV the size is picked from the laid-out
+   * tile: YouTube's 320 px thumbnail when it is about as wide as the tile in
+   * device pixels (a third of the pixels to fetch and decode), else the 480 px one.
+   * They load lazily (the first screen first), then prefetchThumbs fetches the rest.
+   */
+  function useThumbs(): void {
+    if (!unsized.length || !el.isConnected) return;
+    if (!thumbSize) {
+      const thumb = el.querySelector<HTMLElement>('.thumb');
+      const w = (thumb?.offsetWidth ?? 0) * (window.devicePixelRatio || 1);
+      if (!(w > 0)) return;
+      thumbSize = platform.isTV && w <= 352 ? 'mq' : 'hq';
+    }
+    for (const [img, id] of unsized.splice(0)) {
+      img.src = thumbnailUrl(id, thumbSize);
+      notLoaded.push(img);
+    }
+    if (!prefetching) {
+      prefetching = true;
+      const step = () => {
+        if (!prefetchThumbs()) setTimeout(step, 120);
+      };
+      setTimeout(step, 120);
+    }
+  }
+
+  /**
+   * Start a few more of the thumbnails further down (every 120 ms after the
+   * first screen is up), so scrolling later doesn't wait for, or stutter on,
+   * them arriving. True when there's nothing left (or the screen is gone).
+   */
+  function prefetchThumbs(): boolean {
+    if (!el.isConnected) return true;
+    let started = 0;
+    while (notLoaded.length && started < 6) {
+      const img = notLoaded.shift()!;
+      if (!img.isConnected || img.complete) continue;
+      img.loading = 'eager';
+      started++;
+    }
+    if (notLoaded.length) return false;
+    prefetching = false;
+    return true;
+  }
+
+  function refreshTiles(): void {
+    for (const [id, btn] of tiles) {
+      const song = library.find(id);
+      if (song) patchTile(btn, song);
+    }
+  }
+
   function patchTile(btn: HTMLButtonElement, song: Song): void {
+    const bpm = knownBpm(song.videoId);
+    // Listed before the cloud could make its map: the coach learns the beat by listening the first time.
+    const learning = bpm === null && addedSongs.find(song.videoId)?.hasMap === false;
+    const blocked = library.blockReason(song.videoId);
+    const isNew = library.isNew(song.videoId);
+    // Unchanged since the last patch (most 'song' and tempo events): leave the DOM alone.
+    const state = `${bpm}|${learning}|${blocked}|${isNew}|${song.title}|${song.artist}`;
+    if (tileState.get(btn) === state) return;
+    tileState.set(btn, state);
     const title = btn.querySelector('.title')!;
     const artist = btn.querySelector('.artist')!;
     const badges = btn.querySelector('.badges')!;
     const bpmBadge = btn.querySelector<HTMLElement>('.bpm-badge')!;
-    const bpm = knownBpm(song.videoId);
-    // Listed before the cloud could make its map: the coach learns the beat by listening the first time.
-    const learning = bpm === null && addedSongs.find(song.videoId)?.hasMap === false;
     bpmBadge.hidden = bpm === null && !learning;
     bpmBadge.textContent = bpm !== null ? `${bpm} BPM` : learning ? 'Learning the beat' : '';
     bpmBadge.classList.toggle('bpm-learning', learning);
     title.textContent = song.title ?? 'Loading title…';
     title.classList.toggle('pending', song.title === null);
     artist.textContent = song.artist ?? '';
-    const blocked = library.blockReason(song.videoId);
-    const isNew = library.isNew(song.videoId);
     btn.classList.toggle('blocked', !!blocked);
     badges.replaceChildren(
       ...(blocked
@@ -269,12 +360,7 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
     const song = library.find(id);
     if (btn && song) patchTile(btn, song);
   };
-  const onBpm = () => {
-    for (const [id, btn] of tiles) {
-      const song = library.find(id);
-      if (song) patchTile(btn, song);
-    }
-  };
+  const onBpm = () => refreshTiles();
   library.addEventListener('change', onChange);
   library.addEventListener('song', onSong);
   // Polling finds new songs while the app sits on the home screen.
@@ -290,6 +376,8 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
     extra?: { label: string; onSelect(): void },
   ): void {
     closePicker?.();
+    // Load the play screen's code while the level is being chosen.
+    nav.prepare?.();
     closePicker = openLevelPicker({
       parent: el,
       title,
@@ -427,6 +515,7 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
   return {
     el,
     scope,
+    mounted: useThumbs,
     destroy() {
       closePicker?.();
       bpmEvents.removeEventListener('change', onBpm);
@@ -435,6 +524,11 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
     },
   };
 }
+
+/** Thumbnail size, decided from the first laid-out tile (see useThumbs). */
+let thumbSize: ThumbSize | null = null;
+/** Last state each tile was patched with. */
+const tileState = new WeakMap<HTMLButtonElement, string>();
 
 function toItem(song: Song): PlayItem {
   return {

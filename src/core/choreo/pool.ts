@@ -65,33 +65,61 @@ export class Ornaments {
 
 let pool: MovePool | null = null;
 
+/** A pool build in progress (warmPool builds it a slice at a time; getPool finishes it). */
+interface PoolBuild {
+  specs: VariationSpec[];
+  next: number;
+  variations: Move[];
+  orn: Map<string, VariationSpec[]>;
+  skipped: number;
+  ms: number;
+}
+let building: PoolBuild | null = null;
+
+const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+
 export function poolSpecs(file: PoolFile = data as unknown as PoolFile): VariationSpec[] {
   return file.variations.map(([id, base, type, foot, arms]) => ({ id, base, type: type as VariationType, ...(foot ? { foot } : {}), ...(arms ? { arms } : {}) }));
 }
 
-/** The pool (built once, on first use). */
-export function getPool(): MovePool {
+/** Build specs in order until `until` (a performance.now() time); the result is the same however it is sliced. */
+function buildUntil(until: number): MovePool | null {
   if (pool) return pool;
-  const t0 = typeof performance !== 'undefined' ? performance.now() : Date.now();
-  const variations: Move[] = [];
-  const orn = new Map<string, VariationSpec[]>();
-  let skipped = 0;
-  for (const v of poolSpecs()) {
+  const t0 = now();
+  const b: PoolBuild = (building ??= { specs: poolSpecs(), next: 0, variations: [] as Move[], orn: new Map(), skipped: 0, ms: 0 });
+  while (b.next < b.specs.length) {
+    const v = b.specs[b.next++];
     if (!isCounted(v.type)) {
-      let list = orn.get(v.base);
-      if (!list) orn.set(v.base, (list = []));
+      let list = b.orn.get(v.base);
+      if (!list) b.orn.set(v.base, (list = []));
       list.push(v);
-      continue;
+    } else {
+      try {
+        b.variations.push(buildVariation(v));
+      } catch {
+        b.skipped++;
+      }
     }
-    try {
-      variations.push(buildVariation(v));
-    } catch {
-      skipped++;
-    }
+    if ((b.next & 7) === 0 && now() >= until) break;
   }
-  const t1 = typeof performance !== 'undefined' ? performance.now() : Date.now();
-  pool = { moves: [...MOVES, ...variations], variations, ornaments: new Ornaments(orn), skipped, buildMs: t1 - t0 };
+  b.ms += now() - t0;
+  if (b.next < b.specs.length) return null;
+  pool = { moves: [...MOVES, ...b.variations], variations: b.variations, ornaments: new Ornaments(b.orn), skipped: b.skipped, buildMs: b.ms };
+  building = null;
   return pool;
+}
+
+/** The pool (built once, on first use, or ahead of time by warmPool). */
+export function getPool(): MovePool {
+  return buildUntil(Infinity)!;
+}
+
+/**
+ * Build part of the pool for about `budgetMs` (idle time on the home screen),
+ * so the first song doesn't pay for all of it. True once the pool is built.
+ */
+export function warmPool(budgetMs: number): boolean {
+  return buildUntil(now() + budgetMs) !== null;
 }
 
 /** Any move by id: catalogue, counted variation or ornament. */
@@ -103,6 +131,7 @@ export function findPoolMove(id: string): Move | undefined {
 /** Forget the built pool (tests). */
 export function resetPool(): void {
   pool = null;
+  building = null;
 }
 
 /** Stable hash of the base catalogue (ids, layers, keyframes), to spot a stale pool.json. */

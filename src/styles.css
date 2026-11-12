@@ -342,6 +342,29 @@ body {
   text-overflow: ellipsis;
 }
 
+/*
+ * TV (html.tv, set by app.ts): a weak GPU repaints a blurred shadow on every
+ * frame of a focus transition. Keep the focus rings (unblurred, cheap), drop
+ * the soft drop shadows (invisible on a projector's black anyway) and animate
+ * only the scale.
+ */
+.tv .tile {
+  transition: transform 140ms ease;
+}
+.tv .tile:focus {
+  box-shadow:
+    0 0 0 0.25rem var(--bg),
+    0 0 0 0.55rem var(--focus);
+}
+.tv .btn {
+  transition:
+    transform 120ms ease,
+    background-color 120ms ease;
+}
+.tv .badge {
+  box-shadow: none;
+}
+
 .tile.blocked .thumb img {
   filter: grayscale(1) brightness(0.5);
 }

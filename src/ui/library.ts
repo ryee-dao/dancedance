@@ -331,6 +331,9 @@ export function songGenre(videoId: string): string | undefined {
   return addedSongs.find(videoId)?.genre ?? cloudGenre(videoId);
 }
 
-export function thumbnailUrl(videoId: string): string {
-  return `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg`;
+/** YouTube thumbnail sizes: 'hq' 480x360 (16:9 frame letterboxed in 4:3), 'mq' 320x180. */
+export type ThumbSize = 'hq' | 'mq';
+
+export function thumbnailUrl(videoId: string, size: ThumbSize = 'hq'): string {
+  return `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/${size}default.jpg`;
 }

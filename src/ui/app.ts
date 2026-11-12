@@ -13,39 +13,74 @@ import { createHome } from './home';
 import { library, songGenre } from './library';
 import { createLinkPlaylist } from './linkPlaylist';
 import { createAddSong } from './addSong';
-import { createOptions } from './options';
 import { store } from '../store';
-import { createCoachStage } from './coachStage';
-import { createPlay, setStageRenderer } from './play';
+import { runSliced, runWhenQuiet, trackInput, whenQuiet } from './idle';
 import { createTvLink } from './tvLink';
 import { toast } from './toast';
+
+type PlayChunk = typeof import('./playChunk');
 
 export function startApp(root: HTMLElement): void {
   // Inside the Android TV shell (window.DanceBridge) use the TV platform.
   const tv = hasTvBridge();
   setPlatform(tv ? createAndroidTvPlatform() : createWebPlatform());
-  // The coach dances on the play screen. `?stage=pulse` swaps in the plain
-  // beat-pulse ring instead (handy for checking sync by eye).
-  if (new URLSearchParams(location.search).get('stage') !== 'pulse') {
-    const isTV = getPlatform().isTV;
-    // The stored look applies unless the URL says ?coach=<style> (the stage checks that).
-    setStageRenderer(() =>
-      createCoachStage({
-        getIntensity: () => store.settings().intensity,
-        isTV,
-        getStyle: () => store.settings().coachStyle,
-        getBuild: () => store.settings().coachBuild,
-        getRoutineMode: () => store.settings().routineMode,
-        getPlayCount: (id) => store.playCount(id),
-        getGenre: (id) => songGenre(id),
-        getPlayers: () => store.settings().players,
-      }),
-    );
-  }
+  // TV-only CSS (cheaper focus effects for a weak GPU) keys off this class.
+  document.documentElement.classList.toggle('tv', getPlatform().isTV);
+  trackInput();
+
+  // The play screen, the coach and Options live in a separate chunk with the
+  // move library (see playChunk.ts): loaded after the home screen is up.
+  let chunk: Promise<PlayChunk> | null = null;
+  const loadChunk = (): Promise<PlayChunk> =>
+    (chunk ??= import('./playChunk').then(
+      (m) => {
+        // The coach dances on the play screen. `?stage=pulse` swaps in the plain
+        // beat-pulse ring instead (handy for checking sync by eye).
+        if (new URLSearchParams(location.search).get('stage') !== 'pulse') {
+          const isTV = getPlatform().isTV;
+          // The stored look applies unless the URL says ?coach=<style> (the stage checks that).
+          m.setStageRenderer(() =>
+            m.createCoachStage({
+              getIntensity: () => store.settings().intensity,
+              isTV,
+              getStyle: () => store.settings().coachStyle,
+              getBuild: () => store.settings().coachBuild,
+              getRoutineMode: () => store.settings().routineMode,
+              getPlayCount: (id) => store.playCount(id),
+              getGenre: (id) => songGenre(id),
+              getPlayers: () => store.settings().players,
+            }),
+          );
+        }
+        return m;
+      },
+      (err: unknown) => {
+        chunk = null; // try again next time
+        throw err;
+      },
+    ));
   initFocusNav();
 
   let current: Screen | null = null;
+  /** Bumped on every navigation, so a screen that finished loading late doesn't replace a newer choice. */
+  let navNo = 0;
+  /** Show a screen from the play chunk once it's loaded (usually it already is). */
+  const showLazy = (make: (m: PlayChunk) => Screen) => {
+    const no = ++navNo;
+    loadChunk().then(
+      (m) => {
+        if (no === navNo) show(make(m));
+      },
+      () => {
+        if (no !== navNo) return;
+        // Usually a tab left open across a site update (the old chunk is gone): reload once.
+        if (reloadOnce()) return;
+        toast("Couldn't load the dance screen. Check the connection and try again.", 6000);
+      },
+    );
+  };
   const show = (screen: Screen) => {
+    navNo++;
     current?.destroy();
     current = screen;
     root.replaceChildren(screen.el);
@@ -74,8 +109,15 @@ export function startApp(root: HTMLElement): void {
     home: (opts) => show(createHome(nav, opts)),
     link: () => show(tv ? createTvLink(nav) : createLinkPlaylist(nav)),
     play: (queue: PlayItem[], opts) => {
-      if (queue.length) show(createPlay(nav, queue, opts));
+      if (queue.length) showLazy((m) => m.createPlay(nav, queue, opts));
     },
+    // A song is being chosen: load the play chunk and build the routine
+    // generator's caches now (in short slices), while the level is picked.
+    prepare: () =>
+      void loadChunk().then(
+        (m) => runSliced((budget) => m.warmGenerator(budget)),
+        () => {},
+      ),
     pickFile: () => {
       fileInput.value = '';
       fileInput.click();
@@ -85,7 +127,7 @@ export function startApp(root: HTMLElement): void {
       if (tv) show(createHome(nav));
       else show(createAddSong(nav));
     },
-    options: () => show(createOptions(nav)),
+    options: () => showLazy((m) => m.createOptions(nav)),
   };
 
   fileInput.addEventListener('change', () => {
@@ -107,6 +149,40 @@ export function startApp(root: HTMLElement): void {
   // TV, first run without a playlist: offer phone linking straight away.
   if (tv && shouldOfferTvLink()) nav.link();
   else nav.home();
+
+  // Each time the remote has been left alone for a moment, one step: build
+  // the move catalogue (the biggest single piece), then load the rest of the
+  // play chunk, then fill the routine generator's caches a slice at a time.
+  // Choosing a song then waits for none of it. (A song chosen sooner loads
+  // whatever is missing itself.)
+  const quietMs = 1500;
+  whenQuiet(() => {
+    void import('../core/choreo/moves').then(
+      () =>
+        whenQuiet(() => {
+          void loadChunk().then(
+            (m) => runWhenQuiet((budget) => m.warmGenerator(budget), quietMs),
+            () => {},
+          );
+        }, quietMs),
+      () => {},
+    );
+  }, quietMs);
+}
+
+/** Reload the page, unless that was already tried in the last minute. True if reloading. */
+function reloadOnce(): boolean {
+  const KEY = 'dd.chunkReload';
+  if (navigator.onLine === false) return false; // offline: a reload would only show an error page
+  try {
+    const last = Number(sessionStorage.getItem(KEY) ?? 0);
+    if (Date.now() - last < 60_000) return false;
+    sessionStorage.setItem(KEY, String(Date.now()));
+  } catch {
+    return false;
+  }
+  location.reload();
+  return true;
 }
 
 /** Drop an audio file anywhere on the window. */
