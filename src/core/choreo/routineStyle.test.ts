@@ -27,9 +27,11 @@ const SONGS = ['s1', 's2', 's3', 's4', 's5', 's6'];
 
 describe('song style -> routine', () => {
   it('weights picks toward the song\'s families (measurably, never exclusively)', () => {
+    // A dozen songs: each casts one kit, so a handful is a small sample.
+    const ids = Array.from({ length: 12 }, (_, k) => `s${k + 1}`);
     for (const fam of ['latin', 'rock', 'disco'] as const) {
-      const own = share(SONGS, 'cardio', { style: style({ [fam]: 1 }) }, (i) => i.move.families.includes(fam));
-      const other = share(SONGS, 'cardio', { style: style({ pop: 1 }) }, (i) => i.move.families.includes(fam));
+      const own = share(ids, 'cardio', { style: style({ [fam]: 1 }) }, (i) => i.move.families.includes(fam));
+      const other = share(ids, 'cardio', { style: style({ pop: 1 }) }, (i) => i.move.families.includes(fam));
       expect(own, fam).toBeGreaterThan(0.5);
       expect(own, fam).toBeLessThan(0.97); // the rest of the pool stays reachable
       expect(own - other, fam).toBeGreaterThan(0.25);
@@ -42,7 +44,8 @@ describe('song style -> routine', () => {
     const r = generateRoutine(songMap(120, 'zzzUnknown01'), 'cardio', { style: s });
     const p = picks(r.instances);
     const distinct = new Set(p.map((i) => i.move.id));
-    expect(distinct.size).toBeGreaterThanOrEqual(10);
+    // A kit of recurring moves (verse motif, hook, power move, break ...), not a stream of new ones.
+    expect(distinct.size).toBeGreaterThanOrEqual(8);
     const fams = new Set(p.flatMap((i) => i.move.families));
     expect(fams.size).toBeGreaterThanOrEqual(4);
     // No family dominates.

@@ -6,6 +6,7 @@ import partyRockMap from '../../../public/beatmaps/zIh5AHxh-Ok.json';
 import onTheFloorMap from '../../../public/beatmaps/9lybsz-7TFM.json';
 import { generateDuoRoutine } from './duo';
 import { LivePlanner, MAX_NAME, generateRoutine, shortName, type Intensity, type MoveInstance, type Routine } from './generator';
+import { MIN_CARD_BEATS, cardsOf } from './cards';
 import { findMove } from './moves';
 import { getPool } from './pool';
 import { songMap } from './testutil';
@@ -279,7 +280,7 @@ describe('gap fills', () => {
     }
   });
 
-  it('fills a lone leftover beat with a 1-beat move of the style', () => {
+  it('dances a lone leftover beat as part of the move around it (no 1-beat move)', () => {
     const odd = songMap(120, 'lone-beat');
     // Every 4th bar has 5 beats.
     const db: number[] = [];
@@ -288,10 +289,20 @@ describe('gap fills', () => {
       b += k % 4 === 3 ? 5 : 4;
     }
     odd.downbeats = db;
-    const r = generateRoutine(odd, 'cardio');
-    const fills = r.instances.filter((i) => i.fill);
-    expect(fills.length).toBeGreaterThan(0);
-    for (const f of fills) expect(f.move.idle).toBe(false);
+    for (const lv of LEVELS) {
+      const r = generateRoutine(odd, lv);
+      covered(r);
+      const parts = r.instances.filter((i) => i.move.part);
+      expect(parts.length, lv).toBeGreaterThan(0);
+      for (const c of cardsOf(r.instances)) expect(c.end - c.start, `${lv} card @${c.start}`).toBeGreaterThanOrEqual(MIN_CARD_BEATS);
+      // A part carries the name of a whole move next to it.
+      for (let k = 0; k < r.instances.length; k++) {
+        const i = r.instances[k];
+        if (!i.move.part) continue;
+        const near = [r.instances[k - 1], r.instances[k + 1]].filter((x) => x && !x.move.part);
+        expect(near.some((x) => x.move.name === i.move.name), `${lv} part @${i.start} ${i.move.name}`).toBe(true);
+      }
+    }
   });
 
   it('is deterministic', () => {

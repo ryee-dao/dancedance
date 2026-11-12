@@ -13,6 +13,7 @@
  * motion (head drags behind fast torso moves, small nod on the beat).
  */
 
+import { rootOffset } from '../choreo/cards';
 import type { MoveInstance } from '../choreo/generator';
 import { IDLE_MOVE, trackKeys, type MoveKey } from '../choreo/moves';
 import { GROUP_CHANNELS, G_BODY, G_TORSO, NUM_GROUPS, interpolateGroup } from './poses';
@@ -227,10 +228,11 @@ export class PoseEvaluator {
     const chs = GROUP_CHANNELS[g];
     const src = key.pose;
     for (let j = 0; j < chs.length; j++) dst[chs[j]] = src[chs[j]];
-    if (g === G_BODY && inst.origin !== 0) {
-      dst[CH.X] += inst.origin;
-      dst[CH.RFT_X] += inst.origin;
-      dst[CH.LFT_X] += inst.origin;
+    if (g === G_BODY && (inst.origin !== 0 || inst.drift)) {
+      const x = rootOffset(inst, key.at);
+      dst[CH.X] += x;
+      dst[CH.RFT_X] += x;
+      dst[CH.LFT_X] += x;
     }
   }
 }

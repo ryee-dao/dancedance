@@ -161,6 +161,8 @@ export interface Move {
   /** Composite full poses at every key time (thumbnails, transitions, checks). */
   keys: readonly MoveKey[];
   mirrorKeys: readonly MoveKey[];
+  /** Plan-time piece of a move (its first / last beats, or a pause on its first pose), shown under the move's name (cards.ts). */
+  part?: boolean;
 }
 
 /**
