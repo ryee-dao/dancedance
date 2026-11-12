@@ -14,7 +14,12 @@
  *    so time stays continuous and monotonic while playing;
  *  - snaps immediately when the error exceeds `snapThreshold` (seek, stall
  *    recovery, start of playback);
- *  - freezes while not playing (paused, buffering, ended).
+ *  - freezes while not playing (paused, buffering, ended);
+ *  - never extrapolates more than `maxHold` seconds past the last FRESH
+ *    sample: a player that says "playing" while its time has stopped (a
+ *    media element starved of data, a dead audio output) freezes the clock
+ *    instead of letting the dance run on to no sound. `staleFor()` tells the
+ *    player's watchdog how long that has been.
  *
  * Units: media time in seconds, wall time in milliseconds.
  */
@@ -26,12 +31,19 @@ export interface ClockOptions {
   snapThreshold?: number;
   /** Max correction speed as a fraction of real time. Default 0.1. */
   maxSlew?: number;
+  /**
+   * Longest extrapolation (seconds) without a fresh sample while playing.
+   * Default 2 (the YouTube IFrame API posts every few hundred ms, and has its
+   * own stall detection); media elements, which update every frame, use less.
+   */
+  maxHold?: number;
 }
 
 export class SmoothClock {
   private readonly now: () => number;
   private readonly snapThreshold: number;
   private readonly maxSlew: number;
+  private readonly maxHold: number;
 
   private playing = false;
   /** Media time at the anchor. */
@@ -42,11 +54,14 @@ export class SmoothClock {
   private pending = 0;
   /** Last raw sample, for stale-repeat detection. */
   private lastSample = NaN;
+  /** Wall time (ms) of the last fresh sample (or of the transition into playing). */
+  private freshWall = 0;
 
   constructor(opts: ClockOptions = {}) {
     this.now = opts.now ?? (() => performance.now());
     this.snapThreshold = opts.snapThreshold ?? 0.15;
     this.maxSlew = opts.maxSlew ?? 0.1;
+    this.maxHold = Math.max(0.05, opts.maxHold ?? 2);
   }
 
   /** Current smoothed media time in seconds. */
@@ -56,6 +71,16 @@ export class SmoothClock {
 
   isPlaying(): boolean {
     return this.playing;
+  }
+
+  /**
+   * Seconds since the player last reported a new time while playing (0 when
+   * not playing). Past `maxHold` the clock stands still; a watchdog can use
+   * this to notice a player stuck in "playing".
+   */
+  staleFor(): number {
+    if (!this.playing) return 0;
+    return Math.max(0, (this.now() - this.freshWall) / 1000);
   }
 
   /**
@@ -79,11 +104,13 @@ export class SmoothClock {
       this.anchor(mediaTime, t);
       this.playing = true;
       this.lastSample = mediaTime;
+      this.freshWall = t;
       return;
     }
 
     if (mediaTime === this.lastSample) return; // stale repeat, nothing new
     this.lastSample = mediaTime;
+    this.freshWall = t;
 
     const est = this.estimate(t);
     const err = mediaTime - est;
@@ -99,8 +126,10 @@ export class SmoothClock {
 
   /** Hard reset to a known position (e.g. after an explicit seek). */
   seek(mediaTime: number): void {
-    this.anchor(mediaTime, this.now());
+    const t = this.now();
+    this.anchor(mediaTime, t);
     this.lastSample = mediaTime;
+    this.freshWall = t;
   }
 
   private anchor(mediaTime: number, wall: number): void {
@@ -111,7 +140,9 @@ export class SmoothClock {
 
   private estimate(wall: number): number {
     if (!this.playing) return this.anchorMedia;
-    const elapsed = Math.max(0, (wall - this.anchorWall) / 1000);
+    // The anchor moves with every fresh sample, so this bounds the run-on
+    // after the player's time stopped moving.
+    const elapsed = Math.min(this.maxHold, Math.max(0, (wall - this.anchorWall) / 1000));
     const budget = elapsed * this.maxSlew;
     const applied =
       this.pending >= 0 ? Math.min(this.pending, budget) : Math.max(this.pending, -budget);

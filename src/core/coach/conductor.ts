@@ -166,6 +166,43 @@ export class Plan implements PlanView {
     for (let k = 0; k < MAX_GRID_STEP && g.length && g[g.length - 1] < t + 2; k++) g.push(g[g.length - 1] + per);
   }
 
+  /**
+   * Splice: this plan's routine takes over only after `untilT`; before that it
+   * dances `old`'s instances (re-indexed onto this grid by time). The beats
+   * between the last kept move and this routine's first move after it are
+   * short in-place fills, as the generator does for odd bars.
+   */
+  keepOpening(old: Plan, untilT: number): void {
+    const toBeat = (time: number) => Math.max(0, Math.round(beatPosition(this, time)));
+    const src = old.instances;
+    const kept: MoveInstance[] = [];
+    let end = 0;
+    for (let k = 0; k < src.length; k++) {
+      const inst = src[k];
+      const t1 = timeOfBeat(old, inst.start + inst.span);
+      // Past the cut, with the coach back home (a travelling run isn't cut in the middle).
+      const home = Math.abs(inst.origin) < 1e-9;
+      if (timeOfBeat(old, inst.start) >= untilT - 1e-6 && (home || kept.length > 256)) break;
+      const start = Math.max(end, toBeat(timeOfBeat(old, inst.start)));
+      const stop = toBeat(t1);
+      if (stop <= start) continue;
+      kept.push({ ...inst, start, span: stop - start });
+      end = stop;
+    }
+    if (!kept.length) return;
+    // This routine from its first move at home after the kept part; fills in between.
+    let r = 0;
+    while (r < this.instances.length && (this.instances[r].start < end || Math.abs(this.instances[r].origin) > 1e-9)) r++;
+    const rest = this.instances.slice(r);
+    const next = rest.length ? rest[0].start : end;
+    const section = kept[kept.length - 1].section;
+    const fills: MoveInstance[] = [];
+    for (let b = end; b < next; b++) {
+      fills.push({ move: IDLE_MOVE, mirror: (b & 1) === 1, start: b, span: 1, half: false, origin: 0, section, sig: false, unitStart: false, phrase: -1, fill: true });
+    }
+    this.instances = [...kept, ...fills, ...rest];
+  }
+
   /** Section type and energy at beat b. */
   sectionAt(t: number, inst: MoveInstance | null): { type: SectionType; energy: number } {
     for (const s of this.sections) if (t >= s.start && t < s.end) return { type: s.type, energy: s.energy };
@@ -221,6 +258,13 @@ export class Conductor {
         this.beginFade(t);
         this.active = plan;
         this.pending = null;
+      } else if (onlyTheMapChanged(this.active, plan) && !this.pending) {
+        // The same song's map was replaced mid-song (the full analysis after a
+        // first-30-s map, a better map arriving): keep the moves on screen and
+        // the ones the strip already announced, take the new routine after them.
+        // The switch itself is then invisible, so it happens on the next beat.
+        plan.keepOpening(this.active, keepUntil(this.active, t));
+        this.pending = { plan, at: timeOfBeat(this.active, Math.floor(beatPosition(this.active, t)) + 1) };
       } else {
         this.pending = { plan, at: this.switchTime(this.active, t) };
       }
@@ -362,6 +406,41 @@ function sameGroup(a: MoveInstance, b: MoveInstance): boolean {
 function showcase(ins: readonly MoveInstance[], j: number): MoveInstance {
   for (let k = j; k < ins.length && k < j + 8 && sameGroup(ins[k], ins[j]); k++) if (!ins[k].move.part) return ins[k];
   return ins[j];
+}
+
+/** Both map plans of the same song, level and style: only the beat map was replaced. */
+function onlyTheMapChanged(a: Plan, b: Plan): boolean {
+  if (a.kind !== 'map' || b.kind !== 'map' || !a.instances.length || !b.instances.length) return false;
+  // key: map|videoId|intensity|revision|p/f[|opts]
+  const pa = a.key.split('|');
+  const pb = b.key.split('|');
+  return pa[1] === pb[1] && pa[2] === pb[2] && pa.slice(5).join('|') === pb.slice(5).join('|');
+}
+
+/** A replaced map keeps at least this much of the routine ahead (s). */
+const KEEP_AHEAD_SEC = 6;
+
+/**
+ * Where a replaced routine may give way: after the move group playing at t
+ * and the one after it (what the strip's NOW and NEXT cards show), and not
+ * before t + KEEP_AHEAD_SEC.
+ */
+function keepUntil(plan: Plan, t: number): number {
+  const ins = plan.instances;
+  const floor = t + KEEP_AHEAD_SEC;
+  if (!ins.length) return floor;
+  const lastEnd = timeOfBeat(plan, ins[ins.length - 1].start + ins[ins.length - 1].span);
+  let i = instanceIndexAt(plan, beatPosition(plan, t));
+  if (i < 0) i = 0;
+  if (i >= ins.length) return Math.min(floor, lastEnd);
+  const groupEnd = (k: number) => {
+    let j = k;
+    while (j + 1 < ins.length && sameGroup(ins[j + 1], ins[k])) j++;
+    return j;
+  };
+  const cur = groupEnd(i);
+  const next = cur + 1 < ins.length ? groupEnd(cur + 1) : cur;
+  return Math.min(lastEnd, Math.max(floor, timeOfBeat(plan, ins[next].start + ins[next].span)));
 }
 
 function desiredKey(tl: BeatTimeline | null, videoId: string, intensity: Intensity): string {

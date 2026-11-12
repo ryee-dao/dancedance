@@ -11,7 +11,8 @@ export class AudioFilePlayer implements MediaPlayer {
 
   private audio = new Audio();
   private url: string | null = null;
-  private clock = new SmoothClock();
+  /** The element's time moves every frame: past half a second without a new value it is stuck, not playing. */
+  private clock = new SmoothClock({ maxHold: 0.5 });
   private loaded = false;
   private pending: { reject: (e: PlayerError) => void } | null = null;
 

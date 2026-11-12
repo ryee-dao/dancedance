@@ -55,6 +55,41 @@ describe('analyzePcm (full analysis, or first 30 s when slow)', () => {
     expect(full.partial).toBeUndefined();
   });
 
+  it('waits for a full analysis that is nearly done at the budget instead of starting a 30 s job', async () => {
+    // Full job: 20 s, reporting progress as it goes.
+    const jobs: AnalysisRequest[] = [];
+    const runner: AnalysisRunner = (req, onProgress) => {
+      jobs.push(req);
+      const total = req.maxSeconds ? 1000 : 20000;
+      const timers = [1, 2, 3, 4, 5, 6, 7, 8, 9].map((k) => setTimeout(() => onProgress?.(k / 10), (total * k) / 10));
+      let done: ReturnType<typeof setTimeout>;
+      const promise = new Promise<BeatMap>((resolve) => {
+        done = setTimeout(() => resolve(mkMap({ source: req.source, videoId: req.videoId, until: req.maxSeconds ?? req.duration, duration: req.duration })), total);
+      });
+      return { promise, cancel: () => [...timers, done].forEach(clearTimeout) };
+    };
+    const a = analyzePcm(audio(200), { key: 'k', source: 'device', runner });
+    await vi.advanceTimersByTimeAsync(20000);
+    const first = await a.first;
+    expect(first.partial).toBeUndefined();
+    expect(jobs).toHaveLength(1);
+    // A slow one (projected well past the budget) still gets the 30 s map at 15 s.
+    const slow: AnalysisRunner = (req, onProgress) => {
+      jobs.push(req);
+      const total = req.maxSeconds ? 1000 : 120000;
+      const t1 = setTimeout(() => onProgress?.(0.1), 12000);
+      let done: ReturnType<typeof setTimeout>;
+      const promise = new Promise<BeatMap>((resolve) => {
+        done = setTimeout(() => resolve(mkMap({ source: req.source, videoId: req.videoId, until: req.maxSeconds ?? req.duration, duration: req.duration })), total);
+      });
+      return { promise, cancel: () => [t1, done].forEach(clearTimeout) };
+    };
+    const b = analyzePcm(audio(200), { key: 'k', source: 'device', runner: slow });
+    await vi.advanceTimersByTimeAsync(16000);
+    expect((await b.first).partial).toBe(true);
+    b.cancel();
+  });
+
   it('does not start the partial job for songs shorter than 30 s', async () => {
     const { runner, jobs } = fakeRunner(() => 20000);
     const a = analyzePcm(audio(20), { key: 'k', source: 'file', runner });

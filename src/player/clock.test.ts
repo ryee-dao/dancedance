@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SmoothClock } from './clock';
 
-function setup(opts: { snapThreshold?: number; maxSlew?: number } = {}) {
+function setup(opts: { snapThreshold?: number; maxSlew?: number; maxHold?: number } = {}) {
   let wall = 1000; // ms
   const clock = new SmoothClock({ now: () => wall, ...opts });
   return {
@@ -126,5 +126,59 @@ describe('SmoothClock', () => {
     advance(100);
     clock.update(Number.NaN, true);
     expect(clock.time()).toBeCloseTo(3.1, 5);
+  });
+
+  it('stops extrapolating when the player keeps saying "playing" but its time froze', () => {
+    const { clock, advance } = setup({ maxHold: 0.5 });
+    clock.update(100, true);
+    advance(200);
+    clock.update(100.2, true);
+    // The media element starves: same currentTime for 10 s, still "playing".
+    for (let i = 0; i < 600; i++) {
+      advance(16);
+      clock.update(100.2, true);
+    }
+    expect(clock.time()).toBeCloseTo(100.7, 5); // at most maxHold past the last fresh sample
+    expect(clock.staleFor()).toBeCloseTo(9.6, 1);
+    // Time moves again: the clock follows from there.
+    clock.update(100.25, true);
+    expect(clock.staleFor()).toBe(0);
+    advance(500);
+    clock.update(100.75, true);
+    expect(clock.time()).toBeCloseTo(100.75, 1);
+  });
+
+  it('default hold keeps the YouTube IFrame cadence (coarse posts, up to ~1 s apart) smooth', () => {
+    const { clock, advance } = setup();
+    clock.update(0, true);
+    let media = 0;
+    let prev = clock.time();
+    for (let frame = 1; frame <= 300; frame++) {
+      advance(16);
+      // Posts every 250 ms, with an occasional 1 s gap (busy iframe).
+      if (frame % 16 === 0 && !(frame >= 96 && frame < 160)) media = (frame * 16) / 1000;
+      clock.update(media, true);
+      const now = clock.time();
+      expect(now).toBeGreaterThan(prev);
+      prev = now;
+    }
+    expect(clock.time()).toBeCloseTo(4.8, 1);
+    expect(clock.staleFor()).toBeLessThan(0.3);
+  });
+
+  it('a long-frozen clock is not stale once paused, and seek() makes it fresh', () => {
+    const { clock, advance } = setup({ maxHold: 0.5 });
+    clock.update(5, true);
+    advance(3000);
+    expect(clock.time()).toBeCloseTo(5.5, 5);
+    expect(clock.staleFor()).toBeCloseTo(3, 5);
+    clock.update(5, false);
+    expect(clock.staleFor()).toBe(0);
+    expect(clock.time()).toBe(5);
+    clock.update(5, true);
+    advance(1000);
+    clock.seek(20);
+    expect(clock.staleFor()).toBe(0);
+    expect(clock.time()).toBe(20);
   });
 });
