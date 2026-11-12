@@ -33,7 +33,7 @@ const sideCrunch: PoseSpec = {
   r: at(1, 0.24, 0.84, -0.02, [1, 0.1, -0.2]), l: BEHIND_HEAD.l, handR: 1, handL: 1,
 };
 const windmillTouch: PoseSpec = {
-  y: -0.14, bend: 68, twist: -24, lean: -9, nod: 6, turn: -10, rf: [0.21, 0, 0], lf: [-0.21, 0, 0], kneeL: 0.1,
+  y: -0.14, bend: 63, twist: -24, lean: -9, nod: 6, turn: -10, rf: [0.21, 0, 0], lf: [-0.21, 0, 0], kneeL: 0.1,
   r: [74, 122, 76, 122], l: [168, 0, 172, 0], ...OPEN,
 };
 
