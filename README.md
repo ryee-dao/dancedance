@@ -504,13 +504,33 @@ Some rules are fixed:
 
 Each move repeats long enough to pick up, and every chorus opens with the song's signature combo.
 
+**No move flashes by.** What you see as one move (one name on the NOW card) always lasts at least a bar and at least 2 seconds, on every level; nearly all moves last two bars or more. When the music leaves a beat or two over (an odd bar, the beats before the first bar, the end of a section), the move around it carries on or starts early; it is never filled with a quick extra move. The chorus combo is one move on the card ("Gallop + Lasso") for its whole length, a flourish at the end of a phrase keeps its move's name, and in two-player mode a call and response or a partner move shows one name per phrase. A drop still starts a new move on the drop.
+
+### Choreography: the song's kit
+
+Each song gets its own small cast of moves, picked once from the song (its style, tempo, energy and the level), each with a role:
+
+- **Groove moves** carry the verses as a motif (A B C A; Sweaty has a longer one). Verse 2 is verse 1 with one move swapped, and later verses add a one-off now and then.
+- **Build moves** take the verses' loudest stretches, **break moves** their quiet ones, as a contrast.
+- **The chorus hook**: after the combo, the same three or four moves in the same order every chorus. Later choruses make the first one bigger (a variation of it); the final chorus also the second.
+- **Power moves** for the drops.
+- **Warm-up and intro moves** start the song gently; the outro cools down.
+
+Moves are chosen to join well: the end of one move is close to the start of the next (arms, feet, height, facing), and the coach leads with the side that fits. This is one weight among the others, not a rule. Nothing bounces back and forth between two moves, and a song uses about as many different moves per minute as before.
+
+Most of the kit is global moves. On a song that opens a genre set, genre moves get 20–40% of the dancing time (aiming at a third), placed as accents: the drop's power move first (a headbang on a rock drop), then the hook's third move, the end of the verse motif, a build move. The verse motif's main move and the hook's first move stay global. A song that opens no genre set uses no genre moves. Songs of the same style and tempo still get very different kits: the library is big.
+
+In two-player mode, the players walk in to a partner move during the bar or two before it and walk back to their spots after it, at a walking pace (never a slide across the stage in a beat), and a partner move follows another one only when it starts where that one ended.
+
+To see what a song gets: `npx tsx tools/choreo/routine.ts <videoId> [chill|cardio|sweaty] [play number] [--duo]`.
+
 ### Following the music
 
 Beat maps made since analyser 1.2.0 also say, for every bar, how loud it is, how much bass it has and how much the groove changes from the bars before, and where the drops are (a quiet stretch or build suddenly giving way to heavy bass). The routine uses this:
 
 - **The vibe.** Loud, bassy bars and drops lean toward vigorous moves (jumps, big arms, headbangs, within what the level allows; Chill never jumps); soft bars lean toward gentle ones. It's a weighting, not a rule. The song's tempo adds its own lean (see above).
-- **When moves change.** Moves change on the music's phrase grid (every 2, 4 or 8 bars from the start of a section, never mid-phrase). A steady, loud passage such as a drop or a big chorus holds one move for 4–8 bars, switching to a variation of it half-way; a passage whose beat keeps changing gets shorter holds. A drop always starts a new move. It's seeded and weighted, so holds vary.
-- **Recurring moves.** Each kind of section (verse, chorus, ...) keeps a small set of moves for its soft, medium and heavy passages and comes back to them, sometimes as a variation, instead of a stream of new ones.
+- **When moves change.** Moves change on the music's phrase grid (every 2, 4 or 8 bars from the start of a section, never mid-phrase). A steady, loud passage such as a drop or a big chorus holds one move for 4–8 bars, switching to a variation of it half-way; a passage whose beat keeps changing gets shorter holds. A drop always starts a new move (a drop in a section's last bar starts the next section early). It's seeded and weighted, so holds vary.
+- **Recurring moves.** Sections are built from the song's kit (see "Choreography" above): a verse that gets much louder than usual takes the build moves, one that drops right down the break moves.
 
 Older maps without these readings, and songs still being learned by listening, use the sections' energy instead.
 
@@ -521,7 +541,7 @@ Each song gets a style, shown on the coach's NOW label (for example "Latin groov
 - A **tradition theme** opens its set. For example, "country" opens the country set and "afro" opens Afrobeats & amapiano.
 - A **leading family** opens its set: rock, hip-hop, Latin, disco/funk or K-pop, when that family weighs at least 65% of the song's strongest one. When the song also has a tradition theme, only the strongest family counts. That keeps a country song from also getting headbangs.
 
-An unknown song opens no genre sets: it gets a balanced pop mix of global moves. On a song that opens a genre, that genre's moves get about a third of the picks. The song's family also favours the global moves tagged with it, so a rock song feels like rock without being all headbangs.
+An unknown song opens no genre sets: it gets a balanced pop mix of global moves. On a song that opens a genre, that genre's moves get 20–40% of the dancing time, as accents in the song's kit (see "Choreography" above). The song's family also favours the global moves tagged with it, so a rock song feels like rock without being all headbangs.
 
 The style is decided in this order, first match wins:
 
@@ -546,7 +566,7 @@ A few famous songs open each chorus with the move everyone knows, for example Ga
 
 ### Same routine or new
 
-Routines are worked out from the song, level and style, so with **Options → Routine → Same every time** a song always gets the same routine. **New every time** mixes in the play number; the chorus combo stays the same.
+Routines are worked out from the song, level and style, so with **Options → Routine → Same every time** a song always gets the same routine. **New every time** mixes in the play number, so each play casts a different kit; the chorus combo stays the same.
 
 ## Development
 

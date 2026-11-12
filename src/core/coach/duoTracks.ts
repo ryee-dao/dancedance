@@ -63,7 +63,7 @@ export class DuoTracks {
       this.full = plan.kind === 'map' && plan.liveFrom === Infinity && plan.instances.length > 0;
       if (this.full) {
         const end = plan.instances[plan.instances.length - 1];
-        this.routine = duoFromRoutine({ instances: plan.instances, signature: plan.signature, half: plan.half, beats: end.start + end.span }, { seedKey: `${seedKey}|${plan.key}`, intensity });
+        this.routine = duoFromRoutine({ instances: plan.instances, signature: plan.signature, half: plan.half, beats: end.start + end.span, times: plan.grid }, { seedKey: `${seedKey}|${plan.key}`, intensity });
         this.v1.instances = this.routine.p1;
         this.v2.instances = this.routine.p2;
         this.cues = buildCues(this.routine);

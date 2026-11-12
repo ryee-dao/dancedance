@@ -792,6 +792,24 @@ export function partnerOf(m: Move): { pm: PartnerMove; player: Player; part: num
   return OWNER.get(m);
 }
 
+const CARDS = new Map<Move, Move>();
+/**
+ * A partner move's half as the routine shows it: under the partner move's
+ * own name for its whole length (one card, cards.ts), even when the two
+ * halves give the players different roles. Same keys; partnerOf knows it.
+ */
+export function partnerCard(m: Move): Move {
+  const own = OWNER.get(m);
+  if (!own || m.name === own.pm.name) return m;
+  let c = CARDS.get(m);
+  if (!c) {
+    c = { ...m, name: own.pm.name };
+    CARDS.set(m, c);
+    OWNER.set(c, own);
+  }
+  return c;
+}
+
 /** Depth offsets (z1, z2) of a partner move at move beat `b` (0..beats), given each player's current spin (orbit moves). */
 export function partnerDepth(pm: PartnerMove, b: number, spin1: number, spin2: number, out: [number, number]): [number, number] {
   if (pm.orbit > 0) {

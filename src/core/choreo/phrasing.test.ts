@@ -193,15 +193,18 @@ describe('music-driven phrasing', () => {
     for (const lv of LEVELS) expect(key(generateRoutine(bad, lv))).toBe(key(generateRoutine(plain, lv)));
   });
 
-  it('plays the pickup before the first bar as one move (no NOW-card flicker at the start)', () => {
+  it('plays the pickup before the first bar as part of the first move (no NOW-card flicker at the start)', () => {
     for (const lead of [1, 2, 3]) {
       const m = songMap(120, `pickup${lead}`);
       m.downbeats = m.downbeats.map((d) => d + lead).filter((d) => d < m.beats.length);
       for (const lv of LEVELS) {
         const r = generateRoutine(m, lv);
         covered(r);
+        // The pickup is a lead-in of the first move: the same card (name) as the first bar.
         const pick = r.instances.filter((i) => i.start < lead);
-        expect(new Set(pick.map((i) => i.move.id)).size, `${lead} ${lv}`).toBe(1);
+        const first = r.instances.find((i) => i.start >= lead)!;
+        expect(new Set(pick.map((i) => i.move.name)).size, `${lead} ${lv}`).toBe(1);
+        expect(pick[0].move.name, `${lead} ${lv}`).toBe(first.move.name);
         for (const i of pick) expect(i.move.idle).toBe(false);
       }
     }

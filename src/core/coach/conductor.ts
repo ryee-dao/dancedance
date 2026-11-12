@@ -24,6 +24,7 @@
 import type { BeatMap, SectionType } from '../analysis/beatmap';
 import type { BeatTimeline, LiveBeats } from '../../beat/beatSource';
 import { LivePlanner, generateRoutine, isHalfTime, isUsableBeatMap, mapTempo, usableBpm, type Intensity, type MoveInstance, type RoutineOpts, type SigStep } from '../choreo/generator';
+import { sameCard } from '../choreo/cards';
 import { IDLE_MOVE } from '../choreo/moves';
 import { PoseEvaluator, beatPosition, instanceIndexAt, timeOfBeat, type PlanView } from './animator';
 import { ANGULAR_CHANNELS, NUM_CHANNELS, createPose, type Pose } from './skeleton';
@@ -329,12 +330,12 @@ export class Conductor {
     let j = idx + 1;
     while (j < ins.length && sameGroup(ins[j], cur)) j++;
     if (j < ins.length) {
-      u.next = ins[j];
+      u.next = showcase(ins, j);
       u.changeAt = timeOfBeat(plan, ins[j].start);
       u.beatsToChange = ins[j].start - b;
       let k = j + 1;
       while (k < ins.length && sameGroup(ins[k], ins[j])) k++;
-      u.after = k < ins.length ? ins[k] : null;
+      u.after = k < ins.length ? showcase(ins, k) : null;
     } else {
       const end = cur.start + cur.span;
       u.changeAt = plan.kind === 'map' && plan.liveFrom === Infinity ? timeOfBeat(plan, end) : Infinity;
@@ -352,8 +353,15 @@ export class Conductor {
   }
 }
 
+/** One NOW card: the same name (a move with its flourish and leftover parts, the song combo as a whole). */
 function sameGroup(a: MoveInstance, b: MoveInstance): boolean {
-  return a.move === b.move && a.sig === b.sig;
+  return sameCard(a, b);
+}
+
+/** The instance of a card that shows it best on the NEXT card (a whole repeat, not a lead-in part). */
+function showcase(ins: readonly MoveInstance[], j: number): MoveInstance {
+  for (let k = j; k < ins.length && k < j + 8 && sameGroup(ins[k], ins[j]); k++) if (!ins[k].move.part) return ins[k];
+  return ins[j];
 }
 
 function desiredKey(tl: BeatTimeline | null, videoId: string, intensity: Intensity): string {

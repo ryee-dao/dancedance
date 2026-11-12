@@ -9,44 +9,53 @@
  *   (2, 4 or 8 bars on the phrase's grid) -> units (2 bars). A hold repeats
  *   ONE move (alternating sides, units returning to centre); a unit may
  *   instead play the signature combo. Every chorus / drop opens with the
- *   song's signature combo (one 8-beat sequence). The start warms up with a
- *   gentle move, the outro cools down. Above ~150 BPM every move is
- *   performed at half time (1 move beat = 2 song beats); phrases, holds and
- *   units double so they stay musically aligned.
+ *   song's signature combo (one 8-beat sequence, shown as one move). The
+ *   start warms up with a gentle move, the outro cools down. Above ~150 BPM
+ *   every move is performed at half time (1 move beat = 2 song beats);
+ *   phrases, holds and units double so they stay musically aligned.
+ *
+ * Assembly, in order (generateRoutine):
+ *   1. plan the whole song: phrases, holds, and each hold's slot in the
+ *      song's KIT (see "The song's kit" below: verse motif, chorus hook,
+ *      power moves ...);
+ *   2. choose the kit's genre accents on the planned time;
+ *   3. dance it, casting each kit move on first use (soft weights + flow);
+ *   4. the hard card rule (cards.ts enforceCards): no move the dancer sees
+ *      lasts under a bar or 2 seconds; leftovers are parts of moves;
+ *   5. no dash across the floor between moves (flow.ts smoothSteps).
  *
  * The music drives the phrasing (see "Phrasing" below): per-bar readings
  * from the beat map (energy, bass, groove change, drops; section energy for
  * older maps) decide how long each move is held (steady, loud passages and
- * drops hold longest; passages that keep changing switch sooner) and lean
- * the pick toward vigorous moves in loud, bassy bars and gentle ones in soft
- * bars. Each section type keeps a small palette of recurring moves.
+ * drops hold longest; passages that keep changing switch sooner) and which
+ * kit role a hold takes (loud verse passages build, soft ones break).
  *
  * Levels (shown to the user as Easy / Medium / Hard):
  *   chill  (Easy):   low impact (never a jump or a fast turn: the one hard
  *                    level rule), nearly all simple moves, 4-bar units (a
- *                    move lasts 4-8 bars), a palette of 2 moves per section.
- *   cardio (Medium): mostly easy / medium moves, 2-bar units, palettes of 3.
+ *                    move lasts 4-8 bars).
+ *   cardio (Medium): mostly easy / medium moves, 2-bar units.
  *   sweaty (Hard):   leans to hard, high-impact moves, shorter holds on
- *                    average, palettes of 4.
+ *                    average, a longer verse motif and a four-move hook.
  * Difficulty, impact and tempo are soft weights (weights.ts, levelFactor):
  * they multiply with the style and energy lean, never exclude.
  *
  * Tiers (genres.ts): genre-exclusive moves are used only when the song's
- * style opens their genre, at about GENRE_SHARE of the picks; global moves
- * everywhere. Signature nods open their own song's chorus regardless.
+ * style opens their genre, as the kit's accents (GENRE_MIN..GENRE_MAX of the
+ * danced time); global moves everywhere. Signature nods open their own
+ * song's chorus regardless.
  *
  * Live mode (no sections known) uses LivePlanner: the same phrase logic with
  * a repeating verse / verse / chorus phrase cycle.
  *
- * Song style (songStyle.ts) weights the pick on top of section energy and
- * level: moves of the song's families (~60-70 % of picks), its focus and its
- * title themes are favoured, never to the point of emptying the pool. The
- * pool is the catalogue plus validated variations (pool.ts): Easy sees few
- * (simple ones), Hard the most. A fresh pick doesn't come back within
- * NO_REPEAT_PHRASES phrases (palette moves aside). The seed is
- * videoId + level + style; 'fresh' routines add a play counter, but the
- * chorus combo (signature) keeps the stable seed. Songs with a curated
- * `signature` build the chorus combo from those moves.
+ * Song style (songStyle.ts) weights the kit's casting on top of section
+ * energy and level: moves of the song's families, its focus and its title
+ * themes are favoured, never to the point of emptying the pool. The pool is
+ * the catalogue plus validated variations (pool.ts): Easy sees few (simple
+ * ones), Hard the most. The seed is videoId + level + style; 'fresh'
+ * routines add a play counter (a different kit), but the chorus combo
+ * (signature) keeps the stable seed. Songs with a curated `signature` build
+ * the chorus combo from those moves.
  */
 
 import type { BeatMap, SectionType } from '../analysis/beatmap';
@@ -57,6 +66,8 @@ import { IDLE_MOVE, MOVES, keysOf, type Level, type Move } from './moves';
 import { getPool, warmPool } from './pool';
 import { BALANCED_POP, styleKey, type SongStyle } from './songStyle';
 import { difficultyFactor, impactFactor, moveVigour, moveWeights, poseStepCost, tempoFactor } from './weights';
+import { enforceCards, partOf, pauseOf, renamed, tileMove } from './cards';
+import { smoothSteps } from './flow';
 
 export { moveVigour, moveWeights, tempoFactor } from './weights';
 
@@ -84,6 +95,13 @@ export interface MoveInstance {
   phrase: number;
   /** A short in-place move filling beats a unit's move doesn't divide (odd bars, pickups). */
   fill?: boolean;
+  /**
+   * Extra floor x the coach covers over this instance, spread evenly from its
+   * start (0) to its end (`drift`): an unpaired travelling repeat dances in
+   * place, two players walk in to a partner move and back out. The next
+   * instance's origin includes it.
+   */
+  drift?: number;
 }
 
 export interface SigStep {
@@ -97,6 +115,8 @@ export interface Routine {
   half: boolean;
   /** Number of beats covered (instances partition [0, beats)). */
   beats: number;
+  /** Beat times (s) of the map, when known (wall-time checks). */
+  times?: readonly number[];
 }
 
 export interface Bar {
@@ -114,8 +134,6 @@ export interface RoutineOpts {
   variations?: boolean;
 }
 
-/** Phrases a move stays out after it was used (section memos aside). */
-export const NO_REPEAT_PHRASES = 3;
 /** Share of picks that may be variations, per level. */
 const VARIATION_SHARE: Record<Intensity, number> = { chill: 0.06, cardio: 0.25, sweaty: 0.35 };
 /** Chance a unit's last 4 beats become a phrase-end flourish (last unit of a phrase). */
@@ -155,8 +173,6 @@ export function styleFactor(m: Move, style: SongStyle): number {
 // style weights too) without being all headbangs. Signature nods are the one
 // exception: they open their own song's chorus whatever their tier.
 
-/** Share of the pick weight the song's open genre sets get (split between them). */
-export const GENRE_SHARE = 0.32;
 /** Bounds of the factor that scales a genre set to its share (a tiny set isn't hammered). */
 const GENRE_SCALE_MIN = 0.5;
 const GENRE_SCALE_MAX = 4;
@@ -209,9 +225,9 @@ export function mulberry32(seed: number): () => number {
   };
 }
 
-function pickWeighted<T>(rng: () => number, items: readonly T[], weights: readonly number[]): T | null {
+function pickWeighted<T>(rng: () => number, items: readonly T[], weights: ArrayLike<number>): T | null {
   let sum = 0;
-  for (const w of weights) sum += w > 0 ? w : 0;
+  for (let i = 0; i < weights.length; i++) sum += weights[i] > 0 ? weights[i] : 0;
   if (sum <= 0) return null;
   let r = rng() * sum;
   for (let i = 0; i < items.length; i++) {
@@ -343,6 +359,19 @@ function dancePool(useVariations: boolean): { moves: readonly Move[]; isVar: Uin
   return { moves, isVar };
 }
 
+const PART_BIT: Readonly<Record<string, number>> = { arms: 1, legs: 2, torso: 4, hips: 8, jump: 16, turn: 32 };
+const POPCOUNT = Uint8Array.from({ length: 64 }, (_, k) => (k & 1) + ((k >> 1) & 1) + ((k >> 2) & 1) + ((k >> 3) & 1) + ((k >> 4) & 1) + ((k >> 5) & 1));
+/** A move's body parts as a bit mask (partsOverlap on masks: maskOverlap). */
+function partsMask(m: Move): number {
+  let b = 0;
+  for (const p of m.parts) b |= PART_BIT[p] ?? 0;
+  return b;
+}
+function maskOverlap(a: number, b: number): number {
+  const u = POPCOUNT[a | b];
+  return u ? POPCOUNT[a & b] / u : 0;
+}
+
 function partsOverlap(a: Move, b: Move): number {
   let inter = 0;
   for (const p of a.parts) if (b.parts.includes(p)) inter++;
@@ -388,9 +417,13 @@ export interface PhraseOpts {
   memoKey?: string;
   /** Per-bar readings, index-aligned with the phrase's bars (default: flat, from `energy`). */
   feels?: readonly BarFeel[];
+  /** Which run of its section type this is (0 = the first verse / chorus ...): motifs develop, choruses intensify. */
+  occ?: number;
+  /** The last run of its section type (the final chorus). */
+  last?: boolean;
+  /** Typical target vigour of the whole section run: holds well above it build, well below it break. */
+  typical?: number;
 }
-
-type UnitChoice = { kind: 'move'; move: Move } | { kind: 'sig' };
 
 // ---------------------------------------------------------------------------
 // Phrasing: how long a move is held, and which one
@@ -405,14 +438,14 @@ type UnitChoice = { kind: 'move'; move: Move } | { kind: 'sig' };
 // keeps switching beats changes every unit or two. A drop always starts a
 // new phrase and a new hold.
 //
-// Each section type keeps a small palette of moves per vibe tier (soft /
-// medium / heavy target vigour; 2-4 moves by level, one more for restless
-// passages) that recur, with an ornamented / variation version
-// now and then; a few one-off picks keep it from looping. Long holds switch
-// to a variation of the same move half-way, so they aren't a frozen loop.
-// Move choice leans on the bars' energy + bass: loud, bassy bars and drops
-// favour vigorous moves (jumps, big arms, headbangs, within the level's
-// rules), soft bars gentle ones (vigourTilt).
+// Which move: the hold's slot in the song's kit (section scripts below). A
+// hold well above its section's typical vigour builds, one well below it
+// breaks; a drop takes the power moves. Each slot's move is cast leaning on
+// the vigour its holds call for (loud, bassy bars and drops favour vigorous
+// moves: jumps, big arms, headbangs, within the level's rules; soft bars
+// gentle ones; vigourTilt). Recurring moves come back as a variation now and
+// then, a later verse has a one-off or two, and long holds switch to a
+// variation of the same move half-way, so nothing is a frozen loop.
 
 /** Log-odds of holding a block whole, by level: [blocks of 2 units, blocks of 3+ units (a whole phrase)]. */
 const HOLD_BIAS: Readonly<Record<Intensity, readonly [number, number]>> = {
@@ -440,20 +473,14 @@ const TARGET_SECTION: Readonly<Record<SectionType, number>> = { intro: -0.1, ver
 const TARGET_DROP = 0.15;
 /** Strength of the energy -> vigour lean (log weight ratio between the extremes is TILT / 4). */
 const VIGOUR_TILT = 8;
-/** Target vigour at / above which a hold draws on the section's heavy palette; at / below, its soft one. */
+/** Target vigour at / above which a hold is loud (it builds), at / below which it is soft (a break). */
 const PALETTE_HEAVY = 0.62;
 const PALETTE_SOFT = 0.38;
-/** Weight factor of a first move that can also fill the pickup. */
-const PICKUP_FIT_BOOST = 4;
-/** Moves per palette. */
-const PALETTE_SIZE: Record<Intensity, number> = { chill: 2, cardio: 3, sweaty: 4 };
-/** Chance a hold adds a new palette move while the palette isn't full (a second one always joins). */
-const PALETTE_GROW_P = 0.35;
-/** Chance a hold is a one-off pick (not from the palette). */
+/** How far above / below its section's typical vigour a hold must be to build / break. */
+const TIER_MARGIN = 0.12;
+/** Chance a hold of a later verse is a one-off move (danced only there). */
 const ONE_OFF_P: Record<Intensity, number> = { chill: 0.04, cardio: 0.12, sweaty: 0.2 };
-/** Weight of the palette's first (main) move. */
-const MAIN_MOVE_BIAS = 1.6;
-/** Chance a recurring move comes back as a variation of itself. */
+/** Chance a recurring kit move comes back as a variation of itself in a later run of its section. */
 const REPEAT_VARIANT_P: Record<Intensity, number> = { chill: 0.1, cardio: 0.3, sweaty: 0.45 };
 /** Chance a long hold (a whole phrase) switches to a variation half-way. */
 const MID_VARIANT_P: Record<Intensity, number> = { chill: 0.3, cardio: 0.6, sweaty: 0.7 };
@@ -492,40 +519,159 @@ export function targetVigour(feels: readonly BarFeel[], section: SectionType, wa
   return Math.min(1, Math.max(0, t));
 }
 
+// ---------------------------------------------------------------------------
+// The song's kit
+//
+// A routine is choreographed from a small CAST of moves picked once per song
+// (deterministically from the seed, style, tempo, energy and level), each
+// with a role, instead of drawing fresh moves hold by hold:
+//
+//   warm    the warm-up move (gentle)            intro   intro grooves (2)
+//   groove  the verse motif (3, Hard 4) + one new move per later verse
+//   build   loud verse passages (2)              hook    the chorus hook phrase (3)
+//   power   drops (3)                            break   soft passages, a contrast (2)
+//
+// Section scripts say which role and motif position each hold takes:
+//   verse    groove motif A B A C (Hard: A B A C D B D C); verse 2 = verse 1
+//            with one position swapped for a new move; loud holds build,
+//            soft holds break.
+//   chorus   after the song combo, the hook phrase H1 H2 H3 H2, the same every
+//            chorus; later choruses intensify H1 (a bigger variation of it),
+//            the final chorus H2 as well.
+//   drop     power motif P1 P2 P1 P3.
+//   intro    the warm-up move, then the intro grooves; outro: cool-down flows.
+// A move never follows itself across a hold boundary (a variation or an
+// alternate steps in), so the motifs never collapse into a loop.
+//
+// Each role is cast with the soft weights (style, tempo, level, the vigour
+// its passages call for, the section's level mix), plus FLOW: the pose
+// distance from the move danced just before it (end pose -> start pose: arms,
+// feet, height, facing; transitionCost), and contrast with the moves it plays
+// against (a break doesn't use the groove's body parts). Flow and contrast
+// are weights among the others, never filters.
+//
+// Tiers: on a song that opens genre sets, the kit is mostly global and a few
+// slots are genre accents, placed deliberately (GENRE_PRIORITY: the drop's
+// power move first, then the hook's third move, the verse motif's C, the
+// second build move ...), chosen so that genre moves get GENRE_MIN..GENRE_MAX
+// (aiming at GENRE_TARGET) of the danced time; the verse motif's A and the
+// hook's H1 stay global, so verses and choruses are carried by global moves.
+
+type Role = 'warm' | 'intro' | 'groove' | 'build' | 'hook' | 'power' | 'break';
+
+interface Slot {
+  key: string;
+  role: Role;
+  /** Base slot this one is a variation of ('hook.0+' intensifies 'hook.0'). */
+  of: string | null;
+  /** Section type it is danced in (its level mix). */
+  section: SectionType;
+  genre: Genre | null;
+  move: Move | null;
+  /** Planned beats and target vigour x beats (map routines). */
+  beats: number;
+  tSum: number;
+}
+
+interface HoldItem {
+  kind: 'hold';
+  bars: Bar[];
+  feels: BarFeel[];
+  o: PhraseOpts;
+  phraseNo: number;
+  phraseEnd: boolean;
+  /** Kit slot (null: cool-down, picked per hold). */
+  slot: string | null;
+  target: number;
+}
+interface SigItem {
+  kind: 'sig';
+  bars: Bar[];
+  section: SectionType;
+  phraseNo: number;
+}
+type Item = HoldItem | SigItem;
+
+/** Verse motif (indices into the groove slots), by level. */
+const VERSE_MOTIF: Readonly<Record<Intensity, readonly number[]>> = { chill: [0, 1, 0, 2], cardio: [0, 1, 2, 0], sweaty: [0, 1, 2, 0, 3, 1, 3, 2] };
+/** Chorus hook phrase (indices into the hook slots), by level: Hard has a fourth move. */
+const HOOK_MOTIF: Readonly<Record<Intensity, readonly number[]>> = { chill: [0, 1, 2, 0], cardio: [0, 1, 2, 0], sweaty: [0, 1, 2, 3] };
+const POWER_MOTIF: Readonly<Record<Intensity, readonly number[]>> = { chill: [0, 1, 0, 2], cardio: [0, 1, 0, 2], sweaty: [0, 1, 2, 0] };
+/** Build-ups and breaks: A B A C as well (never a long A B A B). */
+const SIDE_MOTIF: readonly number[] = [0, 1, 0, 2];
+/** Motif position the n-th later verse swaps for a new move. */
+const SWAP_POS: readonly number[] = [3, 1, 2];
+/** Slots that become genre accents first (base slots; their variations follow them). */
+const GENRE_PRIORITY: readonly string[] = [
+  'power.0', 'hook.2', 'groove.2', 'build.1', 'groove.s1', 'hook.3', 'groove.c1', 'groove.t1', 'hook.4', 'build.2', 'break.1', 'break.2', 'power.2', 'groove.s2', 'build.0', 'groove.c2', 'hook.1',
+  'groove.3', 'groove.1', 'intro.1', 'power.1', 'break.0', 'groove.s3', 'groove.s4', 'intro.0',
+];
+/** Genre accent slots of live plans (no song plan to measure). */
+const LIVE_GENRE_SLOTS = new Set(['power.0', 'hook.2', 'groove.2', 'build.1', 'break.1']);
+/** Share of the danced time genre moves get on a song that opens a genre: aim, floor, ceiling. */
+export const GENRE_TARGET = 0.3;
+export const GENRE_MIN = 0.2;
+export const GENRE_MAX = 0.4;
+/** Kept for callers: the genre share aimed at. */
+export const GENRE_SHARE = GENRE_TARGET;
+/** Weight of a transition's pose distance (exp(-FLOW_W * mean cost)). */
+const FLOW_W = 1.8;
+/** Neighbouring kit moves a cast looks at, each way. */
+const FLOW_NEIGHBOURS = 3;
+/** Candidates below this share of the best weight skip the flow score (it can only lower them). */
+const FLOW_PRUNE = 3e-4;
+
 export class Choreographer {
   readonly signature: SigStep[];
   readonly half: boolean;
   readonly unitBars: number;
-  private rng: () => number;
-  private intensity: Intensity;
-  private lastMove: Move | null = null;
-  private lastMirror = false;
-  private recent: Move[] = [];
-  /** Palettes: the few moves a section type keeps coming back to, per vibe tier. */
-  private palettes = new Map<string, Move[]>();
-  /** Base moves already danced (a recurring one may come back as a variation). */
-  private used = new Set<Move>();
-  /** Variations in the pool, by base move id. */
-  private varsByBase = new Map<string, Move[]>();
-  private phraseNo = 0;
-  /** Beats before the first bar (set by generateRoutine; the first pick prefers a move that fits them). */
-  pickupBeats = 0;
   readonly style: SongStyle;
-  private pool: readonly Move[];
-  /** Per-move static weight: style x variation share (index-aligned with pool). */
-  private base: Float64Array;
-  /** Phrase number each move was last used in. */
-  private lastUsed = new Map<Move, number>();
-  private ornaments: { get(base: string): readonly Move[] } | null;
-  /** Genre-exclusive moves of genres the song doesn't open (never used). */
-  private outside = new Set<Move>();
   /** The genres the song opens. */
   readonly genres: ReadonlySet<Genre>;
   /** Song tempo (BPM) the tempo weights use (undefined: no tempo lean). */
   readonly bpm: number | undefined;
-  /** In-place 1- and 2-beat moves for gaps, with their style weights. */
+  /** Live plans: genre accents by slot name (no song plan to measure). */
+  liveGenres = false;
+  private rng: () => number;
+  private planRng: () => number;
+  private intensity: Intensity;
+  private lastMove: Move | null = null;
+  private lastMirror = false;
+  private pool: readonly Move[];
+  /** Per-move static weight: style x tempo x variation share (index-aligned with pool); 0 = never. */
+  private base: Float64Array;
+  /** levelFactor, vigour and body-part mask of each pool move (index-aligned with pool). */
+  private levelF: Float64Array;
+  private vig: Float64Array;
+  private partsM: Uint8Array;
+  private ornaments: { get(base: string): readonly Move[] } | null;
+  /** Genre-exclusive moves of genres the song doesn't open (never used). */
+  private outside = new Set<Move>();
+  /** Variations in the pool, by base move id. */
+  private varsByBase = new Map<string, Move[]>();
+  /** In-place 1- and 2-beat moves (a map with no whole bar at all). */
   private gapMoves: Move[] = [];
   private gapW: number[] = [];
+  private phraseNo = 0;
+  /** The kit: slots by key, and the moves / base moves cast so far. */
+  private slots = new Map<string, Slot>();
+  private kit = new Set<Move>();
+  private kitBases = new Set<string>();
+  private kitFeet = new Set<string>();
+  /** The section run being planned, and its per-role hold counters. */
+  private runKey = '';
+  private counters = new Map<string, number>();
+  /** Whether a slot comes back as its variation in a given section run. */
+  private develop = new Map<string, boolean>();
+  private oneOffs = 0;
+  /** Slots the plan puts right before / after each slot (flow). */
+  private before = new Map<string, Set<string>>();
+  private after = new Map<string, Set<string>>();
+  /** Open genres that have moves this level can dance, with how strongly the song opens them. */
+  private genreOk: Genre[] = [];
+  private openness: Map<Genre, number>;
+  /** Display name of the song combo (one card). */
+  private comboName = '';
 
   constructor(seedKey: string, intensity: Intensity, half: boolean, opts: RoutineOpts = {}, bpm?: number) {
     this.intensity = intensity;
@@ -536,34 +682,39 @@ export class Choreographer {
     const sk = styleKey(this.style);
     const fresh = opts.fresh !== undefined && opts.fresh > 0 ? `|play${opts.fresh}` : '';
     this.rng = mulberry32(hashString(`${seedKey}|${intensity}|${sk}${fresh}`));
+    this.planRng = mulberry32(hashString(`${seedKey}|plan|${intensity}|${sk}${fresh}`));
     const useVars = opts.variations !== false;
     const { moves, isVar } = dancePool(useVars);
     this.pool = moves;
     const orn = useVars ? getPool().ornaments : null;
     this.ornaments = orn ? { get: (id: string) => orn.get(id).map(withShortName) } : null;
-    // Static weight: style x tempo, the genre sets scaled to their share,
-    // then the variations scaled to theirs (on the level-weighted mass).
-    this.base = new Float64Array(moves.length);
     const open = styleGenres(this.style);
     this.genres = open;
-    const genreK = genreScale(this.style, open, intensity, bpm);
+    this.openness = genreOpenness(this.style, open);
+    const none = new Map<Genre, number>();
+    // Static weight: style x tempo (the tier is the kit's choice), the variations scaled to their share.
+    this.base = new Float64Array(moves.length);
+    this.levelF = new Float64Array(moves.length);
+    this.vig = new Float64Array(moves.length);
+    this.partsM = new Uint8Array(moves.length);
     let mb = 0, mv = 0;
     for (let i = 0; i < moves.length; i++) {
       const m = moves[i];
+      this.levelF[i] = levelFactor(m, intensity);
+      this.vig[i] = moveVigour(m);
+      this.partsM[i] = partsMask(m);
       if (!genreFits(m, open)) {
         this.outside.add(m);
         continue;
       }
-      // Easy keeps to simple variations (base moves stay soft-weighted): hundreds of
-      // harder variations, each rare, would otherwise add up to a noticeable share.
+      // Easy keeps to simple variations (base moves stay soft-weighted).
       if (isVar[i] && intensity === 'chill' && m.difficulty > 1) continue;
-      this.base[i] = staticWeight(m, this.style, bpm, genreK);
-      const w = this.base[i] * levelFactor(m, intensity);
+      this.base[i] = staticWeight(m, this.style, bpm, none);
+      const w = this.base[i] * this.levelF[i];
       if (isVar[i]) mv += w;
       else mb += w;
     }
     const share = VARIATION_SHARE[intensity];
-    // Capped at 1: when few variations suit the level (Easy), they are not blown up to fill the share.
     const vw = mv > 0 ? Math.min(1, (share / (1 - share)) * (mb / mv)) : 0;
     for (let i = 0; i < moves.length; i++) {
       if (!isVar[i]) continue;
@@ -574,42 +725,385 @@ export class Choreographer {
       if (list) list.push(m);
       else this.varsByBase.set(m.base, [m]);
     }
+    for (const g of open) if (DANCE_MOVES.some((m) => m.genre === g && levelFactor(m, intensity) > 0)) this.genreOk.push(g);
     for (const m of DANCE_MOVES) {
-      if (m.beats > 2 || m.travel !== 0 || this.outside.has(m) || levelFactor(m, intensity) <= 0) continue;
+      if (m.beats > 2 || m.travel !== 0 || m.genre || levelFactor(m, intensity) <= 0) continue;
       this.gapMoves.push(m);
-      this.gapW.push(staticWeight(m, this.style, bpm, genreK) * levelFactor(m, intensity) * (m.beats === 1 ? 2 : 1));
+      this.gapW.push(staticWeight(m, this.style, bpm, none) * levelFactor(m, intensity) * (m.beats === 1 ? 2 : 1));
     }
     // The chorus combo keeps the stable seed (same in 'fresh' mode).
+    const genreK = genreScale(this.style, open, intensity, bpm);
     this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}|${sk}`)), intensity, this.style, open, bpm, genreK);
+    this.comboName = comboName(this.signature);
+  }
+
+  /** Whether the song combo is the song's curated signature nod (outside the tier accounting). */
+  get nodCombo(): boolean {
+    const ids = new Set(this.style.signature ?? []);
+    return this.signature.length > 0 && this.signature.every((s) => ids.has(s.move.id));
+  }
+
+  /** Plan and dance one phrase at once (live plans). */
+  phrase(out: MoveInstance[], bars: readonly Bar[], o: PhraseOpts): void {
+    for (const it of this.plan(bars, o)) this.emit(out, it);
   }
 
   /**
-   * Fill `bars` (contiguous, one phrase) with holds: the signature combo
-   * first when asked, then holds on the phrase's own grid (planHolds), each
-   * one move (pickHold) repeated in units.
+   * Plan one phrase (contiguous bars): the signature combo first when asked,
+   * then holds on the phrase's own grid (planHolds), each given its kit slot
+   * by the section's script. Nothing is danced yet (emit).
    */
-  phrase(out: MoveInstance[], bars: readonly Bar[], o: PhraseOpts): void {
-    if (bars.length === 0) return;
+  plan(bars: readonly Bar[], o: PhraseOpts): Item[] {
+    const items: Item[] = [];
+    if (bars.length === 0) return items;
     const unitBars = this.unitBars;
     const phraseNo = this.phraseNo++;
     const flat: BarFeel = { energy: o.energy, bass: o.energy, change: DEFAULT_CHANGE, drop: false };
     const feels = o.feels && o.feels.length === bars.length ? o.feels : bars.map(() => flat);
+    const run = `${o.memoKey ?? o.section}|${o.occ ?? 0}`;
+    if (run !== this.runKey) {
+      this.runKey = run;
+      this.counters.clear();
+    }
     let from = 0;
     if (o.signature && this.signature.length) {
       let take = Math.min(bars.length, Math.max(1, o.sigUnits ?? (this.intensity === 'chill' ? 1 : 2)) * unitBars);
       if (bars.length - take < unitBars) take = bars.length;
-      for (const ub of this.units(bars.slice(0, take))) this.fillUnit(out, ub[0].start, barsEnd(ub), { kind: 'sig' }, o.section, phraseNo);
+      items.push({ kind: 'sig', bars: bars.slice(0, take), section: o.section, phraseNo });
       from = take;
     }
-    if (from >= bars.length) return;
+    if (from >= bars.length) return items;
     const calm = !!(o.warmup || o.cooldown);
     for (const h of this.planHolds(feels, from, o)) {
       const hb = bars.slice(h.a, h.a + h.len);
       const hf = feels.slice(h.a, h.a + h.len);
-      const t = targetVigour(hf, o.section, o.warmup);
-      const move = o.cooldown ? this.choose(o, null, t) : this.pickHold(o, t, hf);
-      this.emitHold(out, hb, move, o, phraseNo, h.a + h.len === bars.length && !calm);
+      const target = targetVigour(hf, o.section, o.warmup);
+      const drop = hf[0]?.drop ?? false;
+      const t = drop ? Math.min(1, target + TARGET_DROP) : target;
+      // Loud / soft relative to the section's own typical level (most of a loud song's verse is just the verse).
+      const typ = o.typical;
+      const heavy = typ === undefined ? t >= PALETTE_HEAVY : t >= Math.max(PALETTE_HEAVY, typ + TIER_MARGIN);
+      const soft = typ === undefined ? t <= PALETTE_SOFT : t <= Math.min(PALETTE_SOFT, typ - TIER_MARGIN) || t <= PALETTE_SOFT - 0.15;
+      const tier = heavy ? 'heavy' : soft ? 'soft' : 'mid';
+      const slot = o.cooldown ? null : this.slotFor(o, tier, drop);
+      if (slot) {
+        const s = this.slot(slot, o);
+        const beats = barsEnd(hb) - hb[0].start;
+        s.beats += beats;
+        s.tSum += t * beats;
+      }
+      items.push({ kind: 'hold', bars: hb, feels: hf, o, phraseNo, phraseEnd: h.a + h.len === bars.length && !calm, slot, target: t });
     }
+    return items;
+  }
+
+  /** The kit slot of the next hold of the current section run (the section scripts above). */
+  private slotFor(o: PhraseOpts, tier: 'soft' | 'mid' | 'heavy', drop: boolean): string {
+    const k = this.scriptSlot(o, tier, drop);
+    // Now and then a later verse hold is a one-off: a move danced only there (choruses keep their hook).
+    if ((o.occ ?? 0) >= 1 && o.section === 'verse' && !o.warmup && !k.endsWith('+') && k !== 'groove.0' && this.planRng() < ONE_OFF_P[this.intensity]) return `${k.slice(0, k.indexOf('.'))}.o${this.oneOffs++}`;
+    // In a later run of its section, a recurring move may come back as a variation of itself, decided once per run.
+    const occ = o.occ ?? 0;
+    if (occ < 1 || k.endsWith('+') || k.includes('.s') || k.startsWith('warm') || k.startsWith('intro')) return k;
+    const dk = `${k}@${o.memoKey ?? o.section}|${occ}`;
+    let d = this.develop.get(dk);
+    if (d === undefined) this.develop.set(dk, (d = this.planRng() < REPEAT_VARIANT_P[this.intensity]));
+    return d ? `${k}+` : k;
+  }
+
+  private scriptSlot(o: PhraseOpts, tier: 'soft' | 'mid' | 'heavy', drop: boolean): string {
+    const next = (k: string) => {
+      const n = this.counters.get(k) ?? 0;
+      this.counters.set(k, n + 1);
+      return n;
+    };
+    const occ = o.occ ?? 0;
+    if (o.warmup) return `warm.${SIDE_MOTIF[next('warm') % SIDE_MOTIF.length]}`;
+    if (o.section === 'intro') return `intro.${SIDE_MOTIF[next('intro') % SIDE_MOTIF.length]}`;
+    // A motif's second time round in the same section develops: its first move as a variation, its last a new move.
+    if (o.section === 'drop' || drop) {
+      const motif = POWER_MOTIF[this.intensity];
+      const j = next('power');
+      const p = motif[j % motif.length];
+      return j >= motif.length && p === 0 ? 'power.0+' : `power.${p}`;
+    }
+    if (o.section === 'chorus') {
+      const motif = HOOK_MOTIF[this.intensity];
+      const j = next('hook');
+      const h = motif[j % motif.length];
+      const again = j >= motif.length;
+      if (h === 0 && (occ >= 1 || again)) return 'hook.0+';
+      if (h === 1 && occ >= 2 && o.last) return 'hook.1+';
+      if (h === 1 && again) return 'hook.4';
+      return `hook.${h}`;
+    }
+    if (o.section === 'outro') return `intro.${SIDE_MOTIF[next('intro') % SIDE_MOTIF.length]}`;
+    // Verse.
+    if (tier === 'soft') return `break.${SIDE_MOTIF[(next('break') + occ) % SIDE_MOTIF.length]}`;
+    if (tier === 'heavy') return `build.${SIDE_MOTIF[next('build') % SIDE_MOTIF.length]}`;
+    const motif = VERSE_MOTIF[this.intensity];
+    const j = next('groove');
+    const pos = j % motif.length;
+    if (occ >= 1 && pos === SWAP_POS[(occ - 1) % SWAP_POS.length] % motif.length) return `groove.s${occ}`;
+    // Hard: a second swap in the motif's second half.
+    if (occ >= 1 && motif.length > 4 && pos === 4 + (SWAP_POS[(occ - 1) % SWAP_POS.length] % 4)) return `groove.t${occ}`;
+    const g = motif[pos];
+    if (j >= motif.length) {
+      if (g === 0) return 'groove.0+';
+      if (pos === motif.length - 1) return `groove.c${Math.floor(j / motif.length)}`;
+    }
+    return `groove.${g}`;
+  }
+
+  private slot(key: string, o: PhraseOpts): Slot {
+    let s = this.slots.get(key);
+    if (!s) {
+      const plus = key.endsWith('+');
+      const role = key.slice(0, key.indexOf('.')) as Role;
+      s = { key, role, of: plus ? key.slice(0, -1) : null, section: o.warmup ? 'intro' : o.section, genre: null, move: null, beats: 0, tSum: 0 };
+      if (s.of) {
+        const b = this.slot(s.of, o);
+        s.genre = b.genre;
+      } else if (this.liveGenres && LIVE_GENRE_SLOTS.has(key)) s.genre = this.pickGenre();
+      this.slots.set(key, s);
+    }
+    return s;
+  }
+
+  private pickGenre(): Genre | null {
+    if (!this.genreOk.length) return null;
+    return pickWeighted(this.planRng, this.genreOk, this.genreOk.map((g) => this.openness.get(g) ?? 1));
+  }
+
+  /**
+   * Choose the kit's genre accents for a whole planned song: slots in
+   * GENRE_PRIORITY order (with their variations) until genre moves have about
+   * GENRE_TARGET of the danced time, never above GENRE_MAX, and at least
+   * GENRE_MIN when the plan allows it. The song combo counts with its moves'
+   * tiers, a curated signature nod not at all.
+   */
+  /** Remember which slots the plan puts next to each other (flow when casting). */
+  link(items: readonly Item[]): void {
+    const keyOf = (it: Item) => (it.kind === 'sig' ? 'SIG' : it.slot);
+    for (let k = 1; k < items.length; k++) {
+      const a = keyOf(items[k - 1]);
+      const b = keyOf(items[k]);
+      if (!a || !b || a === b) continue;
+      const base = (x: string) => (x === 'SIG' ? x : (this.slots.get(x)?.of ?? x));
+      const A = base(a), B = base(b);
+      if (A === B) continue;
+      if (!this.after.has(A)) this.after.set(A, new Set());
+      if (!this.before.has(B)) this.before.set(B, new Set());
+      this.after.get(A)!.add(B);
+      this.before.get(B)!.add(A);
+    }
+  }
+
+  assignGenres(items: readonly Item[]): void {
+    if (!this.genreOk.length) return;
+    const nod = this.nodCombo;
+    let total = 0;
+    let cur = 0;
+    const sigBeats = this.signature.reduce((t, s) => t + s.move.beats, 0);
+    const sigGenre = sigBeats ? this.signature.reduce((t, s) => t + (s.move.genre ? s.move.beats : 0), 0) / sigBeats : 0;
+    const groups = new Map<string, number>();
+    for (const it of items) {
+      const beats = barsEnd(it.bars) - it.bars[0].start;
+      if (it.kind === 'sig') {
+        if (nod) continue;
+        total += beats;
+        cur += beats * sigGenre;
+        continue;
+      }
+      if (!it.slot) continue;
+      total += beats;
+      const k = this.slots.get(it.slot)!.of ?? it.slot;
+      groups.set(k, (groups.get(k) ?? 0) + beats);
+    }
+    if (total <= 0) return;
+    const chosen: string[] = [];
+    const take = (k: string) => {
+      chosen.push(k);
+      cur += groups.get(k)!;
+      groups.delete(k);
+    };
+    for (const k of GENRE_PRIORITY) {
+      if (cur >= GENRE_TARGET * total) break;
+      const b = groups.get(k);
+      if (b !== undefined && cur + b <= GENRE_MAX * total) take(k);
+    }
+    if (cur < GENRE_MIN * total) {
+      const rest = [...groups.entries()].filter(([k]) => !k.startsWith('warm')).sort((a, b) => a[1] - b[1] || (a[0] < b[0] ? -1 : 1));
+      for (const [k, b] of rest) {
+        if (cur >= GENRE_MIN * total) break;
+        if (cur + b <= GENRE_MAX * total) take(k);
+      }
+    }
+    for (const k of chosen) {
+      const g = this.pickGenre();
+      for (const s of this.slots.values()) if (s.key === k || s.of === k) s.genre = g;
+    }
+  }
+
+  /** Dance one planned item. */
+  emit(out: MoveInstance[], it: Item): void {
+    if (it.kind === 'sig') {
+      for (const ub of this.units(it.bars)) this.fillSig(out, ub[0].start, barsEnd(ub), it.section, it.phraseNo);
+      return;
+    }
+    const move = it.slot ? this.moveFor(it) : this.choose(it.o, null, it.target);
+    this.emitHold(out, it.bars, move, it.o, it.phraseNo, it.phraseEnd);
+  }
+
+  /** The kit move for a hold (cast on first use); never the move just danced (an alternate instead). */
+  private moveFor(it: HoldItem): Move {
+    const s = this.slots.get(it.slot!)!;
+    if (!s.move) s.move = this.cast(s, it);
+    const prev = this.lastMove;
+    let m = s.move;
+    if (prev && m.base === prev.base) {
+      // The same move again across a hold boundary (a section run ending where the next one starts): an alternate of the same role.
+      const alt = this.slot(`${s.key}~alt`, it.o);
+      alt.role = s.role;
+      alt.genre = s.genre;
+      if (!alt.move || alt.move.base === prev.base) alt.move = this.cast(alt, it);
+      m = alt.move;
+    }
+    return m;
+  }
+
+  /** Cast a kit slot: a variation of its base slot, or a fresh weighted pick for its role. */
+  private cast(s: Slot, it: HoldItem): Move {
+    if (s.of) {
+      const b = this.slots.get(s.of)!;
+      if (!b.move) b.move = this.cast(b, it);
+      const v = this.intensified(b.move, it.o);
+      if (v) this.kit.add(v);
+      return v ?? b.move;
+    }
+    const o = it.o;
+    const t0 = s.beats > 0 ? s.tSum / s.beats : it.target;
+    const target = s.role === 'power' ? Math.max(t0, 0.7) : s.role === 'break' || s.role === 'warm' ? Math.min(t0, 0.35) : t0;
+    const lw = levelWeights(s.role === 'warm' ? 'warmup' : s.section, this.intensity, target);
+    // Moves it plays against: a break and the hook contrast with the verse motif, the motif's moves with its first.
+    const against: Move[] = [];
+    const add = (k: string) => {
+      const m = this.slots.get(k)?.move;
+      if (m) against.push(m);
+    };
+    if (s.role === 'break' || s.role === 'hook') for (let n = 0; n < 4; n++) add(`groove.${n}`);
+    if (s.role === 'groove' && s.key !== 'groove.0') add('groove.0');
+    if (s.role === 'power') add('hook.0');
+    const calm = s.role === 'warm' || s.role === 'intro';
+    const develops = s.key === 'groove.0' || s.key === 'hook.0' || s.key === 'hook.1';
+    const prev = this.lastMove;
+    const prevPose = prev ? lastKeyPose(prev, this.lastMirror) : null;
+    const tilt = s.role !== 'warm';
+    const pool = this.pool;
+    // The poses it must join: end poses of the slots planned before it, start poses of those after it.
+    const ins: Pose[] = [];
+    const outs: Pose[] = [];
+    for (const k of this.before.get(s.key) ?? []) {
+      const m = k === 'SIG' ? this.signature[this.signature.length - 1]?.move : this.slots.get(k)?.move;
+      if (m && m !== prev && ins.length < FLOW_NEIGHBOURS) ins.push(lastKeyPose(m, false));
+    }
+    for (const k of this.after.get(s.key) ?? []) {
+      const m = k === 'SIG' ? this.signature[0]?.move : this.slots.get(k)?.move;
+      if (m && outs.length < FLOW_NEIGHBOURS) outs.push(keysOf(m, false)[0].pose);
+    }
+    const againstM = against.map(partsMask);
+    const prevM = prev && !prev.idle ? partsMask(prev) : -1;
+    const tiltK = VIGOUR_TILT * (target - 0.5);
+    const pick = (genre: Genre | null): Move | null => {
+      const w = new Float64Array(pool.length);
+      let max = 0;
+      for (let i = 0; i < pool.length; i++) {
+        const m = pool[i];
+        let x = this.base[i];
+        if (x <= 0 || m === prev) continue;
+        if (genre ? m.genre !== genre : !!m.genre) continue;
+        if (this.kit.has(m)) continue;
+        x *= lw[m.level] * this.levelF[i];
+        if (x <= 0) continue;
+        if (this.kitBases.has(m.base)) x *= 0.001;
+        // ... and moves on the same footwork as one already cast look alike (three jazz walks).
+        if (m.foot && this.kitFeet.has(m.foot)) x *= 0.3;
+        // Moves that develop later (the motif's A, the hook's H1 / H2) start from a base move, so a variation can intensify them.
+        if (develops && m.base !== m.id) x *= 0.1;
+        if (calm && m.file === 'cooldown') x *= 2.5;
+        const pm = this.partsM[i];
+        for (const a of againstM) x *= 1 - 0.5 * maskOverlap(a, pm);
+        if (prevM >= 0) {
+          if (m.base === prev!.base) x *= 0.1;
+          x *= 1 - 0.6 * maskOverlap(prevM, pm);
+        }
+        if (tilt) {
+          const vt = Math.exp(tiltK * (this.vig[i] - 0.5));
+          x *= this.intensity === 'chill' && m.impact ? Math.min(1, vt) : vt;
+        }
+        w[i] = x;
+        if (x > max) max = x;
+      }
+      // Flow: how well it joins the moves around it (the one just danced, and the kit moves the
+      // plan puts right before or after this slot): end pose -> start pose, the better side.
+      // Only for the moves that can still matter (the flow factor is at most 1).
+      if (prevPose || ins.length || outs.length) {
+        const floor = max * FLOW_PRUNE;
+        for (let i = 0; i < pool.length; i++) {
+          if (w[i] <= floor) {
+            w[i] = 0;
+            continue;
+          }
+          const m = pool[i];
+          const a = keysOf(m, false);
+          const b = m.mirror ? keysOf(m, true) : null;
+          const a0 = a[0].pose, a1 = a[a.length - 1].pose;
+          const b0 = b ? b[0].pose : a0, b1 = b ? b[b.length - 1].pose : a1;
+          const start = (q: Pose) => (b ? Math.min(transitionCost(q, a0), transitionCost(q, b0)) : transitionCost(q, a0));
+          let c = 0, n = 0;
+          if (prevPose) (c += start(prevPose)), n++;
+          for (const q of ins) (c += start(q)), n++;
+          for (const q of outs) (c += b ? Math.min(transitionCost(a1, q), transitionCost(b1, q)) : transitionCost(a1, q)), n++;
+          w[i] *= Math.exp(-FLOW_W * (c / n));
+        }
+      }
+      return pickWeighted(this.rng, pool, w);
+    };
+    let m = s.genre ? pick(s.genre) : null;
+    if (!m) {
+      s.genre = null;
+      m = pick(null);
+    }
+    if (!m) m = this.choose(o, prev, target);
+    this.kit.add(m);
+    this.kitBases.add(m.base);
+    if (m.foot) this.kitFeet.add(m.foot);
+    return m;
+  }
+
+  /** A bigger version of `m` for a later chorus: a variation at least as vigorous, the most vigorous favoured. */
+  private intensified(m: Move, o: PhraseOpts): Move | null {
+    const list = this.variants(m, o).filter((v) => moveVigour(v) >= moveVigour(m) - 0.02);
+    if (!list.length) return this.variantOf(m, o);
+    return pickWeighted(this.rng, list, list.map((v) => 0.2 + moveVigour(v)));
+  }
+
+  /** Variations of `m` allowed here, of the same tier, suiting the level at least half as well as `m`. */
+  private variants(m: Move, o: PhraseOpts): Move[] {
+    const list: Move[] = [];
+    for (const v of this.ornaments?.get(m.id) ?? []) {
+      const type = v.id.slice(v.id.lastIndexOf('~') + 1);
+      if ((type === 'hips' || type === 'diag') && levelFactor(v, this.intensity) > 0) list.push(v);
+    }
+    for (const v of this.varsByBase.get(m.base) ?? []) if (v !== m && this.allowed(v, o)) list.push(v);
+    const min = 0.5 * levelFactor(m, this.intensity);
+    return list.filter((v) => v.genre === m.genre && levelFactor(v, this.intensity) >= min);
+  }
+
+  /** One variation of `m` (evenly), or null. */
+  private variantOf(m: Move, o: PhraseOpts): Move | null {
+    const ok = this.variants(m, o);
+    return ok.length ? ok[Math.floor(this.rng() * ok.length)] : null;
   }
 
   /** Bars cut into units of `unitBars` (a short tail joins the last unit). */
@@ -662,7 +1156,7 @@ export class Choreographer {
           (feels[lo].drop ? HOLD_DROP : 0) +
           HOLD_SECTION[o.section] -
           HOLD_CONTRAST_W * Math.max(0, contrast - 0.15);
-        if (this.rng() < 1 / (1 + Math.exp(-x))) {
+        if (this.planRng() < 1 / (1 + Math.exp(-x))) {
           out.push({ a: lo, len: hi - lo });
           return;
         }
@@ -690,74 +1184,10 @@ export class Choreographer {
   }
 
   /**
-   * The move for one hold: usually one of the section type's palette moves
-   * (leaning toward the hold's target vigour, the main move favoured); while
-   * the palette grows, or now and then as a one-off, a fresh pick. A move
-   * coming back may return as a variation of itself.
-   */
-  private pickHold(o: PhraseOpts, target: number, feels: readonly BarFeel[]): Move {
-    const prev = this.lastMove;
-    const drop = feels[0]?.drop ?? false;
-    const t = drop ? Math.min(1, target + TARGET_DROP) : target;
-    // One palette per section type and vibe (soft / medium / heavy passages).
-    const tier = t >= PALETTE_HEAVY ? 'heavy' : t <= PALETTE_SOFT ? 'soft' : 'mid';
-    const key = `${o.memoKey ?? o.section}|${tier}`;
-    let pal = this.palettes.get(key);
-    if (!pal) this.palettes.set(key, (pal = []));
-    const restless = mean(feels, (f) => f.change) > 0.6 ? 1 : 0;
-    const size = PALETTE_SIZE[this.intensity] + restless;
-    const main = pal[0];
-    const cands = pal.filter((m) => m !== prev && (!prev || m.base !== prev.base) && this.allowed(m, o));
-    const grow = pal.length < size && (pal.length < 2 || this.rng() < PALETTE_GROW_P);
-    let move: Move | null = null;
-    let oneOff = false;
-    if (!grow && cands.length) {
-      oneOff = this.rng() < ONE_OFF_P[this.intensity];
-      if (!oneOff) move = pickWeighted(this.rng, cands, cands.map((m) => vigourTilt(m, t) * Math.sqrt(levelFactor(m, this.intensity)) * (m === main ? MAIN_MOVE_BIAS : 1)));
-    }
-    if (!move) {
-      // Fresh pick, kept apart from the palette's moves.
-      const n = this.recent.length;
-      this.recent.push(...pal);
-      move = this.choose(o, prev, t);
-      this.recent.length = n;
-      if (!oneOff && pal.length < size && !pal.includes(move)) pal.push(move);
-    }
-    const again = this.used.has(move);
-    this.used.add(move);
-    if (again && this.rng() < REPEAT_VARIANT_P[this.intensity]) {
-      const v = this.variantOf(move, o);
-      if (v && v !== prev) return v;
-    }
-    return move;
-  }
-
-  /**
-   * One of `list` (versions of `m`), picked evenly among those that suit the
-   * level at least half as well as `m` itself (a hard variation of an easy
-   * move doesn't slip into Easy through the back door), or null.
-   */
-  private suitedPick(m: Move, list: readonly Move[]): Move | null {
-    const min = 0.5 * levelFactor(m, this.intensity);
-    const ok = list.filter((v) => levelFactor(v, this.intensity) >= min);
-    return ok.length ? ok[Math.floor(this.rng() * ok.length)] : null;
-  }
-
-  /** A variation of `m` (an ornamented version or a pool variation of its base) allowed here, or null. */
-  private variantOf(m: Move, o: PhraseOpts): Move | null {
-    const list: Move[] = [];
-    for (const v of this.ornaments?.get(m.id) ?? []) {
-      const type = v.id.slice(v.id.lastIndexOf('~') + 1);
-      if ((type === 'hips' || type === 'diag') && levelFactor(v, this.intensity) > 0) list.push(v);
-    }
-    for (const v of this.varsByBase.get(m.base) ?? []) if (v !== m && this.allowed(v, o)) list.push(v);
-    return this.suitedPick(m, list);
-  }
-
-  /**
    * One hold: `move` repeated over the hold's units. A whole-phrase hold
-   * may switch to a variation of the move half-way; a hold ending the phrase
-   * may close with a flourish.
+   * may switch to a variation of the move half-way (a new card of 4+ bars);
+   * a hold ending the phrase may close with a flourish, shown under the
+   * move's own name (same card).
    */
   private emitHold(out: MoveInstance[], bars: readonly Bar[], move: Move, o: PhraseOpts, phraseNo: number, phraseEnd: boolean): void {
     const units = this.units(bars);
@@ -766,86 +1196,35 @@ export class Choreographer {
     let second = move;
     const longHold = bars.length >= (this.half ? 16 : 8);
     if (!calm && longHold && n >= 2 && this.rng() < MID_VARIANT_P[this.intensity]) second = this.variantOf(move, o) ?? move;
+    // Lead with the side that joins the last move best.
+    const prev = this.lastMove;
+    let side = false;
+    if (prev && move.mirror) {
+      const p = lastKeyPose(prev, this.lastMirror);
+      side = transitionCost(p, keysOf(move, true)[0].pose) < transitionCost(p, keysOf(move, false)[0].pose);
+    }
     for (let u = 0; u < n; u++) {
       const m = u >= Math.ceil(n / 2) ? second : move;
       const flourish = phraseEnd && u === n - 1 && n > 1 ? this.ornament(m, ['spin', 'hit4', 'clap4'], FLOURISH_P[this.intensity]) : null;
-      this.fillUnit(out, units[u][0].start, barsEnd(units[u]), { kind: 'move', move: m }, o.section, phraseNo, flourish, calm);
+      this.fillUnit(out, units[u], m, o.section, phraseNo, flourish, side && m.mirror);
     }
-    this.lastUsed.set(move, phraseNo);
-    this.lastUsed.set(second, phraseNo);
   }
 
   /**
-   * Fill a short gap [start, end) (a pickup, an odd bar's spare beat, what a
-   * move's length doesn't divide) with an in-place 1- or 2-beat move of the
-   * song's style, repeated, then a 1-beat move for any odd beat. Never the
-   * idle groove: that is only for "no beats yet" / pre-lock plans.
+   * Fill a short gap [start, end) with an in-place 1- or 2-beat move of the
+   * song's style, repeated (only a map with no whole bar at all needs it:
+   * everywhere else leftover beats are danced as part of a move).
    */
-  filler(out: MoveInstance[], start: number, end: number, section: SectionType, unitStart = false, phrase = -1, calm = false): void {
+  filler(out: MoveInstance[], start: number, end: number, section: SectionType): void {
     let b = start;
-    let first = unitStart;
-    let tries = 0;
-    while (b < end && tries++ < 8) {
-      const r = end - b;
-      // Half time: a 1-beat move over 2 song beats when there's room.
-      const mult = this.half && r >= 2 ? 2 : 1;
-      const prev = this.lastMove;
-      const w = this.gapMoves.map((m, i) => {
-        if (m.beats * mult > r || m === prev) return 0;
-        if (calm && m.level !== 'low') return 0;
-        if (!calm && m.level === 'high' && this.intensity !== 'sweaty') return 0;
-        let x = this.gapW[i];
-        // Moves that share the neighbour's family and body parts blend in best.
-        if (prev && !prev.idle) {
-          if (m.families[0] && prev.families.includes(m.families[0])) x *= 2;
-          x *= 0.5 + partsOverlap(prev, m);
-        }
-        return x;
-      });
-      const g = pickWeighted(this.rng, this.gapMoves, w) ?? this.gapMoves.find((m) => m.beats === 1 && m !== prev) ?? null;
-      if (!g) break;
-      const span = g.beats * mult;
-      const reps = Math.max(1, Math.floor(r / span));
-      for (let k = 0; k < reps && b + span <= end; k++) {
-        const mirror = g.mirror ? k % 2 === 1 : false;
-        out.push({ move: g, mirror, start: b, span, half: mult === 2, origin: 0, section, sig: false, unitStart: first, phrase, fill: true });
-        first = false;
-        b += span;
-        this.lastMove = g;
-        this.lastMirror = mirror;
-      }
-    }
-    // Last resort (no gap move fits at all): the groove.
-    for (; b < end; b++) {
-      out.push({ move: IDLE_MOVE, mirror: false, start: b, span: 1, half: false, origin: 0, section, sig: false, unitStart: first, phrase, fill: true });
-      first = false;
-      this.lastMove = IDLE_MOVE;
-      this.lastMirror = false;
-    }
-  }
-
-  /**
-   * The beats before the first bar (a pickup): the first move itself when it
-   * fits them exactly, so the NOW card doesn't flicker through fillers in
-   * the song's first second, else one calm 1-beat move repeated.
-   */
-  pickup(n: number, first: MoveInstance | undefined, section: SectionType): MoveInstance[] {
-    const out: MoveInstance[] = [];
-    if (n <= 0) return out;
     const mult = this.half ? 2 : 1;
-    const m0 = first && !first.sig && !first.move.idle && !first.move.cooldown ? first.move : null;
-    const base = { origin: 0, section, sig: false, unitStart: false, phrase: -1, fill: true };
-    if (m0 && m0.travel === 0 && m0.beats <= 2 && n % (m0.beats * mult) === 0) {
-      const span = m0.beats * mult;
-      const reps = n / span;
-      // Alternate sides so the last pickup instance leads into the first unit's.
-      for (let k = 0; k < reps; k++) out.push({ ...base, move: m0, mirror: m0.mirror && (reps - k) % 2 === 1, start: k * span, span, half: this.half });
-      return out;
+    const w = this.gapMoves.map((m, i) => (m.level === 'low' ? this.gapW[i] : 0));
+    const g = pickWeighted(this.rng, this.gapMoves, w);
+    if (g) {
+      for (const i of tileMove(g, start, end, mult, [], { half: this.half, section, sig: false, phrase: -1, fill: true })) out.push(i);
+      b = end;
     }
-    const w = this.gapMoves.map((m, i) => (m.beats === 1 && m.level === 'low' ? this.gapW[i] : 0));
-    const g = pickWeighted(this.rng, this.gapMoves, w) ?? this.gapMoves.find((m) => m.beats === 1) ?? IDLE_MOVE;
-    for (let b = 0; b < n; b++) out.push({ ...base, move: g, mirror: g.mirror && (n - b) % 2 === 1, start: b, span: 1, half: false });
-    return out;
+    for (; b < end; b++) out.push({ move: IDLE_MOVE, mirror: false, start: b, span: 1, half: false, origin: 0, section, sig: false, unitStart: false, phrase: -1, fill: true });
   }
 
   private allowed(m: Move, o: PhraseOpts): boolean {
@@ -857,39 +1236,28 @@ export class Choreographer {
     return lw[m.level] > 0;
   }
 
+  /** A per-hold pick (the cool-down flows, and the last resort). */
   private choose(o: PhraseOpts, avoid: Move | null, target = o.energy): Move {
     const pool = o.cooldown ? COOLDOWN_MOVES : this.pool;
     const lw = levelWeights(o.warmup ? 'warmup' : o.section, this.intensity, target);
-    const tilt = !o.cooldown && !o.warmup;
     const prev = this.lastMove;
     const prevPose = prev ? lastKeyPose(prev, this.lastMirror) : null;
-    const phrase = this.phraseNo;
     const weights = pool.map((m, i) => {
-      if (m === avoid) return 0;
-      if (m === prev) return 0; // no repeat across a hold boundary
+      if (m === avoid || m === prev) return 0;
       let w = o.cooldown ? (m.cooldown || levelFactor(m, this.intensity) > 0 ? 1 : 0) : lw[m.level] * levelFactor(m, this.intensity) * this.base[i];
       if (w <= 0) return 0;
-      if (!o.cooldown && this.outside.has(m)) return 0;
-      // Not again within NO_REPEAT_PHRASES phrases; other versions of the same base move rarely.
-      const used = this.lastUsed.get(m);
-      if (!o.cooldown && used !== undefined && phrase - used <= NO_REPEAT_PHRASES) return 0;
-      // Calm flows (cooldown file) suit warm-ups, intros and quiet passages.
-      if (!o.cooldown && m.file === 'cooldown' && (o.warmup || o.energy < 0.35)) w *= 2.5;
-      if (avoid && m.base === avoid.base) w *= 0.1;
+      if (!o.cooldown && (this.outside.has(m) || m.genre)) return 0;
+      if (o.cooldown && this.kit.has(m)) w *= 0.15;
       if (prev && m.base === prev.base) w *= 0.1;
-      if (this.recent.includes(m)) w *= 0.15;
       if (prev && !prev.idle) w *= 1 - 0.6 * partsOverlap(prev, m);
-      if (avoid) w *= 1 - 0.5 * partsOverlap(avoid, m);
-      if (prevPose) w *= Math.exp(-0.9 * transitionCost(prevPose, keysOf(m, false)[0].pose));
-      // The very first move also covers the pickup when it fits it (one NOW card for the song's first bar).
-      if (!prev && this.pickupBeats > 0 && m.travel === 0 && m.beats <= 2 && this.pickupBeats % (m.beats * (this.half ? 2 : 1)) === 0) w *= PICKUP_FIT_BOOST;
-      // Energy -> vigour (Easy: never pushes squats up).
-      if (tilt) w *= this.intensity === 'chill' && m.impact ? Math.min(1, vigourTilt(m, target)) : vigourTilt(m, target);
+      if (prevPose) w *= Math.exp(-FLOW_W * transitionCost(prevPose, keysOf(m, false)[0].pose));
       return w;
     });
     const picked = pickWeighted(this.rng, pool, weights);
-    if (picked) return picked;
-    // Everything excluded (tiny pools): relax to anything allowed but `prev`.
+    if (picked) {
+      if (o.cooldown) this.kit.add(picked);
+      return picked;
+    }
     const fallback = pool.filter((m) => m !== prev && m !== avoid && !this.outside.has(m) && (o.cooldown || levelFactor(m, this.intensity) > 0));
     return fallback.length ? fallback[Math.floor(this.rng() * fallback.length)] : pool[0];
   }
@@ -897,53 +1265,117 @@ export class Choreographer {
   /** An ornamented version of `m` of one of the given types, or null. */
   private ornament(m: Move, types: readonly string[], p: number): Move | null {
     if (p <= 0 || this.rng() >= p) return null;
-    const list = (this.ornaments?.get(m.id) ?? []).filter((v) => types.includes(v.id.slice(v.id.lastIndexOf('~') + 1)) && levelFactor(v, this.intensity) > 0);
-    return this.suitedPick(m, list);
+    const min = 0.5 * levelFactor(m, this.intensity);
+    const list = (this.ornaments?.get(m.id) ?? []).filter((v) => types.includes(v.id.slice(v.id.lastIndexOf('~') + 1)) && levelFactor(v, this.intensity) >= min && levelFactor(v, this.intensity) > 0);
+    return list.length ? list[Math.floor(this.rng() * list.length)] : null;
   }
 
-  private fillUnit(out: MoveInstance[], start: number, end: number, choice: UnitChoice, section: SectionType, phrase: number, flourish: Move | null = null, calm = false): void {
+  /** One unit of a hold: the move repeated (tileMove), its last 4 move beats a flourish when given (same card name). */
+  private fillUnit(out: MoveInstance[], bars: readonly Bar[], m: Move, section: SectionType, phrase: number, flourish: Move | null, mirror = false): void {
+    const mult = this.half ? 2 : 1;
+    const start = bars[0].start;
+    const end = barsEnd(bars);
+    const tiles = tileMove(m, start, end, mult, bars.map((b) => b.start), { half: this.half, section, sig: false, phrase }, { unitStart: true, mirror });
+    // Phrase-end flourish: replaces the last 4 move beats when they are whole repeats of an in-place move.
+    if (flourish && m.travel === 0 && (4 / m.beats) % 1 === 0) {
+      const fl = 4 / m.beats;
+      const last = tiles.slice(-fl);
+      const full = tiles.filter((i) => i.move === m).length;
+      if (last.length === fl && last.every((i) => i.move === m) && full > fl && (full - fl) % (m.mirror ? 2 : 1) === 0) {
+        tiles.splice(tiles.length - fl, fl, { ...last[0], move: renamed(flourish, m.name), mirror: false, span: 4 * mult, unitStart: tiles.length === fl });
+      }
+    }
+    for (const i of tiles) out.push(i);
+    const lastI = tiles[tiles.length - 1];
+    if (lastI) {
+      this.lastMove = lastI.move.part ? m : lastI.move;
+      this.lastMirror = lastI.mirror;
+      if (lastI.move.part) this.lastMove = m;
+    }
+  }
+
+  /** The song combo over [start, end): whole combos while they fit, then its steps in order, the last one in part; one card. */
+  private fillSig(out: MoveInstance[], start: number, end: number, section: SectionType, phrase: number): void {
     const mult = this.half ? 2 : 1;
     let b = start;
+    let origin = 0;
     let first = true;
-    const push = (move: Move, mirror: boolean, origin: number, sig: boolean) => {
-      out.push({ move, mirror, start: b, span: move.beats * mult, half: this.half, origin, section, sig, unitStart: first, phrase });
+    const name = this.comboName;
+    const push = (move: Move, mirror: boolean, span: number) => {
+      out.push({ move: renamed(move, name), mirror, start: b, span, half: this.half, origin, section, sig: true, unitStart: first, phrase });
       first = false;
-      b += move.beats * mult;
+      b += span;
       this.lastMove = move;
       this.lastMirror = mirror;
     };
-    if (choice.kind === 'sig') {
-      let origin = 0;
-      const sigBeats = this.signature.reduce((t, s) => t + s.move.beats * mult, 0);
-      // Repeat the whole combo while it fits (Easy units hold it twice).
-      while (sigBeats > 0 && b + sigBeats <= end) {
-        for (const s of this.signature) {
-          push(s.move, s.mirror, origin, true);
-          origin += s.move.travel * (s.mirror ? -1 : 1);
-        }
+    let k = 0;
+    let guard = 0;
+    while (b < end && guard++ < 256) {
+      const s = this.signature[k % this.signature.length];
+      const span = s.move.beats * mult;
+      if (b + span <= end) {
+        push(s.move, s.mirror, span);
+        origin += s.move.travel * (s.mirror ? -1 : 1);
+        k++;
+        continue;
       }
-    } else {
-      const m = choice.move;
-      const span = m.beats * mult;
-      let n = Math.floor((end - b) / span);
-      if (m.travel !== 0 && n % 2 === 1) n -= 1;
-      // Phrase-end flourish: replace the last 4 move beats (an even number of instances).
-      let fl = flourish && m.travel === 0 && (4 / m.beats) % 1 === 0 ? 4 / m.beats : 0;
-      if (fl && (n <= fl || (n - fl) % (m.mirror ? 2 : 1) !== 0)) fl = 0;
-      let origin = 0;
-      for (let i = 0; i < n - fl; i++) {
-        const mirror = m.mirror ? i % 2 === 1 : false;
-        push(m, mirror, origin, false);
-        origin += m.travel * (mirror ? -1 : 1);
-      }
-      if (fl && flourish) push(flourish, false, origin, false);
+      const rest = end - b;
+      const piece = s.move.travel !== 0 ? pauseOf(s.move, rest / mult) : partOf(s.move, 0, rest / mult);
+      push(piece, s.move.travel !== 0 ? false : s.mirror, rest);
     }
-    if (b < end) this.filler(out, b, end, section, first, phrase, calm);
-    if (choice.kind === 'move') {
-      this.recent.push(choice.move);
-      if (this.recent.length > 3) this.recent.shift();
+    // A combo cut mid-travel: its last travelling step becomes a pause, so the coach ends at home.
+    if (Math.abs(origin) > 1e-9) {
+      for (let i = out.length - 1; i >= 0 && out[i].start >= start; i--) {
+        if (out[i].move.travel === 0) continue;
+        out[i].move = renamed(pauseOf(out[i].move, out[i].span / mult), name);
+        out[i].mirror = false;
+        for (let j = i + 1; j < out.length; j++) out[j].origin = out[i].origin;
+        break;
+      }
     }
   }
+}
+
+/**
+ * Danced time of a routine by tier, as the kit accounts for it (GENRE_MIN ..
+ * GENRE_MAX): every instance but the idle groove, the cool-down (outro) and a
+ * curated signature nod's combo.
+ */
+export function tierBeats(r: Routine, style: SongStyle = BALANCED_POP): { global: number; genre: number } {
+  const nod = new Set(style.signature ?? []);
+  const nodCombo = r.signature.length > 0 && r.signature.every((x) => nod.has(x.move.id));
+  let global = 0;
+  let genre = 0;
+  for (const i of r.instances) {
+    if (i.move.idle || i.move.cooldown || i.section === 'outro' || (i.sig && nodCombo)) continue;
+    if (i.move.genre) genre += i.span;
+    else global += i.span;
+  }
+  return { global, genre };
+}
+
+/** The combo's name on the NOW card: "Gallop + Lasso", or the first move's name + "combo" when that is too long. */
+export function comboName(sig: readonly SigStep[]): string {
+  const names: string[] = [];
+  for (const s of sig) if (!names.includes(s.move.name)) names.push(s.move.name);
+  if (!names.length) return 'Song Combo';
+  const both = names.join(' + ');
+  if (both.length <= MAX_NAME) return both;
+  // Too long: drop the longer name's last words ("Stomp Kick + Hammer Fist") while each keeps a word.
+  const words = names.map((n) => n.split(' '));
+  const join = () => words.map((w) => w.join(' ')).join(' + ');
+  while (join().length > MAX_NAME) {
+    let k = -1;
+    words.forEach((w, i) => {
+      if (w.length > 1 && (k < 0 || w.join(' ').length > words[k].join(' ').length)) k = i;
+    });
+    if (k < 0) break;
+    words[k].pop();
+  }
+  const short = words.map((w) => w.join(' '));
+  if (join().length <= MAX_NAME && new Set(short).size === short.length) return join();
+  const one = `${names[0]} Combo`;
+  return one.length <= MAX_NAME ? one : 'Song Combo';
 }
 
 /** Beat just past the last of `bars`. */
@@ -1233,7 +1665,7 @@ export function generateRoutine(map: BeatMap, intensity: Intensity, opts: Routin
   const { pickup, bars } = buildBars(N, map.downbeats);
   const firstType = map.sections[0]?.type ?? 'intro';
   if (bars.length === 0) {
-    if (pickup > 0) ch.filler(out, 0, pickup, firstType, false, -1, true);
+    if (pickup > 0) ch.filler(out, 0, pickup, firstType);
     return { instances: out, signature: ch.signature, half, beats: N };
   }
 
@@ -1252,21 +1684,41 @@ export function generateRoutine(map: BeatMap, intensity: Intensity, opts: Routin
     }
   }
   const feel = barFeels(map, bars, runs);
-  ch.pickupBeats = pickup;
+  // A drop in a section's last bars (too few for a move of their own) starts the next section early.
+  for (let k = 0; k + 1 < runs.length; k++) {
+    const bs = runs[k].bars;
+    if (runs[k + 1].type === 'outro') continue;
+    for (let j = Math.max(unitBars, bs.length - unitBars + 1); j < bs.length; j++) {
+      if (feel.get(bs[j])!.drop) {
+        runs[k + 1].bars.unshift(...bs.splice(j));
+        break;
+      }
+    }
+  }
   const feelsOf = (bs: readonly Bar[]) => bs.map((b) => feel.get(b)!);
 
+  // 1. Plan the whole song (phrases, holds, kit slots), so the kit's genre
+  //    accents can be measured on the danced time before anything is cast.
+  const items: ReturnType<Choreographer['plan']> = [];
+  const runsOf = new Map<SectionType, number>();
+  for (const run of runs) runsOf.set(run.type, (runsOf.get(run.type) ?? 0) + 1);
+  const seen = new Map<SectionType, number>();
   let warmedUp = false;
   for (const run of runs) {
     let barsLeft = run.bars.slice();
     let firstPhrase = true;
+    const occ = seen.get(run.type) ?? 0;
+    seen.set(run.type, occ + 1);
+    const last = occ === (runsOf.get(run.type) ?? 1) - 1;
     const isPeak = run.type === 'chorus' || run.type === 'drop';
     const cooldown = run.type === 'outro';
+    const typical = targetVigour(feelsOf(run.bars), run.type);
     // Warm-up: the song's first few bars stay gentle (unless it's already intro/outro).
     if (!warmedUp) {
       warmedUp = true;
       if (run.type !== 'intro' && !cooldown && barsLeft.length >= unitBars * 2 + 2) {
         const w = barsLeft.splice(0, unitBars * 2);
-        ch.phrase(out, w, { section: run.type, energy: run.energy, warmup: true, memoKey: 'warmup', feels: feelsOf(w) });
+        items.push(...ch.plan(w, { section: run.type, energy: run.energy, warmup: true, memoKey: 'warmup', feels: feelsOf(w) }));
       }
     }
     while (barsLeft.length > 0) {
@@ -1285,7 +1737,7 @@ export function generateRoutine(map: BeatMap, intensity: Intensity, opts: Routin
       // An intro warms up in its first phrase; a drop inside a (long) intro
       // means the song has properly started: dance it like a verse.
       const introDrop = run.type === 'intro' && !firstPhrase && !!pf[0]?.drop;
-      ch.phrase(out, pb, {
+      items.push(...ch.plan(pb, {
         section: introDrop ? 'verse' : run.type,
         energy: run.energy,
         warmup: run.type === 'intro' && firstPhrase,
@@ -1294,13 +1746,27 @@ export function generateRoutine(map: BeatMap, intensity: Intensity, opts: Routin
         // A drop opens with one unit of the combo, then gets to the heavy move.
         sigUnits: intensity === 'chill' ? 1 : run.type === 'drop' || pf[0]?.drop ? 1 : 2,
         memoKey: run.type,
+        occ,
+        last,
+        typical,
         feels: pf,
-      });
+      }));
       firstPhrase = false;
     }
   }
-  if (pickup > 0) out.unshift(...ch.pickup(pickup, out[0], firstType));
-  return { instances: out, signature: ch.signature, half, beats: N };
+  // 2. The kit's genre accents; 3. dance it, casting each kit move on first use.
+  ch.link(items);
+  ch.assignGenres(items);
+  for (const it of items) ch.emit(out, it);
+  // 4. The hard rule: no card under a bar / MIN_CARD_SEC (the pickup before the
+  //    first bar becomes a lead-in of the first move, leftovers parts of moves).
+  if (pickup > 0) out.unshift({ move: IDLE_MOVE, mirror: false, start: 0, span: pickup, half: false, origin: 0, section: firstType, sig: false, unitStart: false, phrase: -1, fill: true });
+  const drops = new Set<number>();
+  for (const b of bars) if (feel.get(b)!.drop) drops.add(b.start);
+  const instances = enforceCards(out, { times: map.beats, bars: bars.map((b) => b.start), drops, mult: half ? 2 : 1 });
+  // 5. No dash across the floor from one move into the next.
+  smoothSteps(instances, map.beats);
+  return { instances, signature: ch.signature, half, beats: N, times: map.beats };
 }
 
 // ---------------------------------------------------------------------------
@@ -1332,6 +1798,7 @@ export class LivePlanner {
     // The level still sets difficulty; the verse/verse/chorus cycle keeps the
     // exertion at a medium level with periodic bigger phrases.
     this.ch = new Choreographer(`${seedKey}|live`, intensity, this.half, opts, bpm);
+    this.ch.liveGenres = true;
     this.nextBeat = startBeat;
   }
 
@@ -1354,9 +1821,11 @@ export class LivePlanner {
       const bars: Bar[] = [];
       for (let i = 0; i < nBars; i++) bars.push({ start: this.nextBeat + i * barLen, len: barLen });
       const c = LIVE_CYCLE[(this.k + 2) % LIVE_CYCLE.length];
+      // Each cycle of the verse / verse / chorus loop counts as a new section run (motifs develop, choruses intensify).
+      const occ = Math.floor((this.k + 2) / LIVE_CYCLE.length);
       this.ch.phrase(out, bars, warm
         ? { section: 'intro', energy: 0.3, warmup: true }
-        : { section: c.type, energy: c.energy, signature: c.type === 'chorus', memoKey: c.type === 'chorus' ? undefined : 'live-verse' });
+        : { section: c.type, energy: c.energy, signature: c.type === 'chorus', memoKey: c.type === 'chorus' ? 'chorus' : 'live-verse', occ });
       this.nextBeat += nBars * barLen;
       this.k++;
     }

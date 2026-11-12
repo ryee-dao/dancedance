@@ -10,7 +10,8 @@
  *   music: headbangs and air guitar for rock, salsa and cumbia steps for
  *   Latin, line-dance steps for country, Lindy steps for swing ... They are
  *   only ever used on songs whose style opens that genre (songGenres), and
- *   there they take a share of the picks (generator.ts GENRE_SHARE).
+ *   there they are the kit's accents, 20-40 % of the danced time
+ *   (generator.ts GENRE_MIN / GENRE_MAX).
  *
  * Variations and ornaments of a move share its tier; a recombined variation
  * takes the genre of a layer that belongs to one (variations.ts).
