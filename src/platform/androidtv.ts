@@ -9,7 +9,7 @@
  * then the cloud (GitHub Pages), then on-device analysis of that file.
  *
  * ===========================================================================
- * Bridge contract, version 5. Mirrored in
+ * Bridge contract, version 6. Mirrored in
  * android/app/src/main/java/app/dancedance/tv/DanceBridge.kt; keep in sync.
  * ===========================================================================
  *
@@ -29,6 +29,10 @@
  * checkForUpdate(), startUpdate(), cancelUpdate(), openInstallSettings(),
  * takeUpdatedNotice() and the 'updateState' event. Feature-detected, so this
  * build still runs in an older installed shell (which then shows no updater).
+ * v6: dropAudio(): the player's watchdog gave up on a song's file (it stalled
+ * or failed mid-song and reloading didn't help), so the shell forgets it and
+ * the next play downloads it again. Feature-detected (older shells: no-op;
+ * the shell also checks every cached file's structure before using it).
  *
  * Beat alignment. Cloud maps are made from YouTube's WebM/Opus stream, so the
  * shell downloads that by default: WebView decodes and plays it sample-aligned
@@ -44,6 +48,7 @@ import { parseUpdateState, type AppUpdates, type UpdateState } from './appUpdate
 import { fetchVideoInfo, limitConcurrency, cleanTitle } from '../player/playlistReader';
 import { ANALYSIS_RATE } from '../beat/analyzeAudio';
 import { SmoothClock } from '../player/clock';
+import { PlaybackWatchdog, type WatchdogAction } from '../player/watchdog';
 import { PlayerError, type MediaPlayer, type PlayItem, type StartStatus } from '../player/types';
 import { store } from '../store';
 import { toast } from '../ui/toast';
@@ -52,7 +57,7 @@ import type { DeviceAnalysisNote, Platform, PlaylistEntry } from './platform';
 // ---------------------------------------------------------------------------
 // Contract types
 
-export const BRIDGE_VERSION = 5;
+export const BRIDGE_VERSION = 6;
 
 /** The raw object the shell injects as `window.DanceBridge`. */
 export interface DanceBridgeNative {
@@ -92,6 +97,8 @@ export interface DanceBridgeNative {
   openInstallSettings?(): void;
   /** v5: the version name once after an update ("Updated to X"), else "". */
   takeUpdatedNotice?(): string;
+  /** v6: forget a song's cached audio (it didn't play cleanly); returns the files removed. */
+  dropAudio?(videoId: string): number;
   // async: answer delivered later by request id
   /** value: BridgePlaylistEntry[] in playlist order (all pages). */
   getPlaylist(requestId: string, listIdOrUrl: string): void;
@@ -643,6 +650,17 @@ export function cancelAudio(videoId: string): void {
   tvBridge()?.native.cancelAudio(videoId);
 }
 
+/** The song's cached file didn't play cleanly: have the shell (v6+) download it afresh next time. */
+export function dropCachedAudio(videoId: string): void {
+  preparing.delete(videoId);
+  const n = tvBridge()?.native;
+  try {
+    if (typeof n?.dropAudio === 'function') console.warn('[dd:tv] dropped the cached audio of', videoId, n.dropAudio(videoId));
+  } catch (err) {
+    console.warn('[dd:tv] dropAudio failed', err);
+  }
+}
+
 // --- TV -> cloud trigger -----------------------------------------------------
 
 let cloudChecked = false;
@@ -766,6 +784,16 @@ function installFrameSampler(): void {
 // Player: audio only, from the shell's download cache
 
 const SLOW_MS = 45_000;
+/** How often the playback watchdog looks at the element while playing. */
+const WATCH_MS = 500;
+
+function bufferedText(a: HTMLMediaElement): string {
+  try {
+    return Array.from({ length: a.buffered.length }, (_, i) => `${a.buffered.start(i).toFixed(0)}-${a.buffered.end(i).toFixed(0)}`).join(',');
+  } catch {
+    return '?';
+  }
+}
 
 /**
  * Plays a YouTube item on TV: the shell downloads the audio-only stream
@@ -780,7 +808,8 @@ export class TvAudioPlayer implements MediaPlayer {
   onStatus: ((status: StartStatus) => void) | null = null;
 
   private audio = new Audio();
-  private clock = new SmoothClock();
+  /** The element's time moves every frame: past half a second without a new value it is stuck, not playing. */
+  private clock = new SmoothClock({ maxHold: 0.5 });
   private loaded = false;
   private videoId: string | null = null;
   private detail: string | null = null;
@@ -790,47 +819,123 @@ export class TvAudioPlayer implements MediaPlayer {
   private src: string | null = null;
   private wantPlay = false;
   private lastTime = 0;
-  private lastRecovery = 0;
   /** Encoder priming the element plays before the music (M4A fallback only): off the clock. */
   private priming = 0;
+  /** Notices a song stuck in "playing" (or an element error) and recovers or gives up. */
+  private watchdog = new PlaybackWatchdog();
+  private watchTimer: ReturnType<typeof setInterval> | null = null;
+  /** A reload is under way: the element's time reads 0 until it has seeked back. */
+  private reloadingAt: number | null = null;
+  private stallShown = false;
+  private ended = false;
+  private onMeta: (() => void) | null = null;
 
   constructor() {
     players.add(this);
     this.audio.preload = 'auto';
     this.audio.addEventListener('ended', () => {
-      this.clock.update(this.audio.currentTime, false);
-      keepScreenOn(false);
-      this.onEnded?.();
+      if (this.ended) return;
+      this.finish();
     });
     this.audio.addEventListener('error', () => {
-      if (!this.loaded) return;
-      if (this.recover()) return;
-      this.onError?.(new PlayerError('decode', 'The song stopped playing.'));
+      if (!this.loaded || this.ended) return;
+      const e = this.audio.error;
+      console.warn('[dd:tv] audio element error', e?.code, e?.message ?? '', 'at', this.lastTime.toFixed(1));
+      this.act(this.watchdog.noteError(performance.now(), this.lastTime), 'error');
     });
   }
 
+  private finish(): void {
+    this.ended = true;
+    this.wantPlay = false;
+    this.stopWatch();
+    this.clock.update(this.audio.currentTime, false);
+    keepScreenOn(false);
+    this.onEnded?.();
+  }
+
+  private startWatch(): void {
+    if (this.watchTimer === null) this.watchTimer = setInterval(() => this.watch(), WATCH_MS);
+  }
+
+  private stopWatch(): void {
+    if (this.watchTimer !== null) clearInterval(this.watchTimer);
+    this.watchTimer = null;
+  }
+
+  /** A few times a second while meant to be playing (frames can be slow; this doesn't depend on them). */
+  private watch(): void {
+    if (!this.loaded) return;
+    const a = this.audio;
+    const t = this.reloadingAt ?? a.currentTime;
+    if (t > 0) this.lastTime = t;
+    this.act(this.watchdog.check({ now: performance.now(), wantPlay: this.wantPlay, time: t, ended: a.ended || this.ended, duration: this.duration() }), 'stuck');
+  }
+
+  private act(action: WatchdogAction, why: 'stuck' | 'error'): void {
+    switch (action) {
+      case 'recover':
+        // A stall gets the "Buffering…" notice (Keep waiting / Skip); an error reload is quick and silent.
+        if (why === 'stuck' && !this.stallShown && this.wantPlay) {
+          this.stallShown = true;
+          this.onStatus?.('slow');
+        }
+        this.recover(why);
+        break;
+      case 'resumed':
+        if (this.stallShown) {
+          this.stallShown = false;
+          this.onStatus?.('playing');
+        }
+        break;
+      case 'ended':
+        console.warn('[dd:tv] audio stuck at the end; finishing the song');
+        this.finish();
+        break;
+      case 'give-up':
+        console.warn('[dd:tv] audio keeps stalling; giving up on this copy of the song');
+        this.wantPlay = false;
+        this.stopWatch();
+        this.audio.pause();
+        this.clock.update(this.lastTime, false);
+        keepScreenOn(false);
+        if (this.videoId) dropCachedAudio(this.videoId);
+        this.onError?.(new PlayerError(5, "This song's audio stopped playing. It will be downloaded again next time."));
+        break;
+    }
+  }
+
   /**
-   * Android releases the WebView's audio decoder while the app is in the
-   * background; the element then errors on the next play(). The file is
-   * local, so reload it and carry on from the same spot.
+   * Reload the file and carry on from the same spot. Android releases the
+   * WebView's audio decoder while the app is in the background (the element
+   * then errors on the next play()), and a media element can starve or give
+   * up on its stream mid-song. The file is local, so this is quick.
    */
-  private recover(): boolean {
-    const now = performance.now();
-    if (!this.src || now - this.lastRecovery < 5000) return false;
-    this.lastRecovery = now;
+  private recover(why: 'stuck' | 'error'): void {
+    if (!this.src) return;
     const a = this.audio;
     const at = this.lastTime;
     const resume = this.wantPlay;
-    console.warn('[dd:tv] audio element failed; reloading at', at.toFixed(1));
+    console.warn(`[dd:tv] audio ${why === 'error' ? 'element failed' : 'stuck while playing'}; reloading at`, at.toFixed(1), {
+      readyState: a.readyState,
+      networkState: a.networkState,
+      paused: a.paused,
+      buffered: bufferedText(a),
+    });
+    this.reloadingAt = at;
+    this.clock.update(at, false);
+    if (this.onMeta) a.removeEventListener('loadedmetadata', this.onMeta);
     const onMeta = () => {
       a.removeEventListener('loadedmetadata', onMeta);
+      this.onMeta = null;
       a.currentTime = at;
-      if (resume) void a.play().catch(() => {});
+      this.reloadingAt = null;
+      if (resume && this.wantPlay) void a.play().catch(() => {});
     };
+    this.onMeta = onMeta;
     a.addEventListener('loadedmetadata', onMeta);
     a.src = this.src;
     a.load();
-    return true;
   }
 
   loadingDetail(): string | null {
@@ -880,6 +985,9 @@ export class TvAudioPlayer implements MediaPlayer {
           const onErr = () => {
             a.removeEventListener('canplay', onReady);
             a.removeEventListener('error', onErr);
+            // A copy the WebView can't even open: download it afresh next time.
+            console.warn('[dd:tv] audio failed to load', a.error?.code, a.error?.message ?? '');
+            dropCachedAudio(videoId);
             finish(new PlayerError('decode', "This song's audio couldn't be played."));
           };
           a.addEventListener('canplay', onReady);
@@ -894,9 +1002,10 @@ export class TvAudioPlayer implements MediaPlayer {
   }
 
   play(): void {
-    if (!this.loaded) return;
+    if (!this.loaded || this.ended) return;
     this.wantPlay = true;
     keepScreenOn(true);
+    this.startWatch();
     this.audio.play().catch((err: unknown) => {
       if (err instanceof DOMException && err.name === 'NotAllowedError') this.onStatus?.('needs-gesture');
       else if (!(err instanceof DOMException && err.name === 'AbortError')) {
@@ -907,20 +1016,22 @@ export class TvAudioPlayer implements MediaPlayer {
 
   pause(): void {
     this.wantPlay = false;
+    this.stopWatch();
     this.audio.pause();
-    this.clock.update(this.audio.currentTime, false);
+    this.clock.update(this.reloadingAt ?? this.audio.currentTime, false);
     keepScreenOn(false);
   }
 
   isPlaying(): boolean {
     const a = this.audio;
-    return this.loaded && !a.paused && !a.ended && a.readyState >= 3;
+    return this.loaded && this.reloadingAt === null && !a.paused && !a.ended && a.readyState >= 3;
   }
 
   time(): number {
     if (!this.loaded) return 0;
-    if (this.audio.currentTime > 0) this.lastTime = this.audio.currentTime;
-    this.clock.update(this.audio.currentTime, this.isPlaying());
+    const ct = this.reloadingAt ?? this.audio.currentTime;
+    if (ct > 0) this.lastTime = ct;
+    this.clock.update(ct, this.isPlaying());
     return Math.max(0, Math.min(this.clock.time() - this.priming, this.duration() || Infinity));
   }
 
@@ -947,6 +1058,13 @@ export class TvAudioPlayer implements MediaPlayer {
     this.wantPlay = false;
     this.lastTime = 0;
     this.priming = 0;
+    this.stopWatch();
+    this.watchdog.reset();
+    this.reloadingAt = null;
+    this.stallShown = false;
+    this.ended = false;
+    if (this.onMeta) this.audio.removeEventListener('loadedmetadata', this.onMeta);
+    this.onMeta = null;
     keepScreenOn(false);
     this.audio.pause();
     this.audio.removeAttribute('src');

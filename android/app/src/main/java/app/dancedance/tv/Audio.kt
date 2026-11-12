@@ -21,7 +21,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
-import java.io.FilterInputStream
 import java.io.IOException
 import java.io.InputStream
 import kotlin.coroutines.coroutineContext
@@ -48,7 +47,11 @@ class AudioCache(val dir: File, val capBytes: Long) {
         return dir.resolve(name).takeIf { it.isFile }
     }
 
-    fun partFile(videoId: String, ext: String) = dir.resolve("$videoId.$ext.part")
+    /**
+     * A download's own temporary file. Unique per download, so a cancelled download that is
+     * still winding down can never delete or write into the file of the one that replaced it.
+     */
+    fun partFile(videoId: String, ext: String) = dir.resolve("$videoId.$ext.${System.nanoTime().toString(36)}.part")
     fun finalFile(videoId: String, ext: String) = dir.resolve("$videoId.$ext")
 
     fun touch(f: File) {
@@ -58,14 +61,41 @@ class AudioCache(val dir: File, val capBytes: Long) {
     fun files(): List<File> = dir.listFiles { f -> NAME_RE.matches(f.name) }?.toList() ?: emptyList()
     fun totalBytes(): Long = files().sumOf { it.length() }
 
-    /** Delete least-recently-used files until the cache fits; never deletes [keep]. */
+    /**
+     * Files handed to the page most recently (the song playing and the one being analysed are
+     * among them): never evicted, even when a later download pushes the cache over its cap.
+     */
+    private val inUse = ArrayDeque<String>()
+
+    @Synchronized
+    fun markInUse(f: File) {
+        inUse.remove(f.name)
+        inUse.addLast(f.name)
+        while (inUse.size > IN_USE_KEEP) inUse.removeFirst()
+    }
+
+    /** Delete every cached file of a video (a copy that didn't play cleanly). */
+    @Synchronized
+    fun drop(videoId: String): Int {
+        var n = 0
+        for (f in files()) {
+            if (f.name.substringBeforeLast('.') == videoId && f.delete()) {
+                n++
+                inUse.remove(f.name)
+                Log.w(TAG, "Audio cache: dropped ${f.name}")
+            }
+        }
+        return n
+    }
+
+    /** Delete least-recently-used files until the cache fits; never deletes [keep] or a file in use. */
     @Synchronized
     fun evict(keep: Set<File>) {
         var total = totalBytes()
         if (total <= capBytes) return
         for (f in files().sortedBy { it.lastModified() }) {
             if (total <= capBytes) break
-            if (f in keep) continue
+            if (f in keep || f.name in inUse) continue
             val len = f.length()
             if (f.delete()) {
                 total -= len
@@ -76,6 +106,8 @@ class AudioCache(val dir: File, val capBytes: Long) {
 
     companion object {
         val NAME_RE = Regex("^[A-Za-z0-9_-]{11}\\.(m4a|webm)$")
+        /** Songs prepared most recently that eviction leaves alone. */
+        const val IN_USE_KEEP = 3
     }
 }
 
@@ -120,8 +152,9 @@ class AudioRepository(
     suspend fun prepare(videoId: String, progress: (AudioProgress) -> Unit): PreparedAudio {
         val order = formats
         // Only the preferred format counts as a hit, so a format switch re-downloads instead of
-        // serving the old file (which the LRU then evicts).
-        cache.find(videoId, order.take(1))?.let { return cached(videoId, it) }
+        // serving the old file (which the LRU then evicts). A damaged copy (an older version's
+        // download, a half-written file) is deleted and downloaded again.
+        validCached(videoId, order.take(1))?.let { return cached(videoId, it) }
         val job = synchronized(jobs) {
             jobs[videoId]?.takeIf { it.isActive } ?: scope.async { slots.withPermit { download(videoId, order, progress) } }
                 .also { d ->
@@ -135,15 +168,40 @@ class AudioRepository(
             throw e
         } catch (t: Throwable) {
             // Offline or YouTube trouble: an earlier download in another playable format still works.
-            val fallback = cache.find(videoId, order) ?: throw t
+            val fallback = validCached(videoId, order) ?: throw t
             Log.w(TAG, "Audio $videoId: download failed (${t.message}); using cached ${fallback.name}")
             cached(videoId, fallback)
         }
     }
 
+    /** The first cached file of [formats] that passes [AudioCheck]; damaged ones are deleted. */
+    private fun validCached(videoId: String, formats: List<String>): File? {
+        for (ext in formats) {
+            val f = cache.find(videoId, listOf(ext)) ?: continue
+            when (val r = AudioCheck.check(f)) {
+                is AudioCheck.Result.Ok -> return f
+                is AudioCheck.Result.Bad -> {
+                    Log.w(TAG, "Audio $videoId: cached ${f.name} is damaged (${r.reason}); downloading it again")
+                    f.delete()
+                }
+            }
+        }
+        return null
+    }
+
     private fun cached(videoId: String, f: File): PreparedAudio {
         cache.touch(f)
+        cache.markInUse(f)
         return PreparedAudio(videoId, f, mimeFor(f), null, fromCache = true, downloadMs = 0, primingSec = Mp4Priming.primingSec(f))
+    }
+
+    /**
+     * The page reports that this song's file didn't play cleanly (stalled or failed mid-song and
+     * a reload didn't help): forget the cached copy so the next play downloads it afresh.
+     */
+    fun drop(videoId: String): Int {
+        cancel(videoId)
+        return cache.drop(videoId)
     }
 
     fun cancel(videoId: String) {
@@ -155,14 +213,29 @@ class AudioRepository(
     }
 
     private suspend fun download(videoId: String, order: List<String>, progress: (AudioProgress) -> Unit): PreparedAudio {
+        var attempt = 1
+        while (true) {
+            try {
+                return downloadOnce(videoId, order, progress)
+            } catch (e: DamagedDownload) {
+                // Checked before it's saved: try the whole download once more (fresh stream URL).
+                if (attempt >= 2) throw BridgeException("network", "The song didn't download cleanly. Try again in a minute.", e)
+                Log.w(TAG, "Audio $videoId: ${e.message}; downloading it again")
+                attempt++
+            }
+        }
+    }
+
+    private class DamagedDownload(msg: String) : IOException(msg)
+
+    private suspend fun downloadOnce(videoId: String, order: List<String>, progress: (AudioProgress) -> Unit): PreparedAudio {
         val started = SystemClock.elapsedRealtime()
         progress(AudioProgress(videoId, "resolving", 0, -1, 1))
         var source = resolve(videoId, null, order)
         Log.i(TAG, "Audio $videoId: itag ${source.itag} ${source.ext} ${source.bitrate / 1000} kbps, ${source.contentLength} bytes")
         // The preferred format isn't offered for this video and we already have the one that is.
-        cache.find(videoId, listOf(source.ext))?.let { return cached(videoId, it) }
+        validCached(videoId, listOf(source.ext))?.let { return cached(videoId, it) }
         val part = cache.partFile(videoId, source.ext)
-        part.delete()
         var received = 0L
         var total = source.contentLength
         var requestNumber = 1
@@ -182,7 +255,18 @@ class AudioRepository(
                     }
                     if (newSource !== source) {
                         refreshes++
+                        val sameFile = newSource.contentLength <= 0 || total <= 0 || newSource.contentLength == total
                         source = newSource
+                        if (!sameFile) {
+                            // A fresh URL of the same itag can be a different encode (another length):
+                            // its bytes don't continue the ones we have. Start over with it.
+                            Log.w(TAG, "Audio $videoId: the refreshed stream is ${newSource.contentLength} bytes, not $total; restarting")
+                            out.channel.truncate(0)
+                            out.channel.position(0)
+                            received = 0
+                            total = newSource.contentLength
+                            continue
+                        }
                         if (total < 0) total = newSource.contentLength
                     }
                     out.write(bytes)
@@ -191,12 +275,17 @@ class AudioRepository(
                     if (bytes.isEmpty()) break
                     if (total < 0 && bytes.size < (end - (received - bytes.size) + 1)) break // short read: done
                 }
+                out.fd.sync()
             }
             if (total > 0 && received != total) throw IOException("Download incomplete: $received of $total bytes")
             if (received == 0L) throw IOException("Empty download")
+            if (part.length() != received) throw IOException("Saved ${part.length()} of $received bytes")
+            val check = AudioCheck.check(part, source.ext)
+            if (check is AudioCheck.Result.Bad) throw DamagedDownload("downloaded file is damaged (${check.reason})")
             val dest = cache.finalFile(videoId, source.ext)
             if (!part.renameTo(dest)) throw BridgeException("storage", "Couldn't save the song on the projector (storage full?).")
             cache.touch(dest)
+            cache.markInUse(dest)
             cache.evict(keep = setOf(dest))
             val ms = SystemClock.elapsedRealtime() - started
             lastDownload = "$videoId: ${received / 1024} KB in ${ms} ms"
@@ -441,7 +530,10 @@ object AudioServer {
 
     fun serve(cache: AudioCache, request: WebResourceRequest): WebResourceResponse {
         val name = request.url.path?.removePrefix(PATH) ?: ""
-        val file = cache.byName(name) ?: return error(404, "Not Found")
+        val rangeLog = request.requestHeaders.entries.firstOrNull { it.key.equals("Range", true) }?.value
+        val file = cache.byName(name) ?: return error(404, "Not Found").also { Log.w(TAG, "Audio serve $name ($rangeLog): not in the cache") }
+        // One line per request (a handful per song): shows how the media element walks the file.
+        Log.i(TAG, "Audio serve $name range=${rangeLog ?: "-"} of ${file.length()}")
         cache.touch(file)
         val length = file.length()
         val mime = AudioRepository.mimeFor(file)
@@ -463,9 +555,68 @@ object AudioServer {
             val (start, end) = range
             headers["Content-Range"] = "bytes $start-$end/$length"
             headers["Content-Length"] = (end - start + 1).toString()
-            val input = FileInputStream(file).apply { channel.position(start) }
-            WebResourceResponse(mime, null, 206, "Partial Content", headers, Limited(input, end - start + 1))
+            WebResourceResponse(mime, null, 206, "Partial Content", headers, RangeStream(file, start, end))
         }
+    }
+
+    /**
+     * The body of a 206 answer. The WebView applies the request's Range to an intercepted
+     * response ITSELF: it takes the stream's available() as the resource size, checks the range
+     * against it, then skip()s to the range start. So the stream must look like the whole
+     * resource from byte 0 (up to the range end). A stream already positioned at the range
+     * start (what this server used to return) makes every request that doesn't start at 0 fail
+     * (measured: WebView 113, `fetch` with Range bytes=100-199 -> "Failed to fetch"); the media
+     * element then retries the same range ~30 times and errors, i.e. the song stalls or goes
+     * silent wherever the element first needs a new range (its first read ended, or the WebView
+     * dropped buffered data and wants it back), typically a few minutes in.
+     *
+     * In case some WebView passes the stream through without skipping, a read before any
+     * skip() starts at the range start, so both behaviours get the right bytes.
+     */
+    class RangeStream(file: File, private val rangeStart: Long, rangeEnd: Long) : InputStream() {
+        private val raf = java.io.RandomAccessFile(file, "r")
+        /** One past the last byte served (the range end), counted from the start of the file. */
+        private val limit = rangeEnd + 1
+        private var pos = 0L
+        private var positioned = false
+
+        private fun ensurePositioned() {
+            if (!positioned) {
+                positioned = true
+                pos = rangeStart
+            }
+        }
+
+        override fun skip(n: Long): Long {
+            if (n <= 0) return 0
+            positioned = true
+            val k = minOf(n, limit - pos).coerceAtLeast(0)
+            pos += k
+            return k
+        }
+
+        override fun available(): Int = (limit - pos).coerceIn(0, Int.MAX_VALUE.toLong()).toInt()
+
+        override fun read(): Int {
+            ensurePositioned()
+            if (pos >= limit) return -1
+            raf.seek(pos)
+            val b = raf.read()
+            if (b >= 0) pos++
+            return b
+        }
+
+        override fun read(b: ByteArray, off: Int, len: Int): Int {
+            ensurePositioned()
+            if (len == 0) return 0
+            if (pos >= limit) return -1
+            raf.seek(pos)
+            val n = raf.read(b, off, minOf(len.toLong(), limit - pos).toInt())
+            if (n > 0) pos += n
+            return n
+        }
+
+        override fun close() = raf.close()
     }
 
     /** "bytes=a-b" / "bytes=a-" / "bytes=-n" (single range only). */
@@ -484,15 +635,4 @@ object AudioServer {
     fun error(code: Int, reason: String) = WebResourceResponse(
         "text/plain", "utf-8", code, reason, mapOf("Cache-Control" to "no-store"), "$code $reason".byteInputStream(),
     )
-
-    private class Limited(input: InputStream, private var left: Long) : FilterInputStream(input) {
-        override fun read(): Int = if (left <= 0) -1 else super.read().also { if (it >= 0) left-- }
-        override fun read(b: ByteArray, off: Int, len: Int): Int {
-            if (left <= 0) return -1
-            val n = super.read(b, off, minOf(len.toLong(), left).toInt())
-            if (n > 0) left -= n
-            return n
-        }
-        override fun available(): Int = minOf(super.available().toLong(), left).toInt()
-    }
 }

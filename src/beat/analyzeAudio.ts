@@ -20,6 +20,10 @@ import type { AnalysisRequest } from '../workers/analysis.worker';
 export const ANALYSIS_RATE = 22050;
 export const DEFAULT_BUDGET_MS = 15000;
 export const DEFAULT_PARTIAL_SECONDS = 30;
+/** At the budget, a full analysis projected to finish within this (ms) is waited for instead. */
+const CLOSE_MS = 8000;
+/** ...with this much slack before falling back to the 30 s map after all. */
+const CLOSE_GRACE_MS = 3000;
 
 export interface DecodedAudio {
   pcm: Float32Array;
@@ -112,7 +116,12 @@ export function defaultRunner(): AnalysisRunner {
         w.terminate();
         reject(new Error(e.message || 'Analysis worker failed'));
       };
-      w.postMessage(req);
+      // Transferred: the caller doesn't use the samples again (analyzePcm keeps its own copy of the first 30 s).
+      try {
+        w.postMessage(req, [req.pcm.buffer]);
+      } catch {
+        w.postMessage(req);
+      }
     });
     return {
       promise,
@@ -160,7 +169,16 @@ export function analyzePcm(audio: DecodedAudio, opts: AnalyzeOptions): AudioAnal
   const partialSeconds = opts.partialSeconds ?? DEFAULT_PARTIAL_SECONDS;
   const base = { sampleRate: audio.sampleRate, videoId: opts.key, source: opts.source, duration: audio.duration };
 
-  const fullJob = runner({ ...base, pcm: audio.pcm }, opts.onProgress);
+  // The first-30-s copy is cut before the full job starts: the default runner hands the whole
+  // buffer to its Worker (transferred, not copied: ~27 MB for a 5-minute song).
+  const n = Math.min(audio.pcm.length, Math.round(partialSeconds * audio.sampleRate));
+  const head = n < audio.pcm.length ? audio.pcm.slice(0, n) : null;
+  let fullFraction = 0;
+  const started = Date.now();
+  const fullJob = runner({ ...base, pcm: audio.pcm }, (f) => {
+    fullFraction = f;
+    opts.onProgress?.(f);
+  });
   let partialJob: AnalysisJob | null = null;
   let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -181,13 +199,11 @@ export function analyzePcm(audio: DecodedAudio, opts: AnalyzeOptions): AudioAnal
         if (!partialPending) settle(() => reject(e));
       },
     );
-    timer = setTimeout(() => {
+    const startPartial = () => {
       timer = null;
-      if (settled) return;
-      const n = Math.min(audio.pcm.length, Math.round(partialSeconds * audio.sampleRate));
-      if (n >= audio.pcm.length) return; // shorter than the partial window: just wait
+      if (settled || !head) return; // shorter than the partial window: just wait
       partialPending = true;
-      partialJob = runner({ ...base, pcm: audio.pcm.slice(0, n), maxSeconds: partialSeconds });
+      partialJob = runner({ ...base, pcm: head, maxSeconds: partialSeconds });
       partialJob.promise.then(
         (m) => settle(() => resolve({ ...m, partial: true })),
         (e: Error) => {
@@ -195,6 +211,17 @@ export function analyzePcm(audio: DecodedAudio, opts: AnalyzeOptions): AudioAnal
           if (fullFailed) settle(() => reject(fullFailed ?? e));
         },
       );
+    };
+    timer = setTimeout(() => {
+      timer = null;
+      if (settled || !head) return;
+      // Nearly done: waiting a few more seconds for the whole song beats starting with a
+      // 30 s map and swapping a new one in (and a second analysis competing for the CPU)
+      // while the song plays.
+      const elapsed = Date.now() - started;
+      const left = fullFraction > 0.05 ? (elapsed * (1 - fullFraction)) / fullFraction : Infinity;
+      if (left <= CLOSE_MS) timer = setTimeout(startPartial, left + CLOSE_GRACE_MS);
+      else startPartial();
     }, budget);
   });
 

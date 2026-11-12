@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { BeatTimeline, LiveBeats } from '../../beat/beatSource';
 import type { BeatMap } from '../analysis/beatmap';
 import { songMap } from '../choreo/testutil';
-import { timeOfBeat } from './animator';
-import { Conductor } from './conductor';
+import { beatPosition, instanceIndexAt, timeOfBeat } from './animator';
+import { Conductor, type Plan } from './conductor';
 import { J, createPose, createSkeleton, solveSkeleton } from './skeleton';
 
 /** Simulated beat source: live tracker locks after `lockAt`, map arrives at `mapAt`. */
@@ -113,6 +113,53 @@ describe('Conductor', () => {
     expect(kinds[kinds.length - 1]).toBe('map');
     // Same bound as the routine continuity test (animator.test.ts) at 124 BPM.
     expect(maxStep).toBeLessThan(0.095 * (124 / 100));
+  });
+
+  it('a full map replacing the first-30-s map mid-song keeps the moves on screen and announced', () => {
+    // The on-device case: partial map at the start, the full analysis lands at 41 s.
+    const sim = new Sim(104, 0, 41, 30);
+    const shown: { t: number; name: string; next: string }[] = [];
+    let swapAt = -1;
+    let before: Plan | null = null;
+    const { maxStep } = run(sim, 75, (t, c) => {
+      const up = c.upcoming(t);
+      shown.push({ t, name: up.current?.move.name ?? '', next: up.next?.move.name ?? '' });
+      if (swapAt < 0 && c.plan!.liveFrom === Infinity) swapAt = t;
+      if (swapAt < 0) before = c.plan;
+    });
+    expect(swapAt).toBeGreaterThan(41);
+    // The switch happens on the next beat, not at the end of some move.
+    expect(swapAt - 41).toBeLessThan(1);
+    // What the partial plan would have danced from the swap through its next card...
+    const old = before! as Plan;
+    const t1 = 41 + 6;
+    for (const s of shown.filter((x) => x.t >= 41 && x.t < t1)) {
+      const b = beatPosition(old, s.t);
+      const inst = old.instances[instanceIndexAt(old, b)];
+      expect(s.name).toBe(inst.move.name);
+    }
+    // ...and the coach never jumps (same bound as the other plan switches).
+    expect(maxStep).toBeLessThan(0.095 * (104 / 100));
+  });
+
+  it('a level change still takes effect at the end of the current move', () => {
+    const map = songMap(120, 'lvl');
+    const tl: BeatTimeline = { map, live: null, revision: 1 };
+    const c = new Conductor();
+    for (let f = 0; f < 20 * 60; f++) c.update(tl, 'lvl', 'cardio', f / 60);
+    const key = c.plan!.key;
+    let switched = -1;
+    for (let f = 0; f < 10 * 60 && switched < 0; f++) {
+      const t = 20 + f / 60;
+      c.update(tl, 'lvl', 'sweaty', t);
+      if (c.plan!.key !== key) switched = t;
+    }
+    expect(switched).toBeGreaterThan(20);
+    expect(switched - 20).toBeLessThan(5);
+    // Not spliced: the new level's routine from the start.
+    const fresh = new Conductor();
+    fresh.update(tl, 'lvl', 'sweaty', 0);
+    expect(c.plan!.instances.map((i) => i.move.id)).toEqual(fresh.plan!.instances.map((i) => i.move.id));
   });
 
   it('re-plans when the level changes, and is deterministic', () => {

@@ -33,6 +33,8 @@ import org.json.JSONObject
  * Version 5 added: the in-app updater ([Updates]): getUpdateState(), checkForUpdate(),
  * startUpdate(), cancelUpdate(), openInstallSettings(), takeUpdatedNotice() and the
  * updateState event. Only status strings and progress numbers cross; never the token.
+ * Version 6 added: dropAudio() (the page's playback watchdog gave up on a song's file: forget the
+ * cached copy so the next play downloads it again). Feature-detected by the page.
  */
 class DanceBridge(private val app: DanceApp, private val host: Host) {
     interface Host {
@@ -48,7 +50,7 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
     }
 
     companion object {
-        const val VERSION = 5
+        const val VERSION = 6
         private const val TAG = "DanceDance"
         private val ID_RE = Regex("^[A-Za-z0-9_-]{1,40}$")
         private val VIDEO_RE = Regex("^[A-Za-z0-9_-]{11}$")
@@ -190,6 +192,10 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
     fun cancelAudio(videoId: String) {
         if (VIDEO_RE.matches(videoId)) app.audio.cancel(videoId)
     }
+
+    /** v6: delete the cached audio of a song that didn't play cleanly; returns how many files went. */
+    @JavascriptInterface
+    fun dropAudio(videoId: String): Int = if (VIDEO_RE.matches(videoId)) app.audio.drop(videoId) else 0
 
     @JavascriptInterface
     fun stopLinkServer() = app.link.stop()
