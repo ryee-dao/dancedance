@@ -369,8 +369,8 @@ export const moves: MoveDef[] = [
     desc: 'Knees soft, let the head and arms hang and roll down partway like a rag doll, then roll back up one bone at a time.',
     keys: [
       [0, { y: -0.03, nod: 6, r: [14, 0, 20, 20], l: [14, 0, 20, 20], ...OPEN2 }],
-      [1.5, { y: -0.12, bend: 70, nod: 22, shR: 0.3, shL: 0.3, r: [68, 90, 72, 90], l: [68, 90, 72, 90], handR: 0.7, handL: 0.7 }],
-      [2.5, { y: -0.12, bend: 74, nod: 22, shR: 0.3, shL: 0.3, r: [72, 90, 76, 90], l: [72, 90, 76, 90], handR: 0.7, handL: 0.7 }],
+      [1.5, { y: -0.11, bend: 57, nod: 16, shR: 0.45, shL: 0.45, r: [61, 100, 63, 100], l: [61, 100, 63, 100], handR: 0.8, handL: 0.8 }],
+      [2.5, { y: -0.12, bend: 60, nod: 16, shR: 0.5, shL: 0.5, r: [64, 102, 67, 102], l: [64, 102, 67, 102], handR: 0.8, handL: 0.8 }],
       [3.5, { y: -0.06, bend: 12, nod: 14, r: [20, 40, 24, 40], l: [20, 40, 24, 40], ...OPEN2 }],
     ],
   }),
