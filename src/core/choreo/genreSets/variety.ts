@@ -49,4 +49,8 @@ export const moves: Partial<Record<string, string>> = {
   // New: dangdut and Schlager (families/world3.ts).
   dangdut: `joget-sway goyang-gergaji goyang-dribble goyang-patah`,
   schlager: `schunkeln prost-toast beak-snaps wing-flaps`,
+  // Salsa shines (families/latin2.ts); house footwork and an amapiano groove (families/club.ts).
+  salsa: `salsa-cross-step salsa-flare`,
+  house: `house-farmer`,
+  amapiano: `tshwala-groove`,
 };

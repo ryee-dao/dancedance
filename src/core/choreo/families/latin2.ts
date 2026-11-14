@@ -14,6 +14,9 @@
  *   tango     (Argentine 60-70 bars, ballroom ~120 BPM, counted slow =
  *             2 beats) forward ochos, the boleo, the cruzada, the lunge
  *             (corté), the caricia, the molinete grapevine.
+ *   salsa     (160-200 BPM, danced at half time where the speed limit says)
+ *             two shines: the cross step and the flare (Library of Dance
+ *             "Salsa shines" list; the Suzy Q shine is the swing set's).
  *
  * Sources: salsavida.com and goandance.com bachata basics; tango
  * technique (ochos, boleos, cruzada, molinete, adornos) from tango
@@ -121,6 +124,29 @@ const moli = (x: number, spin: number, rf: readonly [number, number, number], lf
   x, y, spin, twist: -spin * 0.6, turn: -spin * 0.3, rf: [...rf], lf: [...lf], kneeR: 0.1, kneeL: 0.1, ...EMBRACE,
 });
 
+// ---------------------------------------------------------------------------
+// Salsa shines (solo footwork between partner work)
+
+/** Shine arms: elbows bent, hands up loose in front at chest height. */
+const SHINE: PoseSpec = { r: at(1, 0.2, 0.78, 0.17, E_OUT), l: at(-1, -0.2, 0.78, 0.17, E_OUT), handR: 0.5, handL: 0.5 };
+
+// Cross step: cross the right foot over in front, replace the left, step the right out to the side, pause.
+const xs = (k: number): PoseSpec => [
+  { x: -0.02, y: -0.07, spin: -16, twist: 8, hips: -0.03, tilt: -4, rf: [-0.08, 0, 0.06], lf: [-0.1, 0, -0.01], pitchR: 10, kneeR: 0.12, kneeL: 0.1, ...SHINE },
+  { x: -0.01, y: -0.05, spin: -8, twist: 4, hips: 0.02, tilt: 2, rf: [-0.08, 0, 0.06], lf: [-0.1, 0, -0.01], kneeR: 0.06, kneeL: 0.08, ...SHINE },
+  { x: 0.04, y: -0.07, spin: 0, twist: 0, hips: 0.04, tilt: 5, rf: [0.17, 0, 0], lf: [-0.1, 0, 0], kneeR: 0.08, kneeL: 0.04, ...SHINE, r: at(1, 0.3, 0.74, 0.12, E_OUT) },
+  { x: 0.04, y: -0.05, spin: 0, twist: 0, hips: 0.03, tilt: 3, rf: [0.17, 0, 0], lf: [-0.1, 0, 0], kneeR: 0.05, kneeL: 0.04, ...SHINE, r: at(1, 0.3, 0.76, 0.12, E_OUT) },
+][k] as PoseSpec;
+
+// Flare: side basic on 1-2-3, and on 4 the free foot sweeps a low quarter circle from the front out to the side.
+const fl = (k: number): PoseSpec => [
+  { x: 0.04, y: -0.07, hips: 0.035, tilt: 4, rf: [0.18, 0, 0], lf: [-0.09, 0, 0], kneeR: 0.08, ...SHINE },
+  { x: 0.0, y: -0.05, hips: -0.03, tilt: -3, rf: [0.18, 0, 0], lf: [-0.09, 0, 0], kneeL: 0.08, ...SHINE },
+  { x: -0.01, y: -0.07, hips: -0.03, tilt: -4, rf: [0.08, 0, 0], lf: [-0.09, 0, 0], kneeL: 0.1, ...SHINE },
+  { x: -0.03, y: -0.06, hips: -0.04, tilt: -5, lean: 4, rf: [0.06, 0.03, 0.17], lf: [-0.09, 0, 0], pitchR: 30, kneeL: 0.12, kneeR: -0.1, ...SHINE, l: at(-1, -0.3, 0.8, 0.1, E_OUT) },
+  { x: -0.04, y: -0.06, hips: -0.045, tilt: -6, lean: 6, rf: [0.27, 0.04, 0.03], lf: [-0.09, 0, 0], pitchR: 30, kneeL: 0.12, kneeR: -0.2, ...SHINE, r: at(1, 0.34, 0.86, 0.1, E_OUT), l: at(-1, -0.3, 0.8, 0.1, E_OUT), handR: 1, handL: 1 },
+][k] as PoseSpec;
+
 export const patterns: PatternSet = {};
 
 const bachata: MoveDef[] = [
@@ -215,4 +241,17 @@ const tango: MoveDef[] = [
   }),
 ];
 
-export const moves: MoveDef[] = [...bachata, ...tango];
+const salsa: MoveDef[] = [
+  full({
+    id: 'salsa-cross-step', name: 'Salsa Cross Step', tags: 'latin | legs hips | walk', beats: 4, level: 'mid', d: 2, parts: ['legs', 'hips'], mirror: true,
+    desc: 'A salsa shine: cross one foot over in front of the other with the body turning a little toward it, rock back onto the back foot, step the first foot out to the side and pause on 4, the hands up loose; then cross the other foot.',
+    keys: [[0, xs(0)], [1, xs(1)], [2, xs(2)], [3, xs(3)]],
+  }),
+  full({
+    id: 'salsa-flare', name: 'Salsa Flare', tags: 'latin | legs | kick', beats: 4, level: 'mid', d: 2, parts: ['legs', 'arms'], mirror: true,
+    desc: 'Salsa side basic on 1-2-3, and on the pause the free foot flares: pointed, it sweeps a low quarter circle from in front out to the side as the arms open.',
+    keys: [[0, fl(0)], [1, fl(1)], [2, fl(2)], [3, fl(3)], [3.5, fl(4)]],
+  }),
+];
+
+export const moves: MoveDef[] = [...bachata, ...tango, ...salsa];

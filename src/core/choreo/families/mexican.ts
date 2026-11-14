@@ -165,9 +165,9 @@ const cumbia: MoveDef[] = [
     ],
   }),
   full({
-    id: 'cumbia-kick-back', name: 'Cumbia Kick & Back', tags: 'latin pop | legs hips | kick', beats: 2, level: 'mid', d: 2, parts: ['legs', 'hips'], mirror: true,
-    desc: 'The Colombian basic, turned a little to the diagonal: kick one foot low forward, step it back behind with the hip pushing out, replace the weight; then the other foot.',
-    keys: [[0, ckKick], [0.5, ckBack], [1, ckBack2]],
+    id: 'cumbia-kick-back', name: 'Cumbia Kick & Back', tags: 'latin pop | legs hips | kick', beats: 4, level: 'mid', d: 2, parts: ['legs', 'hips'], mirror: true,
+    desc: 'The Colombian basic, turned a little to the diagonal: kick one foot low forward, step it back behind with the hip pushing out, replace the weight and pause; then the other foot.',
+    keys: [[0, ckKick], [1, ckBack], [2, ckBack2], [3, { ...ckBack2, y: -0.05, hips: 0, tilt: 0 }]],
   }),
   full({
     id: 'cumbia-circle', name: 'Cumbia Circle Basic', tags: 'latin pop | legs turn | walk spin', beats: 4, level: 'mid', d: 2, parts: ['legs', 'turn'], mirror: true,
