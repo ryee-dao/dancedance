@@ -339,15 +339,6 @@ export const patterns: PatternSet = {
         [0.5, { rf: [0.09, 0, 0], y: -0.02, hips: 0.01 }],
       ],
     },
-    // Cumbia sau: step out to the side, then drag the other foot in along the floor.
-    cumbiaSau: {
-      beats: 2, parts: ['legs', 'hips'], mirror: true, travel: 0.1,
-      keys: [
-        [0, { x: 0.06, rf: [0.26, 0, 0], lf: [-0.09, 0, 0], y: -0.07, hips: 0.03, tilt: 4, lean: -4 }],
-        [0.5, { x: 0.08, rf: [0.26, 0, 0], lf: [-0.02, 0, 0], y: -0.06, hips: 0.02, lean: -3 }],
-        [1, { x: 0.1, rf: [0.26, 0, 0], lf: [0.08, 0, 0], y: -0.03, hips: -0.01, lean: 0 }],
-      ],
-    },
     // Merengue side walk: step out with the hip, close.
     merengueSide: {
       beats: 2, parts: ['legs', 'hips'], mirror: true, travel: 0.14,
@@ -478,7 +469,6 @@ export const moves: MoveDef[] = [
   combo('samba-no-pe', 'Samba No Pé', 'sambaNoPe', 'sambaCarnival', 'high', 3, 'latin | legs arms |', { desc: 'Fast carnival samba on the balls of the feet, arms high and wide, one then the other higher.' }),
   // Cumbia (candle)
   combo('cumbia-machete', 'Cumbia Machete', 'cumbia', 'cumbiaMachete', 'mid', 2, 'latin | arms legs |', { desc: 'Cumbia step back and replace cocking one hand beside the head, elbow high, and chopping it down across the body like a machete.' }),
-  combo('cumbia-sau', 'Cumbia Sau', 'cumbiaSau', 'hips', 'low', 1, 'latin | legs hips | walk', { desc: 'Step out wide with a knee bend and drag the other foot in along the floor, hands on hips; travel and come back.' }),
   combo('cumbia-candle', 'Cumbia Candle Step', 'cumbia', 'cumbiaCandle', 'low', 2, 'latin | legs arms | walk', { desc: 'Cumbia step back and replace, one hand holding a candle up by the shoulder, the other spreading the skirt.' }),
   // Flamenco and paso doble
   combo('flamenco-arms', 'Flamenco Arms', 'flamencoStamp', 'flamencoArms', 'mid', 2, 'latin | arms legs | stomp hands', { desc: 'Stamp the feet in place, one arm rounded overhead and the other low, wrists circling; swap arms every bar.' }),
@@ -523,6 +513,21 @@ moves.push(
       [2, { spin: 0, lf: [-0.09, 0, 0], rf: [0.07, 0, 0], y: -0.04, hips: -0.035, tilt: -4, ...salsaA }],
       [2.5, { spin: 0, lf: [-0.04, 0, 0], rf: [0.07, 0, 0], y: -0.035, hips: 0.03, tilt: 3, ...salsaA }],
       [3, { spin: 0, lf: [-0.04, 0, 0], rf: [0.1, 0, 0], y: -0.045, hips: -0.035, tilt: -4, ...mir(salsaA) }],
+    ],
+  }),
+  // Cumbia sau: a wide step out with a deep knee and the hip thrown out over it, the body arcing away, the
+  // leading arm sweeping out at shoulder height and the other hand on the hip; the trailing foot drags in
+  // along the floor as the arm sweeps down and in.
+  full({
+    id: 'cumbia-sau', name: 'Cumbia Sau', tags: 'latin | legs hips | walk', beats: 2, level: 'low', d: 1, parts: ['legs', 'hips', 'arms'], mirror: true, travel: 0.1,
+    desc: 'Step out wide with a deep knee and the hip thrown out over it, the body arcing away and the leading arm sweeping out at shoulder height, the other hand on the hip; drag the other foot in along the floor as the arm sweeps down and in; travel and come back.',
+    keys: [
+      [0, { x: 0.06, y: -0.085, hips: 0.075, tilt: 11, lean: -8, chestX: -0.02, head: -6, turn: 12, rf: [0.27, 0, 0], lf: [-0.09, 0, 0], kneeR: 0.12, kneeL: 0.06, pitchL: 14,
+        r: at(1, 0.43, 0.82, 0.07, [0.3, -1, 0]), l: at(-1, -0.16, 0.56, 0.06, [1, 0, -0.3]), handR: 1, handL: 0.4 }],
+      [0.5, { x: 0.08, y: -0.065, hips: 0.045, tilt: 6, lean: -5, chestX: -0.01, head: -3, turn: 6, rf: [0.27, 0, 0], lf: [-0.01, 0, 0], slideL: true, kneeR: 0.08, kneeL: 0.02, pitchL: 6,
+        r: at(1, 0.36, 0.62, 0.1, [0.3, -1, 0]), l: at(-1, -0.16, 0.56, 0.06, [1, 0, -0.3]), handR: 1, handL: 0.4 }],
+      [1, { x: 0.1, y: -0.035, hips: -0.015, tilt: -2, lean: 0, chestX: 0, head: 0, turn: 0, rf: [0.27, 0, 0], lf: [0.09, 0, 0], slideL: true, kneeR: 0.02, kneeL: 0.02, pitchL: 0,
+        r: at(1, 0.13, 0.72, 0.2, [0.7, -1, -0.3]), l: at(-1, -0.16, 0.56, 0.06, [1, 0, -0.3]), handR: 0.8, handL: 0.4 }],
     ],
   }),
 );

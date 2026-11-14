@@ -56,13 +56,19 @@ const E_DOWN = [0.5, -1, -0.2] as const;
 const E_UP = [1, 0.3, -0.2] as const;
 
 // --- Caribbean ----------------------------------------------------------------------------
-// One drop: sway onto one foot for two beats, drop the knees, head and hands on the third, rise on the fourth.
-const odArms = (y: number, z: number, h = 0.4): PoseSpec => ({ r: at(1, 0.16, y, z, E_DOWN), l: at(-1, -0.16, y, z, E_DOWN), handR: h, handL: h });
+// One drop: the reggae skank on the one-drop beat. Sway onto one foot leaning back and away, that shoulder
+// dropped, the loose arms rocking (the hand on the weighted side hanging low and out, the other forearm up
+// across the belly); rock back a little on 2; on 3 (the drop) the knees bend and open, the chin and both
+// shoulders drop and both loose hands fall open and low; rise easy on 4, chin up.
 const ONE_DROP: (readonly [number, PoseSpec])[] = [
-  [0, { x: 0.03, y: -0.04, hips: 0.035, tilt: 4, head: -3, nod: 0, bend: 0, shR: 0.3, shL: 0.3, rf: [0.11, 0, 0.01], lf: [-0.1, 0, 0], kneeR: 0, kneeL: 0.08, pitchL: 10, ...odArms(0.66, 0.18) }],
-  [1, { x: 0.035, y: -0.03, hips: 0.04, tilt: 5, head: -4, nod: -3, bend: -2, shR: 0.4, shL: 0.4, rf: [0.11, 0, 0.01], lf: [-0.1, 0, 0], kneeR: 0, kneeL: 0.08, pitchL: 12, ...odArms(0.69, 0.17) }],
-  [2, { x: 0.01, y: -0.085, hips: 0.01, tilt: 1, head: 0, nod: 11, bend: 6, shR: 0, shL: 0, rf: [0.11, 0, 0.01], lf: [-0.1, 0, 0], kneeR: 0.1, kneeL: 0.1, pitchL: 0, r: at(1, 0.22, 0.5, 0.17, E_DOWN), l: at(-1, -0.22, 0.5, 0.17, E_DOWN), handR: 1, handL: 1 }],
-  [3, { x: -0.01, y: -0.04, hips: -0.01, tilt: -1, head: 0, nod: 0, bend: 1, shR: 0.2, shL: 0.2, rf: [0.11, 0, 0.01], lf: [-0.1, 0, 0], kneeR: 0.03, kneeL: 0.03, pitchL: 0, ...odArms(0.63, 0.18) }],
+  [0, { x: 0.035, y: -0.05, hips: 0.06, tilt: 8, lean: 6, chestX: -0.02, bend: -5, head: 6, nod: -4, shR: 0, shL: 0.5, rf: [0.12, 0, 0.01], lf: [-0.11, 0, 0], kneeR: 0.04, kneeL: 0.1, pitchL: 18,
+    r: at(1, 0.29, 0.5, 0.08, E_DOWN), l: at(-1, 0.0, 0.66, 0.22, E_DOWN), handR: 0.6, handL: 0.6 }],
+  [1, { x: 0.02, y: -0.035, hips: 0.03, tilt: 4, lean: 2, chestX: -0.01, bend: -3, head: 3, nod: -2, shR: 0.2, shL: 0.3, rf: [0.12, 0, 0.01], lf: [-0.11, 0, 0], kneeR: 0.02, kneeL: 0.06, pitchL: 10,
+    r: at(1, 0.2, 0.6, 0.16, E_DOWN), l: at(-1, -0.1, 0.62, 0.2, E_DOWN), handR: 0.6, handL: 0.6 }],
+  [2, { x: 0.0, y: -0.11, hips: 0.0, tilt: 0, lean: 0, chestX: 0, bend: 8, head: 0, nod: 15, shR: 0, shL: 0, rf: [0.12, 0, 0.01], lf: [-0.11, 0, 0], kneeR: 0.2, kneeL: 0.2, pitchL: 0,
+    r: at(1, 0.27, 0.46, 0.14, E_DOWN), l: at(-1, -0.27, 0.46, 0.14, E_DOWN), handR: 1, handL: 1 }],
+  [3, { x: -0.01, y: -0.035, hips: -0.015, tilt: -2, lean: -1, chestX: 0, bend: -4, head: 0, nod: -5, shR: 0.35, shL: 0.35, rf: [0.12, 0, 0.01], lf: [-0.11, 0, 0], kneeR: 0.02, kneeL: 0.02, pitchL: 0,
+    r: at(1, 0.16, 0.62, 0.18, E_DOWN), l: at(-1, -0.16, 0.62, 0.18, E_DOWN), handR: 0.5, handL: 0.5 }],
 ];
 
 // Rock steady: a slow sway from side to side with the shoulders, the fingers snapping low on the off beat.
@@ -213,7 +219,7 @@ export const patterns: PatternSet = {};
 const caribbean: MoveDef[] = [
   full({
     id: 'one-drop-rock', name: 'One Drop', tags: 'hiphop pop | full | reggae', beats: 4, level: 'low', d: 1, parts: ['legs', 'torso', 'arms'], mirror: true,
-    desc: 'Reggae\'s one drop: sway onto one foot for two beats with the loose hands swinging in front, then drop the knees, the head and both open hands together on the third beat and rise on the fourth; then sway to the other foot.',
+    desc: 'Reggae\'s one drop: sway onto one foot leaning back a little with that shoulder dropped, the loose arms rocking (one hand hanging low and out, the other forearm across the belly), then on the third beat drop: knees bend and open, chin and shoulders down, both loose hands falling low; rise easy on the fourth and sway to the other foot.',
     keys: ONE_DROP,
   }),
   full({
