@@ -34,6 +34,12 @@ import * as flamenco from './flamenco';
 import * as world2 from './world2';
 import * as world3 from './world3';
 import * as club from './club';
+import * as basicsLatin from './basicsLatin';
+import * as basicsIbero from './basicsIbero';
+import * as basicsRetro from './basicsRetro';
+import * as basicsIsland from './basicsIsland';
+import * as basicsFolk from './basicsFolk';
+import * as basicsClub from './basicsClub';
 
 export interface FamilyFile {
   patterns: PatternSet;
@@ -41,7 +47,7 @@ export interface FamilyFile {
 }
 
 /** Family files by name (the --family argument of tools/moves/check.ts). */
-export const FAMILY_FILES: Readonly<Record<string, FamilyFile>> = { shared, aerobic, cooldown, latin, disco, funk, hiphop, pop, rock, kpop, party, afro, retro, world, electronic, urban, lyrical, named, gospel, country2, latin2, mexican, flamenco, world2, world3, club };
+export const FAMILY_FILES: Readonly<Record<string, FamilyFile>> = { shared, aerobic, cooldown, latin, disco, funk, hiphop, pop, rock, kpop, party, afro, retro, world, electronic, urban, lyrical, named, gospel, country2, latin2, mexican, flamenco, world2, world3, club, basicsLatin, basicsIbero, basicsRetro, basicsIsland, basicsFolk, basicsClub };
 
 /**
  * Definition errors (duplicate ids, unknown patterns, bad tags), by file. A

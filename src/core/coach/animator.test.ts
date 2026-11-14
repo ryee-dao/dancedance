@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { rootOffset } from '../choreo/cards';
 import { generateRoutine, type Intensity } from '../choreo/generator';
 import { trackKeys } from '../choreo/moves';
 import { songMap } from '../choreo/testutil';
@@ -50,7 +51,8 @@ describe('PoseEvaluator over a routine', () => {
             ev.evaluate(plan, timeOfBeat(plan, b), out, { layers: false });
             for (const c of GROUP_CHANNELS[g]) {
               let want = k.pose[c];
-              if (g === G_BODY && (c === CH.X || c === CH.RFT_X || c === CH.LFT_X)) want += inst.origin;
+              // The root offset: the instance's origin, plus its drift so far (an unpaired travelling repeat).
+              if (g === G_BODY && (c === CH.X || c === CH.RFT_X || c === CH.LFT_X)) want += rootOffset(inst, k.at);
               expect(out[c]).toBeCloseTo(want, 6);
             }
             checked++;

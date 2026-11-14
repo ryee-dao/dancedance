@@ -65,20 +65,25 @@ describe('generateRoutine', () => {
   it('lands half-time and full-time moves alike on bar lines (mixed speeds on one song)', () => {
     // 144 BPM: some moves are over their speed limit (half time), the simple ones are not.
     for (const lv of LEVELS) {
-      const m = songMap(144, `mixed-${lv}`);
-      const db = new Set(m.downbeats);
-      const r = generateRoutine(m, lv);
-      covered(r);
-      const whole = r.instances.filter((i) => !i.move.idle && !i.move.part && !i.sig);
-      // (Easy keeps to simple moves: it may have nothing over its limit here.)
-      if (lv !== 'chill') expect(whole.some((i) => i.half), lv).toBe(true);
-      expect(whole.some((i) => !i.half), lv).toBe(true);
-      for (const i of r.instances) {
-        if (i.unitStart) expect(db.has(i.start), `${lv} unit @${i.start}`).toBe(true);
-        // A 4-beat move (8 song beats at half time) starts on a downbeat either way.
-        if (i.move.beats === 4 && !i.move.part) expect(db.has(i.start), `${lv} ${i.move.id} @${i.start}`).toBe(true);
-        expect(i.span, i.move.id).toBe(i.move.beats * (i.half ? 2 : 1));
+      // A few songs per level, so the half-time case is met whatever one routine happens to cast.
+      let half = false;
+      for (const id of [`mixed-${lv}`, `mixed-${lv}-2`, `mixed-${lv}-3`]) {
+        const m = songMap(144, id);
+        const db = new Set(m.downbeats);
+        const r = generateRoutine(m, lv);
+        covered(r);
+        const whole = r.instances.filter((i) => !i.move.idle && !i.move.part && !i.sig);
+        half ||= whole.some((i) => i.half);
+        expect(whole.some((i) => !i.half), lv).toBe(true);
+        for (const i of r.instances) {
+          if (i.unitStart) expect(db.has(i.start), `${lv} unit @${i.start}`).toBe(true);
+          // A 4-beat move (8 song beats at half time) starts on a downbeat either way.
+          if (i.move.beats === 4 && !i.move.part) expect(db.has(i.start), `${lv} ${i.move.id} @${i.start}`).toBe(true);
+          expect(i.span, i.move.id).toBe(i.move.beats * (i.half ? 2 : 1));
+        }
       }
+      // (Easy keeps to simple moves: it may have nothing over its limit here.)
+      if (lv !== 'chill') expect(half, lv).toBe(true);
     }
   });
 

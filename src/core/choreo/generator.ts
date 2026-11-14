@@ -2098,8 +2098,9 @@ export const HIGH_CAP: Readonly<Record<Intensity, readonly [number, number, numb
 
 /**
  * Most of Easy's danced time moves above difficulty 1 may take (a weight keeps them rare; with half the time in
- * genre moves, this keeps it so), and how far a genre slot may take it (most sets have few simple moves: Latin 2 of
- * its 21, so a Latin song on Easy dances some of its harder steps rather than none).
+ * genre moves, this keeps it so), and how far a genre slot may take it (a set's simple moves come first, but a song
+ * may still dance some of its set's harder steps rather than none; every set has at least 6 simple moves since the
+ * basics files of Nov 2026, capoeira 4, where Latin had 2 of its 21 before).
  */
 export const EASY_HARD_CAP = 0.08;
 export const EASY_HARD_CAP_GENRE = 0.14;

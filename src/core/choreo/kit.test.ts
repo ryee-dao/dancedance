@@ -60,18 +60,18 @@ describe('the kit on every published map', () => {
           // A level can't dance a set at all (all of it jumps, on Easy): no genre time, and that's fine.
           if (![...open].some((g) => DANCE.some((m) => m.genre === g && levelFactor(m, lv) > 0))) continue;
           const share = t.genre / (t.genre + t.global);
-          // Easy keeps to simple moves (EASY_HARD_CAP): sets with only a few of them (Latin: 2 of its 21) carry
-          // what those and the budget allow, about the genre time all songs had before GENRE_TARGET 0.5.
-          const simple = DANCE.filter((m) => m.genre && open.has(m.genre) && levelFactor(m, lv) > 0 && m.difficulty <= 1).length;
-          const floor = lv === 'chill' && simple < 4 ? 0.17 : GENRE_MIN;
-          expect(share, tag).toBeGreaterThanOrEqual(floor - 0.02);
+          // Easy keeps to simple moves (EASY_HARD_CAP), and every set has enough of them since the basics files
+          // (Nov 2026: at least 6 per set, capoeira 4); before, a set with fewer than 4 (Latin: 2 of its 21) only
+          // had to reach 17 % on Easy.
+          expect(share, tag).toBeGreaterThanOrEqual(GENRE_MIN - 0.02);
           expect(share, tag).toBeLessThanOrEqual(GENRE_MAX + 0.02);
           shares.push(share);
         }
       }
-      // Nov 2026: 31 / 31 / 32 % before GENRE_TARGET 0.5, then 48 / 50 / 51 %.
+      // Nov 2026: 31 / 31 / 32 % before GENRE_TARGET 0.5, then 48 / 50 / 51 %; Easy 48.8 % with the basics files
+      // (every set's simple moves), where it needed a lower bar (0.44) before.
       expect(shares.length, lv).toBeGreaterThan(100);
-      expect(mean(shares), lv).toBeGreaterThan(lv === 'chill' ? 0.44 : 0.47);
+      expect(mean(shares), lv).toBeGreaterThan(0.47);
     }
   });
 

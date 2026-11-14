@@ -54,6 +54,7 @@ import { moves as electronicSets } from './genreSets/electronic';
 import { moves as moodSets } from './genreSets/mood';
 import { moves as urbanSets } from './genreSets/urban';
 import { moves as varietySets } from './genreSets/variety';
+import { moves as basicsSets } from './genreSets/basics';
 
 export type Genre =
   | 'rock' | 'hiphop' | 'latin' | 'discofunk' | 'kpop'
@@ -668,7 +669,7 @@ const RAW: Readonly<Record<Genre, string>> = {
 };
 
 /** genreSets/*.ts: id lists by genre, added after RAW's. */
-const EXTRA: readonly Partial<Record<string, string>>[] = [electronicSets, urbanSets, moodSets, varietySets];
+const EXTRA: readonly Partial<Record<string, string>>[] = [electronicSets, urbanSets, moodSets, varietySets, basicsSets];
 
 const idsOf = (s: string | undefined): string[] => (s ?? '').replace(/\/\/[^\n]*/g, ' ').split(/\s+/).filter(Boolean);
 

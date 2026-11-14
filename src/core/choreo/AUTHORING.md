@@ -15,6 +15,7 @@ readable from the front, and distinct**. Quality beats quantity: do not pad.
 | `families/afro.ts`, `retro.ts`, `world.ts` | traditions: afrobeats / dancehall / soca, swing / country / folk, Bollywood / hula / belly dance ... |
 | `families/named.ts` | named variations: recombinations promoted to first-class moves with their own names |
 | `families/gospel.ts`, `country2.ts`, `latin2.ts`, `mexican.ts`, `flamenco.ts`, `world2.ts`, `world3.ts`, `club.ts` | the genre survey's additions (Nov 2026): gospel; more country; bachata, tango, salsa shines; regional Mexican and cumbia; flamenco; belly dance; dangdut and Schlager; house farmer, amapiano groove (ids in `genreSets/variety.ts`) |
+| `families/basicsLatin.ts`, `basicsIbero.ts`, `basicsRetro.ts`, `basicsIsland.ts`, `basicsFolk.ts`, `basicsClub.ts` | the simple basics (Nov 2026): difficulty-1, low-impact steps as each style is taught to beginners, so every genre set has at least 6 Easy-eligible moves (capoeira 4); sources in each file's header, ids in `genreSets/basics.ts` |
 
 ## Two tiers: global and genre-exclusive
 
@@ -154,8 +155,12 @@ one song's genre part from being one move:
   Latin dance keeps its full `NAMED_DANCE` lead).
 - Easy keeps to simple moves (`EASY_HARD_CAP`: moves above difficulty 1 at
   most 8 % of its danced time, 14 % with genre slots'): a set with few
-  simple moves (Latin has 2 of its 21) gets less genre time on Easy rather
-  than harder moves; a thin set (one that borrows) keeps what it has.
+  simple moves gets less genre time on Easy rather than harder moves; a
+  thin set (one that borrows) keeps what it has. So every set needs simple
+  moves of its own: at least 6 that Easy accepts (difficulty 1, no jump or
+  fast turn, not high intensity, impact <= 0.45; Latin had 2 of its 21
+  until the basics files, and a Latin song on Easy danced 10 % genre).
+  A new set gets its simple basics with it.
   The kit itself doesn't grow: only which of its slots are genre slots
   changes, so routines stay as learnable.
 - With a sub-style open next to broader sets (R&B with disco & funk and
