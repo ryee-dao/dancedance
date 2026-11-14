@@ -22,7 +22,13 @@ describe('genre names', () => {
   });
 
   it('drops junk: store shelves, decades, places, listening habits', () => {
-    expect(names(['Soundtrack', 'Holiday', '2000s', '80s', 'british', 'seen live', 'female vocalists', 'party', 'ballad', 'Fitness & Workout'])).toEqual([]);
+    expect(names(['Soundtrack', 'Holiday', '2000s', '80s', 'british', 'seen live', 'female vocalists', 'party', 'love song', 'Fitness & Workout'])).toEqual([]);
+  });
+
+  it('reads song forms ("ballad") as forms, not genres', () => {
+    expect(canonicalGenre('Ballad')).toEqual({ name: 'ballad', key: 'ballad', known: true, form: true });
+    expect(canonicalGenre('power ballads')?.key).toBe('power ballad');
+    expect(names(['ballad', 'Ballads'])).toEqual(['ballad']);
   });
 
   it('keeps unknown names from curated sources, but user tags must look like a genre', () => {

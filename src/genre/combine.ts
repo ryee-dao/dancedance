@@ -13,7 +13,10 @@
  *      source reports the same genre or a narrower form of it;
  *    - a name whose broad family (rock, pop/dance, urban, country...) agrees
  *      with no other source, when at least two other source groups do say
- *      something placeable, counts CONTRA_SHARE;
+ *      something placeable, counts CONTRA_SHARE; a song source's first name
+ *      (its main genre, of two or more) CONTRA_FIRST. Such a name listed
+ *      later that no other source reports (or a broader or narrower form
+ *      of) is dropped: Wikipedia's last "tango" for a reggae-pop single;
  *    - a song (or album) answer that only repeats what the same site says
  *      about the artist, when other sites give the artist that genre too,
  *      is the artist's genre copied onto the track: it counts
@@ -29,6 +32,9 @@
  * 4. The song list holds the genres song sources reported, plus album
  *    genres that narrow one of them ("cumbia" on the album of a song the
  *    store calls "Música tropical"). Then come the other album genres.
+ *    An album genre in the song list with one album source behind it (not
+ *    CREDIBLE_ALBUM) follows the song's own names: one Discogs style, "New
+ *    Jack Swing" for Celine Dion's album, never leads a song.
  * 5. Umbrella rule: an umbrella (specificity under UMBRELLA_SPEC: pop, rock,
  *    hip hop, R&B, Latin, electronic...) is never ranked above a narrower
  *    form of itself that has credible direct support: one credible song-level source
@@ -47,6 +53,11 @@
  *    in full when the song sources only say umbrellas (a store's "Música
  *    tropical": rule 5 decides there).
  *
+ * 7. Song forms (names.ts FORMS: "ballad", "power ballad") are not genres:
+ *    they take part in no family check and no ranking, and the best one a
+ *    song source reports follows the genres (MAX_FORMS). The choreographer
+ *    reads it as a calm / soft / tempo hint.
+ *
  * Genres are only ever taken from what a source said exactly; relations
  * only add weight.
  */
@@ -60,6 +71,13 @@ export const SAME_GROUP_SHARE = 0.5;
 export const ALBUM_SHARE = 0.3;
 export const SPEC_WEIGHT = 0.6;
 export const CONTRA_SHARE = 0.3;
+/**
+ * A song-level source's FIRST name (of two or more) that agrees with no other source counts this much
+ * instead: sources list the main genre first (Wikipedia's "Reggae" for I'm Yours, whatever the others say).
+ */
+export const CONTRA_FIRST = 0.8;
+/** How many song forms ("ballad") the list carries after its genres. */
+export const MAX_FORMS = 1;
 /** The last of a source's n names counts 1 - POSITION_DECAY x (n-1)/n of the first. */
 export const POSITION_DECAY = 0.3;
 
@@ -124,6 +142,12 @@ type SourceInfo = Pick<GenreSource, 'id' | 'group' | 'weight' | 'strictNames' | 
 
 interface Entry {
   key: string;
+  /** Place in its source's list (0 = first). */
+  at: number;
+  /** A song form ("ballad"), kept apart from the genres. */
+  form?: boolean;
+  /** Its family agrees with no other source (the contra rule hit it). */
+  contra?: boolean;
   /** Position share 1 (first) .. ~0 (last). */
   early: number;
   /** Votes, for crowd tags. */
@@ -154,12 +178,13 @@ export function sourceEntries(o: Extract<SourceOutcome, { status: 'found' }>, st
         if (count !== undefined) had.count = (had.count ?? 0) + count;
         continue;
       }
-      const e: Entry = { key: g.key, early: 0, factor: 1, ...(count !== undefined ? { count } : {}) };
+      const e: Entry = { key: g.key, at: 0, early: 0, factor: 1, ...(g.form ? { form: true } : {}), ...(count !== undefined ? { count } : {}) };
       seen.set(g.key, e);
       out.push(e);
     }
   });
   out.forEach((e, i) => {
+    e.at = i;
     e.early = 1 - i / out.length;
     // Sources list the main genre first (infoboxes, Discogs styles, tags by votes): later names count a little less.
     e.factor *= 1 - positionDecay * (i / out.length);
@@ -181,7 +206,10 @@ const CAMP: Record<string, string> = {
 };
 
 function camps(key: string): Set<string> {
-  return new Set(families(key).filter((f) => f !== 'alternative').map((f) => CAMP[f] ?? f));
+  const fams = families(key).filter((f) => f !== 'alternative');
+  // "dance" beside another family is Wikidata saying it is danced (tango, a ballroom dance), not dance music.
+  const said = fams.length > 1 ? fams.filter((f) => f !== 'dance') : fams;
+  return new Set(said.map((f) => CAMP[f] ?? f));
 }
 
 function readLists(outcomes: Partial<Record<SourceId, SourceOutcome>>, sources: readonly SourceInfo[], positionDecay = POSITION_DECAY): SourceList[] {
@@ -236,11 +264,23 @@ function control(lists: SourceList[]): void {
       if (placed.length < 2) continue;
       for (const e of l.entries) {
         const mine = camps(e.key);
-        if (mine.size && !placed.some((s) => [...mine].some((c) => s.has(c)))) e.factor *= CONTRA_SHARE;
+        if (!mine.size || placed.some((s) => [...mine].some((c) => s.has(c)))) continue;
+        // A song source's main (first) genre keeps most of its weight; any later one is an outlier.
+        const first = l.src.level === 'song' && e.at === 0 && l.entries.length > 1;
+        e.factor *= first ? CONTRA_FIRST : CONTRA_SHARE;
+        if (e.at > 0) e.contra = true;
       }
     }
   }
-  for (const l of lists) l.entries = l.entries.filter((e) => e.factor > 0);
+  // An outlier listed after a source's main genre, that no other source reports (or a broader or
+  // narrower form of), is junk: Wikipedia's lone last "tango" for a reggae-pop single.
+  for (const l of lists) {
+    l.entries = l.entries.filter((e) => {
+      if (e.factor <= 0) return false;
+      if (!e.contra) return true;
+      return lists.some((m) => m !== l && tier(m) === tier(l) && m.entries.some((x) => x.key === e.key || related(x.key, e.key)));
+    });
+  }
 }
 
 interface Support {
@@ -320,8 +360,10 @@ export function combineGenres(outcomes: Partial<Record<SourceId, SourceOutcome>>
   const album = lists.filter((l) => l.src.level === 'album');
   const artist = lists.filter((l) => l.src.level === 'artist');
 
-  const songKeys = new Set(song.flatMap((l) => l.entries.map((e) => e.key)));
-  const albumKeys = new Set(album.flatMap((l) => l.entries.map((e) => e.key)));
+  const genreKeys = (ls: SourceList[]) => new Set(ls.flatMap((l) => l.entries.filter((e) => !e.form).map((e) => e.key)));
+  const formKeys = (ls: SourceList[]) => new Set(ls.flatMap((l) => l.entries.filter((e) => e.form).map((e) => e.key)));
+  const songKeys = genreKeys(song);
+  const albumKeys = genreKeys(album);
   // Album genres that narrow a genre the song sources reported join the song list.
   const refining = [...albumKeys].filter((a) => !songKeys.has(a) && [...songKeys].some((s) => broaderThan(s, a)));
   const songTier = new Set([...songKeys, ...refining]);
@@ -341,12 +383,24 @@ export function combineGenres(outcomes: Partial<Record<SourceId, SourceOutcome>>
   };
   const credible = (x: Cand) => x.songDirect >= CREDIBLE || x.albumDirect >= CREDIBLE_ALBUM;
   const order = (xs: Cand[]) => umbrellasLast(xs.sort((a, b) => b.score - a.score || b.by.length - a.by.length || a.key.localeCompare(b.key)), credible, w.umbrellaSpec);
-  const songList = order([...songTier].map((g) => scoreOf(g, songKeys.has(g) ? 'song' : 'album')));
+  const ranked = order([...songTier].map((g) => scoreOf(g, songKeys.has(g) ? 'song' : 'album')));
+  // Rule 4b: an album genre that narrows the song's own names comes before them only with credible album
+  // support (two album sources); one Discogs style ("New Jack Swing" on a Celine Dion album) follows them.
+  const lone = (x: Cand) => x.level === 'album' && x.albumDirect < CREDIBLE_ALBUM;
+  const songList = [...ranked.filter((x) => !lone(x)), ...ranked.filter(lone)];
   const albumList = order([...albumKeys].filter((g) => !songTier.has(g)).map((g) => scoreOf(g, 'album')));
   const scored: ScoredGenre[] = [...songList, ...albumList].map(({ songDirect: _s, albumDirect: _a, ...x }) => x);
-  const top = scored.slice(0, max);
+  // Song forms ("ballad") never compete with genres: the best one a song source reports follows them (an album's
+  // "Ballad" style says the album has ballads, not that this song is one; album sources still corroborate).
+  const forms: ScoredGenre[] = [...formKeys(song)]
+    .map((g) => {
+      const s = support(g, song, 1), a = support(g, album, w.albumShare);
+      return { name: displayName(g), key: g, score: round(s.total + a.total), level: 'song' as const, by: [...s.by, ...a.by] };
+    })
+    .sort((a, b) => b.score - a.score || a.key.localeCompare(b.key));
+  const top = [...scored.slice(0, max), ...forms.slice(0, MAX_FORMS)];
 
-  const artistKeys = new Set(artist.flatMap((l) => l.entries.map((e) => e.key)));
+  const artistKeys = genreKeys(artist);
   const artistScored = umbrellasLast(
     [...artistKeys]
       .map((g) => {

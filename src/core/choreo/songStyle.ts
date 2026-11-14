@@ -292,7 +292,45 @@ interface Lex {
   soft?: number;
   /** Tempo people usually step to (BPM): the tempo-octave check (generator.ts danceFeel) and the free-time pace. */
   bpm?: number;
+  /**
+   * A song form, not a genre ("ballad", "power ballad"; the lookup appends one after the genres): it says how the song
+   * moves, not what it is. Its calm, softness and stepping tempo count wherever it is listed; its family, label and
+   * place among the names barely (FORM_FAM), unless nothing else is known.
+   */
+  form?: true;
+  /**
+   * A tradition theme the music has when it is bright: the Western folk family dances the country floor on a
+   * major-key song with a steady, unsoft beat, and stays gentle (no tradition set; soft, lyrical) when minor or soft.
+   */
+  bright?: Theme;
 }
+
+/**
+ * Bare umbrella names ("Pop", "Rock", "Electronic", "Dance", "Hip-hop"): they say the family, not the form. The
+ * audio may refine one into a sub-style of that family (heavy guitars into metal, four-on-the-floor into house);
+ * beside a name that says the form (alternative, post-punk, disco, synth-pop) it may not (TRAIT_ALONE).
+ */
+const BROAD_NAMES = new Set([
+  'pop', 'pop music', 'rock', 'rock music', 'electronic', 'electronic music', 'electronica', 'electronic dance', 'dance', 'dance music',
+  'hip hop', 'hiphop', 'rap', 'hip hop rap', 'rap hip hop', 'latin', 'latino', 'latin music', 'world', 'world music', 'worldwide',
+]);
+
+/**
+ * Peoples and places whose "<X> folk" is a folk-dance tradition (the world folk set): Russian folk, Irish folk.
+ * American / contemporary / indie folk is the singer-songwriter music (no folk-dance set).
+ */
+const FOLK_PEOPLES = [
+  'russian', 'ukrainian', 'belarusian', 'polish', 'czech', 'slovak', 'hungarian', 'romanian', 'moldovan', 'bulgarian', 'serbian', 'croatian',
+  'bosnian', 'slovenian', 'macedonian', 'albanian', 'greek', 'turkish', 'kurdish', 'armenian', 'georgian', 'azerbaijani', 'persian',
+  'iranian', 'arabic', 'arab', 'jewish', 'israeli', 'yiddish', 'german', 'austrian', 'bavarian', 'alpine', 'swiss', 'dutch', 'flemish',
+  'french', 'breton', 'occitan', 'basque', 'galician', 'spanish', 'portuguese', 'italian', 'sicilian', 'neapolitan', 'sardinian', 'irish',
+  'scottish', 'welsh', 'cornish', 'manx', 'nordic', 'scandinavian', 'swedish', 'norwegian', 'danish', 'finnish',
+  'icelandic', 'faroese', 'sami', 'estonian', 'latvian', 'lithuanian', 'baltic', 'slavic', 'chinese', 'japanese', 'korean', 'mongolian',
+  'tibetan', 'uyghur', 'kazakh', 'uzbek', 'indian', 'bengali', 'punjabi', 'pakistani', 'nepali', 'thai', 'vietnamese', 'indonesian',
+  'javanese', 'balinese', 'malay', 'filipino', 'african', 'ethiopian', 'malian', 'west african', 'andean', 'peruvian', 'bolivian',
+  'chilean', 'argentine', 'argentinian', 'mexican', 'colombian', 'venezuelan', 'brazilian', 'native american', 'hawaiian', 'appalachian',
+  'european', 'eastern european', 'balkan', 'celtic', 'gaelic', 'cossack', 'gypsy', 'romani',
+].join('|');
 
 const word = (alts: string) => new RegExp(`(?<![a-z0-9])(?:${alts})(?![a-z0-9])`, 'g');
 const HIPS: FocusMap = { hips: 1.3 };
@@ -306,7 +344,8 @@ const LEXICON: readonly Lex[] = [
   // --- Scenes: they lead the dancing whenever a song-level name says them.
   { re: word('k pop|kpop|korean pop|k rap|k hip hop|k r and b'), fam: { kpop: 1, pop: 0.4, hiphop: 0.2 }, scene: 'K-pop', label: 'K-pop', fixed: true, bpm: 118 },
   { re: word('j pop|jpop|idol pop|idol'), fam: { kpop: 0.7, pop: 0.7 }, scene: 'J-pop', label: 'J-pop', fixed: true, bpm: 120 },
-  { re: word('c pop|cpop|mandopop|cantopop hk pop|cantopop|hk pop|tai pop'), fam: { kpop: 0.7, pop: 0.7 }, scene: 'C-pop', label: 'C-pop', fixed: true, bpm: 115 },
+  // C-pop / Mandopop: ballad-led pop with no idol point choreography of its own (no K-pop set); the traits decide how calm.
+  { re: word('c pop|cpop|mandopop|cantopop hk pop|cantopop|hk pop|tai pop'), fam: { pop: 1 }, scene: 'C-pop', label: 'C-pop', fixed: true, bpm: 105 },
   { re: word('t pop|thai pop|v pop|vpop|p pop|ppop'), fam: { kpop: 0.7, pop: 0.7 }, scene: 'Asian pop', label: 'Asian pop', bpm: 118 },
   { re: word('j rock|jrock|visual kei|j punk|j ska'), fam: { rock: 1, pop: 0.3 }, label: 'J-rock' },
   { re: word('anime|anison|vocaloid|j synth'), fam: { pop: 0.8, kpop: 0.5, rock: 0.1 }, label: 'Anime' },
@@ -319,7 +358,9 @@ const LEXICON: readonly Lex[] = [
   { re: word('moombahton'), fam: { latin: 0.6, aerobic: 0.4 }, sub: { reggaeton: 0.6 }, focus: HIPS, bpm: 108 },
   { re: word('baile funk|funk carioca|brazilian funk|funk brasileiro|funk ostentacao|brega funk|brazilian phonk'), fam: { latin: 0.8, hiphop: 0.4 }, sub: { brazil: 1 }, focus: HIPS, label: 'Baile funk', bpm: 130 },
   { re: word('bossa nova'), fam: { latin: 0.8, pop: 0.3 }, sub: { brazil: 0.8 }, calm: 0.7, soft: 0.8, label: 'Bossa nova', bpm: 70 },
-  { re: word('samba|axe|pagode|sertanejo|forro|piseiro|xote|xaxado|baiao|arrocha|brega|tecnobrega|lambada|carimbo|maracatu|afoxe|frevo|mpb|musica popular brasileira|choro|brazilian|brasil'), fam: { latin: 1, pop: 0.2 }, sub: { brazil: 1 }, focus: { hips: 1.4 }, bpm: 105 },
+  // Sertanejo is Brazil's country music (viola caipira, rodeo culture): the country floor, not samba.
+  { re: word('sertanejo universitario|sertanejo raiz|sertanejo|musica sertaneja|musica caipira|caipira|moda de viola'), fam: { pop: 0.6, latin: 0.3, rock: 0.2 }, themes: ['country'], label: 'Sertanejo', bpm: 100 },
+  { re: word('samba|axe|pagode|forro|piseiro|xote|xaxado|baiao|arrocha|brega|tecnobrega|lambada|carimbo|maracatu|afoxe|frevo|mpb|musica popular brasileira|choro|brazilian|brasil'), fam: { latin: 1, pop: 0.2 }, sub: { brazil: 1 }, focus: { hips: 1.4 }, bpm: 105 },
   { re: word('bachata urbana|bachata sensual|bachata romantica|bachata'), fam: { latin: 1, pop: 0.3 }, sub: { bachata: 1 }, focus: { hips: 1.4 }, soft: 0.5, label: 'Bachata', bpm: 128 },
   { re: word('merengue tipico|merengue|perico ripiao|mambo dominicano'), fam: { latin: 1, pop: 0.2 }, sub: { merengue: 1 }, focus: { hips: 1.4 }, label: 'Merengue', bpm: 140 },
   { re: word('cumbia villera|cumbia sonidera|cumbia andina|tecnocumbia|technocumbia|cuarteto|cumbia|chicha|porro|champeta'), fam: { latin: 1, pop: 0.2 }, sub: { cumbia: 1 }, focus: { hips: 1.4 }, label: 'Cumbia', bpm: 95 },
@@ -348,6 +389,7 @@ const LEXICON: readonly Lex[] = [
   { re: word('reggae|roots reggae|dub'), fam: { latin: 0.5, hiphop: 0.4, pop: 0.3 }, themes: ['reggae'], focus: HIPS, label: 'Reggae', bpm: 85 },
   { re: word('soca|chutney soca|chutney|calypso|zouk|kompa|compas|bouyon|mento|steelpan|steel pan|steel band|caribbean'), fam: { latin: 0.5, hiphop: 0.3, pop: 0.3 }, themes: ['soca'], focus: HIPS, bpm: 115 },
   // --- Metal, punk and their kin.
+  { re: word('folk metal|pagan metal|viking metal|celtic metal|medieval metal'), fam: { rock: 1, aerobic: 0.1 }, sub: { metal: 0.9 }, themes: ['folk'], bpm: 130 },
   { re: word('nu metal|rap metal|rapcore'), fam: { rock: 1, hiphop: 0.3 }, sub: { metal: 0.9 }, bpm: 100 },
   { re: word('rap rock'), fam: { rock: 0.8, hiphop: 0.5 }, sub: { metal: 0.45 }, bpm: 100 },
   { re: word('trap metal'), fam: { rock: 0.6, hiphop: 0.7 }, sub: { metal: 0.6, trap: 0.6 }, bpm: 140 },
@@ -366,10 +408,13 @@ const LEXICON: readonly Lex[] = [
   { re: word('hardcore punk|hardcore(?! hip hop| rap)|punk rock|skate punk|street punk|oi|emo(?! rap)|screamo|punk'), fam: { rock: 1, aerobic: 0.3 }, sub: { punk: 1 }, label: 'Punk', bpm: 170 },
   { re: word('industrial rock|industrial|ebm|electronic body music|aggrotech|futurepop'), fam: { rock: 0.5, aerobic: 0.5 }, sub: { metal: 0.3 }, label: 'Industrial', bpm: 125 },
   // --- Rock and pop compounds.
-  { re: word('power ballad'), fam: { rock: 0.6, pop: 0.6 }, calm: 0.65, label: 'Power ballad', bpm: 75 },
+  { re: word('power ballads?|rock ballad'), fam: { rock: 0.6, pop: 0.6 }, calm: 0.65, soft: 0.5, form: true, label: 'Power ballad', bpm: 75 },
   { re: word('soft rock|yacht rock|piano rock|acoustic rock|adult alternative'), fam: { rock: 0.6, pop: 0.6 }, calm: 0.62, soft: 0.6, bpm: 100 },
-  { re: word('folk rock|indie folk|folk pop|contemporary folk|freak folk|anti folk|chamber folk|americana folk'), fam: { pop: 0.7, rock: 0.4 }, calm: 0.55, soft: 0.5, bpm: 105 },
-  { re: word('rock and roll|rock n roll|rock n rollo|rockabilly|psychobilly|doo wop|surf rock|surf|skiffle'), fam: { rock: 1, pop: 0.3 }, themes: ['swing'], bpm: 150 },
+  { re: word('folk pop|pop folk'), fam: { pop: 0.7, rock: 0.4 }, calm: 0.55, soft: 0.5, bpm: 105 },
+  { re: word('folk rock|indie folk|contemporary folk|freak folk|anti folk|chamber folk|americana folk|american folk|alternative folk|alt folk|psychedelic folk|psych folk|progressive folk|folktronica|neofolk|dark folk|stomp and holler|folk punk'), fam: { pop: 0.7, rock: 0.4 }, calm: 0.55, soft: 0.5, bright: 'country', bpm: 105 },
+  { re: word('rock and roll|rock n roll|rock n rollo|rockabilly|psychobilly|doo wop|skiffle'), fam: { rock: 1, pop: 0.3 }, themes: ['swing'], bpm: 150 },
+  // Surf music is the 1960s floor (the twist, the swim, the pony: global and disco & funk moves), not the jive.
+  { re: word('surf rock|surf pop|surf music|surf'), fam: { rock: 0.7, pop: 0.5, disco: 0.15 }, bpm: 140 },
   { re: word('funk rock|funk metal'), fam: { funk: 0.7, rock: 0.6 }, bpm: 115 },
   { re: word('pop rock|power pop|pop punk revival|pop rock'), fam: { pop: 0.7, rock: 0.6 }, bpm: 120 },
   { re: word('dream pop|shoegaze|slowcore|sadcore|post rock|space rock|ethereal wave'), fam: { pop: 0.6, rock: 0.5 }, calm: 0.7, soft: 0.6, bpm: 90 },
@@ -434,16 +479,17 @@ const LEXICON: readonly Lex[] = [
   { re: word('cajun|zydeco'), fam: { pop: 0.5, rock: 0.3, party: 0.2 }, themes: ['country'], bpm: 120 },
   { re: word('country(?! blues)|americana|bluegrass|honky tonk|outlaw country|alt country|western swing|western|red dirt|texas country|cowpunk|nashville sound|urban cowboy|line dance|line dancing|texas two step|square dance|appalachian|clogging|mountain music'), fam: { pop: 0.6, rock: 0.4, aerobic: 0.2 }, themes: ['country'], label: 'Country', bpm: 110 },
   // --- Ballads and the gentle.
-  { re: word('piano ballad|ballad|ballads|torch song|lullaby|lullabies|lullabye'), fam: { pop: 0.8, rock: 0.2 }, calm: 0.85, soft: 0.8, label: 'Ballad', bpm: 70 },
+  { re: word('piano ballad|ballad|ballads|torch song|lullaby|lullabies|lullabye'), fam: { pop: 0.8, rock: 0.2 }, calm: 0.85, soft: 0.8, form: true, label: 'Ballad', bpm: 70 },
   { re: word('singer songwriter|acoustic(?! blues)|unplugged'), fam: { pop: 0.9, rock: 0.2 }, calm: 0.6, soft: 0.6, label: 'Singer-songwriter', bpm: 95 },
   // --- Jazz, swing and blues.
-  { re: word('smooth jazz|cool jazz|vocal jazz|jazz vocal'), fam: { funk: 0.5, pop: 0.5 }, themes: ['swing'], calm: 0.7, soft: 0.7, bpm: 100 },
+  // Jazz is danced as swing (the swing set) or smooth and flowing: never the disco & funk floor (no disco points on Coltrane).
+  { re: word('smooth jazz|cool jazz|vocal jazz|jazz vocal'), fam: { pop: 0.8, funk: 0.2 }, themes: ['swing'], calm: 0.7, soft: 0.7, bpm: 100 },
   { re: word('electro swing'), fam: { funk: 0.5, aerobic: 0.4, disco: 0.3 }, themes: ['swing'], bpm: 125 },
   { re: word('free jazz|avant garde jazz|avant garde|experimental'), fam: STILL, calm: 0.5, conf: 0.5, bpm: 90 },
   { re: word('jump blues|boogie woogie'), fam: { funk: 0.5, rock: 0.3, pop: 0.2 }, themes: ['swing'], bpm: 150 },
   // The ballroom swing and standard dances: the swing set has the jive / Charleston kicks and the waltz steps.
   { re: word('jive|charleston|foxtrot|quickstep|viennese waltz|waltz'), fam: { pop: 0.7, funk: 0.2, rock: 0.1 }, themes: ['swing'], bpm: 120 },
-  { re: word('jazz|swing|big band|lindy hop|bebop|hard bop|dixieland|trad jazz|ragtime|stride'), fam: { funk: 0.6, pop: 0.3, rock: 0.2 }, themes: ['swing'], label: 'Jazz', bpm: 135 },
+  { re: word('jazz|swing|big band|lindy hop|bebop|hard bop|post bop|bop|modal jazz|dixieland|trad jazz|ragtime|stride'), fam: { pop: 0.7, funk: 0.25, rock: 0.15 }, themes: ['swing'], label: 'Jazz', bpm: 135 },
   { re: word('blues rock|electric blues|chicago blues|texas blues|british blues|modern blues|contemporary blues'), fam: { rock: 0.7, funk: 0.4 }, bpm: 115 },
   { re: word('delta blues|country blues|acoustic blues|piedmont blues|folk blues|classic blues'), fam: { funk: 0.5, pop: 0.3, rock: 0.2 }, sub: { rnb: 0.4 }, calm: 0.5, soft: 0.5, bpm: 90 },
   // Blues dancing is the slow drag, grind and sway of a pulsing groove: the R&B set's isolations, soul grooves; never headbangs.
@@ -460,7 +506,13 @@ const LEXICON: readonly Lex[] = [
   { re: word('luk thung|look thung|luk thoong|mor lam|molam|lam sing'), fam: { pop: 0.8, latin: 0.2 }, sub: { dangdut: 0.6 }, focus: HIPS, bpm: 120 },
   { re: word('hawaiian|hapa haole|hula|polynesian|hawaii|tahitian|otea|aparima|samoan|siva|tongan|fijian|pacific islands?'), fam: { pop: 0.7, latin: 0.2 }, themes: ['hula'], label: 'Hawaiian', bpm: 95 },
   { re: word('capoeira'), fam: { latin: 0.8 }, themes: ['capoeira'], label: 'Capoeira', bpm: 110 },
-  { re: word('celtic|irish folk|polka|klezmer|balkan|folk dance|traditional folk|volksmusik|german folk|turbo folk|chalga|manele|rebetiko|laiko|sirtaki|dabke|horon|halay|folklore|folk|world folk'), fam: { pop: 0.6, party: 0.2, rock: 0.2 }, themes: ['folk'], label: 'Folk', bpm: 115 },
+  // The named folk traditions (a nation's or people's folk, folk dance, folklore): the world folk-dance set.
+  {
+    re: word(`(?:${FOLK_PEOPLES}) folk(?: music)?|celtic|polka|klezmer|balkan|folk dances?|traditional folk|traditional music|volksmusik|turbo folk|chalga|manele|rebetiko|laiko|sirtaki|dabke|horon|halay|folklore|folkloric|world folk|ethnic`),
+    fam: { pop: 0.6, party: 0.2, rock: 0.2 }, themes: ['folk'], label: 'Folk', bpm: 115,
+  },
+  // Plain "folk" (a store shelf, an infobox's "folk") is the Western singer-songwriter music: gentle, by its traits.
+  { re: word('folk music|folk'), fam: { pop: 0.7, rock: 0.4 }, calm: 0.55, soft: 0.5, bright: 'country', label: 'Folk', bpm: 105 },
   { re: word('fado|chanson|cabaret|canzone|variete|ye ye'), fam: { pop: 0.9, latin: 0.1 }, calm: 0.55, bpm: 100 },
   // --- Latin umbrella (after its dances).
   { re: word('alternativo and rock latino|rock en espanol|latin rock|rock latino'), fam: { rock: 0.7, latin: 0.5 }, label: 'Latin rock', bpm: 120 },
@@ -508,6 +560,12 @@ interface Reading {
   still: boolean;
   /** Typical stepping tempo (geometric mean of the matched entries'). */
   bpm?: number;
+  /** Every matched entry is a song form ("ballad"): see Lex.form. */
+  form: boolean;
+  /** A tradition the music has when it is bright (Lex.bright). */
+  bright?: Theme;
+  /** A bare umbrella name (BROAD_NAMES). */
+  broad: boolean;
 }
 
 /** "R&B/Soul" -> "r and b soul"; "Hip-Hop/Rap" -> "hip hop rap"; "Rock 'n' Roll" -> "rock n roll". */
@@ -550,6 +608,9 @@ export function readGenre(name: string | undefined): Reading {
   let scene: string | undefined;
   let still = true;
   let logBpm = 0, nBpm = 0;
+  let form = true;
+  let bright: Theme | undefined;
+  const broad = BROAD_NAMES.has(s.trim());
   for (const e of LEXICON) {
     e.re.lastIndex = 0;
     if (!e.re.test(s)) continue;
@@ -572,6 +633,8 @@ export function readGenre(name: string | undefined): Reading {
     if (e.scene && !scene) scene = e.scene;
     if (!e.still) still = false;
     if (e.bpm) (logBpm += Math.log2(e.bpm)), nBpm++;
+    if (!e.form) form = false;
+    if (e.bright && !bright) bright = e.bright;
   }
   const r: Reading = {
     placed,
@@ -587,6 +650,9 @@ export function readGenre(name: string | undefined): Reading {
     ...(subName ? { name: subName } : {}),
     ...(scene ? { scene } : {}),
     ...(nBpm ? { bpm: Math.round(2 ** (logBpm / nBpm)) } : {}),
+    form: placed && form,
+    ...(bright ? { bright } : {}),
+    broad: placed && broad,
   };
   READINGS.set(key, r);
   return r;
@@ -626,6 +692,16 @@ interface GenreEvidence {
   scene?: string;
   /** Typical stepping tempo of the genre names (weighted geometric mean). */
   bpm?: number;
+  /**
+   * Leading families of the names about the song itself (the tag included; album names, forms, refinements and
+   * bare umbrellas aside): a name here says the music's form in that family, so the audio does not turn it into
+   * another sub-style of the family (TRAIT_ALONE).
+   */
+  formed: Set<Family>;
+  /** Traditions the leading names give a bright song (Lex.bright). */
+  bright: Set<Theme>;
+  /** Artist genres read as a refinement of a bare umbrella, left out of the weak artist score. */
+  refined: string[];
 }
 
 /**
@@ -661,8 +737,31 @@ interface GenreEvidence {
  * The artist's genres (`artistGenres`, best first; or the single
  * `artistGenre`) are read as a list of their own and blended in at
  * ARTIST_SHARE at most (resolveSongStyle).
+ *
+ * A bare umbrella: when everything said about the song itself is the store's
+ * tag, and the tag is broad ("Alternative", "Pop", "Rock", "Folk": no dance,
+ * scene or tradition), the song level says only the family. Then the
+ * artist's and the album's names WITHIN that family (their families overlap
+ * the tag's by REFINE_OVERLAP) refine it: they join the evidence at REFINE_W
+ * of a song-level name's weight (sub-style evidence REFINE_SUB of its score),
+ * never naming the label or a scene, so the tag stays the main thing.
+ * "Alternative" + the artist's "punk" dances punk-flavoured alternative;
+ * "Country" + the artist's "hip hop" stays country (no overlap).
+ *
+ * Song forms (Lex.form: "ballad", which the lookup appends after the genres)
+ * say how the song moves: their calm, softness and tempo count wherever they
+ * are listed (as a song-level name's, an album one's beside song names), their
+ * family and label FORM_FAM, and they take no place among the genres.
  */
 const ITUNES_TIE = 0.3;
+/** Family share a refining name must have in common with the bare umbrella (alternative vs shoegaze 0.87, vs punk 0.58; pop vs synth-pop 0.65, vs R&B 0.45, vs house 0.31). */
+export const REFINE_OVERLAP = 0.5;
+/** Weight of a refining artist / album name relative to a song-level name at the same place. */
+export const REFINE_W = 0.5;
+/** Sub-style evidence of a refining name: this share of its score (punk 1 -> 0.6: opens the punk set). */
+export const REFINE_SUB = 0.6;
+/** Family and label weight of a song form beside genre names. */
+const FORM_FAM = 0.3;
 export const ITUNES_SUB = 0.4;
 /** Weight of an album-level name beside song-level ones, relative to a song-level name at the same place. */
 export const ALBUM_FAM = 0.3;
@@ -707,62 +806,103 @@ function narrowsSong(a: Reading, song: readonly Reading[]): boolean {
   return kin.length > 0 && !kin.some(isSpecific);
 }
 
-function genreEvidence(list: readonly string[] | undefined, tag: string | undefined, levels?: readonly string[]): GenreEvidence {
-  /** album: an album-level name beside song-level ones; adds: ... that narrows them (its dance, themes and focus count). */
-  const items: { r: Reading; w: number; pos: number; tag: boolean; album?: true; adds?: boolean }[] = [];
+/** Share of family mass two readings have in common (the sum of the smaller weights; both are normalised). */
+function overlap(a: Weights, b: Weights): number {
+  let o = 0;
+  for (const f of FAMILIES) o += Math.min(a[f] ?? 0, b[f] ?? 0);
+  return o;
+}
+
+function genreEvidence(list: readonly string[] | undefined, tag: string | undefined, levels?: readonly string[], artist?: readonly string[]): GenreEvidence {
+  /**
+   * album: an album-level name beside song-level ones; adds: ... that narrows them (its dance, themes and focus
+   * count); refine: an artist name refining a bare umbrella; wc: weight of its calm / softness / tempo (a form's
+   * counts wherever it is listed).
+   */
+  type Item = { r: Reading; w: number; pos: number; tag: boolean; album?: true; adds?: boolean; refine?: true; wc: number };
+  const items: Item[] = [];
   // Levels apply only when they match the list entry for entry; without them every name is song-level.
   const lv = Array.isArray(levels) && list && levels.length === list.length ? levels : undefined;
-  const read = (list ?? []).map((g, at) => ({ r: typeof g === 'string' ? readGenre(g) : null, album: lv?.[at] === 'album', at })).filter((x): x is { r: Reading; album: boolean; at: number } => !!x.r?.placed);
-  const songNames = read.filter((x) => !x.album).map((x) => x.r);
+  const read = (list ?? [])
+    .map((g, at) => ({ r: typeof g === 'string' ? readGenre(g) : null, album: lv?.[at] === 'album', at, g }))
+    .filter((x): x is { r: Reading; album: boolean; at: number; g: string } => !!x.r?.placed);
+  const songNames = read.filter((x) => !x.album && !x.r.form).map((x) => x.r);
+  const tagR = typeof tag === 'string' && tag.trim() ? readGenre(tag) : null;
+  // A bare umbrella: the song's own names say nothing beyond the store's broad tag.
+  const tagKey = tagR?.placed ? normGenre(tag!) : '';
+  const bare = !!tagR?.placed && !isSpecific(tagR) && !tagR.still && read.every((x) => x.album || x.r.form || normGenre(x.g) === tagKey);
+  const refines = (r: Reading) => bare && !r.form && !r.still && overlap(r.fam, tagR!.fam) >= REFINE_OVERLAP;
   // Positions count within a level (an album name listed among the song's own does not push them down), except
-  // that an album name narrowing the song's names keeps the place the lookup gave it among them.
+  // that an album name narrowing the song's names keeps the place the lookup gave it among them. Forms take no place.
   const posAt = (i: number) => Math.max(LIST_POS_FLOOR, 1 - 0.12 * i);
   const isAlbum = (j: number) => lv?.[j] === 'album';
+  const formAt = new Set(read.filter((x) => x.r.form).map((x) => x.at));
+  const formsOnly = read.length > 0 && read.every((x) => x.r.form);
   read.forEach(({ r, album, at }) => {
     let i = 0;
-    for (let j = 0; j < at; j++) if (isAlbum(j) === album) i++;
+    for (let j = 0; j < at; j++) if (isAlbum(j) === album && !formAt.has(j)) i++;
     let w = r.conf / (1 + 0.5 * i);
     let pos = posAt(i);
+    // A form's calm, softness and tempo count wherever it is listed; beside genres its family and label barely.
+    const wc = r.form ? r.conf * (album && songNames.length ? ALBUM_FAM : 1) : 0;
+    if (r.form && !formsOnly) (w *= FORM_FAM), (pos = 0);
     if (album && !songNames.length) {
       // Nothing is known about the song itself: its album's names are the best evidence there is.
       w *= ALBUM_ALONE;
       pos *= ALBUM_ALONE;
-      items.push({ r, w, pos, tag: false });
+      items.push({ r, w, pos, tag: false, wc: wc || w });
     } else if (album) {
-      // Beside the song's own names an album name is a weaker score; it adds a dance only where it narrows them.
-      const adds = narrowsSong(r, songNames);
-      items.push({ r, w: w * ALBUM_FAM, pos: adds ? posAt(at) : Math.min(pos, ALBUM_SUB), tag: false, album: true, adds });
-    } else items.push({ r, w, pos, tag: false });
+      // Beside the song's own names an album name is a weaker score; it adds a dance only where it narrows them
+      // (or, under a bare umbrella, refines it as the artist's names do).
+      const ref = refines(r);
+      const adds = narrowsSong(r, songNames) || (ref && isSpecific(r));
+      const wa = w * (ref ? REFINE_W : ALBUM_FAM);
+      const pa = adds ? posAt(at) * (ref && !narrowsSong(r, songNames) ? REFINE_SUB : 1) : Math.min(pos, ALBUM_SUB);
+      items.push({ r, w: wa, pos: pa, tag: false, album: true, adds, wc: wc || wa });
+    } else items.push({ r, w, pos, tag: false, wc: wc || w });
   });
   const listed = items.length > 0;
-  if (typeof tag === 'string' && tag.trim()) {
-    const r = readGenre(tag);
-    if (r.placed) items.push(listed ? { r, w: ITUNES_TIE * r.conf, pos: ITUNES_SUB, tag: true } : { r, w: r.conf, pos: r.conf, tag: true });
+  if (tagR?.placed) items.push(listed ? { r: tagR, w: ITUNES_TIE * tagR.conf, pos: ITUNES_SUB, tag: true, wc: ITUNES_TIE * tagR.conf } : { r: tagR, w: tagR.conf, pos: tagR.conf, tag: true, wc: tagR.conf });
+  // The artist's names within the bare umbrella's family refine it.
+  const refined: string[] = [];
+  if (bare && artist?.length) {
+    artist.forEach((g, i) => {
+      const r = typeof g === 'string' ? readGenre(g) : null;
+      if (!r?.placed || !refines(r)) return;
+      refined.push(g);
+      const w = (REFINE_W * r.conf) / (1 + 0.5 * i);
+      items.push({ r, w, pos: REFINE_SUB * posAt(i), tag: false, refine: true, wc: w });
+    });
   }
-  const out: GenreEvidence = { fam: null, subs: {}, themes: new Set(), focus: null, calm: null, soft: null, still: false };
+  const out: GenreEvidence = { fam: null, subs: {}, themes: new Set(), focus: null, calm: null, soft: null, still: false, formed: new Set(), bright: new Set(), refined };
   if (!items.length) return out;
   const fam: Record<string, number> = {};
   let cw = 0, cs = 0, sw = 0, ss = 0, wAll = 0, lb = 0, lw = 0;
   let labelW = -1;
   let scene: Reading | null = null;
   for (const it of items) {
-    const { r, w, pos } = it;
-    wAll += w;
+    const { r, w, pos, wc } = it;
+    wAll += Math.max(w, wc);
     for (const f of FAMILIES) if (r.fam[f]) fam[f] = (fam[f] ?? 0) + w * r.fam[f]!;
     for (const k of SUB_STYLES) if (r.subs[k]) out.subs[k] = Math.max(out.subs[k] ?? 0, r.subs[k]! * pos);
     // An album name that does not narrow the song's own names brings no tradition and no body focus.
     const own = !it.album || it.adds;
     if (own) for (const t of r.themes) out.themes.add(t);
     if (own && r.focus && !out.focus) out.focus = r.focus;
-    if (r.calm !== null) (cw += w), (cs += w * r.calm);
-    if (r.soft !== null) (sw += w), (ss += w * r.soft);
-    if (r.name && !out.name) out.name = r.name;
+    if (r.calm !== null) (cw += wc), (cs += wc * r.calm);
+    if (r.soft !== null) (sw += wc), (ss += wc * r.soft);
+    if (r.name && !out.name && !it.refine) out.name = r.name;
     const specific = isSpecific(r);
-    if (r.label && w > labelW) (labelW = w), (out.label = r.label), (out.labelSpecific = specific);
+    // A refining name never names the song: the umbrella stays the main thing.
+    if (it.refine) {
+      // (no label)
+    } else if (r.label && w > labelW) (labelW = w), (out.label = r.label), (out.labelSpecific = specific);
     // A bare umbrella first ("Pop", "Rock") and its own compound second ("Pop rock"): the compound says more.
-    else if (r.label && !it.tag && !it.album && items.indexOf(it) === 1 && out.label && r.label.length > out.label.length && r.label.toLowerCase().includes(out.label.toLowerCase())) (out.label = r.label), (out.labelSpecific = specific);
-    if (r.bpm) (lb += w * Math.log2(r.bpm)), (lw += w);
-    if (r.scene && !it.tag && !it.album && !scene) scene = r;
+    else if (r.label && !it.tag && !it.album && !r.form && items.indexOf(it) === 1 && out.label && r.label.length > out.label.length && r.label.toLowerCase().includes(out.label.toLowerCase())) (out.label = r.label), (out.labelSpecific = specific);
+    if (r.bpm) (lb += wc * Math.log2(r.bpm)), (lw += wc);
+    if (r.scene && !it.tag && !it.album && !it.refine && !scene) scene = r;
+    // A tradition of bright music comes from the leading name only (the first song name, or the tag alone).
+    if (r.bright && !it.album && !it.refine && (it.tag ? !listed : items.indexOf(it) === 0)) out.bright.add(r.bright);
   }
   out.fam = normWeights(fam);
   if (scene && out.fam) {
@@ -772,6 +912,11 @@ function genreEvidence(list: readonly string[] | undefined, tag: string | undefi
     out.labelSpecific = true;
   }
   out.still = items.every((x) => x.r.still);
+  for (const x of items) {
+    if (x.album || x.refine || x.r.form || x.r.broad) continue;
+    const f = topFamily(x.r.fam);
+    if (f) out.formed.add(f);
+  }
   if (cw > 0) {
     const neutral = 0.4;
     out.calm = neutral + (cs / cw - neutral) * Math.min(1, (cw / wAll) * 1.5);
@@ -1014,15 +1159,31 @@ const HARD_INTENSITY: readonly [number, number] = [0.7, 0.9];
  * only this much (below SUB_OPEN on its own).
  */
 const HALF_FEEL_ALONE = 0.35;
+/**
+ * The audio refines a bare umbrella, never a name that already says the form in that family: heavy guitars make
+ * "Rock" metal, not "Alternative", punk or post-punk; four-on-the-floor makes "Pop" or "Electronic" house, not
+ * 1982 disco and synth-pop (an "R&B/Soul" tag on a eurodance track says nothing of EDM's family: it may). When a
+ * song-level name (or the tag) leads with a family of the sub-style's group (SUB_GROUP) and no name gives the
+ * sub-style evidence of its own (SUB_KEEP), the audio evidence for these sub-styles counts only this much (below
+ * SUB_OPEN).
+ */
+const TRAIT_ALONE = 0.35;
+const REFINED_BY_AUDIO: ReadonlySet<SubStyle> = new Set(['metal', 'punk', 'house', 'edm', 'bass']);
+/** A bright song for the Western folk family's country floor (Lex.bright): major key, not soft, not calm. */
+const BRIGHT_MINOR = 0.4;
+const BRIGHT_SOFT = 0.5;
+const BRIGHT_CALM = 0.55;
 
 export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyle {
   const curated = song.style ?? (song.videoId ? STARTER_STYLES.get(song.videoId) : undefined);
   const traits = readTraits(priors?.traits);
   const bpm = priors?.bpm;
-  const ev = genreEvidence(Array.isArray(song.genres) ? song.genres : undefined, song.genre, Array.isArray(song.genreLevels) ? song.genreLevels : undefined);
+  const artistNames = Array.isArray(song.artistGenres) ? song.artistGenres.filter((g): g is string => typeof g === 'string') : typeof song.artistGenre === 'string' ? [song.artistGenre] : [];
+  const ev = genreEvidence(Array.isArray(song.genres) ? song.genres : undefined, song.genre, Array.isArray(song.genreLevels) ? song.genreLevels : undefined, artistNames);
   // The artist's genres: their own list (positions weigh them), blended in at ARTIST_SHARE at most below.
-  const artistList = Array.isArray(song.artistGenres) ? song.artistGenres.filter((g): g is string => typeof g === 'string') : [];
-  const artistEv = artistList.length ? genreEvidence(artistList, undefined) : typeof song.artistGenre === 'string' ? genreEvidence(undefined, song.artistGenre) : null;
+  // (Names that refined a bare umbrella are in `ev` already.)
+  const artistList = Array.isArray(song.artistGenres) ? song.artistGenres.filter((g): g is string => typeof g === 'string' && !ev.refined.includes(g)) : [];
+  const artistEv = artistList.length ? genreEvidence(artistList, undefined) : typeof song.artistGenre === 'string' && !ev.refined.length ? genreEvidence(undefined, song.artistGenre) : null;
 
   // Families: curated > genre names > traits > balanced mix.
   let families: Weights | null = null;
@@ -1062,6 +1223,7 @@ export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyl
   const intensity = traits?.intensity;
   let soft: number | undefined;
   if (intensity !== undefined) soft = (1 - ramp(intensity, SOFT_INTENSITY[0], SOFT_INTENSITY[1])) * (1 - ramp(traits?.drive ?? 0.5, SOFT_DRIVE[0], SOFT_DRIVE[1]));
+  const soundsSoft = soft;
   if (ev.soft !== null) soft = Math.max(soft ?? 0, ev.soft);
   const hard = intensity !== undefined ? ramp(intensity, HARD_INTENSITY[0], HARD_INTENSITY[1]) : undefined;
 
@@ -1076,6 +1238,7 @@ export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyl
     if ((s === 'trap' || s === 'drill') && !trapNamed) trait *= HALF_FEEL_ALONE;
     // The bass-music set's half-time bounce on a song whose names say hip-hop is the same misread (and not its floor).
     if (s === 'bass' && !word && topFamily(families) === 'hiphop') trait *= HALF_FEEL_ALONE;
+    if (REFINED_BY_AUDIO.has(s) && word < SUB_KEEP && SUB_GROUP[s].some((f) => ev.formed.has(f))) trait *= TRAIT_ALONE;
     const art = (artistEv?.subs[s] ?? 0) * ARTIST_SHARE;
     const v = 1 - (1 - word) * (1 - 0.85 * trait) * (1 - art);
     if (v >= SUB_KEEP) subs[s] = Math.round(v * 1000) / 1000;
@@ -1087,6 +1250,8 @@ export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyl
   }
 
   const themeSet = new Set<Theme>([...themesOf(curated?.themes), ...ev.themes, ...keywordThemes(song.title)]);
+  // The Western folk family on a bright song (major key, a steady unsoft beat) dances the country floor; else it stays gentle.
+  if (ev.bright.size && traits && (traits.minor ?? 1) < BRIGHT_MINOR && soundsSoft !== undefined && soundsSoft < BRIGHT_SOFT && (traits.calm ?? 1) < BRIGHT_CALM) for (const t of ev.bright) themeSet.add(t);
   const themes = THEMES.filter((t) => themeSet.has(t));
 
   let focus = normFocus(curated?.focus) ?? normFocus(ev.focus);

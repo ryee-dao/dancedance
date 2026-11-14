@@ -32,10 +32,11 @@ import { theaudiodb, theaudiodbArtist } from './sources/theaudiodb';
 import { wikidata } from './sources/wikidata';
 import { wikidataAlbum, wikidataArtist, wikipediaAlbum, wikipediaArtist } from './sources/wikimediaContext';
 import { wikipedia } from './sources/wikipedia';
+import { titleSource } from './sources/title';
 import type { GenreLevel, GenreLookup, GenreSource, LookupContext, SourceId, SourceLinks, SourceOutcome } from './types';
 
 /** The song's own sources. */
-export const SONG_SOURCES: readonly GenreSource[] = [wikipedia, wikidata, musicbrainz, theaudiodb, itunes];
+export const SONG_SOURCES: readonly GenreSource[] = [wikipedia, wikidata, musicbrainz, theaudiodb, itunes, titleSource];
 /** Its album's. */
 export const ALBUM_SOURCES: readonly GenreSource[] = [musicbrainzAlbum, wikipediaAlbum, wikidataAlbum, discogsAlbum, itunesAlbum];
 /** Its artist's (kept apart as artistGenres). */
@@ -90,6 +91,20 @@ export function recombine(sourcesSaid: Partial<Record<SourceId, SourceOutcome>>,
     ...(c.artistGenres.length ? { artistGenres: c.artistGenres } : {}),
     ...(c.moods.length ? { moods: c.moods } : {}),
   };
+}
+
+/**
+ * Recompute the combined lists of a stored result with the current rules, offline: the stored source answers,
+ * plus the answers of local sources (the title) the result lacks, as a new lookup would add them.
+ */
+export async function recombineStored(stored: Pick<GenreLookup, 'sources'>, song: SongQuery, sources: readonly GenreSource[] = DEFAULT_SOURCES): Promise<ReturnType<typeof recombine>> {
+  const said: Partial<Record<SourceId, SourceOutcome>> = { ...stored.sources };
+  for (const src of sources) {
+    if (!src.local || said[src.id]) continue;
+    const a = await src.lookup(song, undefined as never);
+    said[src.id] = { ...a, at: '' } as SourceOutcome;
+  }
+  return recombine(said, sources);
 }
 
 export async function lookupGenres(song: SongQuery, o: LookupOptions): Promise<GenreLookup> {

@@ -20,6 +20,7 @@ export type SourceId =
   | 'musicbrainz'
   | 'theaudiodb'
   | 'itunes'
+  | 'title'
   // its album
   | 'musicbrainz-album'
   | 'wikipedia-album'
@@ -98,6 +99,8 @@ export interface GenreSource {
   strictNames?: boolean;
   /** Bumped when the source starts answering differently; older stored answers are then asked again. */
   version?: number;
+  /** Answers without sending any request (the title): its answer says nothing about being online. */
+  local?: boolean;
   /** Other sources whose answers this one follows (it waits for them). */
   needs?: readonly SourceId[];
   /**
