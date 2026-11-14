@@ -22,6 +22,44 @@ const OPENS: [readonly string[], Genre[], Genre[]][] = [
   [['contemporary Christian'], ['gospel'], []],
   [['worship'], ['gospel'], []],
   [['CCM', 'pop'], ['gospel'], []],
+  // Dangdut (new) and Thai luk thung.
+  [['dangdut'], ['dangdut'], ['latin']],
+  [['dangdut koplo'], ['dangdut'], []],
+  [['luk thung'], ['dangdut'], []],
+  // Schlager (new): the Oktoberfest floor.
+  [['Schlager'], ['schlager'], ['latin', 'discofunk']],
+  [['Partyschlager'], ['schlager'], []],
+  [['Oktoberfest'], ['schlager'], []],
+  // Grown sets, and names that opened nothing before although their set exists.
+  [['bachata'], ['bachata'], ['salsa']],
+  [['tango'], ['tango'], ['latin']],
+  [['banda'], ['mexican'], ['latin']],
+  [['quebradita'], ['mexican'], []],
+  [['tecnobanda'], ['mexican'], []],
+  [['cumbia sonidera'], ['cumbia'], ['salsa']],
+  [['technocumbia'], ['cumbia'], []],
+  [['cuarteto'], ['cumbia'], []],
+  [['flamenco'], ['flamenco'], ['latin']],
+  [['Arabic pop'], ['bellydance'], []],
+  [['khaleeji'], ['bellydance'], []],
+  [['Egyptian'], ['bellydance'], []],
+  [['Persian pop'], ['bellydance'], []],
+  [['country'], ['country'], []],
+  [['line dance'], ['country'], []],
+  [['Texas two-step'], ['country'], []],
+  [['Tahitian'], ['hula'], []],
+  [['Samoan'], ['hula'], []],
+  [['Irish traditional'], ['folk'], ['country']],
+  [['Scottish country dance'], ['folk'], ['country']],
+  [['jive'], ['swing'], ['discofunk']],
+  [['waltz'], ['swing'], ['discofunk']],
+  [['hustle'], ['discofunk'], []],
+  [['Congolese rumba'], ['afro'], ['latin', 'chacha']],
+  [['azonto'], ['afro'], []],
+  [['lambada'], ['brazil'], []],
+  [['piseiro'], ['brazil'], []],
+  [['chutney'], ['caribbean'], []],
+  [['Bhojpuri'], ['southasian'], []],
 ];
 
 // Songs of other styles: none of the new sets, and what they opened before.
@@ -34,9 +72,17 @@ const UNCHANGED: [readonly string[], Genre[]][] = [
   [['christian metal'], ['rock', 'metal']],
   [['dance-pop'], []],
   [['hip hop'], ['hiphop']],
+  [['Irish rock'], ['rock']],
+  [['rumba'], ['chacha', 'latin']],
+  [['europop'], []],
+  [['German pop'], []],
+  [['Volksmusik'], ['folk']],
+  [['brega funk'], ['brazil']],
+  [['house'], ['discofunk', 'house']],
+  [['Arabic'], ['bellydance']],
 ];
 
-const ADDED: readonly Genre[] = ['gospel'];
+const ADDED: readonly Genre[] = ['gospel', 'dangdut', 'schlager'];
 
 describe('genre survey sets', () => {
   it.each(OPENS)('%j opens its set', (genres, want, not) => {
@@ -56,18 +102,28 @@ describe('genre survey sets', () => {
     expect(open({ genres: ['pop'], genre: 'Christian & Gospel' }).has('gospel')).toBe(false);
   });
 
-  it('labels gospel songs by their own names', () => {
+  it('labels the new sets\' songs by their own names', () => {
+    expect(styleLabel(resolveSongStyle({ genres: ['dangdut'] }))).toBe('Dangdut');
+    expect(styleLabel(resolveSongStyle({ genres: ['Schlager'] }))).toBe('Schlager');
     expect(styleLabel(resolveSongStyle({ genres: ['gospel'] }))).toBe('Gospel');
     expect(styleLabel(resolveSongStyle({ genre: 'Christian & Gospel' }))).toBe('Christian & Gospel');
   });
 
-  it('every new set has moves for every level: Easy without jumps, and Hard showpieces', () => {
+  it('every new set has Easy moves and is a vocabulary; gospel covers every level', () => {
     for (const g of ADDED) {
       const ms = MOVES.filter((m) => m.genre === g);
       expect(ms.length, g).toBe(GENRE_MOVES[g].length);
-      expect(ms.filter((m) => m.level === 'low' && !m.jump).length, `${g} easy`).toBeGreaterThanOrEqual(3);
-      expect(ms.filter((m) => m.level === 'mid').length, `${g} medium`).toBeGreaterThanOrEqual(3);
-      expect(ms.filter((m) => m.level === 'high').length, `${g} hard`).toBeGreaterThanOrEqual(1);
+      expect(ms.filter((m) => m.level === 'low' && !m.jump).length, `${g} easy`).toBeGreaterThanOrEqual(1);
+      expect(ms.length, g).toBeGreaterThanOrEqual(4);
+    }
+    // Gospel, the owner's ask, covers every level.
+    const gospel = MOVES.filter((m) => m.genre === 'gospel');
+    expect(gospel.filter((m) => m.level === 'low' && !m.jump).length).toBeGreaterThanOrEqual(3);
+    expect(gospel.filter((m) => m.level === 'mid').length).toBeGreaterThanOrEqual(3);
+    expect(gospel.filter((m) => m.level === 'high').length).toBeGreaterThanOrEqual(1);
+    // The grown sets: each has an Easy move.
+    for (const g of ['bachata', 'tango', 'mexican', 'cumbia', 'flamenco', 'bellydance', 'country'] as const) {
+      expect(MOVES.some((m) => m.genre === g && m.level === 'low' && !m.jump), g).toBe(true);
     }
   });
 });

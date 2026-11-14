@@ -309,10 +309,10 @@ const LEXICON: readonly Lex[] = [
   { re: word('moombahton'), fam: { latin: 0.6, aerobic: 0.4 }, sub: { reggaeton: 0.6 }, focus: HIPS, bpm: 108 },
   { re: word('baile funk|funk carioca|brazilian funk|funk brasileiro|funk ostentacao|brega funk|brazilian phonk'), fam: { latin: 0.8, hiphop: 0.4 }, sub: { brazil: 1 }, focus: HIPS, label: 'Baile funk', bpm: 130 },
   { re: word('bossa nova'), fam: { latin: 0.8, pop: 0.3 }, sub: { brazil: 0.8 }, calm: 0.7, soft: 0.8, label: 'Bossa nova', bpm: 70 },
-  { re: word('samba|axe|pagode|sertanejo|forro|frevo|mpb|musica popular brasileira|choro|brazilian|brasil'), fam: { latin: 1, pop: 0.2 }, sub: { brazil: 1 }, focus: { hips: 1.4 }, bpm: 105 },
+  { re: word('samba|axe|pagode|sertanejo|forro|piseiro|xote|xaxado|baiao|arrocha|brega|tecnobrega|lambada|carimbo|maracatu|afoxe|frevo|mpb|musica popular brasileira|choro|brazilian|brasil'), fam: { latin: 1, pop: 0.2 }, sub: { brazil: 1 }, focus: { hips: 1.4 }, bpm: 105 },
   { re: word('bachata urbana|bachata sensual|bachata romantica|bachata'), fam: { latin: 1, pop: 0.3 }, sub: { bachata: 1 }, focus: { hips: 1.4 }, soft: 0.5, label: 'Bachata', bpm: 128 },
   { re: word('merengue tipico|merengue|perico ripiao|mambo dominicano'), fam: { latin: 1, pop: 0.2 }, sub: { merengue: 1 }, focus: { hips: 1.4 }, label: 'Merengue', bpm: 140 },
-  { re: word('cumbia villera|cumbia sonidera|cumbia andina|tecnocumbia|cumbia|chicha|porro|champeta'), fam: { latin: 1, pop: 0.2 }, sub: { cumbia: 1 }, focus: { hips: 1.4 }, label: 'Cumbia', bpm: 95 },
+  { re: word('cumbia villera|cumbia sonidera|cumbia andina|tecnocumbia|technocumbia|cuarteto|cumbia|chicha|porro|champeta'), fam: { latin: 1, pop: 0.2 }, sub: { cumbia: 1 }, focus: { hips: 1.4 }, label: 'Cumbia', bpm: 95 },
   { re: word('vallenato'), fam: { latin: 1, pop: 0.3 }, sub: { cumbia: 0.7 }, focus: HIPS, label: 'Vallenato', bpm: 110 },
   { re: word('latin jazz|afro cuban jazz|afro cuban'), fam: { latin: 0.8, funk: 0.4 }, sub: { salsa: 0.6 }, themes: ['swing'], bpm: 160 },
   { re: word('salsa y tropical'), fam: { latin: 1, pop: 0.2 }, sub: { salsa: 0.6 }, focus: { hips: 1.4 }, label: 'Salsa', bpm: 170 },
@@ -320,22 +320,23 @@ const LEXICON: readonly Lex[] = [
   { re: word('son cubano|son montuno|guaracha|mambo|guajira'), fam: { latin: 1, pop: 0.2 }, sub: { salsa: 0.9 }, focus: { hips: 1.4 }, bpm: 180 },
   { re: word('rumba flamenca|rumba catalana|flamenco pop|nuevo flamenco|flamenco|sevillanas|bulerias|copla|paso doble|pasodoble'), fam: { latin: 0.8, pop: 0.2 }, sub: { flamenco: 1 }, label: 'Flamenco', bpm: 120 },
   { re: word('cha cha cha|cha cha|chachacha|danzon|latin ballroom|ballroom|cucaracha'), fam: { latin: 1, pop: 0.2 }, sub: { chacha: 1 }, focus: { hips: 1.4 }, label: 'Cha-cha', bpm: 122 },
+  { re: word('congolese rumba|rumba congolaise|rumba congolese|rumba lingala|soukous'), fam: { latin: 0.5, hiphop: 0.5, pop: 0.4 }, themes: ['afro'], focus: HIPS, label: 'Congolese rumba', bpm: 110 },
   { re: word('rumba'), fam: { latin: 1, pop: 0.2 }, sub: { chacha: 0.7, salsa: 0.4 }, focus: { hips: 1.4 }, label: 'Rumba', bpm: 110 },
   { re: word('nuevo tango|tango nuevo|electrotango|electro tango|tango|milonga'), fam: { latin: 0.8, pop: 0.3 }, sub: { tango: 1 }, label: 'Tango', bpm: 118 },
   { re: word('corridos tumbados|corrido tumbado|corridos belicos'), fam: { latin: 0.9, hiphop: 0.3 }, sub: { mexican: 0.8 }, label: 'Corridos tumbados', bpm: 110 },
-  { re: word('regional mexican|regional mexicano|musica mexicana|mariachi|norteno|nortena|banda sinaloense|banda|corridos|corrido|ranchera|grupera|duranguense|huapango|son jarocho|tejano|tex mex|folklorico|jarabe tapatio|jarabe|hat dance'), fam: { latin: 0.9, pop: 0.2 }, sub: { mexican: 1 }, label: 'Regional Mexican', bpm: 120 },
+  { re: word('regional mexican|regional mexicano|musica mexicana|mariachi|norteno|nortena|banda sinaloense|banda|corridos|corrido|ranchera|grupera|duranguense|huapango|son huasteco|son jarocho|chilena|quebradita|tecnobanda|technobanda|tejano|tex mex|folklorico|jarabe tapatio|jarabe|hat dance'), fam: { latin: 0.9, pop: 0.2 }, sub: { mexican: 1 }, label: 'Regional Mexican', bpm: 120 },
   { re: word('bolero|latin ballad|balada|baladas y boleros|baladas'), fam: { latin: 0.8, pop: 0.4 }, calm: 0.65, soft: 0.7, label: 'Bolero', bpm: 80 },
   { re: word('tropical music|musica tropical|tropical(?! house)'), fam: { latin: 1, pop: 0.2 }, focus: { hips: 1.4 }, label: 'Tropical', bpm: 110 },
   // --- Africa and the Caribbean.
   { re: word('amapiano|gqom|kwaito|south african house'), fam: { latin: 0.5, hiphop: 0.5, pop: 0.3 }, sub: { amapiano: 1 }, themes: ['afro', 'amapiano'], focus: HIPS, label: 'Amapiano', bpm: 112 },
   { re: word('afro house|afro tech'), fam: { aerobic: 0.4, latin: 0.4, disco: 0.3 }, sub: { house: 0.7 }, themes: ['afro'], focus: HIPS, bpm: 122 },
-  { re: word('afrobeats?|afro beats?|afro pop|afropop|afro fusion|afrofusion|afroswing|afro swing|afro trap|highlife|naija|alte|bongo flava|gengetone|coupe decale|kuduro|kizomba|semba|soukous|ndombolo|makossa|mbalax|juju|fuji|afro|african|africa'), fam: { latin: 0.5, hiphop: 0.5, pop: 0.4 }, themes: ['afro'], focus: HIPS, bpm: 105 },
+  { re: word('afrobeats?|afro beats?|afro pop|afropop|afro fusion|afrofusion|afroswing|afro swing|afro trap|highlife|naija|alte|bongo flava|gengetone|coupe decale|kuduro|kizomba|semba|soukous|ndombolo|makossa|mbalax|juju|fuji|azonto|hiplife|zouglou|mapouka|bikutsi|kwassa kwassa|singeli|benga|mbaqanga|maskandi|batida|afro|african|africa'), fam: { latin: 0.5, hiphop: 0.5, pop: 0.4 }, themes: ['afro'], focus: HIPS, bpm: 105 },
   { re: word('reggae fusion|dancehall|modern dancehall|ragga|raggamuffin'), fam: { latin: 0.5, hiphop: 0.4, pop: 0.3 }, themes: ['dancehall'], focus: HIPS, label: 'Dancehall', bpm: 98 },
   { re: word('ska punk|skacore|third wave ska'), fam: { rock: 1, pop: 0.2 }, sub: { punk: 1 }, bpm: 160 },
   { re: word('ska|rocksteady'), fam: { rock: 0.5, latin: 0.3, pop: 0.3 }, sub: { punk: 0.5 }, themes: ['reggae'], label: 'Ska', bpm: 140 },
   { re: word('lovers rock'), fam: { latin: 0.5, hiphop: 0.3, pop: 0.4 }, themes: ['reggae'], focus: HIPS, soft: 0.7, label: 'Reggae', bpm: 75 },
   { re: word('reggae|roots reggae|dub'), fam: { latin: 0.5, hiphop: 0.4, pop: 0.3 }, themes: ['reggae'], focus: HIPS, label: 'Reggae', bpm: 85 },
-  { re: word('soca|calypso|zouk|kompa|compas|bouyon|caribbean'), fam: { latin: 0.5, hiphop: 0.3, pop: 0.3 }, themes: ['soca'], focus: HIPS, bpm: 115 },
+  { re: word('soca|chutney soca|chutney|calypso|zouk|kompa|compas|bouyon|mento|steelpan|steel pan|steel band|caribbean'), fam: { latin: 0.5, hiphop: 0.3, pop: 0.3 }, themes: ['soca'], focus: HIPS, bpm: 115 },
   // --- Metal, punk and their kin.
   { re: word('nu metal|rap metal|rapcore'), fam: { rock: 1, hiphop: 0.3 }, sub: { metal: 0.9 }, bpm: 100 },
   { re: word('rap rock'), fam: { rock: 0.8, hiphop: 0.5 }, sub: { metal: 0.45 }, bpm: 100 },
@@ -393,7 +394,7 @@ const LEXICON: readonly Lex[] = [
   { re: word('christian and gospel|christian|worship|praise and worship|ccm|inspirational|contemporary christian|spirituals'), fam: { pop: 0.7, funk: 0.2 }, sub: { gospel: 0.6 }, calm: 0.5, label: 'Gospel', bpm: 100 },
   // --- Disco, soul, R&B, funk.
   { re: word('post disco|boogie(?! woogie)'), fam: { disco: 0.8, funk: 0.6 }, bpm: 115 },
-  { re: word('nu disco|italo disco|euro disco|disco'), fam: { disco: 1, funk: 0.3 }, label: 'Disco', bpm: 118 },
+  { re: word('nu disco|italo disco|euro disco|hustle|disco'), fam: { disco: 1, funk: 0.3 }, label: 'Disco', bpm: 118 },
   { re: word('new jack swing'), fam: { hiphop: 0.6, funk: 0.6, pop: 0.3 }, sub: { rnb: 0.7 }, bpm: 105 },
   { re: word('quiet storm|slow jam'), fam: { funk: 0.5, pop: 0.5, hiphop: 0.3 }, sub: { rnb: 0.8 }, calm: 0.68, soft: 0.7, bpm: 70 },
   { re: word('contemporary r and b|alternative r and b|r and b|rhythm and blues|rnb|neo soul|urban contemporary|urban(?! cowboy)'), fam: { funk: 0.6, hiphop: 0.4, pop: 0.4, disco: 0.1 }, sub: { rnb: 1 }, label: 'R&B', bpm: 90 },
@@ -418,9 +419,10 @@ const LEXICON: readonly Lex[] = [
     fam: { hiphop: 1, pop: 0.2, funk: 0.1 }, label: 'Hip-hop', bpm: 92,
   },
   // --- Country and folk.
+  { re: word('scottish country dance|scottish country|english country dance|english country|ceilidh|irish traditional|irish trad|scottish traditional|celtic traditional'), fam: { pop: 0.6, party: 0.2, rock: 0.2 }, themes: ['folk'], bpm: 115 },
   { re: word('country pop|bro country|pop country'), fam: { pop: 0.7, rock: 0.3, aerobic: 0.2 }, themes: ['country'], label: 'Country pop', bpm: 115 },
   { re: word('cajun|zydeco'), fam: { pop: 0.5, rock: 0.3, party: 0.2 }, themes: ['country'], bpm: 120 },
-  { re: word('country(?! blues)|americana|bluegrass|honky tonk|outlaw country|alt country|western swing|western|red dirt|texas country|cowpunk|nashville sound|urban cowboy'), fam: { pop: 0.6, rock: 0.4, aerobic: 0.2 }, themes: ['country'], label: 'Country', bpm: 110 },
+  { re: word('country(?! blues)|americana|bluegrass|honky tonk|outlaw country|alt country|western swing|western|red dirt|texas country|cowpunk|nashville sound|urban cowboy|line dance|line dancing|texas two step|square dance|appalachian|clogging|mountain music'), fam: { pop: 0.6, rock: 0.4, aerobic: 0.2 }, themes: ['country'], label: 'Country', bpm: 110 },
   // --- Ballads and the gentle.
   { re: word('piano ballad|ballad|ballads|torch song|lullaby|lullabies|lullabye'), fam: { pop: 0.8, rock: 0.2 }, calm: 0.85, soft: 0.8, label: 'Ballad', bpm: 70 },
   { re: word('singer songwriter|acoustic(?! blues)|unplugged'), fam: { pop: 0.9, rock: 0.2 }, calm: 0.6, soft: 0.6, label: 'Singer-songwriter', bpm: 95 },
@@ -429,6 +431,8 @@ const LEXICON: readonly Lex[] = [
   { re: word('electro swing'), fam: { funk: 0.5, aerobic: 0.4, disco: 0.3 }, themes: ['swing'], bpm: 125 },
   { re: word('free jazz|avant garde jazz|avant garde|experimental'), fam: STILL, calm: 0.5, conf: 0.5, bpm: 90 },
   { re: word('jump blues|boogie woogie'), fam: { funk: 0.5, rock: 0.3, pop: 0.2 }, themes: ['swing'], bpm: 150 },
+  // The ballroom swing and standard dances: the swing set has the jive / Charleston kicks and the waltz steps.
+  { re: word('jive|charleston|foxtrot|quickstep|viennese waltz|waltz'), fam: { pop: 0.7, funk: 0.2, rock: 0.1 }, themes: ['swing'], bpm: 120 },
   { re: word('jazz|swing|big band|lindy hop|bebop|hard bop|dixieland|trad jazz|ragtime|stride'), fam: { funk: 0.6, pop: 0.3, rock: 0.2 }, themes: ['swing'], label: 'Jazz', bpm: 135 },
   { re: word('blues rock|electric blues|chicago blues|texas blues|british blues|modern blues|contemporary blues'), fam: { rock: 0.7, funk: 0.4 }, bpm: 115 },
   { re: word('delta blues|country blues|acoustic blues|piedmont blues|folk blues|classic blues'), fam: { funk: 0.5, pop: 0.3, rock: 0.2 }, sub: { rnb: 0.4 }, calm: 0.5, soft: 0.5, bpm: 90 },
@@ -438,11 +442,13 @@ const LEXICON: readonly Lex[] = [
   { re: word('bhangra|punjabi'), fam: { pop: 0.6, hiphop: 0.4, aerobic: 0.3 }, themes: ['bhangra', 'bollywood'], label: 'Bhangra', bpm: 110 },
   { re: word('garba|dandiya|gujarati'), fam: { pop: 0.7, latin: 0.3 }, themes: ['garba', 'bollywood'], label: 'Garba', bpm: 120 },
   { re: word('indian classical|carnatic|carnatic classical|hindustani|hindustani classical|ghazals?|bhajan|devotional and spiritual|devotional|kirtan'), fam: STILL, calm: 0.7, still: true, bpm: 75 },
-  { re: word('bollywood|filmi|indian pop|indipop|indian|hindi|desi|tollywood|kollywood|tamil|telugu|malayalam|kannada|regional indian'), fam: { pop: 0.7, latin: 0.3, disco: 0.2 }, themes: ['bollywood'], bpm: 110 },
+  { re: word('bollywood|filmi|indian pop|indipop|indian|hindi|desi|tollywood|kollywood|tamil|telugu|malayalam|kannada|regional indian|bhojpuri|haryanvi|marathi|lavani|lollywood|pashto'), fam: { pop: 0.7, latin: 0.3, disco: 0.2 }, themes: ['bollywood'], bpm: 110 },
   { re: word('qawwali|sufi'), fam: { pop: 0.6, latin: 0.2 }, themes: ['bollywood'], calm: 0.5, bpm: 100 },
-  { re: word('arabic pop|arabic|arab|middle eastern|middle east|khaleeji|levant|maghreb|raqs|belly dance|bellydance|arabesque|mahraganat|shaabi|chaabi|rai|mizrahi|turkish pop|turkish'), fam: { pop: 0.7, latin: 0.3 }, themes: ['bellydance'], bpm: 105 },
-  { re: word('dangdut|koplo|joget'), fam: { pop: 0.7, latin: 0.3 }, focus: HIPS, label: 'Dangdut', bpm: 120 },
-  { re: word('hawaiian|hapa haole|hula|polynesian|hawaii'), fam: { pop: 0.7, latin: 0.2 }, themes: ['hula'], label: 'Hawaiian', bpm: 95 },
+  { re: word('arabic pop|arabic|arab|middle eastern|middle east|khaleeji|levant|maghreb|raqs|belly dance|bellydance|arabesque|mahraganat|shaabi|chaabi|rai|mizrahi|turkish pop|turkish|egyptian|lebanese|moroccan|algerian|tunisian|arabesk|persian pop|persian|iranian|bandari'), fam: { pop: 0.7, latin: 0.3 }, themes: ['bellydance'], bpm: 105 },
+  { re: word('dangdut|koplo|joget'), fam: { pop: 0.7, latin: 0.3 }, sub: { dangdut: 1 }, focus: HIPS, label: 'Dangdut', bpm: 120 },
+  // Thai luk thung and mor lam: a party dance close to the joget (sway, soft hands); less firmly the same floor.
+  { re: word('luk thung|look thung|luk thoong|mor lam|molam|lam sing'), fam: { pop: 0.8, latin: 0.2 }, sub: { dangdut: 0.6 }, focus: HIPS, bpm: 120 },
+  { re: word('hawaiian|hapa haole|hula|polynesian|hawaii|tahitian|otea|aparima|samoan|siva|tongan|fijian|pacific islands?'), fam: { pop: 0.7, latin: 0.2 }, themes: ['hula'], label: 'Hawaiian', bpm: 95 },
   { re: word('capoeira'), fam: { latin: 0.8 }, themes: ['capoeira'], label: 'Capoeira', bpm: 110 },
   { re: word('celtic|irish folk|polka|klezmer|balkan|folk dance|traditional folk|volksmusik|german folk|turbo folk|chalga|manele|rebetiko|laiko|sirtaki|dabke|horon|halay|folklore|folk|world folk'), fam: { pop: 0.6, party: 0.2, rock: 0.2 }, themes: ['folk'], label: 'Folk', bpm: 115 },
   { re: word('fado|chanson|cabaret|canzone|variete|ye ye'), fam: { pop: 0.9, latin: 0.1 }, calm: 0.55, bpm: 100 },
@@ -465,7 +471,9 @@ const LEXICON: readonly Lex[] = [
   { re: word('vocal'), fam: { pop: 1, funk: 0.1 }, calm: 0.6, soft: 0.5, label: 'Vocal standards', fixed: true, bpm: 105 },
   { re: word('easy listening|adult contemporary|traditional pop|vocal pop|vocal standards|lounge|exotica|space age pop'), fam: { pop: 1, funk: 0.1 }, calm: 0.6, soft: 0.5, bpm: 100 },
   { re: word('instrumental'), fam: { pop: 0.8 }, calm: 0.6, conf: 0.5, label: 'Instrumental', bpm: 100 },
-  { re: word('schlager|europop|french pop|german pop|italian pop|greek|afrikaans'), fam: { pop: 0.7, latin: 0.3, disco: 0.2 }, bpm: 120 },
+  // Party Schlager, Oktoberfest and apres-ski: the beer-hall floor (schunkeln, the toast, the polka from folk).
+  { re: word('partyschlager|party schlager|schlager|oktoberfest|ballermann|apres ski|stimmungsmusik|volkstumliche musik|discofox'), fam: { pop: 0.7, latin: 0.3, disco: 0.2 }, sub: { schlager: 1 }, label: 'Schlager', bpm: 120 },
+  { re: word('europop|french pop|german pop|italian pop|greek|afrikaans'), fam: { pop: 0.7, latin: 0.3, disco: 0.2 }, bpm: 120 },
   { re: word('world music|worldbeat|world|worldwide|international'), fam: { pop: 0.6, latin: 0.3, disco: 0.2 }, conf: 0.5, label: 'World music', fixed: true, bpm: 110 },
   { re: word('chinese|japanese|thai|indonesian|malaysian|filipino|opm|original pilipino music|vietnamese'), fam: { pop: 0.8, kpop: 0.3 }, conf: 0.6, bpm: 110 },
   { re: word('teen pop|bubblegum pop|bubblegum|pop'), fam: { pop: 1, hiphop: 0.15, disco: 0.1 }, label: 'Pop', bpm: 112 },
@@ -791,7 +799,7 @@ const SUB_GROUP: Readonly<Record<SubStyle, readonly Family[]>> = {
   house: ['disco', 'aerobic', 'pop'], edm: ['aerobic', 'pop', 'disco'], bass: ['aerobic', 'hiphop'],
   reggaeton: ['latin', 'hiphop'], brazil: ['latin'], amapiano: ['latin', 'hiphop'], lyrical: [...FAMILIES],
   salsa: ['latin'], merengue: ['latin'], cumbia: ['latin'], bachata: ['latin'], chacha: ['latin'], flamenco: ['latin'], tango: ['latin'], mexican: ['latin'],
-  gospel: ['pop', 'funk'],
+  gospel: ['pop', 'funk'], dangdut: ['pop', 'latin'], schlager: ['pop', 'party'],
 };
 
 /** The strongest family of a mix. */
@@ -1029,7 +1037,7 @@ const SUB_HEAD: Readonly<Record<SubStyle, string | null>> = {
   metal: 'Rock', punk: 'Rock', trap: 'Hip-hop', drill: 'Hip-hop', rnb: null, house: 'Electronic', edm: 'Electronic', bass: 'Electronic',
   reggaeton: 'Latin', brazil: 'Latin', amapiano: 'Afro', lyrical: null,
   salsa: null, merengue: null, cumbia: null, bachata: null, chacha: null, flamenco: null, tango: null, mexican: null,
-  gospel: null,
+  gospel: null, dangdut: null, schlager: null,
 };
 
 /** A family as a music style name: "Dance", not "Aerobics" (families say how a song is danced, the label what it is). */

@@ -520,3 +520,16 @@ Misroutes:
 - "Sertanejo" → brazil (samba/funk set; country-style two-step fits better)
 - "Kizomba" / "Semba" → afro, hiphop (street dance and hip-hop for a smooth couple walk)
 - "Zouk" / "Kompa" → caribbean (dancehall moves for a slow sway)
+
+## What the first round did (2026-11-14, same branch)
+
+In priority order; ids in `src/core/choreo/genreSets/variety.ts`.
+
+- **Gospel / praise** (new set, 11 moves, `families/gospel.ts`): choir step & clap, choir two-step, raised-hand praise, lifted hands sway, point to heaven, handkerchief wave, tambourine praise, bow & rise, praise shout, shout hop, step-team stomp & clap. Opened by gospel names (1.0), southern gospel (0.8), worship / CCM / Christian (0.6).
+- **Country** (23 -> 27, `families/country2.ts`): heel splits, rolling vine, slappin' leather, rubboard scratch (zydeco). The general line-dance steps (kick ball change, jazz square, heel jack, hip bump, heel swivel) were already global moves.
+- **Bachata** (2 -> 7) and **tango** (1 -> 7) (`families/latin2.ts`).
+- **Regional Mexican** (2 -> 8) and **cumbia** (4 -> 10) (`families/mexican.ts`), **flamenco** (4 -> 7, `families/flamenco.ts`), **belly dance** (3 -> 10, `families/world2.ts`).
+- **Dangdut** (new, 4) and **Schlager** (new, 4) (`families/world3.ts`).
+- **Resolver fixes** from the list above: quebradita, tecnobanda, technocumbia, cuarteto, line dance, Texas two-step, square dance, Appalachian, clogging, Tahitian, Samoan, Tongan, Fijian, Egyptian, Lebanese, Moroccan, Algerian, Persian pop, Bandari, lambada, piseiro, xote, arrocha, brega, azonto, hiplife, zouglou, coupé-décalé kin (mapouka, bikutsi, kwassa kwassa, singeli, benga, mbaqanga, maskandi, batida), chutney, mento, steelpan, Bhojpuri, Haryanvi, Marathi, lavani, Lollywood, Pashto, Irish / Scottish traditional, ceilidh, jive, Charleston, waltz, foxtrot, quickstep, hustle; misroutes fixed: Congolese rumba -> afro, Scottish / English country dance -> folk. Over the reviewed vocabulary (`genreVocab.testutil.ts`, ~530 names) only the gospel, dangdut and Schlager names open anything different from before.
+
+Still open from the top 15: salsa shines, house / UK garage footwork, amapiano, EDM shuffle variants, reggaeton / dembow, Persian dance of its own, Discofox (a three-beat pattern over 4/4 the figure can't count), and the Pacific / Ethiopian / wotagei / stepping rows.

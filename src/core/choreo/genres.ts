@@ -65,24 +65,24 @@ export type Genre =
   // The Latin dances (songStyle.ts scores them from genre names).
   | 'salsa' | 'merengue' | 'cumbia' | 'bachata' | 'chacha' | 'flamenco' | 'tango' | 'mexican'
   // Added in the genre survey (Nov 2026, tools/eval/data/genre-dance-survey.md).
-  | 'gospel';
+  | 'gospel' | 'dangdut' | 'schlager';
 
 export const GENRES: readonly Genre[] = [
   'rock', 'hiphop', 'latin', 'discofunk', 'kpop', 'country', 'swing', 'afro', 'caribbean', 'southasian', 'folk', 'bellydance', 'hula', 'capoeira',
   'metal', 'punk', 'trap', 'drill', 'rnb', 'house', 'edm', 'bass', 'reggaeton', 'brazil', 'amapiano', 'lyrical',
   'salsa', 'merengue', 'cumbia', 'bachata', 'chacha', 'flamenco', 'tango', 'mexican',
-  'gospel',
+  'gospel', 'dangdut', 'schlager',
 ];
 
 /** The sub-style genres: opened by a song style's sub-style scores (SongStyle.subs), not by families or themes. */
 export type SubStyle =
   | 'metal' | 'punk' | 'trap' | 'drill' | 'rnb' | 'house' | 'edm' | 'bass' | 'reggaeton' | 'brazil' | 'amapiano' | 'lyrical'
   | 'salsa' | 'merengue' | 'cumbia' | 'bachata' | 'chacha' | 'flamenco' | 'tango' | 'mexican'
-  | 'gospel';
+  | 'gospel' | 'dangdut' | 'schlager';
 export const SUB_STYLES: readonly SubStyle[] = [
   'metal', 'punk', 'trap', 'drill', 'rnb', 'house', 'edm', 'bass', 'reggaeton', 'brazil', 'amapiano', 'lyrical',
   'salsa', 'merengue', 'cumbia', 'bachata', 'chacha', 'flamenco', 'tango', 'mexican',
-  'gospel',
+  'gospel', 'dangdut', 'schlager',
 ];
 /** The Latin dances among the sub-styles: a song's leading one favours the moves named for it (generator.ts danceOf). */
 export const LATIN_DANCES: readonly SubStyle[] = ['salsa', 'merengue', 'cumbia', 'bachata', 'chacha', 'flamenco', 'tango', 'mexican'];
@@ -127,6 +127,8 @@ export const GENRE_LABEL: Readonly<Record<Genre, string>> = {
   tango: 'Tango',
   mexican: 'Regional Mexican',
   gospel: 'Gospel & praise',
+  dangdut: 'Dangdut & Southeast Asian pop',
+  schlager: 'Schlager & Oktoberfest',
 };
 
 export function isGenre(v: unknown): v is Genre {
@@ -204,6 +206,10 @@ export const SUB_INFO: Readonly<Record<SubStyle, SubInfo>> = {
   // Gospel and praise (families/gospel.ts): the choir step and claps, raised-hand praise, the praise-break
   // shout, step-team stomps. No group of its own (its families are pop / soul); borrows soul and R&B grooves. [11]
   gospel: { parent: null, withParent: false, replaces: null },
+  // Dangdut / koplo and luk thung (families/world3.ts): joget sway, goyang. No group; borrows belly dance and Bollywood. [4]
+  dangdut: { parent: null, withParent: false, replaces: null },
+  // Party Schlager / Oktoberfest (families/world3.ts): schunkeln, the toast, bird-dance figures; folk lends the polka. [4]
+  schlager: { parent: null, withParent: false, replaces: null },
 };
 
 // ---------------------------------------------------------------------------
@@ -278,6 +284,11 @@ export interface Neighbour {
  *             camel walk and boogaloo of a soul-gospel floor; the families keep
  *             the disco points out), and on a calm song lyrical (a worship
  *             ballad's reaches and slow turns, as liturgical praise dance does).
+ *   dangdut   belly dance (dangdut grew out of Arabic and Indian film music:
+ *             the hip accents and the soft arms), Bollywood (the film-song
+ *             hand gestures and sways).
+ *   schlager  folk (the polka, the Schuhplattler, the hora: the Oktoberfest
+ *             floor), country (line-dance steps, danced to Schlager too).
  * Lyrical lends but never borrows; the big groups and traditions don't
  * borrow (the small traditions have no style close enough to lend).
  */
@@ -302,6 +313,8 @@ export const NEIGHBOURS: Readonly<Partial<Record<Genre, readonly Neighbour[]>>> 
   tango: [{ from: 'flamenco', w: 0.5 }, { from: 'lyrical', w: 0.4, slow: true }],
   mexican: [{ from: 'cumbia', w: 0.7 }, { from: 'folk', w: 0.45 }, { from: 'country', w: 0.4 }],
   gospel: [{ from: 'rnb', w: 0.6 }, { from: 'discofunk', w: 0.5 }, { from: 'lyrical', w: 0.6, slow: true }],
+  dangdut: [{ from: 'bellydance', w: 0.6 }, { from: 'southasian', w: 0.5 }],
+  schlager: [{ from: 'folk', w: 0.7 }, { from: 'country', w: 0.3 }],
 };
 
 /** Calm from which a `slow` neighbour lends (where the lyrical score starts, songStyle.ts). */
@@ -369,7 +382,7 @@ export const CALM_TOLERANCE: Readonly<Record<Genre, number>> = {
   country: 0.6, swing: 0.65, afro: 0.6, amapiano: 0.65, caribbean: 0.65, southasian: 0.65, folk: 0.6,
   bellydance: 0.75, hula: 0.9, capoeira: 0.45, lyrical: 2,
   salsa: 0.6, merengue: 0.6, cumbia: 0.65, bachata: 0.75, chacha: 0.65, flamenco: 0.55, tango: 0.65, mexican: 0.6,
-  gospel: 0.75,
+  gospel: 0.75, dangdut: 0.65, schlager: 0.6,
 };
 /** Openness below which the calm closes a set. */
 export const CALM_CLOSED = 0.3;
@@ -650,6 +663,8 @@ const RAW: Readonly<Record<Genre, string>> = {
   mexican: `folklorico-skirt hat-dance-heels`,
   // Sets added in the genre survey: ids in genreSets/variety.ts.
   gospel: ``,
+  dangdut: ``,
+  schlager: ``,
 };
 
 /** genreSets/*.ts: id lists by genre, added after RAW's. */

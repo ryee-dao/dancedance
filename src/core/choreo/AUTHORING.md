@@ -25,7 +25,7 @@ afro, Caribbean, South Asian, folk, belly dance, hula, capoeira, and the
 sub-style sets metal, punk, trap, drill, R&B, house, EDM, bass music,
 reggaeton, Brazilian, amapiano, lyrical, the Latin dances salsa,
 merengue, cumbia, bachata, cha-cha, flamenco, tango, regional Mexican, and
-gospel (see "Genre sets" below; the sets added or grown in the genre survey,
+gospel, dangdut and Schlager (see "Genre sets" below; the sets added or grown in the genre survey,
 `tools/eval/data/genre-dance-survey.md`, list their ids in
 `genreSets/variety.ts`). A genre-exclusive move is only
 used on songs whose style opens that genre (`songGenres`: the style's
@@ -175,6 +175,8 @@ borrow needs a `NEIGHBOURS` entry with the dance reason next to it.
 | `mexican` | folklórico skirt, hat dance heels, zapateado, huapango campanas, puntas, remate, the banda caballito, quebradita hop | regional Mexican, banda, norteño, mariachi, corridos, Tejano, quebradita, tecnobanda | closes Latin; borrows cumbia, folk (polka), country | `genres.ts` RAW, `genreSets/variety.ts` |
 | `merengue`, `chacha` | (their steps are Latin's) | merengue; cha-cha, danzón, rumba, ballroom | open Latin; NAMED_DANCE favours their moves | - |
 | `gospel` | choir step and clap, choir two-step, raised-hand praise, lifted hands, point to heaven, handkerchief wave, tambourine, bow and rise, the praise-break shout and shout hops, step-team stomps | gospel (traditional, urban contemporary, southern), worship, CCM, contemporary Christian, the iTunes "Christian & Gospel" tag; "Christian rock / metal / hip hop" read as their second word | none; borrows R&B, soul / funk grooves, lyrical (calm) | `genreSets/variety.ts` |
+| `dangdut` | joget sway (soft hand rolls, pointing fingers), goyang gergaji (the saw), dribble shake, broken hip hits (patah-patah) | dangdut, koplo, joget; Thai luk thung / mor lam at 0.6 | none; borrows belly dance, Bollywood | `genreSets/variety.ts` |
+| `schlager` | schunkeln (arm-in-arm sway), the stein toast, bird-dance beak snaps and wing flaps (figures, never the routine) | Schlager, party Schlager, Oktoberfest, apres-ski, Stimmungsmusik, Discofox | none; borrows folk (the polka), country | `genreSets/variety.ts` |
 
 Belly dance (the tradition set every Arabic, Turkish, raï, shaabi,
 khaleeji and mizrahi name opens) grew in the genre survey from 3 to 10:

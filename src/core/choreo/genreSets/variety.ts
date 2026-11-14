@@ -17,6 +17,14 @@
  *             cross steps, the double tap (families/latin2.ts).
  *   tango     (grown) forward ochos, the boleo, the cruzada, the lunge, the
  *             caricia, the molinete (families/latin2.ts).
+ *   mexican, cumbia (grown, families/mexican.ts), flamenco (grown,
+ *             families/flamenco.ts), bellydance (grown, families/world2.ts).
+ *   dangdut   (new) the joget sway and the goyang: saw, dribble, broken hip
+ *             hits; opened by dangdut / koplo / joget, and less firmly by
+ *             Thai luk thung / mor lam (families/world3.ts).
+ *   schlager  (new) schunkeln, the stein toast, the bird-dance beak snaps and
+ *             wing flaps; opened by Schlager, Oktoberfest, apres-ski, party
+ *             Schlager names; folk lends the polka (families/world3.ts).
  */
 
 export const moves: Partial<Record<string, string>> = {
@@ -38,4 +46,7 @@ export const moves: Partial<Record<string, string>> = {
   flamenco: `flamenco-braceo flamenco-marcaje flamenco-llamada`,
   // Arabic, Turkish and North African pop (families/world2.ts).
   bellydance: `hip-lifts hip-slides maya hip-shimmy khaleeji-hair-toss khaleeji-step saidi-cane-hop`,
+  // New: dangdut and Schlager (families/world3.ts).
+  dangdut: `joget-sway goyang-gergaji goyang-dribble goyang-patah`,
+  schlager: `schunkeln prost-toast beak-snaps wing-flaps`,
 };
