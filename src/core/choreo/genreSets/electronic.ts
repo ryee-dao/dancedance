@@ -16,7 +16,8 @@
  */
 
 export const moves: Partial<Record<string, string>> = {
-  house: ``,
-  edm: ``,
-  bass: ``,
+  // genres.ts RAW already lists vogue-arms vogue-pose box-frame loose-legs for house.
+  house: `house-jack house-stomp crossroads floor-sweep lofting-reach scissor-step`,
+  edm: `hands-up-bounce drop-jump cutting-shapes jumpstyle-kick hakken pound-and-pump trance-sweep`,
+  bass: `half-time-bounce wobble-bounce popping-hits liquid-hands drift-lean cowbell-hits gun-fingers half-time-stomp`,
 };
