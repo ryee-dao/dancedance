@@ -1,5 +1,6 @@
 package app.dancedance.tv
 
+import app.dancedance.tv.PickFixtures.bunny
 import app.dancedance.tv.PickFixtures.delilah
 import app.dancedance.tv.PickFixtures.dipped
 import app.dancedance.tv.PickFixtures.extravagantEscalations
@@ -8,6 +9,7 @@ import app.dancedance.tv.PickFixtures.hipsDontLie
 import app.dancedance.tv.PickFixtures.homertonB
 import app.dancedance.tv.PickFixtures.impersonator
 import app.dancedance.tv.PickFixtures.insane
+import app.dancedance.tv.PickFixtures.nowThatWeFoundLove
 import app.dancedance.tv.PickFixtures.nullification
 import app.dancedance.tv.PickFixtures.purloin
 import app.dancedance.tv.PickFixtures.quieroSerTuyo
@@ -17,6 +19,7 @@ import app.dancedance.tv.PickFixtures.shakeItOff
 import app.dancedance.tv.PickFixtures.stayinAlive
 import app.dancedance.tv.PickFixtures.takeOnMe
 import app.dancedance.tv.PickFixtures.touTou
+import app.dancedance.tv.PickFixtures.wayoo
 import app.dancedance.tv.PickFixtures.youLie
 import app.dancedance.tv.SongPicker.Entry
 import app.dancedance.tv.SongPicker.Request
@@ -279,6 +282,56 @@ class SongPickerTest {
         assertEquals("length 190 s vs 192 s", reason(req, homertonB, "o2tB9Cs0dn0"))
         assertEquals("lyric video with only 9933 views", reason(req, homertonB, "fdvbG9VzAk4"))
         assertEquals("not official, not a lyric video", reason(req, homertonB.map { it.copy(verified = false) }, "UrnACpUhe98"))
+    }
+
+    // --- channel-name misses from run-20261116 ----------------------------------------------
+
+    @Test fun nowThatWeFoundLoveAndForAmpersand() {
+        val req = Request("Heavy D & The Boyz", "Now That We Found Love (feat. Aaron Hall)", 258)
+        assertEquals(listOf("music-video:NNEgUPKxk7A"), ids(req, nowThatWeFoundLove))
+        assertEquals("version", reason(req, nowThatWeFoundLove, "jQtZ2GdD2t0"))
+        assertEquals("live", reason(req, nowThatWeFoundLove, "1k1lGGLKvCE"))
+        val vevo = nowThatWeFoundLove.first { it.id == "NNEgUPKxk7A" }
+        assertEquals("unverified channel using the artist's name", reason(req, listOf(vevo.copy(verified = false)), vevo.id))
+        val sg = Request("Simon and Garfunkel", "The Boxer", 308)
+        assertEquals(listOf("official:SIMONGARF00"), ids(sg, listOf(e("SIMONGARF00", "Simon & Garfunkel - The Boxer (Official Audio)", "Simon & Garfunkel", true, duration = 308))))
+        val fm = Request("Florence + The Machine", "Dog Days Are Over", 252)
+        assertEquals(listOf("official:FLORENCEMAC"), ids(fm, listOf(e("FLORENCEMAC", "Florence + The Machine - Dog Days Are Over (Official Audio)", "FlorenceAndTheMachineVEVO", true, duration = 252))))
+    }
+
+    @Test fun bunnyChannelNamedInTwoScripts() {
+        val req = Request("YOH KAMIYAMA", "Bunny", 214)
+        assertEquals(listOf("topic:Z4PTDfLt3i0"), ids(req, bunny))
+        assertEquals("translation", reason(req, bunny, "Xm_fcaAGBd8"))
+        val art = bunny.first { it.id == "Z4PTDfLt3i0" }
+        for (channel in listOf("神山羊 | Yoh Kamiyama", "神山羊／Yoh Kamiyama", "Yoh Kamiyama / 神山羊")) {
+            assertEquals(channel, listOf("topic:Z4PTDfLt3i0"), ids(req, listOf(art.copy(channel = channel))))
+        }
+        assertEquals("art track from another channel", reason(req, listOf(art.copy(verified = false)), art.id))
+        val fan = e("FANSLASH000", "Dua Lipa - Levitating (Official Audio)", "Fan Uploads / Dua Lipa", views = 2_000_000, duration = 204)
+        assertEquals(emptyList<String>(), ids(lev, listOf(fan)))
+        assertEquals(emptyList<String>(), ids(lev, listOf(fan.copy(id = "OTHERSLASH0", channel = "Pop Hits / Lyrics", verified = true))))
+    }
+
+    @Test fun wayooOfficielAndOtherLanguages() {
+        val req = Request("Legendaire", "Wayoo", 174)
+        assertEquals(listOf("topic:8dZZGUK6J-s"), ids(req, wayoo))
+        assertEquals("different artist", reason(req, wayoo, "U8gocOXyKis"))
+        val art = wayoo.first { it.id == "8dZZGUK6J-s" }
+        for (channel in listOf("Legendaire Oficial", "LegendaireOffiziell", "Legendaire Ufficiale", "Legendaire 公式", "Legendaire オフィシャル", "Legendaire 官方", "Legendaire 공식", "Officiel Legendaire")) {
+            assertEquals(channel, listOf("topic:8dZZGUK6J-s"), ids(req, listOf(art.copy(channel = channel))))
+        }
+        assertEquals("art track with only 125 views", reason(req, listOf(art.copy(verified = false)), art.id))
+        assertEquals(emptyList<String>(), ids(req, listOf(art.copy(channel = "Legendaires Officiel"))))
+        val fake = e("OFFICIEL000", "Dua Lipa - Levitating (Official Lyric Video)", "Dua Lipa Officiel", views = 2_000_000, duration = 204)
+        assertEquals("unverified channel using the artist's name", reason(lev, listOf(fake), fake.id))
+    }
+
+    @Test fun neverSinceStillNotFound() {
+        val req = Request("Refraction", "Never Since", 361)
+        val only = e("NhDi46hdlxo", "Refraction ~ Never Since", "Chris Broomhead", views = 481, duration = 370)
+        assertEquals("length 370 s vs 361 s", reason(req, listOf(only), only.id))
+        assertEquals("not official, not a lyric video", reason(req, listOf(only.copy(duration = 361)), only.id))
     }
 
     @Test fun fallbackQueryIsPlain() {

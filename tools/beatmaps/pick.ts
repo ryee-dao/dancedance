@@ -224,8 +224,47 @@ export function requestCore(title: string): string[] {
   return coreTokens(t);
 }
 
-/** Words a channel puts around the artist's name ("officialfacetoface", "Face To Face Band", "FaceToFaceVEVO"). */
-const CHANNEL_AFFIXES = ['official', 'vevo', 'music', 'band', 'tv', 'topic', 'channel'];
+/**
+ * Words a channel puts around the artist's name ("officialfacetoface", "Face To Face Band",
+ * "FaceToFaceVEVO"), "official" also in other languages ("Legendaire Officiel", "米津玄師 公式").
+ * Normalised like channel names (NFKD: 공식 is compared as its jamo).
+ */
+const CHANNEL_AFFIXES = [
+  'official', 'vevo', 'music', 'band', 'tv', 'topic', 'channel',
+  'officiel', 'oficial', 'offiziell', 'ufficiale', 'officieel', 'oficjalny', 'официальный', '公式', 'オフィシャル', '官方', '공식',
+].map(joined);
+
+/**
+ * A channel name made of the artist's name in two scripts or forms: "神山羊 / Yoh Kamiyama".
+ * Only " / " and " | " with spaces (not "AC/DC"), or their full-width forms.
+ */
+const CHANNEL_NAME_SPLIT = /\s+[/|]\s+|\s*[／｜]\s*/;
+
+/**
+ * Ways the artist may be written in a channel name: artistVariants, also with "&" / "+"
+ * spelled "and" and "and" spelled "&" ("Heavy D & The Boyz" -> "HeavyDAndTheBoyzVEVO").
+ */
+function channelVariants(artist: string): string[] {
+  const out = [
+    ...artistVariants(artist),
+    joined(artist.replace(/\s*[&+]\s*/g, ' and ')),
+    joined(artist.replace(/\s+and\s+/gi, ' & ')),
+  ];
+  return [...new Set(out)].filter((v) => v.length >= 2);
+}
+
+/**
+ * The channel is the artist's own: one of its cores spells the artist. A verified channel
+ * may also give the name in two forms ("神山羊 / Yoh Kamiyama"); then either form counts.
+ */
+function isArtistChannel(e: SearchEntry, variants: string[]): boolean {
+  const names = [e.channel];
+  if (e.verified) {
+    const parts = e.channel.split(CHANNEL_NAME_SPLIT).filter((p) => p.trim());
+    if (parts.length >= 2) names.push(...parts);
+  }
+  return names.some((n) => channelCores(n).some((c) => variants.includes(c)));
+}
 
 /** `j` (joined) without leading / trailing CHANNEL_AFFIXES; at least 3 letters stay. */
 function stripAffixes(j: string): string {
@@ -401,8 +440,8 @@ function creditsArtist(req: SongRequest, e: SearchEntry): boolean {
   });
 }
 
-function facts(req: SongRequest, e: SearchEntry, variants: string[]): Facts {
-  const artistChannel = channelCores(e.channel).some((c) => variants.includes(c));
+function facts(req: SongRequest, e: SearchEntry, chanVariants: string[]): Facts {
+  const artistChannel = isArtistChannel(e, chanVariants);
   const label = LABELS.has(joined(e.channel));
   const artTrack = PROVIDED.test(e.description) || TOPIC_CHANNEL.test(e.channel);
   const lyric = LYRIC.test(e.title);
@@ -469,6 +508,7 @@ function eraTag(title: string, reqTitle: string): 'style' | 'year' | null {
  */
 export function rankCandidates(req: SongRequest, entries: SearchEntry[]): { ranked: Ranked[]; rejected: Rejected[] } {
   const variants = artistVariants(req.artist);
+  const chanVariants = channelVariants(req.artist);
   const tiers: Record<Tier, { e: SearchEntry; key: number[] }[]> = { official: [], lyric: [], topic: [], 'music-video': [] };
   const rejected: Rejected[] = [];
   const why = new Map(entries.map((e) => [e, mismatch(req, e, variants)]));
@@ -489,7 +529,7 @@ export function rankCandidates(req: SongRequest, entries: SearchEntry[]): { rank
       reject(whyNot);
       continue;
     }
-    const f = facts(req, e, variants);
+    const f = facts(req, e, chanVariants);
     const views = e.views ?? 0;
     const inWindow = f.dt >= WINDOW[0] && f.dt <= WINDOW[1];
     if (inWindow && f.official && (f.lyric || f.audio)) {
