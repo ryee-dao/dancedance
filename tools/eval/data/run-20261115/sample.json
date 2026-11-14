@@ -1,0 +1,595 @@
+{
+  "seed": 20261115,
+  "createdAt": "2026-11-14T09:55:57.829Z",
+  "songs": [
+    {
+      "key": "713691774",
+      "half": "known",
+      "artist": "Legião Urbana",
+      "title": "Tempo Perdido",
+      "collection": "Mais do Mesmo",
+      "genre": "Rock",
+      "durationSec": 302,
+      "releaseYear": 1986,
+      "source": "chart br"
+    },
+    {
+      "key": "1469579653",
+      "half": "known",
+      "artist": "The Temptations",
+      "title": "My Girl",
+      "collection": "The Big Chill (Original Motion Picture Soundtrack) [15th Anniversary]",
+      "genre": "R&B/Soul",
+      "durationSec": 164,
+      "releaseYear": 1964,
+      "source": "chart us/15"
+    },
+    {
+      "key": "1099843209",
+      "half": "known",
+      "artist": "Deftones",
+      "title": "My Own Summer (Shove It)",
+      "collection": "Around the Fur",
+      "genre": "Hard Rock",
+      "durationSec": 215,
+      "releaseYear": 1997,
+      "source": "term 'blues'"
+    },
+    {
+      "key": "1570993122",
+      "half": "known",
+      "artist": "Black Gryph0n & Baasik",
+      "title": "Insane",
+      "collection": "Insane - Single",
+      "genre": "Dubstep",
+      "durationSec": 160,
+      "releaseYear": 2021,
+      "source": "term 'dubstep'"
+    },
+    {
+      "key": "716071285",
+      "half": "known",
+      "artist": "Tony Sunshine",
+      "title": "Reggaeton",
+      "collection": "Reggaeton - Single",
+      "genre": "Pop",
+      "durationSec": 241,
+      "releaseYear": 2006,
+      "source": "term 'reggaeton'"
+    },
+    {
+      "key": "1745576607",
+      "half": "known",
+      "artist": "Céline Dion",
+      "title": "The Power of Love",
+      "collection": "JE SUIS : CÉLINE DION (Bande originale du film)",
+      "genre": "Pop",
+      "durationSec": 344,
+      "releaseYear": 1993,
+      "source": "term 'power ballads'"
+    },
+    {
+      "key": "6819932400",
+      "half": "known",
+      "artist": "ATEEZ",
+      "title": "ANEMIA",
+      "collection": "GOLDEN HOUR : Part.6 - EP",
+      "genre": "K-Pop",
+      "durationSec": 176,
+      "releaseYear": 2026,
+      "source": "chart us/14"
+    },
+    {
+      "key": "6812412667",
+      "half": "known",
+      "artist": "U2",
+      "title": "Street Of Dreams",
+      "collection": "Carnaval De Luz",
+      "genre": "Alternative",
+      "durationSec": 235,
+      "releaseYear": 2026,
+      "source": "chart us/20"
+    },
+    {
+      "key": "1563274812",
+      "half": "known",
+      "artist": "Spice",
+      "title": "Go Down Deh (feat. Sean Paul & Shaggy)",
+      "collection": "Go Down Deh (feat. Sean Paul & Shaggy) - Single",
+      "genre": "Reggae",
+      "durationSec": 154,
+      "releaseYear": 2021,
+      "source": "chart us/24"
+    },
+    {
+      "key": "1383548445",
+      "half": "known",
+      "artist": "Shaggy",
+      "title": "Hey Sexy Lady (feat. Brian & Tony Gold)",
+      "collection": "Lucky Day",
+      "genre": "Pop",
+      "durationSec": 200,
+      "releaseYear": 2002,
+      "source": "term 'dancehall'"
+    },
+    {
+      "key": "1769025042",
+      "half": "known",
+      "artist": "Cody Johnson",
+      "title": "The Fall",
+      "collection": "Leather Deluxe Edition",
+      "genre": "Country",
+      "durationSec": 198,
+      "releaseYear": 2024,
+      "source": "chart us/6"
+    },
+    {
+      "key": "6778607829",
+      "half": "known",
+      "artist": "Kenny Chesney",
+      "title": "Remember Me That Way",
+      "collection": "Silver Sands Marina",
+      "genre": "Country",
+      "durationSec": 207,
+      "releaseYear": 2026,
+      "source": "chart us/6"
+    },
+    {
+      "key": "1244743915",
+      "half": "known",
+      "artist": "Tag Team",
+      "title": "Whoomp! There It Is",
+      "collection": "Twice as Nice",
+      "genre": "Dance",
+      "durationSec": 273,
+      "releaseYear": 1998,
+      "source": "chart us/17"
+    },
+    {
+      "key": "1003813290",
+      "half": "known",
+      "artist": "Peão Carreiro & Praense",
+      "title": "Sertanejo",
+      "collection": "Sertanejo Raiz - Moda de Viola, Vol.1",
+      "genre": "Sertanejo",
+      "durationSec": 390,
+      "releaseYear": 1998,
+      "source": "term 'sertanejo'"
+    },
+    {
+      "key": "277635828",
+      "half": "known",
+      "artist": "Jason Mraz",
+      "title": "I'm Yours",
+      "collection": "We Sing. We Dance. We Steal Things",
+      "genre": "Pop",
+      "durationSec": 243,
+      "releaseYear": 2008,
+      "source": "term '2000s hits'"
+    },
+    {
+      "key": "696891524",
+      "half": "known",
+      "artist": "Pet Shop Boys",
+      "title": "Domino Dancing (2003 Remaster)",
+      "collection": "PopArt: The Hits (Deluxe Edition) [Remastered]",
+      "genre": "Pop",
+      "durationSec": 258,
+      "releaseYear": 1988,
+      "source": "term 'synthpop'"
+    },
+    {
+      "key": "1440911925",
+      "half": "known",
+      "artist": "Duke Ellington & John Coltrane",
+      "title": "In a Sentimental Mood",
+      "collection": "The Very Best of John Coltrane",
+      "genre": "Jazz",
+      "durationSec": 256,
+      "releaseYear": 1963,
+      "source": "term 'jazz standards'"
+    },
+    {
+      "key": "430276711",
+      "half": "known",
+      "artist": "Boogie Heights",
+      "title": "Super Mario Bros. Theme",
+      "collection": "Super Mario Bros. Theme - Single",
+      "genre": "Soundtrack",
+      "durationSec": 177,
+      "releaseYear": 2011,
+      "source": "chart in"
+    },
+    {
+      "key": "1444103245",
+      "half": "known",
+      "artist": "ABC",
+      "title": "Poison Arrow",
+      "collection": "The Lexicon of Love (Deluxe Edition)",
+      "genre": "Pop",
+      "durationSec": 204,
+      "releaseYear": 1982,
+      "source": "term 'synthpop'"
+    },
+    {
+      "key": "1440912354",
+      "half": "known",
+      "artist": "Beastie Boys",
+      "title": "No Sleep Till Brooklyn",
+      "collection": "Licensed to Ill",
+      "genre": "Hip-Hop/Rap",
+      "durationSec": 247,
+      "releaseYear": 1986,
+      "source": "chart us/18"
+    },
+    {
+      "key": "1837972823",
+      "half": "obscure",
+      "artist": "STASIS",
+      "title": "PARAGENESIS",
+      "collection": "N.O.V.A",
+      "genre": "Metal",
+      "durationSec": 192,
+      "releaseYear": 2025,
+      "source": "word 'paragenesis'"
+    },
+    {
+      "key": "1681356899",
+      "half": "obscure",
+      "artist": "Michael Seyer",
+      "title": "Ambiguous Love",
+      "collection": "A Good Fool",
+      "genre": "Alternative",
+      "durationSec": 241,
+      "releaseYear": 2021,
+      "source": "word 'ambigenous'"
+    },
+    {
+      "key": "1437002165",
+      "half": "obscure",
+      "artist": "Discharge",
+      "title": "The More I See (Extended Version)",
+      "collection": "Never Again",
+      "genre": "Rock",
+      "durationSec": 238,
+      "releaseYear": 1984,
+      "source": "word 'dischargee'"
+    },
+    {
+      "key": "1095761072",
+      "half": "obscure",
+      "artist": "The Gasman",
+      "title": "Trip",
+      "collection": "Aeriform",
+      "genre": "Electronic",
+      "durationSec": 300,
+      "releaseYear": 2016,
+      "source": "word 'gasman'"
+    },
+    {
+      "key": "325037297",
+      "half": "obscure",
+      "artist": "Rectangle",
+      "title": "Airborne Heliotropic Medusae",
+      "collection": "Heavy Maple",
+      "genre": "Electronic",
+      "durationSec": 286,
+      "releaseYear": 2009,
+      "source": "word 'heliotropic'"
+    },
+    {
+      "key": "1785261246",
+      "half": "obscure",
+      "artist": "Face to Face",
+      "title": "Nullification (Bonus Track)",
+      "collection": "Reactionary (Bonus Tracks)",
+      "genre": "Alternative",
+      "durationSec": 195,
+      "releaseYear": 2000,
+      "source": "word 'creationary'"
+    },
+    {
+      "key": "1436707549",
+      "half": "obscure",
+      "artist": "Saints Can Lie",
+      "title": "Persevere",
+      "collection": "Persevere - Single",
+      "genre": "Metal",
+      "durationSec": 278,
+      "releaseYear": 2018,
+      "source": "word 'preobserve'"
+    },
+    {
+      "key": "1697227806",
+      "half": "obscure",
+      "artist": "Nacromatic",
+      "title": "Interplanetary Guest",
+      "collection": "Interplanetary Guest - Single",
+      "genre": "Alternative",
+      "durationSec": 166,
+      "releaseYear": 2023,
+      "source": "word 'macrosmatic'"
+    },
+    {
+      "key": "1673252247",
+      "half": "obscure",
+      "artist": "DJ Prime Cuts",
+      "title": "Dipped",
+      "collection": "Chartist - EP",
+      "genre": "Techno",
+      "durationSec": 152,
+      "releaseYear": 2022,
+      "source": "word 'chartist'"
+    },
+    {
+      "key": "1630402054",
+      "half": "obscure",
+      "artist": "Spiteful Oil",
+      "title": "Bewhig",
+      "collection": "Powerful Rub",
+      "genre": "Electronic",
+      "durationSec": 107,
+      "releaseYear": 2022,
+      "source": "word 'bewhig'"
+    },
+    {
+      "key": "1125081912",
+      "half": "obscure",
+      "artist": "Donn Wilkerson",
+      "title": "Enslavement",
+      "collection": "Disturbia, Vol. 1",
+      "genre": "Soundtrack",
+      "durationSec": 175,
+      "releaseYear": 2016,
+      "source": "word 'enslavement'"
+    },
+    {
+      "key": "496584649",
+      "half": "obscure",
+      "artist": "Nimsy Lopez",
+      "title": "Siempre Creeré",
+      "collection": "A Propósito",
+      "genre": "Christian",
+      "durationSec": 313,
+      "releaseYear": 2012,
+      "source": "word 'cheered'"
+    },
+    {
+      "key": "1742261988",
+      "half": "obscure",
+      "artist": "Lola Jane",
+      "title": "You Lie",
+      "collection": "Unsettled",
+      "genre": "Neo-Soul",
+      "durationSec": 173,
+      "releaseYear": 2019,
+      "source": "word 'unfettled'"
+    },
+    {
+      "key": "1720365564",
+      "half": "obscure",
+      "artist": "Desirae Garcia",
+      "title": "The Biggest Ache",
+      "collection": "Lengthy Sunny Spells",
+      "genre": "Folk",
+      "durationSec": 169,
+      "releaseYear": 2022,
+      "source": "word 'lengthy'"
+    },
+    {
+      "key": "6813090992",
+      "half": "obscure",
+      "artist": "Etovics",
+      "title": "Impersonator",
+      "collection": "Stolidity",
+      "genre": "Electronic",
+      "durationSec": 306,
+      "releaseYear": 2026,
+      "source": "word 'stolidity'"
+    },
+    {
+      "key": "1585125946",
+      "half": "obscure",
+      "artist": "Wei Bi",
+      "title": "偷偷(广播剧《偷偷藏不住》主题曲)",
+      "collection": "偷偷(广播剧《偷偷藏不住》主题曲) - Single",
+      "genre": "Mandopop",
+      "durationSec": 249,
+      "releaseYear": 2021,
+      "source": "word 'houtou'"
+    },
+    {
+      "key": "1880898365",
+      "half": "obscure",
+      "artist": "Lee Konitz",
+      "title": "Ezz-Thetic",
+      "collection": "Wild As Springtime",
+      "genre": "Jazz",
+      "durationSec": 305,
+      "releaseYear": 1984,
+      "source": "word 'thetic'"
+    },
+    {
+      "key": "202007692",
+      "half": "obscure",
+      "artist": "Sky Church",
+      "title": "Adamant",
+      "collection": "Unaware Unwarned",
+      "genre": "Rock",
+      "durationSec": 186,
+      "releaseYear": 2000,
+      "source": "word 'unwarned'"
+    },
+    {
+      "key": "1874648358",
+      "half": "obscure",
+      "artist": "Fuminsho",
+      "title": "Pedant",
+      "collection": "DEMOS1",
+      "genre": "J-Pop",
+      "durationSec": 204,
+      "releaseYear": 2025,
+      "source": "word 'pedant'"
+    },
+    {
+      "key": "1573187425",
+      "half": "obscure",
+      "artist": "Underground Lovers",
+      "title": "Lusher",
+      "collection": "A Left Turn",
+      "genre": "Alternative",
+      "durationSec": 285,
+      "releaseYear": 2019,
+      "source": "word 'lusher'"
+    }
+  ],
+  "skipped": [
+    {
+      "source": "chart in",
+      "artist": "ARJN, KDS, FIFTY4 & Shreya Ghoshal",
+      "title": "KALYANI (Remix)",
+      "genre": "Pop",
+      "why": "\"Remix\" in title / album / artist"
+    },
+    {
+      "source": "chart us/24",
+      "artist": "Dj Lub's",
+      "title": "Under the Blood (Dancehall Remix)",
+      "genre": "Reggae",
+      "why": "\"Remix\" in title / album / artist"
+    },
+    {
+      "source": "chart us/24",
+      "artist": "Sean Paul",
+      "title": "Infiltrate",
+      "genre": "Reggae",
+      "why": "in an earlier sample (song or artist)"
+    },
+    {
+      "source": "term 'bachata'",
+      "artist": "Dalvin La Melodia",
+      "title": "Duele",
+      "genre": "Música tropical",
+      "why": "in an earlier sample (song or artist)"
+    },
+    {
+      "source": "term 'motown'",
+      "artist": "Stevie Wonder",
+      "title": "Higher Ground",
+      "genre": "Motown",
+      "why": "in an earlier sample (song or artist)"
+    },
+    {
+      "source": "term 'cumbia'",
+      "artist": "Los Ángeles Azules & Natalia Lafourcade",
+      "title": "Nunca Es Suficiente",
+      "genre": "Música tropical",
+      "why": "in an earlier sample (song or artist)"
+    },
+    {
+      "source": "word 'misdoer'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'thelyblastic'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'heliotropic'",
+      "artist": "Ego Store",
+      "title": "Heliotropic",
+      "genre": "Alternative",
+      "why": "length 47 s"
+    },
+    {
+      "source": "word 'retailment'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'typhoonish'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'goosebird'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'clamming'",
+      "artist": "The Jimi Hendrix Experience",
+      "title": "Voodoo Child (Slight Return)",
+      "genre": "Rock",
+      "why": "artist too well known for the obscure half"
+    },
+    {
+      "source": "word 'clamming'",
+      "artist": "Dave Matthews Band",
+      "title": "Samurai Cop (Oh Joy Begin)",
+      "genre": "Rock",
+      "why": "artist too well known for the obscure half"
+    },
+    {
+      "source": "word 'clamming'",
+      "artist": "Bob Marley & The Wailers",
+      "title": "Jamming",
+      "genre": "Reggae",
+      "why": "in an earlier sample (song or artist)"
+    },
+    {
+      "source": "word 'thetic'",
+      "artist": "The Willie Jones III Sextet",
+      "title": "Ezz-Thetic (Live)",
+      "genre": "Jazz",
+      "why": "\"Live\" in title / album / artist"
+    },
+    {
+      "source": "word 'thetic'",
+      "artist": "Lee Konitz & Miles Davis",
+      "title": "Ezz-Thetic",
+      "genre": "Jazz",
+      "why": "artist too well known for the obscure half"
+    },
+    {
+      "source": "word 'ethmonasal'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'stepbairn'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'itchiness'",
+      "artist": "ASMR Jonie",
+      "title": "Relieving Scalp Itchiness",
+      "genre": "Spoken Word",
+      "why": "genre Spoken Word"
+    },
+    {
+      "source": "word 'itchiness'",
+      "artist": "Shalamar",
+      "title": "Uptown Festival (Medley): Going to a Go-Go / I Can't Help Myself / Uptight (Everything's Alright) / Stop! In the Name of Love / It's the Same Old Song / The Tears of a Clown / Love Is Like An Itching In My Heart / This Old Heart of Mine (Is Weak for You) / Baby Love / He Was Really Saying Something",
+      "genre": "R&B/Soul",
+      "why": "\"Medley\" in title / album / artist"
+    },
+    {
+      "source": "word 'itchiness'",
+      "artist": "The Supremes",
+      "title": "Love Is Like an Itching In My Heart",
+      "genre": "R&B/Soul",
+      "why": "artist too well known for the obscure half"
+    },
+    {
+      "source": "word 'lusher'",
+      "artist": "USHER",
+      "title": "Do It to Me (Confessions Special Edition Version)",
+      "genre": "R&B/Soul",
+      "why": "artist too well known for the obscure half"
+    },
+    {
+      "source": "word 'lusher'",
+      "artist": "USHER",
+      "title": "U Got It Bad",
+      "genre": "R&B/Soul",
+      "why": "artist too well known for the obscure half"
+    }
+  ]
+}

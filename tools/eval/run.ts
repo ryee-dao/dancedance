@@ -49,18 +49,35 @@
  *            second genre source: nothing is downloaded again.
  * Requests are paced (3-8 s between yt-dlp calls); a blocked / failed song is
  * recorded and skipped, never retried in a loop.
+ *
+ * Since run-20261115:
+ *   --audio-dir DIR  where analyse downloads (default $TMPDIR/dancedance-eval-audio,
+ *                    outside the repository); each song's audio is deleted after decoding.
+ *   find             mirrors the cloud job exactly (degraded answers asked again, the
+ *                    plain fallbackQuery search when the two searches rank nothing:
+ *                    still a strict pick, marked fallbackSearch); --no-comments skips comments.
+ *                    A hand-chosen video (VideoPick.manual) is judged apart.
+ *   analyse          also records the trait statistics (stats.ts format) in W/stats.json.
+ *   score            pass B is what the app passes (src/ui/coachStage.ts routineInfo):
+ *                    the looked-up list with its levels and the artist's genres; per level
+ *                    also the borrowed share, the tempo feel and the danced tempo.
+ * Round two (seed 20261115, sample drawn with --exclude of both earlier samples) and
+ * round one re-scored with the current code: data/run-20261115 (and its round1-rescore/).
  */
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { ANALYZER_VERSION, analyzeOffline, type BeatMap } from '../../src/core/analysis';
+import { ANALYZER_VERSION, analyzeFeatures, extractFeatures, toBeatMap, type BeatMap } from '../../src/core/analysis';
+import { traitStats } from '../../src/core/analysis/traits';
 import { generateRoutine, isHalfTime, styleGenres, tierBeats, type Intensity } from '../../src/core/choreo/generator';
 import { genreOpenness } from '../../src/core/choreo/genres';
 import { resolveSongStyle, styleLabel } from '../../src/core/choreo/songStyle';
 import { traitsOf } from '../../src/core/choreo/songTraits';
-import { parseSearch, rankCandidates, searchQueries, type SearchEntry } from '../beatmaps/pick';
+import { degradedSearch, fallbackQuery, mergeSearches, parseSearch, rankCandidates, searchQueries, type SearchEntry } from '../beatmaps/pick';
 import { decodeWithFfmpeg, downloadAudio, PCM_RATE, searchVideos } from '../beatmaps/youtube';
 import { lookupGenres, type GenreLookup } from '../../src/genre';
+import type { RecordedStats } from './stats';
 import { genreHttp } from '../beatmaps/genreClient';
 import { arg, sleep, type Expectation, type LevelSummary, type ResultsFile, type SampleFile, type SongResult, type StyleSummary, type Verdict, type VideoPick } from './common';
 
@@ -75,7 +92,8 @@ const sample = JSON.parse(readFileSync(samplePath, 'utf8')) as SampleFile;
 const readJson = <T>(p: string | undefined, dflt: T): T => (p && existsSync(p) ? (JSON.parse(readFileSync(p, 'utf8')) as T) : dflt);
 const videosPath = join(work, 'videos.json');
 const mapsDir = join(work, 'maps');
-const audioRoot = resolve(work, '..', 'eval-audio');
+// Downloads go to a scratch directory outside the repository (--audio-dir), deleted per song.
+const audioRoot = resolve(arg('audio-dir') ?? join(tmpdir(), 'dancedance-eval-audio'));
 mkdirSync(mapsDir, { recursive: true });
 const pause = () => sleep(3000 + Math.random() * 5000);
 
@@ -85,39 +103,46 @@ async function find() {
     if (videos[s.key]?.status === 'ok' || videos[s.key]?.status === 'not-found') continue;
     console.error(`find ${s.artist} - ${s.title}`);
     try {
+      // As the cloud job does (tools/beatmaps/pipeline.ts searchAndRank): the two searches
+      // (a degraded answer is asked once more), then the plain "Artist Title" search when
+      // they rank nothing. A pick from these is strict; only after that are the view floors relaxed.
       const lists: SearchEntry[][] = [];
-      for (const q of searchQueries(s)) {
+      const search = async (q: string) => {
         await pause();
-        lists.push(parseSearch(await searchVideos(q, {})));
-      }
-      const seen = new Set<string>();
-      const entries = lists.flat().filter((e) => (seen.has(e.id) ? false : (seen.add(e.id), true)));
+        let list = parseSearch(await searchVideos(q, {}));
+        if (degradedSearch(list)) {
+          await pause();
+          list = parseSearch(await searchVideos(q, {}));
+        }
+        lists.push(list);
+      };
+      for (const q of searchQueries(s)) await search(q);
       const req = { artist: s.artist, title: s.title, durationSec: s.durationSec };
-      let strict = true;
+      let entries = mergeSearches(lists);
       let ranked = rankCandidates(req, entries).ranked;
-      const relax = (es: SearchEntry[]) => rankCandidates(req, es.map((e) => ({ ...e, views: Math.max(e.views ?? 0, 10_000_000) }))).ranked;
+      let fallback = false;
       if (!ranked.length) {
-        // The cloud job would give up here; ignore only its view floors.
-        strict = false;
-        ranked = relax(entries);
+        fallback = true;
+        await search(fallbackQuery(req));
+        entries = mergeSearches(lists);
+        ranked = rankCandidates(req, entries).ranked;
       }
+      let strict = true;
       if (!ranked.length) {
-        // Obscure songs: the job's "... lyrics" / "... official audio" searches can come back
-        // empty while the plain "artist title" search finds the art track.
-        await pause();
-        const plain = parseSearch(await searchVideos(`${s.artist} ${s.title}`.replace(/\s+/g, ' ').trim(), {})).filter((e) => !seen.has(e.id));
-        entries.push(...plain);
-        ranked = relax(entries);
-        if (ranked.length) ranked = ranked.map((r) => ({ ...r, tier: `plain-${r.tier}` as typeof r.tier }));
+        // The cloud job would give up here; ignore only its view floors (marked strictPick: false).
+        strict = false;
+        ranked = rankCandidates(req, entries.map((e) => ({ ...e, views: Math.max(e.views ?? 0, 10_000_000) }))).ranked;
       }
       const r = ranked[0];
       if (!r) {
-        videos[s.key] = { status: 'not-found', message: `${entries.length} search results, none matches the song and its length` };
+        videos[s.key] = { status: 'not-found', message: `${entries.length} search results (3 searches), none matches the song and its length` };
       } else {
         const e = entries.find((x) => x.id === r.entry.id)!;
-        videos[s.key] = { status: 'ok', id: e.id, title: e.title, channel: e.channel, tier: strict ? r.tier : `relaxed-${r.tier}`, seconds: e.duration, views: e.views, strictPick: strict };
-        await pause();
-        videos[s.key].comments = topComments(e.id);
+        videos[s.key] = { status: 'ok', id: e.id, title: e.title, channel: e.channel, tier: `${strict ? '' : 'relaxed-'}${fallback ? 'plain-' : ''}${r.tier}`, seconds: e.duration, views: e.views, strictPick: strict, fallbackSearch: fallback };
+        if (!process.argv.includes('--no-comments')) {
+          await pause();
+          videos[s.key].comments = topComments(e.id);
+        }
       }
     } catch (err) {
       videos[s.key] = { status: 'error', message: String((err as Error).message ?? err).slice(0, 300) };
@@ -185,8 +210,22 @@ async function analyse() {
       const pcm = await decodeWithFfmpeg(dl.path);
       rmSync(dir, { recursive: true, force: true });
       const t0 = Date.now();
-      const map = analyzeOffline(pcm, PCM_RATE, { videoId: v.id, source: 'cloud' });
+      // analyzeOffline (the cloud job's analyser, source 'cloud'), with the trait statistics
+      // recorded from the same features (stats.ts format) while the audio is at hand.
+      const features = extractFeatures(pcm, PCM_RATE);
+      const result = analyzeFeatures(features, { duration: pcm.length / PCM_RATE });
+      const map = toBeatMap(result, { videoId: v.id, duration: pcm.length / PCM_RATE, source: 'cloud', partial: false });
       writeFileSync(mapPath, `${JSON.stringify(map)}\n`);
+      const statsPath = join(work!, 'stats.json');
+      const stats = readJson<RecordedStats>(statsPath, { analyzerVersion: ANALYZER_VERSION, songs: {} });
+      const r4 = (x: unknown): unknown => (typeof x === 'number' ? Math.round(x * 10000) / 10000 : x);
+      stats.analyzerVersion = ANALYZER_VERSION;
+      stats.songs[s.key] = {
+        bpm: Math.round(result.bpm * 100) / 100,
+        beats: result.beats.length,
+        stats: JSON.parse(JSON.stringify(traitStats(features, { beats: result.beats, downbeats: result.downbeats, bpm: result.bpm }), (_, x) => r4(x))),
+      };
+      writeFileSync(statsPath, `${JSON.stringify(stats, null, 1)}\n`);
       console.error(`  ${map.bpm} BPM, ${map.beats.length} beats, analysed in ${((Date.now() - t0) / 1000).toFixed(1)} s, traits ${JSON.stringify(map.traits)}`);
     } catch (err) {
       writeFileSync(errPath, String((err as Error).message ?? err).slice(0, 500));
@@ -203,16 +242,25 @@ const r3 = (x: number) => Math.round(x * 1000) / 1000;
 function summarise(map: BeatMap, style: ReturnType<typeof resolveSongStyle>, level: Intensity): LevelSummary {
   const r = generateRoutine(map, level, { style });
   const t = tierBeats(r, style);
+  const open = styleGenres(style);
   const danced = r.instances.filter((i) => !i.move.idle && !i.move.cooldown);
+  const borrowBeats: Record<string, number> = {};
+  let genreAll = 0;
+  for (const i of danced) {
+    if (!i.move.genre) continue;
+    genreAll += i.span;
+    if (!open.has(i.move.genre)) borrowBeats[i.move.genre] = (borrowBeats[i.move.genre] ?? 0) + i.span;
+  }
+  const borrowed = Object.values(borrowBeats).reduce((a, b) => a + b, 0);
   const beats = danced.reduce((a, i) => a + i.span, 0) || 1;
   const sum = (f: (i: (typeof danced)[number]) => boolean) => danced.filter(f).reduce((a, i) => a + i.span, 0) / beats;
   const genreBeats: Record<string, number> = {};
-  const byName = new Map<string, { tier: string; beats: number }>();
+  const byName = new Map<string, { tier: string; beats: number; id: string }>();
   for (const i of danced) {
     if (i.move.genre) genreBeats[i.move.genre] = (genreBeats[i.move.genre] ?? 0) + i.span;
     const name = i.move.name;
     const tier = i.sig ? `combo${i.move.genre ? `/${i.move.genre}` : ''}` : (i.move.genre ?? 'global');
-    const e = byName.get(name) ?? { tier, beats: 0 };
+    const e = byName.get(name) ?? { tier, beats: 0, id: i.move.id };
     e.beats += i.span;
     byName.set(name, e);
   }
@@ -225,7 +273,12 @@ function summarise(map: BeatMap, style: ReturnType<typeof resolveSongStyle>, lev
     jumpShare: r3(sum((i) => i.move.jump)),
     highShare: r3(sum((i) => i.move.level === 'high')),
     distinctMoves: new Set(danced.map((i) => i.move.base)).size,
-    top: [...byName].sort((a, b) => b[1].beats - a[1].beats).slice(0, 10).map(([name, e]) => ({ name, tier: e.tier, beats: e.beats })),
+    borrowShare: r3(borrowed / Math.max(1, genreAll)),
+    borrowBeats,
+    ...(r.feel && r.feel !== 1 ? { feel: r.feel } : {}),
+    ...(r.freeTime ? { freeTime: true } : {}),
+    bpmDanced: Math.round((r.bpm ?? map.bpm) * 10) / 10,
+    top: [...byName].sort((a, b) => b[1].beats - a[1].beats).slice(0, 10).map(([name, e]) => ({ name, id: e.id, tier: e.tier, beats: e.beats })),
   };
 }
 
@@ -256,9 +309,19 @@ function evaluate() {
     const map = JSON.parse(readFileSync(mapPath, 'utf8')) as BeatMap;
     const secs = map.sections ?? [];
     const energy = secs.length ? secs.reduce((a, x) => a + x.energy, 0) / secs.length : undefined;
+    // As the app passes them (src/ui/coachStage.ts routineInfo): the list with its levels
+    // when they match it entry for entry, the artist's genres apart.
+    const lk = lookups[s.key];
     const pass = (list?: string[]) => {
+      const levels = list?.length && lk?.genreLevels?.length === list.length && lk.genres.join('|') === list.join('|') ? lk.genreLevels : undefined;
+      const artistGenres = list && lk?.artistGenres?.length ? lk.artistGenres : undefined;
       const style = resolveSongStyle(
-        { videoId: map.videoId, title: s.title, artist: s.artist, genre: s.genre, ...(list?.length ? { genres: list } : {}) },
+        {
+          videoId: map.videoId, title: s.title, artist: s.artist, genre: s.genre,
+          ...(list?.length ? { genres: list } : {}),
+          ...(levels && levels.every((l) => l === 'song' || l === 'album') ? { genreLevels: levels } : {}),
+          ...(artistGenres ? { artistGenres } : {}),
+        },
         { bpm: map.bpm, energy, traits: traitsOf(map) },
       );
       const summary: StyleSummary = {
@@ -281,7 +344,16 @@ function evaluate() {
       const said = Object.fromEntries(
         Object.entries(lookups[s.key]?.sources ?? {}).map(([id, o]) => [id, o ? (o.status === 'found' ? `found: ${o.genres.join(', ')}${o.ref ? ` (${o.ref})` : ''}` : `${o.status}: ${o.reason}`) : '?']),
       );
-      row.b = { genres: list, said, ...(list.length ? pass(list) : {}), ...(verdictsB[s.key] ? { verdict: verdictsB[s.key] } : {}) };
+      // Pass B is what the app dances: the list (with levels) and the artist's genres, whenever the lookup has either.
+      const hasAny = list.length || lookups[s.key]?.artistGenres?.length;
+      row.b = {
+        genres: list,
+        ...(lookups[s.key]?.genreLevels ? { genreLevels: lookups[s.key].genreLevels } : {}),
+        ...(lookups[s.key]?.artistGenres?.length ? { artistGenres: lookups[s.key].artistGenres } : {}),
+        said,
+        ...(hasAny ? pass(list) : {}),
+        ...(verdictsB[s.key] ? { verdict: verdictsB[s.key] } : {}),
+      };
     }
     results.push(row);
   }

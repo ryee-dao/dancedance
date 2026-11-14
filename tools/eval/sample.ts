@@ -4,6 +4,7 @@
  *
  *   npx tsx tools/eval/sample.ts --seed 20261113 --out <dir>/sample.json [--known 20] [--obscure 20]
  *                                [--famous tools/eval/data/famous.json]
+ *                                [--exclude a/sample.json,b/sample.json]
  *
  * Two halves:
  *   known    the dice pick a source (an iTunes genre chart or a genre / decade
@@ -13,7 +14,10 @@
  *            then a random result that is a studio track by an artist not in
  *            the `--famous` list (artists the judge would expect a casual
  *            listener to know; a pick by one of them is re-rolled and recorded).
- * Skipped: spoken word, podcasts, karaoke / tribute / cover / "in the style
+ * --exclude: earlier samples; a pick of a song or an artist already in one of
+ * them is re-rolled (recorded as "in an earlier sample"), so a new
+ * measurement shares nothing with the sets the code was tuned on.
+ * Skipped: spoken word, podcasts, karaoke / tribute / cover / medley / "in the style
  * of", sound effects, children's sing-alongs, fitness remixes, live, remix,
  * instrumental versions, tracks under 90 s or over 10 min. Every skip is
  * recorded in the output with its reason.
@@ -47,6 +51,7 @@ if (!out) {
   console.error('usage: tools/eval/sample.ts --seed N --out sample.json [--known 20] [--obscure 20] [--famous famous.json]');
   process.exit(1);
 }
+const excludeFiles = (arg('exclude') ?? '').split(',').filter(Boolean);
 const famous = new Set<string>((famousFile ? (JSON.parse(readFileSync(famousFile, 'utf8')) as string[]) : []).map((a) => norm(a)));
 
 function norm(s: string): string {
@@ -67,7 +72,7 @@ const TERMS = [
 
 const SKIP_GENRE = /spoken word|podcast|audiobook|children|kids|comedy|fitness|workout|karaoke|sound effect|nature|meditation|asmr|educational/i;
 const SKIP_TEXT =
-  /karaoke|tribute|in the style of|made famous|originally performed|cover version|\bcovers?\b|sing-?along|nursery|lullaby renditions|sound effects?|white noise|\blive\b|\bremix|\bmix\)|instrumental|re-?recorded|8-?bit|piano version|acoustic version|workout|bpm\)|sped up|slowed|speech|interview|commentary|chapter \d|audiobook|meditation|\d+\s*hz\b|\bhz\b|frequency zone|binaural|solfeggio|healing tones?|sleep music|parasympathetic|hypertension/i;
+  /karaoke|\bmedley\b|tribute|in the style of|made famous|originally performed|cover version|\bcovers?\b|sing-?along|nursery|lullaby renditions|sound effects?|white noise|\blive\b|\bremix|\bmix\)|instrumental|re-?recorded|8-?bit|piano version|acoustic version|workout|bpm\)|sped up|slowed|speech|interview|commentary|chapter \d|audiobook|meditation|\d+\s*hz\b|\bhz\b|frequency zone|binaural|solfeggio|healing tones?|sleep music|parasympathetic|hypertension/i;
 
 function why(t: Track): string | null {
   if (t.wrapperType !== 'track' || t.kind !== 'song') return `not a song (${t.kind ?? t.wrapperType ?? '?'})`;
@@ -118,6 +123,9 @@ async function main() {
   const skipped: SkippedPick[] = [];
   const have = new Set<string>();
   const artists = new Set<string>();
+  const earlier = excludeFiles.flatMap((f) => (JSON.parse(readFileSync(f, 'utf8')) as SampleFile).songs);
+  const earlierKeys = new Set(earlier.map((x) => x.key));
+  const earlierArtists = new Set(earlier.map((x) => norm(x.artist)));
   const accept = (t: Track, half: SampledSong['half'], source: string, obscure: boolean): boolean => {
     const w = why(t);
     if (w) {
@@ -125,11 +133,17 @@ async function main() {
       return false;
     }
     const a = norm(t.artistName!);
+    if (earlierKeys.has(String(t.trackId)) || earlierArtists.has(a)) {
+      skipped.push({ source, artist: t.artistName, title: t.trackName, genre: t.primaryGenreName, why: 'in an earlier sample (song or artist)' });
+      return false;
+    }
     if (have.has(String(t.trackId)) || artists.has(a)) {
       skipped.push({ source, artist: t.artistName, title: t.trackName, genre: t.primaryGenreName, why: 'artist already sampled' });
       return false;
     }
-    if (obscure && [...famous].some((f) => a === f || (f.length >= 5 && a.startsWith(f)))) {
+    // Every credited name counts ("Lee Konitz & Miles Davis", "X feat. Y").
+    const credited = [a, ...t.artistName!.split(/\s*(?:&|,|\bfeat\.?|\bft\.?|\bwith\b|\band\b|\bx\b)\s*/i).map(norm).filter(Boolean)];
+    if (obscure && credited.some((c) => [...famous].some((f) => c === f || (f.length >= 5 && c.startsWith(f))))) {
       skipped.push({ source, artist: t.artistName, title: t.trackName, genre: t.primaryGenreName, why: 'artist too well known for the obscure half' });
       return false;
     }
