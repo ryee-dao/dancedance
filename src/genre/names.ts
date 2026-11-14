@@ -68,6 +68,8 @@ const ENTRIES: readonly Entry[] = [
   ['europop', ['pop', 'dance'], ['euro pop', 'euro-pop']],
   ['K-pop', ['pop'], ['kpop', 'k pop', 'korean pop']],
   ['J-pop', ['pop'], ['jpop', 'j pop']],
+  // Idol groups (AKB48, Morning Musume): MusicBrainz tags the artists "idol", "j-idol".
+  ['idol pop', ['pop'], ['idol', 'j-idol', 'j idol', 'japanese idol', 'idol music', 'aidoru']],
   ['C-pop', ['pop'], ['mandopop', 'cantopop']],
   ['Latin pop', ['pop', 'latin'], ['pop latino', 'latin pop music']],
   ['country pop', ['country', 'pop']],
