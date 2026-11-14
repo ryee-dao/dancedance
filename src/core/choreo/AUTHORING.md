@@ -218,14 +218,26 @@ ids:
   full from 118). The kit casts a jump only while its slot's planned time
   fits in the budget; the combo jumps in one of its two blocks at most.
 - Tempo feel (`danceFeel`): the whole song is danced at half / twice the
-  counted tempo when the analysis offers that octave (`TempoCandidates`,
-  traits halfTempo / doubleTempo >= 0.5) AND it is clearly closer to the
-  tempo the song's genre names are stepped to (lexicon `bpm`). The routine
-  then runs on the felt grid (`Routine.times`, `feel`).
+  counted tempo when that octave lies closer to the tempo the song's genre
+  names are stepped to (lexicon `bpm`; a calm song's lower) by more than a
+  margin the evidence sets. Half: a half candidate from the analysis
+  (traits halfTempo >= 0.5) lowers the margin until, from 0.85, half wins
+  unless the count is clearly the genre's (a half-time backbeat counts less
+  on trap, drill and bass music: that is their count). Outside the genres
+  that span fast dancing (punk, metal, bass music, EDM, trap, drill; country
+  and swing themes; any of them unless the song is calm) the genre and the
+  sound decide alone too: a count past 150 that only those genres step at,
+  or a soft-sounding song (low audio intensity, or soft genre names) counted
+  at 125-150 and up. Twice: the analysis must offer it (doubleTempo >= 0.5)
+  and it must be clearly closer. The routine then runs on the felt grid
+  (`Routine.times`, `feel`).
 - Free time (`hasFreeTime`, `freeTimeMap`): a finished map with no beat
   grid gets a slow flow on a nominal grid (56-96 BPM from the genre's tempo
   and the calm), danced calm with the lyrical set open, marked
-  `Routine.freeTime` (the conductor plays it on `Routine.times`).
+  `Routine.freeTime` (the conductor plays it on `Routine.times`). A driving
+  song (`freeTimeDriving`: audio intensity hard, or calm 0.3 or less) gets a
+  steady nominal grid at its genre's tempo instead (100-150 BPM), danced
+  with its own style: never the lyrical flow.
 
 ## Tempo: every move's speed limit
 
