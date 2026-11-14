@@ -186,11 +186,17 @@ describe('duo routine', () => {
       // Difficulty is weighted (Easy: nearly all simple moves), jumps are ruled out.
       expect(hard / n, vid).toBeLessThan(0.15);
       expect(chill.phrases.some((p) => p.kind === 'trade')).toBe(false);
-      const cardio = generateDuoRoutine(songMap(118, vid), 'cardio');
-      const ins = [...cardio.p1, ...cardio.p2];
-      const d3 = ins.filter((i) => i.move.difficulty > 2).reduce((t, i) => t + i.span, 0) / ins.reduce((t, i) => t + i.span, 0);
-      expect(d3, vid).toBeLessThan(0.15);
     }
+    // Medium rarely uses difficulty 3: measured over many songs, since one routine's share swings with its few
+    // picks (40 songs, Nov 2026: mean 0.044, about 1 routine in 15 at 0.15 or more, max 0.28 before and after
+    // the genre-set merge; the three songs above alone hit 0.22 / 0.14 / 0.03 or 0 / 0.06 / 0.05 by chance).
+    const d3s = Array.from({ length: 24 }, (_, k) => {
+      const cardio = generateDuoRoutine(songMap(118, k < 3 ? `lv-${'abc'[k]}` : `lv-${k}`), 'cardio');
+      const ins = [...cardio.p1, ...cardio.p2];
+      return ins.filter((i) => i.move.difficulty > 2).reduce((t, i) => t + i.span, 0) / ins.reduce((t, i) => t + i.span, 0);
+    });
+    expect(d3s.reduce((t, x) => t + x, 0) / d3s.length).toBeLessThan(0.08);
+    expect(d3s.filter((x) => x >= 0.15).length, d3s.map((x) => x.toFixed(2)).join(' ')).toBeLessThanOrEqual(2);
     // Sweaty uses more partner travel / jumps than cardio over a few songs.
     const travel = (lv: Intensity) =>
       ['s1', 's2', 's3', 's4'].reduce((n, v) => n + generateDuoRoutine(songMap(126, v), lv).phrases.filter((p) => p.kind === 'trade').length, 0);

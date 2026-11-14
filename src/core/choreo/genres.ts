@@ -102,26 +102,47 @@ export function isGenre(v: unknown): v is Genre {
 export interface SubInfo {
   /** The group set it falls back to (opened too when its own set is small); null = global moves only. */
   parent: Genre | null;
-  /** Opens its parent as well (a metal song dances rock and metal). */
+  /** Opens its parent as well (a metal song dances rock and metal); a parent it replaces stays open then. */
   withParent: boolean;
-  /** Closes its parent once its own set is big enough (reggaeton is not salsa). */
+  /** Closes this set (unless it is the parent it keeps or falls back to): reggaeton is not salsa. */
   replaces: Genre | null;
 }
 
+/**
+ * Own moves a sub-style set needs before it carries its songs' genre time
+ * alone. A Medium / Hard routine uses about 3-4 genre moves (its accent kit),
+ * so two songs of a set of S moves share about 16 / S of them: from 16 moves
+ * on, two songs of the style share about one accent at most. Below that the
+ * whole style looks alike song to song (measured, 20 songs per set, Nov 2026:
+ * Brazilian alone, 9 moves, has 9 genre moves in all and its top move takes
+ * 23 % of the genre time on Medium, 58 % on Easy; with Latin open too, 32
+ * moves and 12 %, with the Brazilian set still 14 % of the danced time).
+ */
+export const SUB_STANDALONE = 16;
+
+/**
+ * Rule for withParent: a sub-style with a parent keeps opening it while its
+ * own set has fewer than SUB_STANDALONE moves (set sizes Nov 2026 in
+ * brackets); sets that ADD to their group keep it whatever their size. Flip
+ * a set to false only once it is that big (tiers.test checks the rule).
+ */
 export const SUB_INFO: Readonly<Record<SubStyle, SubInfo>> = {
-  metal: { parent: 'rock', withParent: true, replaces: null },
-  punk: { parent: 'rock', withParent: true, replaces: null },
-  trap: { parent: 'hiphop', withParent: true, replaces: null },
-  drill: { parent: 'hiphop', withParent: true, replaces: null },
-  // R&B falls back to nothing extra: its family mix (funk / hip-hop / pop) opens what it leads.
+  // Add to their group by design (a metal song is still a rock song).
+  metal: { parent: 'rock', withParent: true, replaces: null }, // [9]
+  punk: { parent: 'rock', withParent: true, replaces: null }, // [9]
+  trap: { parent: 'hiphop', withParent: true, replaces: null }, // [11]
+  drill: { parent: 'hiphop', withParent: true, replaces: null }, // [8]
+  // R&B falls back to nothing extra: its family mix (funk / hip-hop / pop) opens what it leads. [5]
   rnb: { parent: null, withParent: false, replaces: null },
-  house: { parent: 'discofunk', withParent: false, replaces: null },
+  house: { parent: 'discofunk', withParent: true, replaces: null }, // [9] small: keeps disco & funk
+  // EDM and bass music have no group to borrow from (global aerobic / hip-hop moves carry the rest). [7] [8]
   edm: { parent: null, withParent: false, replaces: null },
   bass: { parent: null, withParent: false, replaces: null },
-  // Reggaeton grew out of dancehall: its fallback is the Caribbean set, and it never opens Latin's salsa / merengue.
-  reggaeton: { parent: 'caribbean', withParent: false, replaces: 'latin' },
-  brazil: { parent: 'latin', withParent: false, replaces: 'latin' },
-  amapiano: { parent: 'afro', withParent: false, replaces: null },
+  // Reggaeton grew out of dancehall: it keeps the Caribbean set, and never opens Latin's salsa / merengue. [5]
+  reggaeton: { parent: 'caribbean', withParent: true, replaces: 'latin' },
+  // Small: keeps Latin (and its layered samba steps, which stay there for the variation pool). [9]
+  brazil: { parent: 'latin', withParent: true, replaces: 'latin' },
+  amapiano: { parent: 'afro', withParent: true, replaces: null }, // [7] small: keeps afrobeats
   lyrical: { parent: null, withParent: false, replaces: null },
 };
 
@@ -244,8 +265,8 @@ export function genreOpenness(style: GenreSource): Map<Genre, number> {
     const info = SUB_INFO[s];
     const small = GENRE_MOVES[s].length < MIN_GENRE_SET;
     if (info.parent && (info.withParent || small)) open(info.parent, w);
-    // A replacing sub-style never opens the set it replaces (unless that is the fallback it needs).
-    if (info.replaces && !(small && info.parent === info.replaces)) closes.add(info.replaces);
+    // A replacing sub-style never opens the set it replaces (unless that is the fallback it needs or keeps).
+    if (info.replaces && !((small || info.withParent) && info.parent === info.replaces)) closes.add(info.replaces);
   }
   for (const g of closes) if (!style.themes.some((t) => THEME_GENRES[t] === g)) out.delete(g);
   for (const [g, w] of out) {

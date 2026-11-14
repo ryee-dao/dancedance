@@ -285,8 +285,8 @@ export const moves: MoveDef[] = [
     ],
   }),
   full({
-    id: 'gun-fingers', name: 'Gun Fingers', tags: 'hiphop | arms | point', beats: 2, level: 'low', d: 1, parts: ['arms'],
-    desc: 'Jungle and drum & bass salute: both hands up by the head with the index fingers pointing at the sky, punched up high on the half-time snare and drawn back in between.',
+    id: 'sky-points', name: 'Sky Points', tags: 'hiphop | arms | point', beats: 2, level: 'low', d: 1, parts: ['arms'],
+    desc: 'Drum & bass hands in the air: both hands up by the head with the index fingers pointing at the sky, pushed up high on the half-time snare and drawn back in between.',
     keys: [
       [0, { y: -0.07, nod: -8, r: at(1, 0.2, 1.1, 0.06, [1, 0.2, -0.3]), l: at(-1, -0.2, 1.1, 0.06, [1, 0.2, -0.3]), handR: 0, handL: 0, formR: 'point', formL: 'point' }],
       [1, { y: -0.02, nod: 4, r: at(1, 0.27, 0.92, 0.08, [1, -0.2, -0.3]), l: at(-1, -0.27, 0.92, 0.08, [1, -0.2, -0.3]), handR: 0, handL: 0, formR: 'point', formL: 'point' }],

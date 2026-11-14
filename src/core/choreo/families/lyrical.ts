@@ -7,12 +7,12 @@
  *             lunges with arcing arms, extensions. Low = small and upright
  *             (Easy), mid = travelling flow, high = deep, sustained range
  *             and control (Hard), never jumps.
- *   metal     horns, doom sway, half-time stomps, the wall-of-death crouch.
+ *   metal     horns, doom sway, hammer stomps, the wall-of-death crouch.
  *   punk      shout-along bounce, slam dancing, hardcore arm windmills,
  *             picking up change, the cross skank.
  *   brazil    samba de roda, a samba no pé turn, forró, axé, frevo, passinho,
  *             descer rebolando.
- *   amapiano  log-drum bounces, the shuffle, shoulder grooves, the low walk.
+ *   amapiano  log-drum bounces, the shuffle, knee drops, air piano, the low walk.
  *
  * All are hand-authored full-body moves (no shared layer patterns), so none
  * of them recombines with another set's layers.
@@ -100,7 +100,7 @@ const lyrical: MoveDef[] = [
     ],
   }),
   full({
-    id: 'body-wave', name: 'Body Wave', tags: 'pop | full | wave', beats: 4, level: 'low', d: 2, parts: ['torso', 'legs', 'arms'], bounce: 0.1,
+    id: 'spine-roll-up', name: 'Spine Roll & Open', tags: 'pop | full | wave', beats: 4, level: 'low', d: 2, parts: ['torso', 'legs', 'arms'], bounce: 0.1,
     desc: 'Start curled forward over soft knees, then roll up through the body: knees, hips, chest and finally the head, the arms floating up in front and opening high.',
     keys: [
       [0, { y: -0.07, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], kneeR: 0.08, kneeL: 0.08, bend: 16, nod: 14, shR: 0.3, shL: 0.3, r: at(1, 0.07, 0.56, 0.22, E_OUT), l: at(-1, -0.07, 0.56, 0.22, E_OUT), ...OPEN }],
@@ -174,7 +174,7 @@ const lyrical: MoveDef[] = [
 
   // --- High: deep, sustained, big range (Hard) -------------------------------
   full({
-    id: 'floor-sweep-rise', name: 'Floor Sweep & Rise', tags: 'pop aerobic | full |', beats: 4, level: 'high', d: 2, parts: ['legs', 'arms', 'torso'], mirror: true, bounce: 0.05,
+    id: 'lunge-sweep-rise', name: 'Lunge Sweep & Rise', tags: 'pop aerobic | full |', beats: 4, level: 'high', d: 2, parts: ['legs', 'arms', 'torso'], mirror: true, bounce: 0.05,
     desc: 'In a deep wide lunge, sweep both hands low across the floor from one foot to the other through a deep bend, then rise out of the lunge and reach both arms high on that side.',
     keys: [
       [0, { x: -0.1, y: -0.22, hips: -0.02, bend: 22, lean: -10, nod: 10, rf: [0.27, 0, 0], lf: [-0.27, 0, 0], kneeL: 0.25, r: at(1, -0.12, 0.48, 0.24, E_OUT), l: at(-1, -0.34, 0.45, 0.16, [1, 0, -0.3]), ...OPEN }],
@@ -249,7 +249,7 @@ const metal: MoveDef[] = [
     keys: [[0, DOOM_A], [1, DOOM_B], [2, mir(DOOM_A)], [3, mir(DOOM_B)]],
   }),
   full({
-    id: 'half-time-stomp', name: 'Half-Time Stomp', tags: 'rock | full | stomp', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms'], mirror: true, impact: true,
+    id: 'hammer-stomp', name: 'Hammer Stomp', tags: 'rock | full | stomp', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms'], mirror: true, impact: true,
     desc: 'On the half-time beat, stomp one foot and hammer the same fist down in front as the chest bows; lift the other knee and raise its fist ready for the next one.',
     keys: [[0, STOMP_A], [1, STOMP_B]],
   }),

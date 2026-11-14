@@ -45,7 +45,10 @@ traditions) open from the song's family weights and themes; the sub-styles
 below open from the style's sub-style scores (genre words + traits,
 `SUB_OPEN` 0.5). Each sub-style either ADDS to its group (a metal song
 dances rock and metal) or REPLACES it (reggaeton never gets salsa). A set
-with fewer than `MIN_GENRE_SET` (6) moves falls back: its parent opens too.
+with fewer than `MIN_GENRE_SET` (6) moves falls back: its parent opens too;
+and a sub-style with a parent keeps it open (`SUB_INFO` `withParent`) until
+its own set reaches `SUB_STANDALONE` (16) moves, so songs of a small style
+don't all dance the same few accents (a replaced parent stays open then).
 The song's calm closes showpiece sets (no headbangs on a ballad;
 `CALM_TOLERANCE` in `genres.ts`) and opens `lyrical`.
 
@@ -54,7 +57,7 @@ The song's calm closes showpiece sets (no headbangs on a ballad;
 | `metal` | headbanging (incl. hair windmill), horns, chug squats, wall-of-death crouch, slow heavy sway with fist | metal names (nu / heavy / death / gothic metal, metalcore ...), "hard rock" partly; heavy + driving audio on a rock song | adds to rock | `genreSets/mood.ts` |
 | `punk` | pogo, ska skank, hardcore two-step, circle-pit running, slam dancing | punk / hardcore / pop punk / ska / emo names; fast (150+), driving, rough rock | adds to rock | `genreSets/mood.ts` |
 | `trap` | the whip, nae nae, shoot, woah, griddy; quick poses on hi-hat rolls, bounce on the half-time snare | trap, crunk, snap, rage, cloud rap names; half-time feel + hat rolls / heavy 808 | adds to hip-hop | `genreSets/urban.ts` |
-| `drill` | drill bounce, arm swings, shoulder rocks, shmoney, woo walk | drill (UK / NY / Chicago ...), grime partly; half-time feel + syncopated hats and sliding bass | adds to hip-hop | `genreSets/urban.ts` |
+| `drill` | drill bounce, arm swings, shoulder rocks, shmoney, the strut | drill (UK / NY / Chicago ...), grime partly; half-time feel + syncopated hats and sliding bass | adds to hip-hop | `genreSets/urban.ts` |
 | `rnb` | body rolls, smooth two-steps, shoulder / hip isolations, slow grind grooves | R&B, neo soul, new jack swing, quiet storm; a swung, unhurried groove | none: the family mix opens what it leads | `genreSets/urban.ts` |
 | `house` | jacking, lofting, heel-toe footwork, skate / train / farmer, loose legs, voguing hands and frames | house names (deep / tech / Chicago / French, nu-disco, UK garage); four-on-the-floor at ~115-127 BPM | disco & funk (when small) | `genreSets/electronic.ts` |
 | `edm` | fist pumping, shuffle (cutting shapes), the jump on the drop, hands-up builds | EDM, big room, electro / progressive house, trance, techno, hardstyle; four-on-the-floor at 124+ | none (global aerobic moves) | `genreSets/electronic.ts` |

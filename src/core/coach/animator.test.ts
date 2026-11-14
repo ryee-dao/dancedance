@@ -75,25 +75,35 @@ describe('PoseEvaluator over a routine', () => {
       const prev = new Float64Array(sk.p.length);
       const prevPose = createPose();
       const end = plan.grid[plan.grid.length - 1] + 2;
-      let maxStep = 0;
+      // Joint speed scales with the tempo a move is DANCED at: half the song's for a move at half time, the
+      // song's own for one within its speed limit (speed.ts; at 170 BPM many moves still run at full time).
+      // Per frame, the faster of the move playing and the one before it (the transition into it).
+      const ins = [...plan.instances].sort((a, b) => a.start - b.start);
+      const danced = (i: (typeof ins)[number] | undefined) => (i ? bpm / (i.half ? 2 : 1) : 0);
+      let k = 0;
+      let worst = 0; // max over frames of step / allowed step
       let maxChannel = 0;
       for (let f = 0; f < end * 60; f++) {
         ev.evaluate(plan, f / 60, p);
         solveSkeleton(p, sk);
+        const beat = beatPosition(plan, f / 60);
+        while (k + 1 < ins.length && ins[k + 1].start <= beat) k++;
+        const effBpm = Math.max(danced(ins[k]), danced(ins[k - 1]));
         if (f > 0) {
-          for (let j = 0; j < J.HEAD_UP * 3; j += 3) maxStep = Math.max(maxStep, Math.hypot(sk.p[j] - prev[j], sk.p[j + 1] - prev[j + 1], sk.p[j + 2] - prev[j + 2]));
+          let step = 0;
+          for (let j = 0; j < J.HEAD_UP * 3; j += 3) step = Math.max(step, Math.hypot(sk.p[j] - prev[j], sk.p[j + 1] - prev[j + 1], sk.p[j + 2] - prev[j + 2]));
+          worst = Math.max(worst, step / (0.095 * Math.max(1, effBpm / 100)));
           for (const c of [CH.RA_E, CH.RF_E, CH.LA_E, CH.LF_E, CH.LEAN, CH.TWIST]) maxChannel = Math.max(maxChannel, Math.abs(p[c] - prevPose[c]));
         }
         prev.set(sk.p);
         prevPose.set(p);
       }
-      const effBpm = bpm > 150 ? bpm / 2 : bpm;
       // Transitions between moves can take only half a beat, so allow a bit
       // more than within a move (measured peak: 0.094 at 120 BPM); turns
       // rotate the whole body, so a little more headroom (peak 0.098 at 128).
       // With ~500 moves, a transition can swing an arm across in half a beat
       // (peak ~0.11 at 124 BPM); a real jump is several times larger.
-      expect(maxStep).toBeLessThan(0.095 * Math.max(1, effBpm / 100));
+      expect(worst, `${bpm} ${lv}`).toBeLessThan(1);
       expect(maxChannel).toBeLessThan(25); // degrees per frame
     }
   });

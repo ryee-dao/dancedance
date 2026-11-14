@@ -20,6 +20,9 @@
  *               hips, rolls) and gentle, low-motion moves lean slow;
  *               quarter-beat footwork leans away from fast (too busy at 140).
  * OVERRIDES hand-corrects the outliers the formula gets wrong.
+ * Density, motion and vigour are percentiles against the GLOBAL dance moves
+ * only (isReferenceMove): a genre-exclusive move never changes another move's
+ * weights.
  *
  * The hard tempo limit of a move (how fast it can be danced at all, half
  * time above it) is speed.ts; the song's character (calm) x level is
@@ -104,36 +107,60 @@ function rankIn(sorted: Float64Array, v: number): number {
   return sorted.length > 1 ? (lo + up - 1) / 2 / (sorted.length - 1) : 0.5;
 }
 
-/** The catalogue's dance moves (reference distribution for the percentiles). */
-const REF_MOVES = MOVES.filter((m) => !m.idle && !m.cooldown);
+/**
+ * Whether a move belongs to the reference distribution of the percentiles
+ * (density, motion, vigour): the catalogue's GLOBAL dance moves only.
+ * Genre-exclusive moves are ranked against it but never shape it, so adding
+ * or removing a genre move (or a whole set) cannot shift any other move's
+ * weights: global moves keep their weights, and so their selection, on every
+ * song that doesn't open that set, and one set's moves never move another
+ * set's. Variations are ranked against it too (they are not catalogue moves).
+ */
+export function isReferenceMove(m: Move): boolean {
+  return !m.idle && !m.cooldown && !m.genre;
+}
 
 function rawVigour(m: Move, motionPct: number): number {
   const level = m.level === 'high' ? 1 : m.level === 'mid' ? 0.5 : 0;
   return 0.45 * level + 0.35 * motionPct + 0.2 * (m.jump ? 1 : m.impact ? 0.6 : 0);
 }
 
-let REF: { motion: Float64Array; raw: Float64Array; density: Float64Array } | null = null;
-function ref() {
-  if (!REF) {
-    const motion = Float64Array.from(REF_MOVES.map(moveMotion)).sort();
-    const raw = Float64Array.from(REF_MOVES.map((x) => rawVigour(x, rankIn(motion, moveMotion(x))))).sort();
-    const density = Float64Array.from(REF_MOVES.map((x) => x.keys.length / x.beats)).sort();
-    REF = { motion, raw, density };
-  }
-  return REF;
+/** Sorted reference values the percentiles rank against. */
+export interface WeightRef {
+  motion: Float64Array;
+  raw: Float64Array;
+  density: Float64Array;
+}
+
+/** The percentile reference of a catalogue: its reference moves (isReferenceMove). */
+export function weightRef(catalogue: readonly Move[]): WeightRef {
+  const refMoves = catalogue.filter(isReferenceMove);
+  const motion = Float64Array.from(refMoves.map(moveMotion)).sort();
+  const raw = Float64Array.from(refMoves.map((x) => rawVigour(x, rankIn(motion, moveMotion(x))))).sort();
+  const density = Float64Array.from(refMoves.map((x) => x.keys.length / x.beats)).sort();
+  return { motion, raw, density };
+}
+
+let REF: WeightRef | null = null;
+function ref(): WeightRef {
+  return (REF ??= weightRef(MOVES));
+}
+
+/** A move's vigour against a reference (uncached; moveVigour is the catalogue's, cached). */
+export function vigourAgainst(m: Move, r: WeightRef): number {
+  return rankIn(r.raw, rawVigour(m, rankIn(r.motion, moveMotion(m))));
 }
 
 const VIGOUR = new Map<Move, number>();
 /**
  * How vigorous a move looks, 0 (gentle) .. 1 (all-out), as a percentile among
- * the catalogue's dance moves: its level, how much it moves per beat, and
- * jumps / squats.
+ * the catalogue's global dance moves: its level, how much it moves per beat,
+ * and jumps / squats.
  */
 export function moveVigour(m: Move): number {
   const hit = VIGOUR.get(m);
   if (hit !== undefined) return hit;
-  const r = ref();
-  const v = rankIn(r.raw, rawVigour(m, rankIn(r.motion, moveMotion(m))));
+  const v = vigourAgainst(m, ref());
   VIGOUR.set(m, v);
   return v;
 }
@@ -143,10 +170,17 @@ const SMOOTH_THEMES = new Set(['wave', 'hips']);
 
 const WEIGHTS = new Map<Move, MoveWeights>();
 
-/** The move's soft weights (cached). */
+/** The move's soft weights against the catalogue's reference (cached). */
 export function moveWeights(m: Move): MoveWeights {
   const hit = WEIGHTS.get(m);
   if (hit) return hit;
+  const w = weightsAgainst(m, ref());
+  WEIGHTS.set(m, w);
+  return w;
+}
+
+/** A move's soft weights against a percentile reference (uncached; see weightRef). */
+export function weightsAgainst(m: Move, r: WeightRef): MoveWeights {
   const keys = m.keys;
   let minY = 0, maxY = 0, offBeat = 0;
   for (const k of keys) {
@@ -155,10 +189,9 @@ export function moveWeights(m: Move): MoveWeights {
     if (!Number.isInteger(k.at * 2)) offBeat++;
   }
   const syncop = keys.length ? offBeat / keys.length : 0;
-  const r = ref();
   const densityPct = rankIn(r.density, keys.length / m.beats);
   const motionPct = rankIn(r.motion, moveMotion(m));
-  const vig = moveVigour(m);
+  const vig = vigourAgainst(m, r);
   const turn = m.parts.includes('turn');
 
   // Impact.
@@ -184,9 +217,7 @@ export function moveWeights(m: Move): MoveWeights {
   const tempo: [number, number, number] = [clamp(Math.exp(slowScore), 0.3, 2.5), 1, clamp(Math.exp(fastScore), 0.3, 1.7)];
 
   const o = OVERRIDES[m.base] ?? OVERRIDES[m.id];
-  const w: MoveWeights = { tempo: o?.tempo ?? tempo, impact: o?.impact ?? impact, difficulty: o?.difficulty ?? difficulty };
-  WEIGHTS.set(m, w);
-  return w;
+  return { tempo: o?.tempo ?? tempo, impact: o?.impact ?? impact, difficulty: o?.difficulty ?? difficulty };
 }
 
 // ---------------------------------------------------------------------------

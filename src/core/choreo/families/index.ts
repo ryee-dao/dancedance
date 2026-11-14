@@ -68,6 +68,11 @@ export const RETIRED: ReadonlyMap<string, string> = new Map([
   ['roll-high', "the arms can't reach a roll above the head; it rolls across the face instead"],
   ['the-stroll', 'a formation line dance (couples down the middle of two lines), not a single step; the footwork was not sourced'],
   ['jig-walk', 'known only as a partnered Lindy step with no sourced description'],
+  // Merge review of the genre-set files (electronic / urban / lyrical, written apart): the same
+  // idea under two names. None was below UNIQUE_THRESHOLD; each is the weaker copy of a move kept.
+  ['lofting-reach', "same idea as lyrical's lunge-sweep-rise (hands swept across the floor in a deep bend, rise reaching high; 0.135 apart, and house + lyrical co-open on calm house); real lofting is floorwork the figure can't do"],
+  ['reggaeton-hip-roll', "rnb's slow-hip-roll at twice the speed (same circle, same hand-up arms); the generator sets the speed, and reggaeton keeps perreo-bounce for its hips"],
+  ['shoulder-groove', "drill's shoulder-rock counted slower (one shoulder leading forward with the arm, knees dipping; 0.120 apart even at half time)"],
 ]);
 
 /** Every catalogue move, in file order. */

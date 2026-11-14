@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Family } from './families';
 import { cardsOf } from './cards';
-import { generateRoutine, moveVigour, type Intensity, type MoveInstance, type RoutineOpts } from './generator';
+import { GENRE_MAX, GENRE_MIN, generateRoutine, moveVigour, type Intensity, type MoveInstance, type RoutineOpts } from './generator';
 import { moveSmoothness } from './weights';
 import { MOVES } from './moves';
 import { BALANCED_POP, resolveSongStyle, signatureMoveIds, songSignature, type SongStyle } from './songStyle';
@@ -145,10 +145,12 @@ describe('song style -> routine', () => {
 });
 
 describe('song character x level', () => {
-  const IDS = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6'];
-  /** Danced-time averages over a few songs at one level (no grooves, cool-down or combo). */
+  // 24 songs: over 6 the averages swing too much to compare (6-song windows of the banger-vs-ballad
+  // vigour gap below ranged 0.06-0.22, Nov 2026); over 24-48 they hold within about +-0.02.
+  const IDS = Array.from({ length: 24 }, (_, k) => `c${k + 1}`);
+  /** Danced-time averages over several songs at one level (no grooves, cool-down or combo). */
   function stats(st: SongStyle, bpm: number, lv: Intensity) {
-    let t = 0, jump = 0, genre = 0, smooth = 0, vig = 0, keys = 0, cards = 0, cardBeats = 0;
+    let t = 0, jump = 0, genre = 0, lyrical = 0, smooth = 0, vig = 0, keys = 0, cards = 0, cardBeats = 0;
     const ids = new Set<string>();
     for (const id of IDS) {
       const r = generateRoutine(songMap(bpm, id), lv, { style: st });
@@ -156,7 +158,8 @@ describe('song character x level', () => {
         if (i.move.idle || i.move.cooldown || i.sig) continue;
         t += i.span;
         if (i.move.jump) jump += i.span;
-        if (i.move.genre) genre += i.span;
+        if (i.move.genre === 'lyrical') lyrical += i.span;
+        else if (i.move.genre) genre += i.span;
         smooth += moveSmoothness(i.move) * i.span;
         vig += moveVigour(i.move) * i.span;
         // Keys per SONG beat: how busy the coach is on the music.
@@ -168,7 +171,8 @@ describe('song character x level', () => {
         cardBeats += c.end - c.start;
       }
     }
-    return { jump: jump / t, genre: genre / t, smooth: smooth / t, vig: vig / t, keys: keys / t, card: cardBeats / cards, ids };
+    // genre = genre time other than the lyrical mood set (which any calm song opens by design).
+    return { jump: jump / t, genre: genre / t, lyrical: lyrical / t, smooth: smooth / t, vig: vig / t, keys: keys / t, card: cardBeats / cards, ids };
   }
   const ballad = resolveSongStyle({ title: 'My Immortal', genre: 'Hard Rock' }, { bpm: 78, traits: { calm: 0.9, heavy: 0.2, drive: 0.15 } });
   const driving = resolveSongStyle({ title: 'Bring Me to Life', genre: 'Hard Rock' }, { bpm: 78, traits: { calm: 0.15, heavy: 0.8, drive: 0.85 } });
@@ -178,7 +182,11 @@ describe('song character x level', () => {
     for (const lv of ['chill', 'cardio', 'sweaty'] as const) {
       const c = stats(ballad, 78, lv);
       const d = stats(driving, 78, lv);
+      // No genre time but the lyrical set's, and that one carries a real share (the kit's GENRE_MIN..MAX).
       expect(c.genre, lv).toBe(0);
+      expect(c.lyrical, lv).toBeGreaterThan(GENRE_MIN);
+      expect(c.lyrical, lv).toBeLessThan(GENRE_MAX);
+      expect(d.lyrical, lv).toBe(0);
       expect([...c.ids].filter((id) => SHOWPIECES.test(id)), lv).toEqual([]);
       expect(c.jump, lv).toBeLessThan(0.01);
       expect(c.smooth, lv).toBeGreaterThan(d.smooth + 0.1);

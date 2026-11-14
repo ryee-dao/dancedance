@@ -8,7 +8,7 @@
  *              snare; opened by trap and its regional names, and a half-time
  *              feel with hi-hat rolls and heavy 808s.
  *   drill      UK / NY / Chicago drill: the drill bounce, arm swings and
- *              shoulder rocks, the shmoney, the woo walk; opened by drill and
+ *              shoulder rocks, the shmoney, the strut; opened by drill and
  *              a half-time feel with syncopated, sliding hats and bass.
  *   rnb        contemporary R&B: body rolls, smooth two-steps, shoulder and
  *              hip isolations, slow grind grooves; opened by R&B, neo-soul,
@@ -22,7 +22,7 @@ export const moves: Partial<Record<string, string>> = {
   // families/urban.ts (genres.ts RAW already lists the-whip the-shoot the-woah griddy jet-griddy nae-nae)
   trap: `shoulder-lean lean-two-step hit-and-hold rap-hands turn-up-jump`,
   // (RAW already lists shmoney)
-  drill: `drill-bounce shoulder-rock drill-arm-swing woo-walk sturdy-hop drill-glide drill-two-step`,
+  drill: `drill-bounce shoulder-rock drill-arm-swing drill-strut sturdy-hop drill-glide drill-two-step`,
   rnb: `body-roll slow-hip-roll hip-roll-down snap-sway slow-jam-sway`,
-  reggaeton: `dembow-step perreo-bounce reggaeton-hip-roll dembow-knee-pop sandungueo-bounce dembow-shimmy`,
+  reggaeton: `dembow-step perreo-bounce dembow-knee-pop sandungueo-bounce dembow-shimmy`,
 };

@@ -27,13 +27,13 @@ export const moves: Partial<Record<string, string>> = {
   // All in families/lyrical.ts (hand-authored full-body moves, no shared layers).
   lyrical: `
     // low: small and upright (Easy)
-    tendu-open halo-sway embrace-release offering-hands gather-open body-wave
+    tendu-open halo-sway embrace-release offering-hands gather-open spine-roll-up
     // mid: travelling flow
     opening-walk reach-recover swing-suspend fall-recover spiral-turn arcing-lunge
     // high: deep, sustained range and control (Hard), no jumps
-    floor-sweep-rise grand-plie developpe-side side-tilt spiral-sink`,
-  metal: `horns-to-crowd doom-sway half-time-stomp arms-out-lean-back wall-of-death circle-pit-call`,
+    lunge-sweep-rise grand-plie developpe-side side-tilt spiral-sink`,
+  metal: `horns-to-crowd doom-sway hammer-stomp arms-out-lean-back wall-of-death circle-pit-call`,
   punk: `shout-along-bounce slam-bump picking-up-change hardcore-windmill cross-skank`,
   brazil: `samba-de-roda samba-turn forro-basic axe-wave-step descer-rebolando frevo-scissors passinho-tap frevo-squat`,
-  amapiano: `log-drum-bounce amapiano-shuffle shoulder-groove low-squat-walk air-piano knee-drop-groove`,
+  amapiano: `log-drum-bounce amapiano-shuffle low-squat-walk air-piano knee-drop-groove`,
 };
