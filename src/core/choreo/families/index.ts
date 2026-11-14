@@ -22,6 +22,9 @@ import * as party from './party';
 import * as afro from './afro';
 import * as retro from './retro';
 import * as world from './world';
+import * as electronic from './electronic';
+import * as urban from './urban';
+import * as lyrical from './lyrical';
 import * as named from './named';
 
 export interface FamilyFile {
@@ -30,7 +33,7 @@ export interface FamilyFile {
 }
 
 /** Family files by name (the --family argument of tools/moves/check.ts). */
-export const FAMILY_FILES: Readonly<Record<string, FamilyFile>> = { shared, aerobic, cooldown, latin, disco, funk, hiphop, pop, rock, kpop, party, afro, retro, world, named };
+export const FAMILY_FILES: Readonly<Record<string, FamilyFile>> = { shared, aerobic, cooldown, latin, disco, funk, hiphop, pop, rock, kpop, party, afro, retro, world, electronic, urban, lyrical, named };
 
 /**
  * Definition errors (duplicate ids, unknown patterns, bad tags), by file. A

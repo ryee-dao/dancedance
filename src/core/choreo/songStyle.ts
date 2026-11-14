@@ -746,7 +746,7 @@ export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyl
     if (ly >= SUB_KEEP) subs.lyrical = Math.round(ly * 1000) / 1000;
   }
 
-  const themeSet = new Set<Theme>([...themesOf(curated?.themes), ...ev.themes, ...keywordThemes(song.title, song.artist)]);
+  const themeSet = new Set<Theme>([...themesOf(curated?.themes), ...ev.themes, ...keywordThemes(song.title)]);
   const themes = THEMES.filter((t) => themeSet.has(t));
 
   let focus = normFocus(curated?.focus) ?? normFocus(ev.focus);

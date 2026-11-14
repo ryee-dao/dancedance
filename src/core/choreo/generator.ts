@@ -1411,7 +1411,8 @@ export function tierBeats(r: Routine, style: SongStyle = BALANCED_POP): { global
   let global = 0;
   let genre = 0;
   for (const i of r.instances) {
-    if (i.move.idle || i.move.cooldown || i.section === 'outro' || (i.sig && nodCombo)) continue;
+    // A signature nod belongs to its song whatever tier its move is in: never counted as genre time.
+    if (i.move.idle || i.move.cooldown || i.section === 'outro' || (i.sig && (nodCombo || nod.has(i.move.id) || nod.has(i.move.base)))) continue;
     if (i.move.genre) genre += i.span;
     else global += i.span;
   }
