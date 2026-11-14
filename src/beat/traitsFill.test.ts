@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { BeatMap, SongTraits } from '../core/analysis';
+import { OPTIONAL_TRAIT_KEYS, TRAIT_KEYS, type BeatMap, type SongTraits } from '../core/analysis';
 import type { LiveDevices } from '../live/devices';
 import type { DecodedAudio } from './analyzeAudio';
 import { BeatMapCache, memoryStore } from './cache';
@@ -60,7 +60,7 @@ describe('needsTraits / fillTraits', () => {
 
   it('the main-thread runner computes real traits', async () => {
     const t = await inlineTraitsRunner({ pcm: new Float32Array(22050 * 3), sampleRate: 22050, duration: 3 }, { beats: [], downbeats: [], bpm: 0 }).promise;
-    expect(Object.keys(t)).toHaveLength(10);
+    expect(Object.keys(t).sort()).toEqual([...TRAIT_KEYS, ...OPTIONAL_TRAIT_KEYS].sort());
   });
 });
 

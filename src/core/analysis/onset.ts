@@ -483,6 +483,55 @@ export function onsetEnvelope(f: Features): Float32Array {
   return out;
 }
 
+/**
+ * Onset envelope from the level-relative trait descriptors: per frame, the
+ * kick-band rise plus the snare and hat "cracks" (band rise x fraction of the
+ * band's bins rising, square-rooted; see traits.ts), detrended and
+ * normalised like `onsetEnvelope`. The fraction-of-bins term makes it see
+ * broadband drum hits through a dense, distorted mix (a held guitar chord
+ * keeps the flux busy but raises few bins at once), where the plain flux is
+ * mostly texture. All zeros for silence.
+ */
+export function riseEnvelope(f: Features): Float32Array {
+  const n = f.frames;
+  const raw = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const t = i * TRAIT_DIMS;
+    raw[i] = f.trait[t + TR_KICK] + Math.sqrt(f.trait[t + TR_MID] * f.trait[t + TR_MID_RISE]) + Math.sqrt(f.trait[t + TR_HIGH] * f.trait[t + TR_HIGH_RISE]);
+  }
+  return detrendNormalise(raw);
+}
+
+/**
+ * The envelope the tempo and beat stages run on: the mean of `onsetEnvelope`
+ * and `riseEnvelope` (each std-normalised). The flux carries tonal onsets and
+ * soft music; the rises carry drums under distortion.
+ */
+export function beatEnvelope(f: Features): Float32Array {
+  const a = onsetEnvelope(f);
+  const b = riseEnvelope(f);
+  const out = new Float32Array(a.length);
+  for (let i = 0; i < a.length; i++) out[i] = 0.5 * (a[i] + b[i]);
+  return out;
+}
+
+/** Raw signal minus a centred ~1 s moving average, half-wave rectified, divided by its standard deviation. */
+function detrendNormalise(raw: Float64Array): Float32Array {
+  const n = raw.length;
+  const prefix = new Float64Array(n + 1);
+  for (let i = 0; i < n; i++) prefix[i + 1] = prefix[i] + raw[i];
+  const out = new Float32Array(n);
+  const w = DETREND_HALF_WIDTH;
+  for (let i = 0; i < n; i++) {
+    const a = Math.max(0, i - w);
+    const b = Math.min(n, i + w + 1);
+    const v = raw[i] - (prefix[b] - prefix[a]) / (b - a);
+    out[i] = v > 0 ? v : 0;
+  }
+  normaliseStd(out);
+  return out;
+}
+
 /** Divide by the standard deviation in place (no-op for (near-)constant input). */
 export function normaliseStd(x: Float32Array, sum?: number, sumSq?: number): void {
   const n = x.length;

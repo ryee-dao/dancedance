@@ -3,14 +3,17 @@
  *
  * Pure TypeScript: no DOM, Web Audio or Node APIs.
  */
-import { TRAIT_KEYS, type SongTraits } from './traits';
+import { OPTIONAL_TRAIT_KEYS, TRAIT_KEYS, type SongTraits } from './traits';
 
 export const BEATMAP_VERSION = 1;
 /**
  * Bump whenever analysis results change (cached maps from older analysers can then be refreshed).
  * 1.2.0: per-bar readings (`bars`). 1.3.0: song traits (`traits`).
+ * 1.4.0: tempo and beats on a beat envelope that sees drums through dense mixes (grids where
+ * 1.3.0 found none, 4:3 and octave fixes); traits re-calibrated on real music (calm, drive,
+ * halfFeel, heavy) and three optional ones (intensity, halfTempo, doubleTempo).
  */
-export const ANALYZER_VERSION = '1.3.0';
+export const ANALYZER_VERSION = '1.4.0';
 
 export type BeatMapSource = 'cloud' | 'device' | 'file' | 'tab' | 'mic';
 export type SectionType = 'intro' | 'verse' | 'chorus' | 'drop' | 'outro';
@@ -60,7 +63,8 @@ export interface BeatMap {
   /**
    * Absolute per-song descriptors (analyser 1.3.0+; see SongTraits), each
    * 0..1 with 2 decimals. Older maps have none; the app fills them in where
-   * it has the song's audio (computeTraits).
+   * it has the song's audio (computeTraits). Maps from 1.4.0 on may also
+   * carry the OPTIONAL_TRAIT_KEYS.
    */
   traits?: SongTraits;
 }
@@ -206,15 +210,20 @@ export function validateBeatMap(x: unknown): BeatMap {
   return out;
 }
 
-/** Validate optional song traits: every key a number in 0..1, rounded to 2 decimals (unknown keys dropped). */
+/**
+ * Validate optional song traits: every TRAIT_KEYS key a number in 0..1, the
+ * OPTIONAL_TRAIT_KEYS (analyser 1.4.0+) too where present, rounded to 2
+ * decimals (unknown keys dropped).
+ */
 function validateTraits(x: unknown): SongTraits {
   if (!isObj(x)) fail('traits must be an object');
   const out = {} as SongTraits;
-  for (const k of TRAIT_KEYS) {
-    const v = x[k];
+  const num = (k: string, v: unknown) => {
     if (typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 1) fail(`traits.${k} must be a number within 0..1`);
-    out[k] = Math.round(v * 100) / 100;
-  }
+    return Math.round(v * 100) / 100;
+  };
+  for (const k of TRAIT_KEYS) out[k] = num(k, x[k]);
+  for (const k of OPTIONAL_TRAIT_KEYS) if (x[k] !== undefined) out[k] = num(k, x[k]);
   return out;
 }
 

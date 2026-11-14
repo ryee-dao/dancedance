@@ -9,7 +9,7 @@
  * Pure TypeScript: no DOM, Web Audio or Node APIs.
  */
 import { BEATMAP_VERSION, SECTION_TYPES, validateBeatMap, type BeatMap } from './beatmap';
-import { TRAIT_KEYS } from './traits';
+import { OPTIONAL_TRAIT_KEYS, TRAIT_KEYS } from './traits';
 
 /** Sources a player may contribute: 'tab' (heard via tab audio) and 'device' (analysed from a local download). */
 export const SHARED_SOURCES = ['tab', 'device'] as const;
@@ -31,7 +31,8 @@ const VERSION_RE = /^[0-9A-Za-z.+-]{1,32}$/;
 const TOP_KEYS = new Set(['v', 'analyzerVersion', 'videoId', 'duration', 'bpm', 'beats', 'downbeats', 'sections', 'source', 'partial', 'bars', 'traits']);
 const SECTION_KEYS = new Set(['start', 'end', 'type', 'energy']);
 const BAR_KEYS = new Set(['energy', 'bass', 'change', 'drops']);
-const TRAIT_KEY_SET = new Set<string>(TRAIT_KEYS);
+// The relay must list the optional keys too; a relay that does not refuses them as 'extra-field' and the app re-shares without traits.
+const TRAIT_KEY_SET = new Set<string>([...TRAIT_KEYS, ...OPTIONAL_TRAIT_KEYS]);
 const EPS = 0.002;
 
 export type SharedCheck = { ok: true; map: BeatMap } | { ok: false; rule: string };

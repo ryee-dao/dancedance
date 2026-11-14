@@ -56,6 +56,7 @@ import {
   FRAME_RATE,
   frameTime,
   NUM_BANDS,
+  riseEnvelope,
   TR_CHROMA,
   TR_FILL,
   TR_FLAT,
@@ -67,6 +68,7 @@ import {
   TRAIT_DIMS,
   type Features,
 } from './onset';
+import { octaveDoubt } from './tempo';
 
 /** Absolute per-song descriptors, each 0..1 (stored with 2 decimals). */
 export interface SongTraits {
@@ -90,9 +92,21 @@ export interface SongTraits {
   heavy: number;
   /** Minor-mode likelihood (a weak estimate: relative major / minor keys share their notes). */
   minor: number;
+  /**
+   * How hard-hitting the sound is, apart from how rhythmic it is (analyser 1.4.0+; optional):
+   * 0 = soft (breathy voice, acoustic guitar, piano, mellow pads), 1 = hard (distorted guitars,
+   * harsh synths, dense loud drums, shouting).
+   */
+  intensity?: number;
+  /** How plausible stepping at half the map's bpm is (1.4.0+; optional): weak in-between beats or a once-per-bar backbeat. */
+  halfTempo?: number;
+  /** How plausible stepping at twice the map's bpm is (1.4.0+; optional): pulses half-way between the beats nearly as strong as the beats. */
+  doubleTempo?: number;
 }
 
 export const TRAIT_KEYS = ['calm', 'drive', 'fourFloor', 'halfFeel', 'bass', 'hats', 'swing', 'syncop', 'heavy', 'minor'] as const satisfies readonly (keyof SongTraits)[];
+/** Traits a map may carry from analyser 1.4.0 on; maps made before have none of them. */
+export const OPTIONAL_TRAIT_KEYS = ['intensity', 'halfTempo', 'doubleTempo'] as const satisfies readonly (keyof SongTraits)[];
 
 /** The beat grid traits are read on (times in seconds on the features' timeline). */
 export interface TraitGrid {
@@ -142,8 +156,9 @@ const ONSET_PROMINENCE = 0.12;
 export interface TraitStats {
   /** Active (non-silent) seconds analysed. */
   seconds: number;
-  /** Whether a real beat grid was used. */
+  /** Whether a real beat grid was used, and its tempo. */
   grid: boolean;
+  bpm: number;
   /** Mean per-beat strongest kick / snare-band / hat-band prominence. */
   kick: number;
   midRise: number;
@@ -169,6 +184,20 @@ export interface TraitStats {
   /** 25th percentile of the 1-5 kHz flatness and of its fill. */
   flatness: number;
   fill: number;
+  /** Median of the 1-5 kHz flatness and of its fill (the typical frame, not the quiet ones). */
+  flatMid: number;
+  fillMid: number;
+  /** Spectral tilt: mean level of 2.8-7.3 kHz minus that of 270 Hz-1.1 kHz over active frames (dB). */
+  tilt: number;
+  /** Mean over bars of the strongest kick and of the strongest snare prominence in the bar. */
+  kickBar: number;
+  snareBar: number;
+  /** Presence (2.8-7.3 kHz) minus the top octave (7.3-11 kHz), median over active frames (dB). */
+  rolloff: number;
+  /** Octave doubt of the grid's tempo on the rise envelope (tempo.ts octaveDoubt; onset.ts riseEnvelope). */
+  octSlower: number;
+  octFaster: number;
+  halfProf?: number[];
   /** Best minor-key minus best major-key profile correlation. */
   modeDiff: number;
 }
@@ -181,22 +210,27 @@ export function traitsFromFeatures(f: Features, grid: TraitGrid): SongTraits {
 /** Map raw statistics onto 0..1 traits. */
 export function traitsFromStats(s: TraitStats): SongTraits {
   if (s.seconds < 2) {
-    return { calm: 1, drive: 0, fourFloor: 0, halfFeel: 0, bass: 0, hats: 0, swing: 0, syncop: 0, heavy: 0, minor: 0.5 };
+    return { calm: 1, drive: 0, fourFloor: 0, halfFeel: 0, bass: 0, hats: 0, swing: 0, syncop: 0, heavy: 0, minor: 0.5, intensity: 0, halfTempo: 0, doubleTempo: 0 };
   }
-  const hits = 0.55 * ramp(s.kick, 0.15, 0.6) + 0.25 * ramp(s.midRise, 0.12, 0.5) + 0.2 * ramp(s.highRise, 0.12, 0.6);
-  const drive = clamp01(hits * (0.75 + 0.25 * ramp(s.gridLock, 0.52, 0.75)));
+  // Drive: how hard the hardest hit of a bar is (kick or snare, over its own background), and how many strong onsets there are.
+  const punch = Math.max(s.kickBar, s.snareBar);
+  const drive = clamp01(0.5 * ramp(punch, 0.3, 0.8) + 0.5 * ramp(s.onsetRate, 2, 5));
   const hats = ramp(s.hatDensity, 0.1, 0.7);
   const fourFloor = s.grid ? ramp(s.fourFloor, 0.1, 0.55) : 0;
   // Gated on a high-band crack: a once-per-bar chord or piano hit is not a backbeat.
-  const halfFeel = s.grid ? ramp(s.half, 0.08, 0.2) * ramp(s.highRise, 0.15, 0.3) : 0;
+  const halfFeel = s.grid ? ramp(s.half, 0.06, 0.16) * ramp(s.highRise, 0.15, 0.3) : 0;
   const swing = s.grid ? ramp(s.offPos, 0.55, 0.63) * ramp(s.offStrength, 0.04, 0.09) : 0;
   const syncop = s.grid ? ramp(Math.max(s.syncKick, s.syncSnare), 0.22, 0.5) * (1 - swing) : 0;
   const bass = ramp(s.subDb, -15, -1);
-  const heavy = ramp(s.flatness, 0.09, 0.17) * ramp(s.fill, 0.9, 0.985);
-  const density = ramp(s.onsetRate, 2, 5);
-  const driving = 0.45 * drive + 0.25 * density + 0.2 * heavy + 0.1 * hats;
-  const calm = 1 - ramp(driving, 0.1, 0.6);
+  // Distortion: noise-like and full 1-5 kHz in the quieter frames, with the top octave rolled off (a guitar cabinet; supersaws and cymbals are not).
+  const heavy = ramp(s.flatness, 0.09, 0.17) * ramp(s.fill, 0.9, 0.985) * ramp(s.rolloff, 3, 5.5);
+  // Intensity: a noise-like, full midrange in the typical frame (distortion, dense drums, harsh synths, shouting) and a bright presence band.
+  const intensity = 0.6 * ramp(s.flatMid, 0.06, 0.26) * ramp(s.fillMid, 0.4, 0.9) + 0.4 * ramp(s.tilt, -16, -3);
+  const calm = 1 - ramp(0.55 * intensity + 0.45 * drive, 0.15, 0.65);
   const minor = clamp01(0.5 + 5 * (s.modeDiff - 0.05));
+  // Octave doubt: weak in-between beats, or a backbeat once per bar, make half the tempo a plausible step.
+  const halfTempo = s.grid && s.bpm / 2 >= 55 ? Math.max(s.octSlower, halfFeel) : 0;
+  const doubleTempo = s.grid ? s.octFaster : 0;
   return {
     calm: roundTrait(calm),
     drive: roundTrait(drive),
@@ -208,6 +242,9 @@ export function traitsFromStats(s: TraitStats): SongTraits {
     syncop: roundTrait(syncop),
     heavy: roundTrait(heavy),
     minor: roundTrait(minor),
+    intensity: roundTrait(intensity),
+    halfTempo: roundTrait(halfTempo),
+    doubleTempo: roundTrait(doubleTempo),
   };
 }
 
@@ -348,6 +385,8 @@ export function traitStats(f: Features, grid: TraitGrid): TraitStats {
   // Bars (4/4 only, all beats active): four-on-the-floor; snare per beat of the bar.
   const ff: number[] = [];
   const bars: number[][] = [];
+  const kickBars: number[] = [];
+  const snareBars: number[] = [];
   for (let d = 0; d < downbeats.length; d++) {
     const j0 = downbeats[d];
     const j1 = d + 1 < downbeats.length ? downbeats[d + 1] : j0 + 4;
@@ -361,11 +400,20 @@ export function traitStats(f: Features, grid: TraitGrid): TraitStats {
     const lo = Math.min(...onK);
     ff.push(clamp01((lo - 0.5 * mean(offK)) / 0.3) * ramp(lo / Math.max(1e-9, median(onK)), 0.3, 0.6));
     bars.push([...[0, 1, 2, 3].map((q) => SN[j0 + q][0]), ...onK]);
+    let kb = 0;
+    let sb = 0;
+    for (let j = j0; j < j1; j++) {
+      kb = Math.max(kb, maxOf(K[j]));
+      sb = Math.max(sb, maxOf(SN[j]));
+    }
+    kickBars.push(kb);
+    snareBars.push(sb);
   }
   // Half-time: in each 8-bar window, the beat of the bar with the most snare, by how much it
   // beats every other beat, discounted when it is also where the kick lands (that is a
   // downbeat accent: the "1" with its kick and chord change, not a backbeat).
   const halfW: number[] = [];
+  const halfProf = new Float64Array(8);
   for (let w = 0; w + 4 <= bars.length; w += 8) {
     const seg = bars.slice(w, w + 8);
     const avg = [0, 1, 2, 3, 4, 5, 6, 7].map((q) => mean(seg.map((b) => b[q])));
@@ -373,9 +421,12 @@ export function traitStats(f: Features, grid: TraitGrid): TraitStats {
     const Kq = avg.slice(4);
     let top = 0;
     for (let q = 1; q < 4; q++) if (S[q] > S[top]) top = q;
-    const margin = S[top] - Math.max(...S.filter((_, q) => q !== top));
+    // A backbeat hits two opposite beats of the bar (2 and 4) alike; a half-time feel only one.
+    const opp = S[(top + 2) % 4];
+    const contrast = S[top] + opp > 1e-6 ? (S[top] - opp) / (S[top] + opp) : 0;
     const kMax = Math.max(...Kq);
-    halfW.push(margin * (kMax > 1e-6 ? 1 - Kq[top] / kMax : 1));
+    halfW.push(contrast * (kMax > 1e-6 ? 1 - Kq[top] / kMax : 1));
+    for (let q = 0; q < 8; q++) halfProf[q] += avg[q];
   }
 
   // Swing: beat-relative profile of snare + hat activity (48 bins per beat).
@@ -441,9 +492,13 @@ export function traitStats(f: Features, grid: TraitGrid): TraitStats {
   const flat: number[] = [];
   const fill: number[] = [];
   const chroma = new Float64Array(12);
+  let tiltSum = 0;
+  const roll: number[] = [];
   for (let i = 0; i < n; i++) {
     if (!active[i]) continue;
     const row = i * NUM_BANDS;
+    tiltSum += (f.bands[row + 9] + f.bands[row + 10]) / 2 - (f.bands[row + 4] + f.bands[row + 5] + f.bands[row + 6]) / 3;
+    roll.push((f.bands[row + 9] + f.bands[row + 10]) / 2 - f.bands[row + 11]);
     for (let k = 0; k < NUM_BANDS; k++) {
       const p = Math.pow(10, f.bands[row + k] / 10);
       pAll += p;
@@ -457,9 +512,12 @@ export function traitStats(f: Features, grid: TraitGrid): TraitStats {
     if (cs > 1e-9) for (let k = 0; k < 12; k++) chroma[k] += f.trait[t + TR_CHROMA + k] / cs;
   }
 
+  // On the level-relative rises only (the flux is log-compressed, so not exactly gain-invariant).
+  const oct = hasGrid ? octaveDoubt(riseEnvelope(f), grid.bpm, FRAME_RATE) : { slower: 0, faster: 0 };
   return {
     seconds,
     grid: hasGrid,
+    bpm: hasGrid ? grid.bpm : 0,
     kick: beatMean((j) => maxOf(K[j])),
     midRise: beatMean((j) => maxOf(MJ[j])),
     highRise: beatMean((j) => maxOf(HJ[j])),
@@ -475,6 +533,15 @@ export function traitStats(f: Features, grid: TraitGrid): TraitStats {
     subDb: pAll > 0 ? 10 * Math.log10(pSub / pAll + 1e-12) : -60,
     flatness: quantile(flat, 0.25),
     fill: quantile(fill, 0.25),
+    flatMid: quantile(flat, 0.5),
+    fillMid: quantile(fill, 0.5),
+    tilt: nActive ? tiltSum / nActive : 0,
+    rolloff: quantile(roll, 0.5),
+    octSlower: oct.slower,
+    octFaster: oct.faster,
+    kickBar: mean(kickBars),
+    halfProf: Array.from(halfProf, (v) => Math.round((100 * v) / Math.max(1, halfW.length)) / 100),
+    snareBar: mean(snareBars),
     modeDiff: keyModeDiff(chroma),
   };
 }
