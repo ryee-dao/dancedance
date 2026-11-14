@@ -31,9 +31,11 @@
 #   secrets.YT_COOKIES    cookies.txt from a SPARE Google account, if YouTube bot-blocks the runner
 #   secrets.COOKIE_REFRESH_TOKEN  fine-grained token for this repo with only "Secrets: read and
 #                         write". With it, the job saves the cookies YouTube refreshes during
-#                         a run back into YT_COOKIES, and makes one signed-in request a day,
-#                         so the session lasts longer. It cannot sign in again by itself:
-#                         when YouTube ends the session, export fresh cookies by hand.
+#                         a run back into YT_COOKIES, and makes one signed-in request on
+#                         every scheduled run, so the session lasts longer. At the first
+#                         rejection it stops asking (secrets.YT_SESSION_REJECTED, written by
+#                         the job) until YT_COOKIES is replaced. It cannot sign in again by
+#                         itself: when YouTube ends the session, export fresh cookies by hand.
 name: Beat maps
 # Runs started by the app show the song, so you can find them under Actions.
 run-name: "${{ inputs.map_json && 'Contributed beat map' || inputs.add_title && format('Add song: {0} - {1}', inputs.add_artist, inputs.add_title) || 'Beat maps' }}"
@@ -41,9 +43,6 @@ run-name: "${{ inputs.map_json && 'Contributed beat map' || inputs.add_title && 
 on:
   schedule:
     - cron: '23 * * * *'
-    # Once a day: also make one small signed-in request so the YT_COOKIES
-    # session stays in use (see "Keep the YouTube session fresh" below).
-    - cron: '47 9 * * *'
   workflow_dispatch:
     inputs:
       video_id:
@@ -181,15 +180,17 @@ jobs:
       # Optional (needs both YT_COOKIES and COOKIE_REFRESH_TOKEN). YouTube hands
       # out refreshed cookies while a signed-in session is used, and yt-dlp writes
       # them to its cookie file. This step stores that file as the new YT_COOKIES
-      # secret. On the daily run it first asks YouTube for the details of one
-      # already-published song (no audio is downloaded), so the session is used
-      # at least once a day. Cookies are never printed and the file is deleted.
+      # secret. On every scheduled run it first asks YouTube for the details of one
+      # already-published song (no audio is downloaded), so the session stays in
+      # use, and it stops asking at the first rejection (until the cookies are
+      # replaced). Cookies are never printed and the file is deleted.
       - name: Keep the YouTube session fresh
         if: ${{ !cancelled() && !inputs.map_json }}
         env:
           YT_COOKIES: ${{ secrets.YT_COOKIES }}
           GH_TOKEN: ${{ secrets.COOKIE_REFRESH_TOKEN }}
-          DAILY: ${{ github.event.schedule == '47 9 * * *' }}
+          SCHEDULED: ${{ github.event_name == 'schedule' }}
+          REJECTED_AT: ${{ secrets.YT_SESSION_REJECTED }}
           RUN_OUTCOME: ${{ steps.run.outcome }}
         run: |
           set -euo pipefail
@@ -202,13 +203,32 @@ jobs:
           if [ ! -s "$jar" ]; then
             (umask 077; printf '%s\n' "$YT_COOKIES" | tr -d '\r' > "$jar")
           fi
-          if [ "$DAILY" = "true" ]; then
+          # Stop at the first rejection: once YouTube has refused this session, no more
+          # signed-in requests are made until YT_COOKIES is replaced. The marker is the
+          # secret's "last updated" time at the moment of the rejection, kept in the
+          # secret YT_SESSION_REJECTED; new cookies change that time and lift the stop.
+          updated=$(gh api "repos/$GITHUB_REPOSITORY/actions/secrets/YT_COOKIES" --jq .updated_at 2>/dev/null || true)
+          if [ -n "$updated" ] && [ "$updated" = "${REJECTED_AT:-}" ]; then
+            echo "::notice title=YouTube session::YouTube rejected these cookies earlier, so no signed-in request was made. Export fresh cookies into YT_COOKIES to start again."
+            exit 0
+          fi
+          if [ "$SCHEDULED" = "true" ]; then
             id=$(node -e 'const a=require("./public/beatmaps/index.json").ids||[];if(a.length)console.log(a[Math.floor(Math.random()*a.length)])')
             if [ -z "$id" ]; then echo "No published song to ask about; skipping."; exit 0; fi
-            if yt-dlp --cookies "$jar" --skip-download --no-warnings --print id -- "$id" >/dev/null 2>&1; then
-              echo "Daily signed-in request succeeded."
+            err="$RUNNER_TEMP/yt-keepalive-err.txt"
+            if yt-dlp --cookies "$jar" --skip-download --no-warnings --print id -- "$id" >/dev/null 2>"$err"; then
+              rm -f "$err"
+              echo "Signed-in request succeeded."
+            elif grep -Eiq 'not a bot|sign in to confirm|cookies are no longer valid|account has been|login required' "$err"; then
+              rm -f "$err"
+              echo "::warning title=YouTube session::YouTube rejected the signed-in request: the YT_COOKIES session has ended. No more requests are made until you export fresh cookies into YT_COOKIES."
+              if [ -n "$updated" ]; then
+                gh secret set YT_SESSION_REJECTED --repo "$GITHUB_REPOSITORY" --body "$updated" >/dev/null 2>&1 || echo "Could not record the rejection; the next run will ask again."
+              fi
+              exit 0
             else
-              echo "::warning title=YouTube session::The daily signed-in request failed. The YT_COOKIES session may have ended: export fresh cookies if downloads are blocked."
+              rm -f "$err"
+              echo "The signed-in request failed for another reason (network, or that video); trying again next run."
               exit 0
             fi
           elif [ "$RUN_OUTCOME" != "success" ]; then
