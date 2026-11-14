@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { generateDuoRoutine } from './duo';
-import { TONE_FLOOR, calmToned, generateRoutine, styleGenres, toneFits, toneGate, type Intensity, type MoveInstance, type Routine } from './generator';
+import { TONE_FLOOR, TONE_NEUTRAL, TONE_SOFT, calmToned, generateRoutine, styleGenres, toneFits, toneGate, type Intensity, type MoveInstance, type Routine } from './generator';
 import { FAMILY_GENRE, GENRES, SUB_STYLES, THEME_GENRES, type Genre, type SubStyle } from './genres';
 import type { Family, Theme } from './families';
 import { MOVES } from './moves';
@@ -32,7 +32,9 @@ function violations(r: Routine, style: SongStyle, tag: string): string[] {
   const bad: string[] = [];
   for (const i of danced(r.instances)) if (!toneFits(i.move, gate, false)) bad.push(`${tag}: ${i.move.id} aggression ${moveAggression(i.move).toFixed(2)} > ${gate.ceiling.toFixed(2)} @${i.start}`);
   for (const x of r.signature) if (!toneFits(x.move, gate)) bad.push(`${tag}: combo ${x.move.id}`);
-  if (gate.calm <= 0) for (const i of main(r.instances)) if (calmToned(i.move)) bad.push(`${tag}: calm-toned ${i.move.id} in the ${i.section} @${i.start}`);
+  for (const i of main(r.instances)) {
+    if (!i.sig && !toneFits(i.move, gate)) bad.push(`${tag}: ${calmToned(i.move) ? 'calm-toned' : 'too soft'} ${i.move.id} (${moveAggression(i.move).toFixed(2)}) in the ${i.section} @${i.start}`);
+  }
   return bad;
 }
 
@@ -45,6 +47,27 @@ describe('the tone gate', () => {
     // The same genre names on a quiet recording: the floor.
     const quiet = resolveSongStyle({ genres: ['heavy metal', 'thrash metal'] }, { bpm: 72, traits: { calm: 0.9, drive: 0.15, intensity: 0.05 } });
     expect(toneGate(quiet, 72).ceiling).toBe(TONE_FLOOR);
+  });
+
+  it('keeps a song nothing is known of (no genre found, no audio read: "Mixed styles") to the middle', () => {
+    const unknown = resolveSongStyle({ title: 'Back in Blood', artist: 'Someone' }, { bpm: 150 });
+    expect(unknown.unknown).toBe(true);
+    expect(toneGate(unknown, 150)).toMatchObject({ ceiling: TONE_NEUTRAL, floor: TONE_SOFT });
+    // A genre name, or the audio, is enough to know the tone by: no neutral gate.
+    expect(resolveSongStyle({ genre: 'Hip-Hop/Rap' }, { bpm: 150 }).unknown).toBeUndefined();
+    expect(resolveSongStyle({}, { bpm: 150, traits: { calm: 0.1, drive: 0.9, intensity: 0.6 } }).unknown).toBeUndefined();
+    const bad: string[] = [];
+    let soft = 0;
+    for (const bpm of [72, 100, 128, 150]) {
+      const style = resolveSongStyle({ title: `Unknown ${bpm}`, artist: 'Someone' }, { bpm });
+      for (const lv of LEVELS) {
+        const r = generateRoutine(songMap(bpm, `unknown-${bpm}`), lv, { style });
+        bad.push(...violations(r, style, `unknown ${bpm} ${lv}`));
+        for (const i of main(r.instances)) if (moveAggression(i.move) < TONE_SOFT && !i.sig) soft++;
+      }
+    }
+    expect(bad).toEqual([]);
+    expect(soft).toBe(0);
   });
 
   it('lets the ballad set\'s own moves and the calm-moves file\'s flows through at the floor (measured)', () => {

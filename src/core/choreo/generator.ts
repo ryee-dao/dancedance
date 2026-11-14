@@ -934,6 +934,8 @@ export class Choreographer {
   private calmT: Uint8Array;
   /** Pick factor of each pool move's tone on this song: its punches (punchTone), novelty (noveltyTone). */
   private toneW: Float64Array;
+  /** Pool moves below the tone gate's floor (main sections only; index-aligned with pool). */
+  private soft: Uint8Array;
   private ornaments: { get(base: string): readonly Move[] } | null;
   /** Genre-exclusive moves of genres the song doesn't open (never used). */
   private outside = new Set<Move>();
@@ -1025,6 +1027,7 @@ export class Choreographer {
     this.partsM = new Uint8Array(moves.length);
     this.calmT = new Uint8Array(moves.length);
     this.toneW = new Float64Array(moves.length);
+    this.soft = new Uint8Array(moves.length);
     this.fitW = new Float64Array(moves.length);
     let mb = 0, mv = 0;
     for (let i = 0; i < moves.length; i++) {
@@ -1034,6 +1037,7 @@ export class Choreographer {
       this.partsM[i] = partsMask(m);
       this.calmT[i] = calmToned(m) ? 1 : 0;
       this.toneW[i] = punchTone(m, this.tone) * noveltyTone(m, open);
+      this.soft[i] = this.gate.floor && !m.idle && moveAggression(m) < this.gate.floor - 1e-9 ? 1 : 0;
       this.fitW[i] = energyFit(m, this.energy, intensity, this.mode(m) === 'half');
       // A move too loud for the song's tone is never danced (toneFits): like a closed set's, whatever opened it.
       if (!genreFits(m, open) || !toneFits(m, this.gate, false)) {
@@ -1711,6 +1715,8 @@ export class Choreographer {
           x *= toneK;
           if (x <= 0) continue;
         }
+        // The main sections keep to the song's tone from below too (toneFits: the gate's floor).
+        if (!calm && this.soft[i]) continue;
         x *= this.toneW[i];
         // The song's energy: a genre slot's lean is applied after its flattening (below), at full strength.
         if (!genre) x *= this.fitW[i];
@@ -1992,6 +1998,7 @@ export class Choreographer {
       if (w <= 0) return 0;
       if (!o.cooldown && (this.outside.has(m) || m.genre)) return 0;
       if (!o.cooldown && this.calmT[i]) w *= toneK;
+      if (!o.cooldown && !o.warmup && o.section !== 'intro' && o.section !== 'outro' && this.soft[i]) return 0;
       if (!o.cooldown) w *= this.toneW[i] * this.fitW[i];
       if (w <= 0) return 0;
       if (o.cooldown && this.kit.has(m)) w *= 0.15;
@@ -2224,9 +2231,13 @@ export function noveltyTone(m: Move, open: ReadonlySet<Genre>): number {
 //     sections and the combo of a song with no calm tone (calmTone 0).
 // A set left with too few moves that fit borrows or goes global (borrowPlan
 // counts only its fitting moves), never to a move that doesn't fit. Without
-// audio intensity (an older map) the tone is unknown and nothing is too loud.
-// The gate is only as good as the audio readings: a slow, heavy song read as
-// quiet loses its loud moves.
+// audio intensity (an older map) the genre names carry the tone (their calm
+// and softness hints) and nothing is too loud; with neither (no genre found,
+// no audio read: "Mixed styles") the tone is unknown, and the routine keeps
+// to the middle: nothing above TONE_NEUTRAL, and in the main sections
+// nothing below TONE_SOFT (the waves, flowing arms and sways that read as
+// a ballad's). The gate is only as good as the audio readings: a slow,
+// heavy song read as quiet loses its loud moves.
 
 /** Aggression ceiling of the quietest songs: the ballad set's own moves (lyrical: at most 0.50) all fit under it. */
 export const TONE_FLOOR = 0.55;
@@ -2234,28 +2245,42 @@ export const TONE_FLOOR = 0.55;
 export const TONE_ENERGY: readonly [number, number] = [0.12, 0.35];
 /** ... and calm over which it comes back down to TONE_FLOOR (a ballad is quiet whatever its tempo). */
 export const TONE_CALM: readonly [number, number] = [0.65, 0.85];
+/** A song of unknown tone (no genre, no audio): the most aggression a move may have (no jumps, stomps, kicklines) ... */
+export const TONE_NEUTRAL = 0.6;
+/** ... and the least a main-section move may have (aggression below it: a low, very smooth move with no accents). */
+export const TONE_SOFT = 0.08;
 
-/** A song's tone gate: the most aggression a move may have here (1 = no limit), and its calm tone (calmTone). */
+/**
+ * A song's tone gate: the most aggression a move may have here (1 = no limit), the least a move of the main sections
+ * may have (0 = no limit), and its calm tone (calmTone).
+ */
 export interface ToneGate {
   ceiling: number;
   calm: number;
+  floor?: number;
 }
 
-/** The tone gate of a song (its audio: energy at the danced tempo `bpm`, calm); no ceiling without audio intensity. */
+/**
+ * The tone gate of a song: from its audio (energy at the danced tempo `bpm`, calm); without audio intensity no
+ * ceiling, unless nothing at all is known of the song (no genre either: the neutral middle, TONE_NEUTRAL / TONE_SOFT).
+ */
 export function toneGate(style: SongStyle, bpm?: number, energy = songEnergy(style, bpm)): ToneGate {
   const calm = calmTone(style);
-  if (style.intensity === undefined || !Number.isFinite(style.intensity)) return { ceiling: 1, calm };
+  if (style.intensity === undefined || !Number.isFinite(style.intensity)) {
+    return style.unknown ? { ceiling: TONE_NEUTRAL, calm, floor: TONE_SOFT } : { ceiling: 1, calm };
+  }
   const loud = Math.min(ramp(energy, TONE_ENERGY[0], TONE_ENERGY[1]), 1 - (style.calm === undefined ? 0 : ramp(style.calm, TONE_CALM[0], TONE_CALM[1])));
   return { ceiling: loud >= 1 ? 1 : TONE_FLOOR + (1 - TONE_FLOOR) * loud, calm };
 }
 
 /**
- * Whether a move fits a song's tone gate: not too loud (anywhere), and in the main sections (`main`) not a calm-toned
- * move on a song with no calm tone. The idle groove always fits.
+ * Whether a move fits a song's tone gate: not too loud (anywhere), and in the main sections (`main`) not too soft
+ * (the gate's floor) and not a calm-toned move on a song with no calm tone. The idle groove always fits.
  */
 export function toneFits(m: Move, gate: ToneGate, main = true): boolean {
   if (m.idle) return true;
   if (gate.ceiling < 1 && moveAggression(m) > gate.ceiling + 1e-9) return false;
+  if (main && gate.floor && moveAggression(m) < gate.floor - 1e-9) return false;
   return !(main && gate.calm <= 0 && calmToned(m));
 }
 

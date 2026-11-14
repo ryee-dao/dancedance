@@ -24,7 +24,15 @@
  *   calm-on-loud  a calm-toned move in the main sections (not the intro, the
  *                 outro or the warm-up phrase) of a song with no calm tone
  *                 (calmTone 0).
- * Pass --compare before.json to count the routines that changed (by tone class).
+ *   soft-on-loud  a danced move below TONE_SOFT aggression (a low, very
+ *                 smooth move with no accents: waves, flowing arms, sways)
+ *                 on a loud song: reported as its share of the danced time
+ *                 (some is normal: Easy's simple steps), compared between
+ *                 the genre-known and the unknown-genre path.
+ * Pass --compare before.json to count the routines that changed (by tone class);
+ * --strip to resolve every song as if its genre lookup had failed (no tag, no
+ * lists, no artist genres; a starter song's curated style stays, as in the app);
+ * --strip-traits to drop the map's audio traits too (the "Mixed styles" path).
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { calmTone, calmToned, generateRoutine, songEnergy, styleGenres, toneGate, ENERGY_MID, type Intensity, type MoveInstance, type Routine } from '../../src/core/choreo/generator';
@@ -38,6 +46,8 @@ const LEVELS: Intensity[] = ['chill', 'cardio', 'sweaty'];
 export const TONE_LOUD = 0.5;
 /** Song energy below which a song is calm by its audio, whatever its calm reading. */
 export const CALM_ENERGY = 0.15;
+/** Aggression below which a move is soft and flowing (a low level, very smooth, no accents: about smoothness >= 0.8). */
+export const TONE_SOFT = 0.08;
 
 export type ToneClass = 'calm' | 'mid' | 'loud' | 'unknown';
 
@@ -63,6 +73,9 @@ interface Row {
   ceiling: number;
   loud: number;
   calmToned: number;
+  /** Share of danced beats in soft moves (soft-on-loud). */
+  soft: number;
+  softMoves: string[];
   offenders: string[];
   /** Routine key (top moves) for before / after comparison. */
   sig: string;
@@ -70,29 +83,39 @@ interface Row {
 
 async function run() {
   const rows: Row[] = [];
-  for (const p of await songPasses(arg('set', 'all')!)) {
+  const strip = process.argv.includes('--strip') || process.argv.includes('--strip-traits');
+  const noTraits = process.argv.includes('--strip-traits');
+  for (const p0 of await songPasses(arg('set', 'all')!)) {
+    const { videoId, title, artist } = p0.info;
+    const p = strip ? { ...p0, info: { videoId, title, artist }, map: noTraits ? { ...p0.map, traits: undefined } : p0.map } : p0;
     const style = passStyle(p);
+    // The song's real audio tone judges the routine (with --strip-traits the routine never saw it).
+    const truth = noTraits ? passStyle({ ...p, map: p0.map }) : style;
     const open = [...styleGenres(style)];
     for (const level of LEVELS) {
       const r = generateRoutine(p.map, level, { style });
-      const e = songEnergy(style, r.bpm);
-      const cls: ToneClass = style.intensity === undefined ? 'unknown' : (style.calm ?? 0) >= BALLAD_CALM || e < CALM_ENERGY ? 'calm' : e >= ENERGY_MID ? 'loud' : 'mid';
+      const e = songEnergy(truth, r.bpm);
+      const cls: ToneClass = truth.intensity === undefined ? 'unknown' : (truth.calm ?? 0) >= BALLAD_CALM || e < CALM_ENERGY ? 'calm' : e >= ENERGY_MID ? 'loud' : 'mid';
       const d = danced(r);
       const all = Math.max(1, span(d));
       const loudMoves = d.filter((i) => moveAggression(i.move) > TONE_LOUD || i.move.jump);
-      const calmMoves = calmTone(style) > 0 ? [] : main(r).filter((i) => calmToned(i.move));
-      const ceiling = toneGate(style, r.bpm, e).ceiling;
+      const calmMoves = calmTone(truth) > 0 ? [] : main(r).filter((i) => calmToned(i.move));
+      const ceiling = toneGate(truth, r.bpm, e).ceiling;
       const over = d.filter((i) => moveAggression(i.move) > ceiling + 1e-9);
+      const softD = d.filter((i) => moveAggression(i.move) < TONE_SOFT);
+      const softM = new Map<string, number>();
+      for (const i of softD) softM.set(i.move.id, (softM.get(i.move.id) ?? 0) + i.span);
       const off = new Map<string, number>();
       for (const i of [...over, ...(cls === 'calm' ? loudMoves.filter((x) => !over.includes(x)) : []), ...calmMoves]) {
         const k = `${i.move.id}${i.move.genre ? `[${i.move.genre}]` : ''} a=${moveAggression(i.move).toFixed(2)}${i.move.jump ? ' jump' : ''}`;
         off.set(k, (off.get(k) ?? 0) + i.span);
       }
       rows.push({
-        set: p.set, name: p.name, level, cls, ...(style.calm !== undefined ? { calm: style.calm } : {}), ...(style.intensity !== undefined ? { intensity: style.intensity } : {}),
+        set: p.set, name: p.name, level, cls, ...(truth.calm !== undefined ? { calm: truth.calm } : {}), ...(truth.intensity !== undefined ? { intensity: truth.intensity } : {}),
         energy: Math.round(e * 1000) / 1000, open, ceiling: Math.round(ceiling * 1000) / 1000,
         over: Math.round((1000 * span(over)) / all) / 1000,
         loud: Math.round((1000 * span(loudMoves)) / all) / 1000, calmToned: Math.round((1000 * span(calmMoves)) / all) / 1000,
+        soft: Math.round((1000 * span(softD)) / all) / 1000, softMoves: [...softM].sort((a, b) => b[1] - a[1]).map(([k, b]) => `${k} ${b}`),
         offenders: [...off].sort((a, b) => b[1] - a[1]).map(([k, b]) => `${k} ${b}`),
         sig: d.map((i) => i.move.id).join(' '),
       });
@@ -113,7 +136,7 @@ async function run() {
       const calmR = rs.filter((x) => x.calmToned > 0).length;
       const mean = (f: (x: Row) => number) => pct(rs.reduce((a, x) => a + f(x), 0) / rs.length);
       const ch = before ? ` changed ${rs.filter((x) => before.get(`${x.set}|${x.name}|${x.level}`) !== x.sig).length}` : '';
-      console.log(`${cls.padEnd(7)} ${level.padEnd(6)} routines ${String(rs.length).padStart(4)}  over gate ${String(overR).padStart(3)} (${mean((x) => x.over)})  agg>${TONE_LOUD}/jump ${String(loudR).padStart(3)} (${mean((x) => x.loud)})  calm-toned main ${String(calmR).padStart(3)}${ch}`);
+      console.log(`${cls.padEnd(7)} ${level.padEnd(6)} routines ${String(rs.length).padStart(4)}  over gate ${String(overR).padStart(3)} (${mean((x) => x.over)})  agg>${TONE_LOUD}/jump ${String(loudR).padStart(3)} (${mean((x) => x.loud)})  calm-toned main ${String(calmR).padStart(3)}  soft ${mean((x) => x.soft)}${ch}`);
     }
   }
   const bad = (x: Row) => Math.max(x.over, x.cls === 'calm' ? x.loud : 0, x.calmToned);
@@ -121,6 +144,11 @@ async function run() {
   console.log(`\nmismatched routines: ${worst.length} of ${rows.length}`);
   for (const x of worst.slice(0, Number(arg('top', '25')))) {
     console.log(`${x.set} ${x.name} ${x.level} [${x.cls} calm ${x.calm ?? '-'} int ${x.intensity ?? '-'} e ${x.energy} ceiling ${x.ceiling}; ${x.open.join(',') || '-'}] over ${pct(x.over)} loud ${pct(x.loud)} calmToned ${pct(x.calmToned)}: ${x.offenders.slice(0, 4).join('; ')}`);
+  }
+  const softest = rows.filter((x) => x.cls === 'loud').sort((a, b) => b.soft - a.soft);
+  console.log(`\nsoft moves on loud songs, most first:`);
+  for (const x of softest.slice(0, Number(arg('top', '25')))) {
+    console.log(`${x.set} ${x.name} ${x.level} [calm ${x.calm ?? '-'} int ${x.intensity ?? '-'} e ${x.energy}; ${x.open.join(',') || '-'}] soft ${pct(x.soft)}: ${x.softMoves.slice(0, 5).join('; ')}`);
   }
 }
 

@@ -26,7 +26,24 @@ export const STORE_KEYS = {
   addPending: 'dd.addPending', // PendingAdd[]: songs sent to the cloud that haven't appeared in songs.json yet
   addedHidden: 'dd.addedHidden', // string[]: video IDs removed from "My added songs" on this device only
   plays: 'dd.plays', // Record<videoId, number>: how many times each song has started playing (least recently played first)
+  genreLookups: 'dd.genreLookups', // Record<videoId, GenreSongEntry>: genre lookups of played songs no published source has genres for
 } as const;
+
+/**
+ * A played song no published source has genres for (a linked playlist's song): what the background lookup asks
+ * (artist, title) and, once it ran, its stored result (src/genre GenreLookup, validated by the reader).
+ */
+export interface GenreSongEntry {
+  artist: string;
+  title: string;
+  durationSec?: number;
+  /** The stored lookup (GenreLookup JSON), once one ran. */
+  lookup?: unknown;
+  /** Epoch ms of the last play (the least recently played go first when the store is full). */
+  t: number;
+}
+/** Most songs the genre store keeps (a lookup is a few KB). */
+export const MAX_GENRE_SONGS = 300;
 
 /** A song sent to the cloud job, waiting to show up in songs.json. */
 export interface PendingAdd {
@@ -222,6 +239,7 @@ let titlesFlushTimer: ReturnType<typeof setTimeout> | null = null;
 let levels: Record<string, Intensity> | null = null;
 let localBpm: Record<string, number> | null = null;
 let plays: Record<string, number> | null = null;
+let genreSongs: Record<string, GenreSongEntry> | null = null;
 
 function flushTitles(): void {
   if (titlesFlushTimer !== null) clearTimeout(titlesFlushTimer);
@@ -398,6 +416,41 @@ export const store = {
   },
   setHiddenAdded(ids: Set<string>): void {
     writeJson(STORE_KEYS.addedHidden, ids.size ? [...ids] : null);
+  },
+
+  // --- genre lookups of played songs ---------------------------------------
+  genreSongs(): Record<string, GenreSongEntry> {
+    if (!genreSongs) {
+      const raw = readJson<Record<string, unknown>>(STORE_KEYS.genreLookups, {}, isObj);
+      genreSongs = {};
+      for (const [id, v] of Object.entries(raw)) {
+        if (isObj(v) && typeof v.artist === 'string' && typeof v.title === 'string' && typeof v.t === 'number') {
+          genreSongs[id] = { artist: v.artist, title: v.title, t: v.t, ...(typeof v.durationSec === 'number' && v.durationSec > 0 ? { durationSec: v.durationSec } : {}), ...(v.lookup !== undefined ? { lookup: v.lookup } : {}) };
+        }
+      }
+    }
+    return genreSongs;
+  },
+  /** A song was played that no published source has genres for: keep it for the background lookup (newest play last). */
+  noteGenreSong(videoId: string, song: { artist: string; title: string; durationSec?: number }, now = Date.now()): void {
+    if (!videoId || !song.artist.trim() || !song.title.trim()) return;
+    const all = this.genreSongs();
+    const old = all[videoId];
+    // A different artist / title (a corrected title) drops the old answer.
+    const same = old && old.artist === song.artist && old.title === song.title;
+    delete all[videoId];
+    all[videoId] = { artist: song.artist, title: song.title, t: now, ...(song.durationSec && song.durationSec > 0 ? { durationSec: song.durationSec } : {}), ...(same && old.lookup !== undefined ? { lookup: old.lookup } : {}) };
+    const ids = Object.keys(all).sort((a, b) => all[a].t - all[b].t);
+    for (const id of ids.slice(0, Math.max(0, ids.length - MAX_GENRE_SONGS))) delete all[id];
+    writeJson(STORE_KEYS.genreLookups, all);
+  },
+  /** Store a song's lookup result; false when the song is not in the store. */
+  setGenreLookup(videoId: string, lookup: unknown): boolean {
+    const all = this.genreSongs();
+    if (!all[videoId]) return false;
+    all[videoId] = { ...all[videoId], lookup };
+    writeJson(STORE_KEYS.genreLookups, all);
+    return true;
   },
 
   // --- settings -----------------------------------------------------------

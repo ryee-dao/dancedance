@@ -99,6 +99,12 @@ export interface SongStyle {
    * how its ballad steps.
    */
   songLevel?: { subs?: Partial<Record<SubStyle, number>>; themes: Theme[] };
+  /**
+   * Nothing is known of the song's music: no curated style, no genre name placed, no audio traits (a song whose genre
+   * lookup found nothing yet, danced before its audio was read: "Mixed styles"). Its tone is unknown, so the generator
+   * keeps to the middle (generator.ts toneGate). Absent on the generator's default style.
+   */
+  unknown?: true;
 }
 
 export interface StyleOverride {
@@ -1561,6 +1567,7 @@ export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyl
   if (focus) out.focus = focus;
   if (signature && signature.length) out.signature = [...signature];
   if (Object.keys(subs).length) out.subs = subs;
+  if (source === 'fallback' && !traits && calm === undefined) out.unknown = true;
   if (calm !== undefined) out.calm = Math.round(calm * 1000) / 1000;
   if (ev.name && subs.bass !== undefined) out.subName = ev.name;
   if (ev.label) out.label = ev.label;

@@ -7,7 +7,7 @@
 
 import starterData from '../data/starter.json';
 import { cloudArtistGenres, cloudGenre, cloudGenreLevels, cloudGenres, reloadCloudIndex } from '../beat/bpmIndex';
-import type { AddedSong, GenreLevelName } from '../beat/cloud';
+import { cleanGenreLevels, cleanGenreList, type AddedSong, type GenreLevelName } from '../beat/cloud';
 import { getPlatform } from '../platform/platform';
 import { cleanTitle } from '../player/playlistReader';
 import { store, type BlockReason, type PlaylistLink } from '../store';
@@ -328,7 +328,27 @@ export const library = new Library();
  * from the cloud index. Starter songs have curated styles instead.
  */
 export function songGenre(videoId: string): string | undefined {
-  return addedSongs.find(videoId)?.genre ?? cloudGenre(videoId);
+  return addedSongs.find(videoId)?.genre || addedSongs.genreEntry(videoId)?.genre || cloudGenre(videoId) || localLookup(videoId)?.genre;
+}
+
+/**
+ * What this device's own lookup found for a played song no published source has genres for (store.genreSongs,
+ * filled by the background lookup: genreLookups.ts). The iTunes tag is its iTunes source's answer.
+ */
+function localLookup(videoId: string): { genre?: string; genres?: string[]; genreLevels?: GenreLevelName[]; artistGenres?: string[] } | undefined {
+  const l = store.genreSongs()[videoId]?.lookup as { genres?: unknown; genreLevels?: unknown; artistGenres?: unknown; sources?: { itunes?: { status?: unknown; genres?: unknown } } } | undefined;
+  if (!l || typeof l !== 'object') return undefined;
+  const genres = cleanGenreList(l.genres);
+  const genreLevels = cleanGenreLevels(l.genreLevels, genres);
+  const artistGenres = cleanGenreList(l.artistGenres);
+  const it = l.sources?.itunes;
+  const genre = it?.status === 'found' ? cleanGenreList(it.genres)?.[0] : undefined;
+  return { ...(genre ? { genre } : {}), ...(genres ? { genres } : {}), ...(genreLevels ? { genreLevels } : {}), ...(artistGenres ? { artistGenres } : {}) };
+}
+
+/** Whether a published source has genre names for the song (an added song's entry, the cloud index); this device's own lookup aside. */
+export function hasPublishedGenres(videoId: string): boolean {
+  return !!addedSongs.genreEntry(videoId)?.genres?.length || !!cloudGenres(videoId)?.length;
 }
 
 /**
@@ -337,8 +357,10 @@ export function songGenre(videoId: string): string | undefined {
  * TV), else from the cloud index (catalog and starter songs).
  */
 export function songGenres(videoId: string): string[] | undefined {
-  const own = addedSongs.find(videoId)?.genres;
-  return own?.length ? own : cloudGenres(videoId);
+  const own = addedSongs.genreEntry(videoId)?.genres;
+  if (own?.length) return own;
+  const cloud = cloudGenres(videoId);
+  return cloud?.length ? cloud : localLookup(videoId)?.genres;
 }
 
 /**
@@ -346,9 +368,10 @@ export function songGenres(videoId: string): string[] | undefined {
  * 'album' = about its album), same order; undefined when not recorded.
  */
 export function songGenreLevels(videoId: string): GenreLevelName[] | undefined {
-  const own = addedSongs.find(videoId);
+  const own = addedSongs.genreEntry(videoId);
   if (own?.genres?.length) return own.genreLevels;
-  return cloudGenres(videoId)?.length ? cloudGenreLevels(videoId) : undefined;
+  if (cloudGenres(videoId)?.length) return cloudGenreLevels(videoId);
+  return localLookup(videoId)?.genreLevels;
 }
 
 /**
@@ -357,8 +380,10 @@ export function songGenreLevels(videoId: string): GenreLevelName[] | undefined {
  * takes the list as `artistGenres` (a small capped share), never as the song's genre.
  */
 export function songArtistGenres(videoId: string): string[] | undefined {
-  const own = addedSongs.find(videoId)?.artistGenres;
-  return own?.length ? own : cloudArtistGenres(videoId);
+  const own = addedSongs.genreEntry(videoId)?.artistGenres ?? addedSongs.find(videoId)?.artistGenres;
+  if (own?.length) return own;
+  const cloud = cloudArtistGenres(videoId);
+  return cloud?.length ? cloud : localLookup(videoId)?.artistGenres;
 }
 
 /** YouTube thumbnail sizes: 'hq' 480x360 (16:9 frame letterboxed in 4:3), 'mq' 320x180. */

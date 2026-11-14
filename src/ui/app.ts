@@ -16,6 +16,7 @@ import { createAddSong } from './addSong';
 import { store } from '../store';
 import { runSliced, runWhenQuiet, trackInput, whenQuiet } from './idle';
 import { createTvLink } from './tvLink';
+import { installPlayedGenreLookups } from './genreLookups';
 import { toast } from './toast';
 
 type PlayChunk = typeof import('./playChunk');
@@ -169,6 +170,8 @@ export function startApp(root: HTMLElement): void {
 
   void library.refresh();
   void loadCloudIndex(getPlatform().beatmapBase);
+  // Played songs no published source has genres for: looked up in the background (genreLookups.ts).
+  installPlayedGenreLookups();
   // Web + helper app: find beats of map-less songs in the background (see helperFill.ts).
   const localHelper = getPlatform().localHelper;
   if (localHelper) {

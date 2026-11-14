@@ -556,7 +556,8 @@ function installAddedSongs(b: BridgeClient): void {
 /**
  * v7: genres for songs added on the TV, looked up in the background by the
  * page (src/genre) and stored natively with the song. Starts 20 s after app
- * open (songs still lacking genres, or due again) and 5 s after a song is added.
+ * open (songs still lacking genres, or due again) and 5 s after a song is added,
+ * then schedules itself (GenreRunner `periodic`).
  * The lookup code is imported then (a separate chunk), never at start-up.
  */
 function installGenreLookups(b: BridgeClient): void {
@@ -589,6 +590,9 @@ function installGenreLookups(b: BridgeClient): void {
           busy: () => preparing.size > 0 || !!root?.querySelector(':scope > .screen.play'),
           fetch: (url, init) => fetch(url, init),
           log: (line) => console.info(line),
+          // Comes back by itself (soon while songs are due, backoff when offline, a re-check every 30 min): a TV left
+          // on the app for days still retries failed and empty lookups.
+          periodic: true,
         }),
       (err: unknown) => {
         console.warn('[dd:tv] genre lookup failed to load', err);
@@ -601,6 +605,11 @@ function installGenreLookups(b: BridgeClient): void {
   kick(20_000);
   b.on('addedSongsChanged', ({ added }) => {
     if (added) kick(5000);
+  });
+  // A song added on the TV that still lacks genres is looked up first once it has played (ui/genreLookups.ts).
+  window.addEventListener('dd:song-played', (e) => {
+    const id = (e as CustomEvent<unknown>).detail;
+    if (typeof id === 'string' && localAdded.some((s) => s.videoId === id)) void load().then((r) => r?.prioritize(id, 5000));
   });
 }
 

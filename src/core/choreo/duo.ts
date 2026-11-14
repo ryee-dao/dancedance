@@ -567,7 +567,7 @@ export class DuoChoreographer {
       (c) =>
         !c.idle && !c.cooldown && c !== m && c.base !== m.base && c.beats === m.beats && c.travel === 0 && !c.fastTurn && difficultyOk(c.difficulty, it) && !(c.jump && it === 'chill') &&
         !(c.jump && calm !== undefined && calm >= CALM_GENTLE) && c.level === m.level && (!this.open || genreFits(c, this.open)) && (genreOk || !c.genre) && mode(c) !== 'out' &&
-        (!this.gate || toneFits(c, this.gate, false)),
+        (!this.gate || toneFits(c, this.gate)),
     );
     const want: TempoMode = mainHalf ? 'half' : 'full';
     const same = all.filter((c) => mode(c) === want);

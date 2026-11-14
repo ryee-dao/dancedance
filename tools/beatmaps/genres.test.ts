@@ -230,6 +230,25 @@ describe('pipeline', () => {
     expect(asked).toEqual([]);
   });
 
+  it('looks up the playlist\'s songs too (after songs.json and the starter pack), and puts their genres in index.json', async () => {
+    const d = deps((s) => (s.artist === 'ABBA' ? lookup(['Euro disco']) : lookup(['trap', 'drill'])));
+    d.fetchPlaylist = async () => ({ id: 'PL', entries: [{ id: 'plsong00001', title: 'Pooh Shiesty - Back in Blood (feat. Lil Durk) [Official Video]', channel: 'Pooh Shiesty', duration: 150 }] });
+    const out = await runBeatmaps(paths, opts({ playlistUrl: 'https://www.youtube.com/playlist?list=PL' }), d);
+    expect(out.exitCode).toBe(0);
+    const pl = asked.find((a) => a.song.artist === 'Pooh Shiesty');
+    expect(pl?.song).toMatchObject({ videoId: 'plsong00001', artist: 'Pooh Shiesty', added: false });
+    const index = parseIndexSongs(await readFile(join(paths.beatmapsDir, 'index.json'), 'utf8'));
+    expect(index.plsong00001.genres).toEqual(['trap', 'drill']);
+    // The next run reads the playlist from playlist.json when the fetch fails, and has nothing more to ask.
+    asked = [];
+    d.fetchPlaylist = async () => {
+      throw new Error('network');
+    };
+    await runBeatmaps(paths, opts({ playlistUrl: 'https://www.youtube.com/playlist?list=PL' }), d);
+    expect(asked).toEqual([]);
+    expect(parseIndexSongs(await readFile(join(paths.beatmapsDir, 'index.json'), 'utf8')).plsong00001.genres).toEqual(['trap', 'drill']);
+  });
+
   it('never fails the run when the lookup throws, and does nothing without a genres file', async () => {
     const out = await runBeatmaps(paths, opts({ adds: [LEVITATING] }), deps(() => Promise.reject(new Error('offline'))));
     expect(out.exitCode).toBe(0);
