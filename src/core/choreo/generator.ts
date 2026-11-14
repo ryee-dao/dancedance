@@ -21,10 +21,11 @@
  * move is actually danced at. A half-time move's units are twice as long, so
  * its repeats still land on bar and phrase lines. Above HALF_TIME_BPM the
  * COUNT is halved instead (Routine.half: phrases of 16 bars, units doubled),
- * whatever each move does. When the audio offers another octave and the
- * song's genre steps there (danceFeel), the whole song is danced on that
- * felt grid (Routine.feel, times); a map with no grid at all gets a
- * free-time flow on a nominal grid (Routine.freeTime).
+ * whatever each move does. When the evidence puts the song's step at another
+ * octave (danceFeel: the audio's candidates, the genre's usual tempo, the
+ * sound), the whole song is danced on that felt grid (Routine.feel, times);
+ * a map with no grid at all gets a free-time flow on a nominal grid, or a
+ * steady one at its genre's tempo when it is driving (Routine.freeTime).
  *
  * Assembly, in order (generateRoutine):
  *   1. plan the whole song: phrases, holds, and each hold's slot in the
@@ -154,8 +155,9 @@ export interface Routine {
   /** The whole song is danced at this multiple of the map's counted tempo (0.5 / 2; danceFeel); absent = 1. */
   feel?: number;
   /**
-   * The map has no beat grid: the routine is a slow free-time flow on a
-   * nominal grid (freeTimeMap; `times`), so the UI can say so. Absent = a real grid.
+   * The map has no beat grid: the routine is on a nominal grid (freeTimeMap; `times`), so the UI
+   * can say so: a slow free-time flow, or a driving song's steady grid at its genre's tempo
+   * (freeTimeDriving). Absent = a real grid.
    */
   freeTime?: boolean;
 }
@@ -1897,38 +1899,123 @@ export function jumpCap(style: SongStyle, intensity: Intensity, bpm: number | un
 export interface TempoCandidates {
   half?: number;
   double?: number;
+  /**
+   * The part of `half` that is a once-per-bar backbeat (traits halfFeel; halfTempo is the larger
+   * of it and weak in-between beats). Absent: all of `half` may be one.
+   */
+  halfBackbeat?: number;
+}
+
+/** What the audio says of the song's sound (map traits), for the tempo feel: how hard and how busy it is. */
+export interface FeelAudio {
+  intensity?: number;
+  drive?: number;
 }
 
 /** Plausibility from which the analysis supports another octave (recorded sets, Nov 2026: real octave errors read 0.75-1.0, songs counted right mostly 0-0.4, a few 0.6-0.7). */
 export const FEEL_AUDIO = 0.5;
-/** The other octave must sit this much closer (in octaves) to the genre's usual stepping tempo than the counted one. */
+/** The other octave must sit this much closer (in octaves) to the genre's usual stepping tempo than the counted one (doubling; halving at FEEL_AUDIO). */
 export const FEEL_MARGIN = 0.25;
+/** A half candidate from FEEL_AUDIO to this is weighed in full (the margin falls to -FEEL_HALF_LEAN: half wins unless the count is clearly the genre's). */
+const FEEL_AUDIO_FULL = 0.85;
+const FEEL_HALF_LEAN = 0.55;
+/** Without the audio's say, half needs this lead over the count (outside the fast genres) ... */
+const FEEL_PRIOR_MARGIN = 0.45;
+/** ... less as the count runs up through this range (BPM): almost nothing outside the fast genres is stepped at 170+ ... */
+const FEEL_FAST_BPM: readonly [number, number] = [150, 180];
+const FEEL_FAST_LEAN = 0.5;
+/** ... and on a soft-sounding song counted in this range or above (Nov 2026: every soft-sounding song counted at 135+ with a researched tempo but a trap song was a double count). */
+const FEEL_SOFT_BPM: readonly [number, number] = [125, 150];
+const FEEL_SOFT_LEAN = 1.5;
+/** Audio intensity over which a song goes from soft (1) to not (0), unless its rhythm is all-out (drive range). */
+const FEEL_SOFT_INTENSITY: readonly [number, number] = [0.3, 0.55];
+const FEEL_SOFT_DRIVE: readonly [number, number] = [0.85, 1];
+/** A half-time backbeat is what trap, drill and bass music are at their counted tempo: it counts this much less there. */
+const FEEL_BACKBEAT_STYLE = 0.6;
 /** Calm songs step slower than their genre's usual tempo (a ballad of any genre). */
 const FEEL_CALM = 0.7;
+/**
+ * Sub-styles (and themes) whose genre names span genuinely fast dancing that their usual
+ * tempo hides (thrash under metal's 120, bluegrass and two-step under country's 110, Lindy hop
+ * under jazz's 135, footwork-speed drum and bass, hardcore, punk): a fast count of these is
+ * halved only on the audio's say.
+ */
+const FAST_SUBS = ['punk', 'metal', 'bass', 'edm', 'trap', 'drill'] as const;
+const FAST_THEMES: readonly string[] = ['country', 'swing'];
+const FAST_STYLE = 0.5;
 
 /** The analysis' tempo candidates of a map (its traits). */
 export function tempoCandidates(map: BeatMap): TempoCandidates {
-  const t = map.traits as { halfTempo?: unknown; doubleTempo?: unknown } | undefined;
+  const t = map.traits as { halfTempo?: unknown; doubleTempo?: unknown; halfFeel?: unknown } | undefined;
   const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
-  return { half: num(t?.halfTempo), double: num(t?.doubleTempo) };
+  const hb = num(t?.halfFeel);
+  return { half: num(t?.halfTempo), double: num(t?.doubleTempo), ...(hb !== undefined ? { halfBackbeat: hb } : {}) };
+}
+
+/** The audio's intensity and drive of a map (its traits), for danceFeel. */
+export function feelAudio(map: BeatMap): FeelAudio {
+  const t = map.traits as { intensity?: unknown; drive?: unknown } | undefined;
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
+  const intensity = num(t?.intensity);
+  const drive = num(t?.drive);
+  return { ...(intensity !== undefined ? { intensity } : {}), ...(drive !== undefined ? { drive } : {}) };
+}
+
+/** A song this calm is not stepped fast whatever its genre (a cloud-rap ballad is not a trap banger). */
+const FAST_CALM: readonly [number, number] = [0.6, 0.8];
+
+/** How much a song's genre names span fast dancing their usual tempo hides (FAST_SUBS, FAST_THEMES), 0..1, unless the song is calm. */
+function fastStyle(style: SongStyle): number {
+  let f = 0;
+  for (const s of FAST_SUBS) f = Math.max(f, style.subs?.[s] ?? 0);
+  if (style.themes.some((t) => FAST_THEMES.includes(t))) f = 1;
+  const calm = style.calm ?? 0;
+  return f * (1 - Math.min(1, Math.max(0, (calm - FAST_CALM[0]) / (FAST_CALM[1] - FAST_CALM[0]))));
 }
 
 /**
  * Whether the whole song is danced at half (0.5) or twice (2) its counted
- * tempo, else 1. Only when the audio and the genre agree: the analysis must
- * offer that octave (TempoCandidates >= FEEL_AUDIO) AND it must lie clearly
- * closer to the tempo the song's genre names are usually stepped to
- * (SongStyle.bpm; a calm song's lower) than the counted one: hip-hop counted
- * at 150 with a strong half candidate steps at 75; drum and bass counted at
- * 87 with a strong double candidate at 174; trap at 150 stays (its genre
- * steps there). Without genre names, or a candidate, nothing changes: the
- * per-move speed limits (speed.ts) still send fast moves to half time.
+ * tempo, else 1, from where each octave lies against the tempo the song's
+ * genre names are usually stepped to (SongStyle.bpm; a calm song's lower):
+ * the octave that lies `lead` octaves closer to it than the count wins when
+ * the lead beats a margin, and the evidence sets the margin.
+ *
+ * Half, on the lower of two margins:
+ *   - the audio (TempoCandidates.half from FEEL_AUDIO): the margin falls from
+ *     FEEL_MARGIN to -FEEL_HALF_LEAN at FEEL_AUDIO_FULL, so a strong candidate
+ *     wins unless the count is clearly the genre's tempo (hip-hop counted at
+ *     150 steps at 75; a country ballad counted at 146 with 0.75 at 73). A
+ *     half-time backbeat counts less on trap, drill and bass music, which are
+ *     that at their counted tempo (trap at 150 stays);
+ *   - outside the genres that span fast dancing (fastStyle), the genre and the
+ *     sound alone, from FEEL_PRIOR_MARGIN: less as the count runs up past 150
+ *     (post-punk counted at 185 steps at 92), and much less on a soft-sounding
+ *     song counted fast (a soft song counted at 156 steps at 78).
+ * Twice: the audio must offer it (doubleTempo >= FEEL_AUDIO) with FEEL_MARGIN
+ * (drum and bass counted at 87 with a strong double candidate at 174).
+ * Without genre names nothing changes: the per-move speed limits (speed.ts)
+ * still send fast moves to half time.
  */
-export function danceFeel(style: SongStyle, bpm: number, cand: TempoCandidates): number {
+export function danceFeel(style: SongStyle, bpm: number, cand: TempoCandidates, audio: FeelAudio = {}): number {
   if (!style.bpm || !usableBpm(bpm)) return 1;
   const center = style.bpm * ((style.calm ?? 0) >= FEEL_CALM && !style.still ? 0.8 : 1);
   const d = (x: number) => Math.abs(Math.log2(x / center));
-  if ((cand.half ?? 0) >= FEEL_AUDIO && bpm / 2 >= 50 && d(bpm / 2) + FEEL_MARGIN < d(bpm)) return 0.5;
+  const r = (x: number, a: number, b: number) => Math.min(1, Math.max(0, (x - a) / (b - a)));
+  if (bpm / 2 >= 50) {
+    const half = cand.half ?? 0;
+    const backbeat = cand.halfBackbeat ?? half;
+    const beatStyle = Math.max(style.subs?.trap ?? 0, style.subs?.drill ?? 0, style.subs?.bass ?? 0);
+    const a = half > backbeat ? half : half * (1 - FEEL_BACKBEAT_STYLE * beatStyle);
+    let margin = a >= FEEL_AUDIO ? FEEL_MARGIN - (FEEL_MARGIN + FEEL_HALF_LEAN) * r(a, FEEL_AUDIO, FEEL_AUDIO_FULL) : Infinity;
+    if (fastStyle(style) < FAST_STYLE) {
+      const it = audio.intensity;
+      const soundSoft = it === undefined ? 0 : (1 - r(it, FEEL_SOFT_INTENSITY[0], FEEL_SOFT_INTENSITY[1])) * (1 - r(audio.drive ?? 0.5, FEEL_SOFT_DRIVE[0], FEEL_SOFT_DRIVE[1]));
+      const soft = Math.max(soundSoft, style.soft ?? 0);
+      const lean = Math.max(FEEL_FAST_LEAN * r(bpm, FEEL_FAST_BPM[0], FEEL_FAST_BPM[1]), FEEL_SOFT_LEAN * soft * r(bpm, FEEL_SOFT_BPM[0], FEEL_SOFT_BPM[1]));
+      margin = Math.min(margin, FEEL_PRIOR_MARGIN - lean);
+    }
+    if (d(bpm / 2) + margin < d(bpm)) return 0.5;
+  }
   if ((cand.double ?? 0) >= FEEL_AUDIO && bpm * 2 <= 210 && d(bpm * 2) + FEEL_MARGIN < d(bpm)) return 2;
   return 1;
 }
@@ -2026,17 +2113,35 @@ export function hasFreeTime(map: BeatMap | null | undefined): boolean {
 }
 
 /**
+ * A beatless map of a driving song (audio intensity hard from DRIVING_HARD, or
+ * calm at most DRIVING_CALM: thrash whose blast beats the tracker could not
+ * follow) gets a steady grid at its genre's tempo (STEADY_TIME_BPM) danced
+ * with its own style, never the lyrical free-time flow.
+ */
+const DRIVING_HARD = 0.5;
+const DRIVING_CALM = 0.3;
+export const STEADY_TIME_BPM: readonly [number, number] = [100, 150];
+
+/** Whether a song with no beat grid is driving (DRIVING_HARD, DRIVING_CALM): a steady grid, not the free-time flow. */
+export function freeTimeDriving(style: SongStyle): boolean {
+  return (style.hard ?? 0) >= DRIVING_HARD || (style.calm !== undefined && style.calm <= DRIVING_CALM);
+}
+
+/**
  * The nominal pace of a free-time flow: a slow version of the tempo the
  * song's genre is usually stepped to (more so the calmer the song), within
- * FREE_TIME_BPM; 76 BPM when nothing is known.
+ * FREE_TIME_BPM; 76 BPM when nothing is known. A driving song
+ * (freeTimeDriving) is paced at its genre's tempo, a little brisker the
+ * harder it sounds, within STEADY_TIME_BPM (120 BPM's genre: 120-132).
  */
 export function freeTimePace(style: SongStyle): number {
   const center = style.bpm ?? 100;
+  if (freeTimeDriving(style)) return Math.round(Math.min(STEADY_TIME_BPM[1], Math.max(STEADY_TIME_BPM[0], (style.bpm ?? 120) * (1 + 0.1 * (style.hard ?? 0)))));
   const calm = style.calm ?? 0.5;
   return Math.round(Math.min(FREE_TIME_BPM[1], Math.max(FREE_TIME_BPM[0], center * (0.55 + 0.25 * (1 - calm)))));
 }
 
-/** A nominal 4/4 grid at freeTimePace over the song (its sections when it has any, else a verse / chorus template). */
+/** A nominal 4/4 grid at freeTimePace over the song (its sections when it has any, else a verse / chorus template, livelier for a driving song). */
 export function freeTimeMap(map: BeatMap, style: SongStyle): BeatMap {
   const bpm = freeTimePace(style);
   const per = 60 / bpm;
@@ -2047,18 +2152,20 @@ export function freeTimeMap(map: BeatMap, style: SongStyle): BeatMap {
     if (k % 4 === 0) downbeats.push(k);
   }
   const d = map.duration;
+  const e = freeTimeDriving(style) ? 0.25 : 0;
   const secs = Array.isArray(map.sections) && map.sections.length ? map.sections : [
-    { start: 0, end: 0.12 * d, type: 'intro' as const, energy: 0.3 }, { start: 0.12 * d, end: 0.4 * d, type: 'verse' as const, energy: 0.45 },
-    { start: 0.4 * d, end: 0.6 * d, type: 'chorus' as const, energy: 0.6 }, { start: 0.6 * d, end: 0.88 * d, type: 'verse' as const, energy: 0.5 },
-    { start: 0.88 * d, end: d, type: 'outro' as const, energy: 0.3 },
+    { start: 0, end: 0.12 * d, type: 'intro' as const, energy: 0.3 + e }, { start: 0.12 * d, end: 0.4 * d, type: 'verse' as const, energy: 0.45 + e },
+    { start: 0.4 * d, end: 0.6 * d, type: 'chorus' as const, energy: 0.6 + e }, { start: 0.6 * d, end: 0.88 * d, type: 'verse' as const, energy: 0.5 + e },
+    { start: 0.88 * d, end: d, type: 'outro' as const, energy: 0.3 + e },
   ];
   const { bars: _bars, ...rest } = map;
   void _bars;
   return { ...rest, bpm, beats, downbeats, sections: secs };
 }
 
-/** The style a free-time flow is danced with: at least FREE_TIME_CALM calm, the lyrical set open. */
+/** The style a free-time flow is danced with: at least FREE_TIME_CALM calm, the lyrical set open; a driving song keeps its own. */
 function freeTimeStyle(style: SongStyle): SongStyle {
+  if (freeTimeDriving(style)) return style;
   return { ...style, calm: Math.max(style.calm ?? 0, FREE_TIME_CALM), subs: { ...style.subs, lyrical: Math.max(style.subs?.lyrical ?? 0, FREE_TIME_LYRICAL) } };
 }
 
@@ -2406,13 +2513,13 @@ export function generateRoutine(songMap: BeatMap, intensity: Intensity, opts: Ro
   let freeTime = false;
   const style0 = opts.style ?? BALANCED_POP;
   if (!isUsableBeatMap(songMap) && hasFreeTime(songMap)) {
-    // No beat grid at all: a slow free-time flow on a nominal grid (Routine.freeTime, times).
+    // No beat grid at all: a slow free-time flow on a nominal grid, or a driving song's steady one (Routine.freeTime, times).
     map = freeTimeMap(songMap, style0);
     freeTime = true;
     opts = { ...opts, style: freeTimeStyle(style0) };
   } else if (isUsableBeatMap(songMap) && !songMap.partial) {
-    // The whole song at another octave when the audio and the genre agree (danceFeel).
-    tempoFeel = danceFeel(style0, mapTempo(songMap), tempoCandidates(songMap));
+    // The whole song at another octave when the evidence says so (danceFeel).
+    tempoFeel = danceFeel(style0, mapTempo(songMap), tempoCandidates(songMap), feelAudio(songMap));
     const fm = tempoFeel !== 1 ? feelMap(songMap, tempoFeel) : null;
     if (fm && isUsableBeatMap(fm)) map = fm;
     else tempoFeel = 1;

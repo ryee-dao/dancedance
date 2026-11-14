@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { BeatMap } from '../analysis/beatmap';
-import { JUMP_CAP, NAMED_DANCE, danceFeel, danceOf, feelMap, freeTimePace, generateRoutine, hasFreeTime, isUsableBeatMap, jumpCap, styleGenres, type Intensity } from './generator';
+import { JUMP_CAP, NAMED_DANCE, STEADY_TIME_BPM, danceFeel, danceOf, feelMap, freeTimeDriving, freeTimePace, generateRoutine, hasFreeTime, isUsableBeatMap, jumpCap, styleGenres, type Intensity } from './generator';
 import { GENRE_MOVES } from './genres';
 import { resolveSongStyle, styleLabel, type SongInfo, type SongStyle } from './songStyle';
 import { songMap } from './testutil';
@@ -146,6 +146,57 @@ describe('tempo feel', () => {
     expect(danceFeel(resolveSongStyle({ title: 'x' }), 150, { half: 1 })).toBe(1); // no genre names: no say
   });
 
+  it('a strong half candidate wins unless the count is clearly the genre tempo', () => {
+    // A country ballad counted at 146 (Kenny Chesney, Nov 2026: halfTempo 0.75, intensity 0.57) steps at 73 ...
+    const country = resolveSongStyle({ genres: ['country'] }, { bpm: 146, traits: { calm: 0.19, intensity: 0.57, drive: 0.54 } });
+    const mid = { intensity: 0.57, drive: 0.54 };
+    expect(danceFeel(country, 146, { half: 0.75, halfBackbeat: 0.75 }, mid)).toBe(0.5);
+    // ... but a country song counted near country's own tempo stays, and without the audio's say country (bluegrass, two-step) keeps a fast count.
+    expect(danceFeel(country, 118, { half: 0.75 }, mid)).toBe(1);
+    expect(danceFeel(country, 146, { half: 0.4 }, mid)).toBe(1);
+    // A hip-hop anthem with a full half candidate whose genre centre sits nearer the count (All I Do Is Win, centre 99).
+    const anthem = resolveSongStyle({ genres: ['hip hop', 'crunk', 'gangsta rap'] }, { bpm: 150, traits: { calm: 0, intensity: 1, drive: 0.86, halfTempo: 1, halfFeel: 1 } });
+    expect(danceFeel(anthem, 150, { half: 1, halfBackbeat: 1 }, { intensity: 1, drive: 0.86 })).toBe(0.5);
+    // A half-time backbeat is what trap is at its count (Mask Off, 150); weak in-between beats are not.
+    const trap = resolveSongStyle({ genres: ['trap', 'hip hop'] }, { bpm: 150, traits: { calm: 0.37, intensity: 0.13, drive: 0.6, halfTempo: 1, halfFeel: 1 } });
+    expect(danceFeel(trap, 150, { half: 1, halfBackbeat: 1 }, { intensity: 0.13, drive: 0.6 })).toBe(1);
+    expect(danceFeel(trap, 150, { half: 1, halfBackbeat: 0.2 }, { intensity: 0.13, drive: 0.6 })).toBe(0.5);
+  });
+
+  it('without the audio: a soft song counted fast, or a count only the fast genres step at, is halved', () => {
+    // A soft bedroom-pop song counted at 156 (Michael Seyer: no half candidate, intensity 0.1) steps at 78 ...
+    const alt = resolveSongStyle({ genres: ['alternative'] }, { bpm: 156, traits: { calm: 0.59, intensity: 0.1, drive: 0.67 } });
+    const soft = { intensity: 0.1, drive: 0.67 };
+    expect(danceFeel(alt, 156, {}, soft)).toBe(0.5);
+    // ... at a walking pace it stays, and so does a hard-sounding song at 156.
+    expect(danceFeel(alt, 118, {}, soft)).toBe(1);
+    const hardAlt = resolveSongStyle({ genres: ['alternative'] }, { bpm: 156, traits: { calm: 0, intensity: 0.9, drive: 0.8 } });
+    expect(danceFeel(hardAlt, 156, {}, { intensity: 0.9, drive: 0.8 })).toBe(1);
+    // Post-punk counted at 185 (Tempo Perdido, ~93): nothing outside the fast genres is stepped there.
+    const postPunk = resolveSongStyle({ genres: ['post-punk', 'alternative rock', 'pop rock'] }, { bpm: 185, traits: { calm: 0, intensity: 0.87, drive: 0.6 } });
+    expect(danceFeel(postPunk, 185, { half: 0.07 }, { intensity: 0.87, drive: 0.6 })).toBe(0.5);
+    // A ballad's names say soft even when the audio has no intensity (older maps).
+    const ballad = resolveSongStyle({ genres: ['piano ballad', 'pop'] }, { bpm: 135, traits: { calm: 0.9 } });
+    expect(danceFeel(ballad, 135, {})).toBe(0.5);
+    // Hip-hop at 150 with no candidate stays counted (older maps).
+    expect(danceFeel(hiphop, 150, {})).toBe(1);
+  });
+
+  it('genuinely fast songs keep their count without a half candidate, soft-sounding or not', () => {
+    const fast: [string[], number, number][] = [
+      [['punk rock'], 175, 0.9], [['skate punk', 'hardcore punk'], 200, 1], [['drum and bass'], 174, 0.9], [['jungle'], 170, 0.6],
+      [['thrash metal'], 190, 1], [['metal'], 180, 0.95], [['bluegrass'], 180, 0.25], [['country'], 170, 0.4], [['texas country', 'line dance'], 160, 0.5],
+      [['lindy hop', 'swing'], 210, 0.5], [['rock and roll', 'rockabilly'], 175, 0.6], [['gabber', 'hardcore techno'], 180, 1], [['salsa'], 185, 0.6],
+      [['merengue'], 150, 0.6], [['trap'], 150, 0.3], [['uk drill'], 142, 0.4], [['dubstep'], 140, 0.9], [['techno'], 140, 0.8],
+    ];
+    for (const [genres, bpm, intensity] of fast) {
+      for (const drive of [0.6, 0.95]) {
+        const style = resolveSongStyle({ genres }, { bpm, traits: { calm: 0.1, intensity, drive } });
+        expect(danceFeel(style, bpm, { half: 0.3, halfBackbeat: 0.3 }, { intensity, drive }), `${genres.join('/')} ${bpm} ${drive}`).toBe(1);
+      }
+    }
+  });
+
   it('dances the whole song on the felt grid and says so', () => {
     const map: BeatMap = { ...songMap(150, 'feel'), traits: { calm: 0, halfTempo: 1, halfFeel: 1 } as BeatMap['traits'] };
     const r = generateRoutine(map, 'cardio', { style: hiphop });
@@ -235,5 +286,35 @@ describe('free time: a song with no beat grid', () => {
     }
     // The pace follows what is known: a calm piece slower than a metal track.
     expect(freeTimePace(style)).toBeLessThan(freeTimePace(resolveSongStyle({ genre: 'Metal' }, { traits: { calm: 0.6 } })));
+  });
+
+  it('a driving song gets a steady grid at its genre tempo, danced in its own style, never the lyrical flow', () => {
+    // Crossover thrash the tracker found no beat in (Sky Church "Adamant", Nov 2026: intensity 1, heavy 0.99, 0 beats).
+    const thrash = resolveSongStyle({ genres: ['thrash metal', 'crossover thrash'] }, { traits: { calm: 0, drive: 0.9, intensity: 1, heavy: 0.99 } });
+    expect(freeTimeDriving(thrash)).toBe(true);
+    expect(freeTimePace(thrash)).toBeGreaterThanOrEqual(STEADY_TIME_BPM[0]);
+    expect(freeTimePace(thrash)).toBeLessThanOrEqual(STEADY_TIME_BPM[1]);
+    let metal = 0, all = 0, jumps = 0;
+    for (const lv of LEVELS) {
+      for (const id of IDS.slice(0, 4)) {
+        const r = generateRoutine(empty(`thrash-${id}`), lv, { style: thrash });
+        expect(r.freeTime).toBe(true);
+        expect(r.bpm).toBe(freeTimePace(thrash));
+        expect(r.times!.length).toBe(r.beats);
+        for (const i of r.instances) {
+          if (i.move.idle || i.move.cooldown) continue;
+          expect(i.move.genre, i.move.name).not.toBe('lyrical');
+          all += i.span;
+          if (i.move.genre === 'metal' || i.move.genre === 'rock') metal += i.span;
+          if (lv === 'sweaty' && i.move.jump) jumps += i.span;
+        }
+      }
+    }
+    expect(metal / all).toBeGreaterThan(0.2);
+    expect(jumps).toBeGreaterThan(0);
+    // Hard-sounding by intensity alone (calm unknown) counts too; a calm or a mid song keeps the slow flow.
+    expect(freeTimeDriving({ ...thrash, calm: undefined })).toBe(true);
+    expect(freeTimeDriving(resolveSongStyle({ genres: ['jazz'] }, { traits: { calm: 0.65, intensity: 0, drive: 0.72 } }))).toBe(false);
+    expect(freeTimeDriving(resolveSongStyle({ genres: ['rock'] }, { traits: { calm: 0.45, intensity: 0.4, drive: 0.5 } }))).toBe(false);
   });
 });
