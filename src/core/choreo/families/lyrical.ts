@@ -101,12 +101,16 @@ const lyrical: MoveDef[] = [
   }),
   full({
     id: 'spine-roll-up', name: 'Spine Roll & Open', tags: 'pop | full | wave', beats: 4, level: 'low', d: 2, parts: ['torso', 'legs', 'arms'], bounce: 0.1,
-    desc: 'Start curled forward over soft knees, then roll up through the body: knees, hips, chest and finally the head, the arms floating up in front and opening high.',
+    desc: 'Start curled forward over soft knees, head hanging and arms dangling by the knees, then roll up through the body: knees, hips, chest and finally the head, the arms floating up the middle and opening high.',
+    // A roll is a side-view motion, so from the front it is shown as a sequence that travels
+    // a long way up the screen: the knees straighten first (the body rises while the head and
+    // the dangling hands stay low), then the chest lifts and the shoulders roll back, then the
+    // head comes up last as the hands float up the middle and open.
     keys: [
-      [0, { y: -0.07, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], kneeR: 0.08, kneeL: 0.08, bend: 16, nod: 14, shR: 0.3, shL: 0.3, r: at(1, 0.07, 0.56, 0.22, E_OUT), l: at(-1, -0.07, 0.56, 0.22, E_OUT), ...OPEN }],
-      [1, { y: -0.08, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], kneeR: 0.1, kneeL: 0.1, bend: 9, nod: 10, r: at(1, 0.08, 0.64, 0.27, E_OUT), l: at(-1, -0.08, 0.64, 0.27, E_OUT), ...OPEN }],
-      [2, { y: -0.04, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], bend: -7, nod: -2, r: at(1, 0.07, 0.92, 0.24, [1, -0.2, 0]), l: at(-1, -0.07, 0.92, 0.24, [1, -0.2, 0]), ...OPEN }],
-      [3, { y: -0.01, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], bend: -2, nod: -10, pitchR: 15, pitchL: 15, r: HIGH_V, l: HIGH_V, ...OPEN }],
+      [0, { y: -0.13, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], kneeR: 0.12, kneeL: 0.12, bend: 24, nod: 22, shR: 0.6, shL: 0.6, r: at(1, 0.09, 0.4, 0.2, E_DOWN), l: at(-1, -0.09, 0.4, 0.2, E_DOWN), handR: 0.7, handL: 0.7 }],
+      [1, { y: -0.05, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], kneeR: 0.04, kneeL: 0.04, bend: 20, nod: 20, shR: 0.5, shL: 0.5, r: at(1, 0.08, 0.46, 0.22, E_DOWN), l: at(-1, -0.08, 0.46, 0.22, E_DOWN), handR: 0.7, handL: 0.7 }],
+      [2, { y: -0.03, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], bend: 4, nod: 16, shR: 0.1, shL: 0.1, r: at(1, 0.05, 0.72, 0.24, E_OUT), l: at(-1, -0.05, 0.72, 0.24, E_OUT), ...OPEN }],
+      [3, { y: -0.005, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], bend: -4, nod: -10, pitchR: 20, pitchL: 20, r: HIGH_V, l: HIGH_V, ...OPEN }],
     ],
   }),
 
@@ -229,8 +233,9 @@ const lyrical: MoveDef[] = [
 // ---------------------------------------------------------------------------
 // Metal
 
-const DOOM_A: PoseSpec = { x: 0.05, hips: 0.03, y: -0.12, bend: 12, lean: 8, head: 8, nod: 14, rf: [0.2, 0, 0], lf: [-0.2, 0, 0], r: at(1, 0.24, 0.44, 0.12, [1, 0, -0.3]), l: at(-1, 0.02, 0.48, 0.24, E_DOWN), ...FIST };
-const DOOM_B: PoseSpec = { x: 0.04, hips: 0.02, y: -0.1, bend: 8, lean: 5, head: 4, nod: 2, rf: [0.2, 0, 0], lf: [-0.2, 0, 0], r: at(1, 0.22, 0.46, 0.1, [1, 0, -0.3]), l: at(-1, -0.02, 0.5, 0.22, E_DOWN), ...FIST };
+// Staged big: the whole body swings well over each foot, the hanging fists swinging with it.
+const DOOM_A: PoseSpec = { x: 0.075, hips: 0.045, tilt: 6, y: -0.13, bend: 12, lean: 13, head: 10, nod: 16, rf: [0.2, 0, 0], lf: [-0.2, 0, 0], kneeR: 0.2, r: at(1, 0.3, 0.42, 0.1, [1, 0, -0.3]), l: at(-1, 0.06, 0.46, 0.22, E_DOWN), ...FIST };
+const DOOM_B: PoseSpec = { x: 0.05, hips: 0.03, tilt: 4, y: -0.1, bend: 8, lean: 8, head: 5, nod: 2, rf: [0.2, 0, 0], lf: [-0.2, 0, 0], kneeR: 0.12, r: at(1, 0.26, 0.45, 0.1, [1, 0, -0.3]), l: at(-1, 0.0, 0.5, 0.22, E_DOWN), ...FIST };
 const STOMP_A: PoseSpec = { y: -0.13, bend: 12, nod: 12, rf: [0.2, 0, 0.03], lf: [-0.15, 0, 0], kneeR: 0.15, kneeL: 0.15, r: at(1, 0.1, 0.58, 0.26, [1, -0.4, 0]), l: at(-1, -0.18, 0.8, 0.14, E_DOWN), ...FIST };
 const STOMP_B: PoseSpec = { y: -0.04, bend: 0, nod: -6, rf: [0.17, 0, 0.02], lf: [-0.15, 0.13, 0.06], kneeL: 0.2, r: at(1, 0.2, 0.8, 0.12, E_DOWN), l: at(-1, -0.22, 1.08, 0.08, [1, 0.2, -0.2]), ...FIST };
 
@@ -276,12 +281,16 @@ const metal: MoveDef[] = [
   full({
     id: 'circle-pit-call', name: 'Circle Pit Call', tags: 'rock | arms | point', beats: 2, level: 'low', d: 1, parts: ['arms'], mirror: true, bounce: 0.3,
     desc: 'Bouncing in a wide stance, raise one index finger high and stir it round in a circle over your head to call the pit, the other fist at the chest.',
-    keys: [
-      [0, { y: -0.08, nod: 4, rf: [0.17, 0, 0], lf: [-0.17, 0, 0], r: at(1, 0.24, 1.06, 0.1, E_OUT), l: at(-1, -0.12, 0.72, 0.18, E_DOWN), handR: 0, handL: 0, formR: 'point' }],
-      [0.5, { y: -0.05, rf: [0.17, 0, 0], lf: [-0.17, 0, 0], r: at(1, 0.14, 1.08, 0.22, E_OUT), l: at(-1, -0.12, 0.72, 0.18, E_DOWN), handR: 0, handL: 0, formR: 'point' }],
-      [1, { y: -0.08, nod: 4, rf: [0.17, 0, 0], lf: [-0.17, 0, 0], r: at(1, 0.04, 1.08, 0.12, E_OUT), l: at(-1, -0.12, 0.72, 0.18, E_DOWN), handR: 0, handL: 0, formR: 'point' }],
-      [1.5, { y: -0.05, rf: [0.17, 0, 0], lf: [-0.17, 0, 0], r: at(1, 0.14, 1.06, 0.0, E_OUT), l: at(-1, -0.12, 0.72, 0.18, E_DOWN), handR: 0, handL: 0, formR: 'point' }],
-    ],
+    // The stirring circle is drawn in the front plane above the head (radius 0.12): a flat
+    // horizontal circle showed as a wave from the front.
+    keys: [0, 1, 2, 3].map((k) => {
+      const a = (k * Math.PI) / 2;
+      return [k / 2, {
+        y: k % 2 ? -0.05 : -0.08, nod: k % 2 ? 0 : 4, rf: [0.17, 0, 0], lf: [-0.17, 0, 0],
+        r: at(1, 0.15 + 0.12 * Math.cos(a), 1.0 + 0.08 * Math.sin(a), 0.06 - 0.06 * Math.sin(a), [1, 0.6, 0]),
+        l: at(-1, -0.12, 0.72, 0.18, E_DOWN), handR: 0, handL: 0, formR: 'point',
+      }] as [number, PoseSpec];
+    }),
   }),
 ];
 
@@ -291,7 +300,8 @@ const metal: MoveDef[] = [
 const SLAM_A: PoseSpec = { y: 0.07, x: 0.06, lean: 14, twist: -12, shR: 1.0, rf: [0.14, 0.05, 0], lf: [-0.02, 0.06, 0], r: at(1, 0.26, 0.74, 0.12, [1, 0.4, 0]), l: [30, 0, 60, 30], ...FIST };
 const CHANGE_A: PoseSpec = { y: -0.2, x: 0.04, hips: 0.02, bend: 30, nod: 8, rf: [0.18, 0, 0.04], lf: [-0.14, 0, 0], kneeR: 0.2, kneeL: 0.1, r: at(1, 0.24, 0.48, 0.28, [1, -0.2, 0]), l: [30, -20, 46, -10], handR: 1, handL: 0 };
 const CHANGE_B: PoseSpec = { y: -0.11, x: 0, bend: 16, nod: 4, rf: [0.16, 0, 0.02], lf: [-0.16, 0, 0.02], r: at(1, 0.12, 0.66, 0.22, E_DOWN), l: at(-1, -0.12, 0.6, 0.2, E_DOWN), ...FIST };
-const SKANK_X: PoseSpec = { y: -0.08, bend: 8, nod: 4, rf: [-0.03, 0, 0.08], lf: [-0.08, 0, 0], kneeR: 0.2, r: at(1, 0.22, 0.62, -0.08, [0.5, -0.3, -1]), l: at(-1, -0.1, 0.82, 0.24, E_DOWN), ...FIST };
+// The kick across goes well past the other foot and a little up, so the cross shows head-on.
+const SKANK_X: PoseSpec = { y: -0.08, bend: 8, nod: 4, lean: -4, rf: [-0.09, 0.06, 0.07], lf: [-0.09, 0, 0], kneeR: -0.2, pitchR: -10, r: at(1, 0.22, 0.62, -0.08, [0.5, -0.3, -1]), l: at(-1, -0.1, 0.82, 0.24, E_DOWN), ...FIST };
 const SKANK_O: PoseSpec = { y: -0.03, bend: 4, rf: [0.09, 0, 0], lf: [-0.09, 0, 0], r: at(1, 0.18, 0.7, 0.1, E_DOWN), l: at(-1, -0.18, 0.7, 0.1, E_DOWN), ...FIST };
 
 /** Arms draped over the shoulders of the people either side (the sing-along sway). */
@@ -304,8 +314,8 @@ const punk: MoveDef[] = [
     id: 'grounded-pogo', name: 'Grounded Pogo', tags: 'rock | legs |', beats: 1, level: 'low', d: 1, parts: ['legs', 'torso'], bounce: 0.2,
     desc: 'The pogo without leaving the floor: body stiff and upright with the fists crossed over the chest, spring up onto the balls of the feet on every beat and drop back onto the heels, the head nodding down hard.',
     keys: [
-      [0, { y: -0.005, nod: -6, shR: 0.5, shL: 0.5, rf: [0.07, 0, 0], lf: [-0.07, 0, 0], ...TOES, r: at(1, -0.06, 0.72, 0.17, [0.6, -1, 0]), l: at(-1, 0.06, 0.69, 0.2, [0.6, -1, 0]), ...FIST }],
-      [0.5, { y: -0.06, nod: 12, shR: 0.2, shL: 0.2, rf: [0.07, 0, 0], lf: [-0.07, 0, 0], kneeR: 0.04, kneeL: 0.04, r: at(1, -0.06, 0.7, 0.17, [0.6, -1, 0]), l: at(-1, 0.06, 0.67, 0.2, [0.6, -1, 0]), ...FIST }],
+      [0, { y: 0.01, nod: -8, shR: 0.6, shL: 0.6, rf: [0.07, 0, 0], lf: [-0.07, 0, 0], pitchR: 40, pitchL: 40, r: at(1, -0.06, 0.72, 0.17, [0.6, -1, 0]), l: at(-1, 0.06, 0.69, 0.2, [0.6, -1, 0]), ...FIST }],
+      [0.5, { y: -0.085, nod: 14, shR: 0.1, shL: 0.1, rf: [0.07, 0, 0], lf: [-0.07, 0, 0], kneeR: 0.06, kneeL: 0.06, r: at(1, -0.06, 0.7, 0.17, [0.6, -1, 0]), l: at(-1, 0.06, 0.67, 0.2, [0.6, -1, 0]), ...FIST }],
     ],
   }),
   full({
@@ -361,11 +371,11 @@ const punk: MoveDef[] = [
 const UMBRELLA_R = at(1, 0.2, 1.08, 0.06, [1, -0.4, 0]);
 const SKIRT_R = at(1, 0.25, 0.52, 0.14, E_DOWN);
 const SKIRT_L = at(-1, -0.25, 0.52, 0.14, E_DOWN);
-const RODA_A: PoseSpec = { y: -0.05, x: 0.012, hips: 0.03, tilt: 4, bend: 8, nod: 4, rf: [0.1, 0, 0.03], lf: [-0.09, 0, -0.01], pitchL: 20, slideR: true, r: at(1, 0.27, 0.54, 0.12, E_DOWN), l: SKIRT_L, handR: 0.3, handL: 0.3 };
-const RODA_B: PoseSpec = { y: -0.03, x: 0.004, hips: -0.01, tilt: -1, bend: 8, nod: 2, rf: [0.1, 0, 0.03], lf: [-0.08, 0, -0.02], pitchR: 20, r: SKIRT_R, l: SKIRT_L, handR: 0.3, handL: 0.3 };
+const RODA_A: PoseSpec = { y: -0.06, x: 0.02, hips: 0.055, tilt: 8, kneeL: 0.15, bend: 8, nod: 4, rf: [0.1, 0, 0.03], lf: [-0.09, 0, -0.01], pitchL: 20, slideR: true, r: at(1, 0.27, 0.54, 0.12, E_DOWN), l: SKIRT_L, handR: 0.3, handL: 0.3 };
+const RODA_B: PoseSpec = { y: -0.03, x: 0.0, hips: -0.015, tilt: -2, kneeL: 0, bend: 8, nod: 2, rf: [0.1, 0, 0.03], lf: [-0.08, 0, -0.02], pitchR: 20, r: SKIRT_R, l: SKIRT_L, handR: 0.3, handL: 0.3 };
 const FRAME_R = at(1, 0.34, 0.9, 0.14, [0.6, -0.8, 0]);
 const FRAME_L = at(-1, 0.04, 0.82, 0.28, [1, -0.3, 0]);
-const SCISSOR_X: PoseSpec = { y: -0.1, rf: [-0.03, 0, 0.05], lf: [-0.09, 0, 0], kneeR: -0.15, kneeL: 0.1, ...TOES, lean: 3, r: UMBRELLA_R, l: at(-1, -0.38, 0.66, 0.1, E_DOWN), handR: 0, handL: 1 };
+const SCISSOR_X: PoseSpec = { y: -0.1, rf: [-0.07, 0, 0.05], lf: [-0.1, 0, 0], kneeR: -0.25, kneeL: 0.1, ...TOES, lean: 3, r: UMBRELLA_R, l: at(-1, -0.38, 0.66, 0.1, E_DOWN), handR: 0, handL: 1 };
 const SCISSOR_O: PoseSpec = { y: -0.06, rf: [0.16, 0, 0], lf: [-0.16, 0, 0], kneeR: 0.25, kneeL: 0.25, ...TOES, lean: 0, r: UMBRELLA_R, l: at(-1, -0.36, 0.7, 0.1, E_DOWN), handR: 0, handL: 1 };
 
 const brazil: MoveDef[] = [
@@ -421,12 +431,14 @@ const brazil: MoveDef[] = [
   }),
   full({
     id: 'passinho-tap', name: 'Passinho Tap & Swivel', tags: 'hiphop latin | legs |', beats: 2, level: 'mid', d: 3, parts: ['legs', 'hips'], mirror: true, bounce: 0.3,
-    desc: 'Funk carioca footwork kept simple: tap one toe out in front, flick it out to the side, then swivel both heels as the feet come back under you, shoulders loose.',
+    desc: 'Funk carioca footwork kept simple: turned a little toward the working foot, tap its toe out in front, flick it out wide to the side, then swivel both heels as the feet come back under you, shoulders loose.',
+    // The tap in front is turned 30 deg toward the foot (head-on it hid in front of the shin);
+    // the flick goes wide and the swivels point both knees well to one side, then the other.
     keys: [
-      [0, { y: -0.05, x: -0.02, rf: [0.1, 0, 0.12], lf: [-0.09, 0, 0], pitchR: 35, kneeL: 0.1, twist: 6, r: at(1, 0.24, 0.66, 0.12, E_DOWN), l: at(-1, -0.2, 0.62, 0.16, E_DOWN), ...FIST }],
-      [0.5, { y: -0.04, x: -0.03, rf: [0.25, 0.06, 0.02], lf: [-0.09, 0, 0], kneeR: 0.3, twist: -6, r: at(1, 0.28, 0.7, 0.1, E_DOWN), l: at(-1, -0.16, 0.66, 0.18, E_DOWN), ...FIST }],
-      [1, { y: -0.08, x: 0, rf: [0.08, 0, 0], lf: [-0.08, 0, 0], kneeR: -0.35, kneeL: 0.35, slideR: true, slideL: true, twist: 4, r: at(1, 0.2, 0.64, 0.14, E_DOWN), l: at(-1, -0.2, 0.64, 0.14, E_DOWN), ...FIST }],
-      [1.5, { y: -0.05, x: 0, rf: [0.09, 0, 0], lf: [-0.09, 0, 0], kneeR: 0.35, kneeL: -0.35, slideR: true, slideL: true, twist: -4, r: at(1, 0.2, 0.66, 0.14, E_DOWN), l: at(-1, -0.2, 0.66, 0.14, E_DOWN), ...FIST }],
+      [0, { spin: 30, y: -0.06, x: -0.02, rf: [0.12, 0, 0.14], lf: [-0.09, 0, 0], pitchR: 40, kneeL: 0.15, twist: 6, r: at(1, 0.26, 0.66, 0.1, E_DOWN), l: at(-1, -0.2, 0.62, 0.16, E_DOWN), ...FIST }],
+      [0.5, { spin: 10, y: -0.04, x: -0.03, rf: [0.28, 0.07, 0.02], lf: [-0.09, 0, 0], kneeR: 0.3, lean: -4, twist: -6, r: at(1, 0.3, 0.72, 0.08, E_DOWN), l: at(-1, -0.16, 0.66, 0.18, E_DOWN), ...FIST }],
+      [1, { spin: 0, y: -0.09, x: 0.01, rf: [0.09, 0, 0], lf: [-0.07, 0, 0], kneeR: -0.4, kneeL: 0.4, slideR: true, slideL: true, hips: 0.03, tilt: 4, twist: 4, r: at(1, 0.2, 0.64, 0.14, E_DOWN), l: at(-1, -0.2, 0.64, 0.14, E_DOWN), ...FIST }],
+      [1.5, { spin: 0, y: -0.06, x: -0.01, rf: [0.07, 0, 0], lf: [-0.09, 0, 0], kneeR: 0.4, kneeL: -0.4, slideR: true, slideL: true, hips: -0.03, tilt: -4, twist: -4, r: at(1, 0.2, 0.66, 0.14, E_DOWN), l: at(-1, -0.2, 0.66, 0.14, E_DOWN), ...FIST }],
     ],
   }),
   full({
@@ -444,7 +456,8 @@ const brazil: MoveDef[] = [
 // ---------------------------------------------------------------------------
 // Amapiano
 
-const PIANO = (x: number, y: number): PoseSpec => ({ r: at(1, x + 0.1, y, 0.26, E_DOWN), l: at(-1, x - 0.1, y, 0.26, E_DOWN), ...OPEN });
+// Fingers spread over the keys at the waist, elbows out, the hands a hand's width apart.
+const PIANO = (x: number, y: number): PoseSpec => ({ r: at(1, x + 0.09, y, 0.2, [1, -0.3, -0.2]), l: at(-1, x - 0.09, y, 0.2, [1, -0.3, -0.2]), ...OPEN, formR: 'fingers', formL: 'fingers' });
 const SHOULDER_A: PoseSpec = { y: -0.09, x: 0.02, hips: 0.015, chestX: 0.035, twist: -12, lean: 4, nod: 4, shR: 1.0, shL: 0, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], kneeR: 0.1, r: at(1, 0.2, 0.6, 0.18, E_DOWN), l: at(-1, -0.16, 0.56, 0.1, E_DOWN), handR: 0.5, handL: 0.5 };
 const KNEE_A: PoseSpec = { y: -0.11, x: -0.02, hips: -0.03, tilt: -6, lean: 3, nod: 4, rf: [0.11, 0, 0.02], lf: [-0.11, 0, 0], kneeR: -0.45, kneeL: 0.1, pitchR: 20, r: at(1, -0.02, 0.6, 0.22, E_DOWN), l: at(-1, -0.28, 0.56, 0.06, E_DOWN), handR: 0.5, handL: 0.5 };
 
@@ -454,7 +467,7 @@ const KNEE_A: PoseSpec = { y: -0.11, x: -0.02, hips: -0.03, tilt: -6, lean: 3, n
 // toward and away from the body; staged as a wheel in the front plane so it reads head-on.
 const fistRoll = (k: number): PoseSpec => {
   const a = Math.PI / 2 - (k * Math.PI) / 2;
-  const cx = 0.055, cy = 0.63, rad = 0.045;
+  const cx = 0.07, cy = 0.64, rad = 0.09; // 0.045 vanished at TV size
   const side: 1 | -1 = k % 2 ? -1 : 1;
   return {
     y: k % 2 ? -0.1 : -0.16, bend: 8, nod: k % 2 ? 3 : 6, twist: -9 * side, turn: -6 * side,
@@ -495,21 +508,23 @@ const amapiano: MoveDef[] = [
   full({
     id: 'low-squat-walk', name: 'Low Rocking Walk', tags: 'hiphop | legs | amapiano walk', beats: 4, level: 'high', d: 2, parts: ['legs', 'torso'], mirror: true, travel: 0.16, bounce: 0.2,
     desc: 'Sink low with the knees wide and walk slowly to the side in small steps, the upper body rocking over each foot, hands loose in front.',
-    keys: [
-      [0, { x: 0.04, y: -0.18, lean: 7, bend: 10, nod: 4, rf: [0.21, 0, 0], lf: [-0.13, 0, 0], kneeR: 0.3, kneeL: 0.3, r: at(1, 0.14, 0.58, 0.24, E_DOWN), l: at(-1, -0.1, 0.56, 0.24, E_DOWN), handR: 0.5, handL: 0.5 }],
-      [1, { x: 0.07, y: -0.16, lean: -6, bend: 10, nod: 2, rf: [0.21, 0, 0], lf: [-0.05, 0, 0], kneeR: 0.3, kneeL: 0.3, r: at(1, 0.12, 0.56, 0.24, E_DOWN), l: at(-1, -0.12, 0.58, 0.24, E_DOWN), handR: 0.5, handL: 0.5 }],
-      [2, { x: 0.12, y: -0.18, lean: 7, bend: 10, nod: 4, rf: [0.29, 0, 0], lf: [-0.05, 0, 0], kneeR: 0.3, kneeL: 0.3, r: at(1, 0.14, 0.58, 0.24, E_DOWN), l: at(-1, -0.1, 0.56, 0.24, E_DOWN), handR: 0.5, handL: 0.5 }],
-      [3, { x: 0.15, y: -0.16, lean: -6, bend: 10, nod: 2, rf: [0.29, 0, 0], lf: [0.03, 0, 0], kneeR: 0.3, kneeL: 0.3, r: at(1, 0.12, 0.56, 0.24, E_DOWN), l: at(-1, -0.12, 0.58, 0.24, E_DOWN), handR: 0.5, handL: 0.5 }],
-    ],
+    // Restaged bigger: each step lands wide with the whole body rocking over that foot (hips,
+    // lean and head together) and the loose hands swinging the other way; it read as a held squat.
+    keys: ([[0, 0.06, 0.25, -0.13, 1], [1, 0.09, 0.25, -0.01, -1], [2, 0.14, 0.33, -0.01, 1], [3, 0.17, 0.33, 0.07, -1]] as const).map(([t, x, r, l, s]) => [t, {
+      x, y: s > 0 ? -0.18 : -0.15, lean: 11 * s, hips: 0.045 * s, tilt: 8 * s, head: 6 * s, bend: 9, nod: s > 0 ? 5 : 2,
+      rf: [r, 0, 0], lf: [l, s < 0 ? 0.04 : 0, 0], kneeR: 0.32, kneeL: 0.32, pitchL: s < 0 ? 15 : 0,
+      r: at(1, 0.14 - 0.07 * s, 0.56, 0.22, E_DOWN), l: at(-1, -0.12 - 0.07 * s, 0.56, 0.22, E_DOWN), handR: 0.5, handL: 0.5,
+    }] as [number, PoseSpec]),
   }),
   full({
     id: 'air-piano', name: 'Air Piano Groove', tags: 'hiphop | arms | amapiano hands', beats: 2, level: 'low', d: 1, parts: ['arms', 'hips'], bounce: 0.3,
-    desc: 'Knees bouncing, play a keyboard in front of the hips: press the keys on one side, slide along to the other side and press again, the weight following the hands.',
+    desc: 'Knees bouncing, play a keyboard in front of the waist with the fingers spread: press the keys on one side, slide along to the other side and press again, the weight following the hands.',
+    // The hands travel the length of the keyboard (0.3) and drop visibly on each press.
     keys: [
-      [0, { y: -0.09, x: 0.025, hips: 0.02, nod: 8, turn: 8, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], ...PIANO(0.1, 0.58) }],
-      [0.5, { y: -0.05, x: 0.02, hips: 0.015, nod: 4, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], ...PIANO(0.08, 0.63) }],
-      [1, { y: -0.09, x: -0.025, hips: -0.02, nod: 8, turn: -8, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], ...PIANO(-0.1, 0.58) }],
-      [1.5, { y: -0.05, x: -0.02, hips: -0.015, nod: 4, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], ...PIANO(-0.08, 0.63) }],
+      [0, { y: -0.09, x: 0.03, hips: 0.03, tilt: 4, nod: 10, turn: 12, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], ...PIANO(0.15, 0.6) }],
+      [0.5, { y: -0.05, x: 0.0, hips: 0, nod: 4, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], ...PIANO(0.0, 0.68) }],
+      [1, { y: -0.09, x: -0.03, hips: -0.03, tilt: -4, nod: 10, turn: -12, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], ...PIANO(-0.15, 0.6) }],
+      [1.5, { y: -0.05, x: 0.0, hips: 0, nod: 4, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], ...PIANO(0.0, 0.68) }],
     ],
   }),
   full({

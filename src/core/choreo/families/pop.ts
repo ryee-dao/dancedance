@@ -140,20 +140,22 @@ export const patterns: PatternSet = {
     popCharleston: {
       beats: 4, parts: ['legs'], mirror: true,
       keys: [
-        [0, { y: -0.05, hipTwist: -10, rf: [0.07, 0.02, 0.17], lf: [-0.09, 0, 0], kneeR: -0.3, kneeL: -0.3 }],
-        [1, { y: -0.02, rf: [0.09, 0, 0], lf: [-0.09, 0, 0], kneeR: 0.25, kneeL: 0.25 }],
-        [2, { y: -0.05, hipTwist: 10, rf: [0.09, 0, 0], lf: [-0.07, 0.02, -0.16], kneeR: -0.3, kneeL: -0.3 }],
-        [3, { y: -0.02, rf: [0.09, 0, 0], lf: [-0.09, 0, 0], kneeR: 0.25, kneeL: 0.25 }],
+        // Turned 30 deg toward the stepping foot: the forward and back taps go at the viewer.
+        [0, { spin: 30, y: -0.05, hipTwist: -10, rf: [0.07, 0.02, 0.17], lf: [-0.09, 0, 0], kneeR: -0.35, kneeL: -0.35 }],
+        [1, { spin: 30, y: -0.02, rf: [0.09, 0, 0], lf: [-0.09, 0, 0], kneeR: 0.3, kneeL: 0.3 }],
+        [2, { spin: 30, y: -0.05, hipTwist: 10, rf: [0.09, 0, 0], lf: [-0.07, 0.02, -0.16], kneeR: -0.35, kneeL: -0.35 }],
+        [3, { spin: 30, y: -0.02, rf: [0.09, 0, 0], lf: [-0.09, 0, 0], kneeR: 0.3, kneeL: 0.3 }],
       ],
     },
     // Charleston kick: kick the right leg forward low, step, kick the left leg back, step.
     popCharlestonKick: {
       beats: 4, parts: ['legs'], mirror: true,
       keys: [
-        [0, { y: -0.01, x: -0.02, rf: [0.23, 0.2, 0.32], lf: [-0.09, 0, 0], kneeL: -0.25 }],
-        [1, { y: -0.05, rf: [0.09, 0, 0.04], lf: [-0.09, 0, 0], kneeR: 0.25, kneeL: 0.25 }],
-        [2, { y: -0.02, x: 0.02, rf: [0.09, 0, 0.04], lf: [-0.11, 0.16, -0.2], kneeR: -0.25 }],
-        [3, { y: -0.05, rf: [0.09, 0, 0], lf: [-0.09, 0, 0], kneeR: 0.25, kneeL: 0.25 }],
+        // On a 30 deg diagonal so the kick forward and the kick back show as kicks.
+        [0, { spin: 30, y: -0.01, x: -0.02, rf: [0.23, 0.2, 0.32], lf: [-0.09, 0, 0], kneeL: -0.25 }],
+        [1, { spin: 30, y: -0.05, rf: [0.09, 0, 0.04], lf: [-0.09, 0, 0], kneeR: 0.25, kneeL: 0.25 }],
+        [2, { spin: 30, y: -0.02, x: 0.02, rf: [0.09, 0, 0.04], lf: [-0.11, 0.16, -0.2], kneeR: -0.25 }],
+        [3, { spin: 30, y: -0.05, rf: [0.09, 0, 0], lf: [-0.09, 0, 0], kneeR: 0.25, kneeL: 0.25 }],
       ],
     },
     // Jazz walk on the spot: each foot crosses in front of the other, hip pushed out to the standing side.

@@ -153,8 +153,9 @@ export const moves: MoveDef[] = [
     id: 'soccer-kick', name: 'Soccer Kick', tags: 'party | legs | kick sport', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms'], mirror: true,
     desc: 'Swing the right leg back with the opposite arm forward, then kick through the ball with arms flung wide for balance.',
     keys: [
-      [0, { y: -0.04, x: -0.02, lean: -3, bend: 4, rf: [0.11, 0.13, -0.16], r: R(0.32, 0.66, -0.04, E_OUT), l: L(-0.22, 0.74, 0.18, E_FRONT), handR: 1, handL: 1 }],
-      [1, { y: -0.02, x: -0.03, lean: -5, bend: -6, rf: [0.04, 0.17, 0.3], r: R(0.38, 0.8, 0.06, E_OUT), l: L(-0.38, 0.78, 0.04, E_OUT), handR: 1, handL: 1 }],
+      // Side-on to the ball (40 deg) so the back swing and the kick through show.
+      [0, { spin: 40, y: -0.04, x: -0.02, lean: -3, bend: 4, rf: [0.11, 0.13, -0.16], r: R(0.32, 0.66, -0.04, E_OUT), l: L(-0.22, 0.74, 0.18, E_FRONT), handR: 1, handL: 1 }],
+      [1, { spin: 40, y: -0.02, x: -0.03, lean: -5, bend: -6, rf: [0.04, 0.17, 0.3], r: R(0.38, 0.8, 0.06, E_OUT), l: L(-0.38, 0.78, 0.04, E_OUT), handR: 1, handL: 1 }],
     ],
   }),
   full({

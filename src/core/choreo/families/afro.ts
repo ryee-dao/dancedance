@@ -112,11 +112,14 @@ export const moves: MoveDef[] = [
   full({
     id: 'willie-bounce', name: 'Willie Bounce', tags: 'hiphop | full | dancehall', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms', 'torso'],
     desc: 'Lean back a little and bounce from foot to foot, the arms swinging loose and low in opposition, one forward and one back, like a cool bouncy walk on the spot.',
+    // Restaged bigger: the weight goes well over each foot with the free knee lifting out, the body
+    // turns a little with the swing, and the swinging hands travel across and out (the forward and
+    // back swing alone went at the viewer).
     keys: [
-      [0, { y: -0.03, x: 0.04, hips: 0.035, tilt: 5, bend: -9, nod: -6, head: -4, rf: [0.13, 0, 0.03], lf: [-0.07, 0.07, 0.03], kneeL: 0.15, r: at(1, 0.13, 0.56, 0.27, E_DOWN), l: at(-1, -0.22, 0.52, -0.13, [0.3, 0.3, -1]), handR: 0.7, handL: 0.7 }],
-      [0.5, { y: -0.1, x: 0.01, hips: 0.01, tilt: 1, bend: -5, nod: -2, head: 0, rf: [0.11, 0, 0.02], lf: [-0.08, 0, 0.02], kneeL: 0.05, r: at(1, 0.2, 0.52, 0.12, E_DOWN), l: at(-1, -0.2, 0.52, 0.06, E_DOWN), handR: 0.7, handL: 0.7 }],
-      [1, { y: -0.03, x: -0.04, hips: -0.035, tilt: -5, bend: -9, nod: -6, head: 4, lf: [-0.13, 0, 0.03], rf: [0.07, 0.07, 0.03], kneeR: 0.15, l: at(-1, -0.13, 0.56, 0.27, E_DOWN), r: at(1, 0.22, 0.52, -0.13, [0.3, 0.3, -1]), handR: 0.7, handL: 0.7 }],
-      [1.5, { y: -0.1, x: -0.01, hips: -0.01, tilt: -1, bend: -5, nod: -2, head: 0, lf: [-0.11, 0, 0.02], rf: [0.08, 0, 0.02], kneeR: 0.05, r: at(1, 0.2, 0.52, 0.06, E_DOWN), l: at(-1, -0.2, 0.52, 0.12, E_DOWN), handR: 0.7, handL: 0.7 }],
+      [0, { spin: 14, y: -0.03, x: 0.05, hips: 0.06, tilt: 8, bend: -9, nod: -6, head: -5, rf: [0.13, 0, 0.03], lf: [-0.06, 0.1, 0.03], kneeL: 0.35, r: at(1, 0.04, 0.58, 0.26, E_DOWN), l: at(-1, -0.3, 0.52, -0.12, [0.3, 0.3, -1]), handR: 0.7, handL: 0.7 }],
+      [0.5, { spin: 0, y: -0.11, x: 0.01, hips: 0.01, tilt: 1, bend: -5, nod: -2, head: 0, rf: [0.11, 0, 0.02], lf: [-0.08, 0, 0.02], kneeL: 0.05, r: at(1, 0.2, 0.52, 0.12, E_DOWN), l: at(-1, -0.2, 0.52, 0.06, E_DOWN), handR: 0.7, handL: 0.7 }],
+      [1, { spin: -14, y: -0.03, x: -0.05, hips: -0.06, tilt: -8, bend: -9, nod: -6, head: 5, lf: [-0.13, 0, 0.03], rf: [0.06, 0.1, 0.03], kneeR: 0.35, l: at(-1, -0.04, 0.58, 0.26, E_DOWN), r: at(1, 0.3, 0.52, -0.12, [0.3, 0.3, -1]), handR: 0.7, handL: 0.7 }],
+      [1.5, { spin: 0, y: -0.11, x: -0.01, hips: -0.01, tilt: -1, bend: -5, nod: -2, head: 0, lf: [-0.11, 0, 0.02], rf: [0.08, 0, 0.02], kneeR: 0.05, r: at(1, 0.2, 0.52, 0.06, E_DOWN), l: at(-1, -0.2, 0.52, 0.12, E_DOWN), handR: 0.7, handL: 0.7 }],
     ],
   }),
   full({

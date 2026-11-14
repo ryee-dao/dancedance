@@ -282,7 +282,8 @@ describe('generateRoutine', () => {
       for (let k = 0; k < r.instances.length; k++) {
         const i = r.instances[k];
         const next = r.instances[k + 1];
-        const end = i.origin + i.move.travel * (i.mirror ? -1 : 1);
+        // An unpaired travelling repeat dances in place: its drift brings it home (MoveInstance.drift).
+        const end = i.origin + i.move.travel * (i.mirror ? -1 : 1) + (i.drift ?? 0);
         if (!next || next.unitStart) expect(Math.abs(end)).toBeLessThan(1e-9);
         else expect(Math.abs(next.origin - end)).toBeLessThan(1e-9);
       }

@@ -19,7 +19,8 @@ import { spinKeys } from './shared';
 
 const hipA: PoseSpec = { hips: 0.055, y: -0.025, lf: [-0.085, 0.025, 0.02], head: -4 };
 /** Rolling hands: forearms circling around each other at (cx, cy, cz). */
-const roll = (k: number, cy = 0.68, cz = 0.2, rad = 0.055, elbow: readonly [number, number, number] = [0.8, -1, -0.3]): PoseSpec => {
+// Radius 0.1: at 0.055 the roll shrank to a blur at TV size.
+const roll = (k: number, cy = 0.68, cz = 0.2, rad = 0.1, elbow: readonly [number, number, number] = [0.8, -1, -0.3]): PoseSpec => {
   const a = (k * Math.PI) / 2;
   return {
     r: at(1, rad * Math.cos(a), cy + rad * Math.sin(a), cz, elbow),
@@ -33,8 +34,10 @@ const shimmyArms = (s: number): PoseSpec => ({
   r: [48, 25, 70, 45], l: [48, 25, 70, 45], handR: 1, handL: 1,
 });
 const shimmyKey = (s: number, low: number): PoseSpec => ({
-  y: -0.07 - (s < 0 ? 0.01 : 0), twist: 14 * s, shR: s > 0 ? 0.4 : 0, shL: s < 0 ? 0.4 : 0, lean: 2 * s,
-  r: [low, 10, low + 8, 30], l: [low, 10, low + 8, 30], rf: [0.13, 0, 0], lf: [-0.13, 0, 0], handR: 1, handL: 1,
+  // The shoulders' forward/back shake hardly shows head-on: each shoulder also lifts, the rib cage
+  // jiggles side to side and the open hands flutter up and down against each other.
+  y: -0.07 - (s < 0 ? 0.01 : 0), twist: 14 * s, chestX: 0.025 * s, shR: s > 0 ? 0.8 : 0, shL: s < 0 ? 0.8 : 0, lean: 3 * s,
+  r: [low + 7 * s, 10, low + 8 + 7 * s, 30], l: [low - 7 * s, 10, low + 8 - 7 * s, 30], rf: [0.13, 0, 0], lf: [-0.13, 0, 0], handR: 1, handL: 1,
 });
 
 /** Straight arm pointing up and out on the diagonal (the disco point). */
@@ -57,15 +60,17 @@ export const patterns: PatternSet = {
     backTap: {
       beats: 2, parts: ['legs'], mirror: true,
       keys: [
-        [0, { x: 0.05, hips: 0.02, rf: [0.21, 0, 0], lf: [-W, 0, 0] }],
-        [1, { x: 0.06, y: -0.035, twist: -6, rf: [0.21, 0, 0], lf: [0.05, 0.02, -0.11] }],
+        [0, { x: 0.05, hips: 0.02, spin: 0, rf: [0.21, 0, 0], lf: [-W, 0, 0] }],
+        // The tap behind is turned 25 deg toward the stepping side, so the tapping foot shows
+        // beside the standing leg instead of hiding behind it; up on its toe, knee out.
+        [1, { x: 0.06, y: -0.05, spin: 25, twist: -6, rf: [0.21, 0, 0], lf: [0.06, 0.03, -0.12], kneeL: 0.3, pitchL: 30 }],
       ],
     },
   },
   arms: {
     rollingHands: { beats: 2, parts: ['arms'], keys: [[0, rollAt(0)], [0.5, rollAt(1)], [1, rollAt(2)], [1.5, rollAt(3)]] },
-    rollHigh: { beats: 2, parts: ['arms'], keys: [0, 1, 2, 3].map((k) => [k / 2, { ...roll(k, 0.98, 0.17, 0.055, [1, -0.2, 0.1]), nod: -4 }] as const) },
-    rollLow: { beats: 2, parts: ['arms'], keys: [0, 1, 2, 3].map((k) => [k / 2, roll(k, 0.5, 0.24, 0.06)] as const) },
+    rollHigh: { beats: 2, parts: ['arms'], keys: [0, 1, 2, 3].map((k) => [k / 2, { ...roll(k, 0.98, 0.17, 0.09, [1, -0.2, 0.1]), nod: -4 }] as const) },
+    rollLow: { beats: 2, parts: ['arms'], keys: [0, 1, 2, 3].map((k) => [k / 2, roll(k, 0.5, 0.24, 0.09)] as const) },
     discoPoint: {
       beats: 2, parts: ['arms'], mirror: true, torso: true,
       keys: [
@@ -88,11 +93,13 @@ export const patterns: PatternSet = {
 // Hand-authored key shapes
 
 // The bump: hip thrown out to the side, knees soft, fist up on the bump side.
+// Staged big for the wall: the bump rises out of a dip, the hip goes as far as the pelvis allows,
+// the rib cage and head lean away from it, the far knee bends in on its heel-up foot.
 const bumpR: PoseSpec = {
-  hips: 0.085, tilt: 11, y: -0.06, x: 0.01, lean: -5, head: 5, lf: [-0.09, 0.02, 0.03], kneeL: -0.15, kneeR: 0.1,
+  hips: 0.09, tilt: 14, y: -0.035, x: 0.035, lean: -9, chestX: -0.04, head: 7, rf: [0.12, 0, 0], lf: [-0.09, 0.02, 0.03], kneeL: -0.3, kneeR: 0, pitchL: 18,
   r: FIST_UP_R, l: FIST_LOW_L, handR: 0, handL: 0,
 };
-const bumpMid: PoseSpec = { hips: 0.02, y: -0.035, r: at(1, 0.12, 0.66, 0.19, [1, -0.6, -0.2]), l: at(-1, -0.12, 0.66, 0.19, [1, -0.6, -0.2]), handR: 0, handL: 0 };
+const bumpMid: PoseSpec = { hips: 0, x: 0, y: -0.09, lean: 0, chestX: 0, head: 0, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], kneeL: 0.1, kneeR: 0.1, r: at(1, 0.12, 0.66, 0.19, [1, -0.6, -0.2]), l: at(-1, -0.12, 0.66, 0.19, [1, -0.6, -0.2]), handR: 0, handL: 0 };
 
 // Bump & point: bump the hip and point down at it.
 const bumpPointR: PoseSpec = {
@@ -319,7 +326,7 @@ export const moves: MoveDef[] = [
   // --- Rolling hands -----------------------------------------------------------
   combo('rolling-hands', 'Rolling Hands', 'bounce', 'rollingHands', 'low', 1, 'disco | arms | hands'),
   combo('rolling-step', 'Rolling Step Touch', 'stepTouch', 'rollingHands', 'low', 2, 'disco | arms legs | hands walk'),
-  combo('hustle-tap', 'Hustle Tap', 'backTap', 'rollingHands', 'mid', 2, 'disco | legs arms | hands'),
+  combo('hustle-tap', 'Hustle Tap', 'backTap', 'rollingHands', 'mid', 2, 'disco | legs arms | hands', { desc: 'Step out to the side and tap the other foot behind it on the toe, turning a little toward the step, the forearms rolling round each other in front of the chest.' }),
   combo('roll-high', 'High Roll', 'sway', 'rollHigh', 'mid', 1, 'disco | arms | hands', { desc: 'Roll the forearms around each other above the head while swaying.' }),
   combo('roll-low', 'Low Roll', 'groove', 'rollLow', 'low', 1, 'disco | arms | hands', { desc: 'Sink into a wide bouncy stance and roll the forearms low, in front of the hips.' }),
   combo('vine-roll', 'Vine & Roll', 'vine', 'rollingHands', 'mid', 3, 'disco aerobic | full | hands walk', { desc: 'Grapevine to the side while rolling the forearms in front of the chest.' }),

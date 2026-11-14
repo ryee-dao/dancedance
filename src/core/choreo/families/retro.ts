@@ -265,9 +265,10 @@ export const moves: MoveDef[] = [
     id: 'boogie-back', name: 'Boogie Back', tags: 'pop funk | hips legs | swing hips', beats: 2, level: 'mid', d: 2, parts: ['hips', 'legs', 'arms'], mirror: true,
     desc: 'Kick one foot forward with a clap, step it back with the hips pushed back and out, shoulders hunched, then close the other foot to it.',
     keys: [
-      [0, { y: -0.03, bend: -3, rf: [0.11, 0.13, 0.2], lf: [-0.09, 0, 0], r: ARM.clap, l: ARM.clap, handR: 1, handL: 1 }],
-      [0.5, boogieBack],
-      [1, { ...boogieBackUp, lf: [-0.11, 0, -0.11] }],
+      // On a 30 deg diagonal: the kick forward and the step back go at the viewer.
+      [0, { spin: 30, y: -0.03, bend: -3, rf: [0.11, 0.13, 0.2], lf: [-0.09, 0, 0], r: ARM.clap, l: ARM.clap, handR: 1, handL: 1 }],
+      [0.5, { ...boogieBack, spin: 30 }],
+      [1, { ...boogieBackUp, spin: 30, lf: [-0.11, 0, -0.11] }],
     ],
   }),
   full({

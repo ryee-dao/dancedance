@@ -18,7 +18,12 @@ import { hand } from '../../coach/poses';
 // ---------------------------------------------------------------------------
 // Hip isolations (footwork)
 // Hip shake: as big a side-to-side hip pop as the pelvis allows, the knee under the dropping hip bending.
-const shakeA: PoseSpec = wide(-0.07, { hips: 0.06, tilt: 10, kneeR: 0.04, kneeL: 0.18, lean: -2 });
+// Restaged again: the pelvis at its limit, the knee under the dropping hip bending forward and in on
+// its heel-up foot while the other leg straightens, so the two legs alternate visibly too.
+const shakeA: PoseSpec = wide(-0.075, { hips: 0.08, tilt: 13, x: 0.012, kneeR: -0.05, kneeL: 0.35, pitchL: 16, lean: -3, chestX: -0.02 });
+// Hands up and open over the head, swaying against the hips: they frame the hips (hands on the hips
+// hid the waist line that the shake moves) and give the shake its showpiece look.
+const shakeHighA: PoseSpec = { r: at(1, 0.13, 1.07, 0.05, [1, 0.35, -0.1]), l: at(-1, -0.07, 1.09, 0.05, [1, 0.35, -0.1]), handR: 1, handL: 1 };
 const circR: PoseSpec = wide(-0.045, { hips: 0.06, tilt: 6, bend: -1, head: -3 });
 const circBack: PoseSpec = wide(-0.03, { hips: 0, bend: 8, nod: 4 });
 const circFront: PoseSpec = wide(-0.07, { hips: 0, bend: -5, nod: -3, kneeR: 0.14, kneeL: 0.14 });
@@ -26,7 +31,8 @@ const eightA: PoseSpec = wide(-0.045, { hips: 0.025, hipTwist: -20, tilt: 3, twi
 const eightB: PoseSpec = wide(-0.035, { hips: 0.066, hipTwist: 0, tilt: 7, twist: 0, head: -3 });
 const popA: PoseSpec = { hips: 0.064, tilt: 9, y: -0.032, lf: [-0.078, 0.035, 0.045], kneeL: -0.22, lean: 2, head: -5 };
 const popSettle: PoseSpec = { hips: 0.022, tilt: 2, y: -0.02, lf: [-0.085, 0.01, 0.015], kneeL: -0.06 };
-const merengueA: PoseSpec = { hips: -0.045, tilt: -6, y: -0.03, rf: [0.09, 0.045, 0.03], kneeR: -0.12 };
+// Merengue: the hip of the lifted foot drops, staged near the pelvis limit with the knee turning in.
+const merengueA: PoseSpec = { hips: -0.065, tilt: -10, y: -0.035, rf: [0.09, 0.06, 0.03], kneeR: -0.22, pitchR: 15 };
 const dembowA: PoseSpec = wide(-0.075, { hips: 0.032, tilt: 4, bend: 6, nod: 4 });
 const dembowUp: PoseSpec = wide(-0.025, { hips: 0.01, bend: 2 });
 
@@ -135,8 +141,9 @@ export const patterns: PatternSet = {
     booty: {
       beats: 1, parts: ['hips', 'legs'], impact: true,
       keys: [
-        [0, { y: -0.15, rf: [0.19, 0, 0.02], lf: [-0.19, 0, 0.02], hips: 0.035, tilt: 8, kneeR: 0.22, kneeL: 0.22 }],
-        [0.5, { y: -0.16, rf: [0.19, 0, 0.02], lf: [-0.19, 0, 0.02], hips: -0.035, tilt: -8, kneeR: 0.22, kneeL: 0.22 }],
+        // Bigger hip shake with the knees taking turns to drop in, so it reads at TV size.
+        [0, { y: -0.14, rf: [0.19, 0, 0.02], lf: [-0.19, 0, 0.02], hips: 0.06, tilt: 11, kneeR: 0.32, kneeL: 0.08 }],
+        [0.5, { y: -0.17, rf: [0.19, 0, 0.02], lf: [-0.19, 0, 0.02], hips: -0.06, tilt: -11, kneeR: 0.08, kneeL: 0.32 }],
       ],
     },
     // Merengue and reggaeton
@@ -201,8 +208,9 @@ export const patterns: PatternSet = {
     cumbia: {
       beats: 2, parts: ['legs', 'hips'], mirror: true,
       keys: [
-        [0, { rf: [0.13, 0, -0.13], hips: 0.035, tilt: 4, hipTwist: 10, y: -0.045, lean: -2 }],
-        [1, { rf: [0.09, 0, 0], hips: -0.015, y: -0.02 }],
+        // Step back turned 25 deg toward the stepping foot (head-on the step back hid behind the leg).
+        [0, { spin: 25, rf: [0.14, 0, -0.14], hips: 0.05, tilt: 7, hipTwist: 10, y: -0.06, lean: -3, pitchR: 20 }],
+        [1, { spin: 0, rf: [0.09, 0, 0], hips: -0.02, tilt: -2, y: -0.025 }],
       ],
     },
     chaCha: {
@@ -384,6 +392,7 @@ export const patterns: PatternSet = {
     },
   },
   arms: {
+    shakeHigh: { beats: 1, parts: ['arms'], keys: [[0, shakeHighA], [0.5, mir(shakeHighA)]] },
     salsaArms: { beats: 2, parts: [], keys: [[0, salsaA], [1, mir(salsaA)]] },
     maracas: { beats: 1, parts: ['arms'], keys: [[0, maracaUp], [0.5, maracaDn]] },
     knees: { beats: 1, parts: [], torso: true, keys: [[0, kneesA]] },
@@ -427,7 +436,7 @@ export const moves: MoveDef[] = [
   // Hip isolations, each with its own arm styling
   combo('hip-sway', 'Hip Sway', 'hipSway', 'latinFlow', 'low', 1, 'latin pop | hips | hips', { desc: 'Sway the hips side to side while the arms float toward the hip that rises.' }),
   combo('latin-sway', 'Latin Sway', 'hipSway', 'salsaArms', 'low', 1, 'latin | hips | hips'),
-  combo('hip-shake', 'Hip Shake', 'hipShake', 'hips', 'mid', 2, 'latin pop hiphop | hips | hips shake'),
+  combo('hip-shake', 'Hip Shake', 'hipShake', 'shakeHigh', 'mid', 2, 'latin pop hiphop | hips | hips shake', { desc: 'Wide and low, shake the hips side to side twice a beat as far as they go, the knee under the dropping hip bending in, hands up and open over the head.' }),
   combo('maraca-shake', 'Maraca Shake', 'hipShake', 'maracas', 'mid', 2, 'latin | hips | shake hands'),
   combo('hip-circle', 'Hip Circle', 'hipCircle', 'latinCrossUp', 'mid', 2, 'latin pop | hips | hips', { desc: 'Circle the hips right, back, left, forward with the wrists crossed overhead.' }),
   combo('figure-eight', 'Figure Eight Hips', 'hipEight', 'latinSnake', 'mid', 2, 'latin | hips arms | hips', { desc: 'Trace a figure eight with the hips while both arms float out at shoulder height, wrists waving.' }),
