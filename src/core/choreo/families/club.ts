@@ -56,7 +56,7 @@ export const moves: MoveDef[] = [
   }),
   // Named after the 2024 hit "Tshwala Bam": descriptive name.
   full({
-    id: 'tshwala-groove', name: 'Shoulder-Roll Amapiano Groove', tags: 'hiphop latin | full | shake', beats: 2, level: 'low', d: 1, parts: ['torso', 'legs'],
+    id: 'tshwala-groove', name: 'Shoulder-Roll Amapiano Groove', tags: 'hiphop latin | full | shake amapiano', beats: 2, level: 'low', d: 1, parts: ['torso', 'legs'],
     desc: 'Bounce on the balls of the feet stepping left, right, left with the log drum, the shoulders rolling loose from side to side and the hands twisting at the wrist on each step, relaxed and low.',
     keys: [[0, tb(1, true)], [0.5, tb(1, false)], [1, tb(-1, true)], [1.5, tb(-1, false)]],
   }),

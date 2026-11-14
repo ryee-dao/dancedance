@@ -128,7 +128,7 @@ const schlager: MoveDef[] = [
   }),
   // The figures of the bird dance (also known as the chicken dance), as separate moves, never its routine.
   full({
-    id: 'beak-snaps', name: 'Beak Snaps', tags: 'party | arms | hands', beats: 1, level: 'low', d: 1, parts: ['arms'],
+    id: 'beak-snaps', name: 'Beak Snaps', tags: 'party | arms | hands animal', beats: 1, level: 'low', d: 1, parts: ['arms'],
     desc: 'Both hands up in front of the chest like beaks, snap them shut and open on every half beat with a little bounce.',
     keys: [[0, beak(true, -0.07)], [0.5, beak(false, -0.04)]],
   }),

@@ -72,11 +72,16 @@ describe('song style -> routine', () => {
   });
 
   it('title themes boost the matching moves', () => {
-    // A larger sample: a handful of songs is noisy now that palettes recur.
-    const ids = Array.from({ length: 16 }, (_, k) => `theme-${k}`);
+    // Each song casts one kit of about ten moves, so the themed share of a few songs swings a lot.
+    // Nov 2026, themed / base share of hips-tagged picks on a pop song, measured at four catalogue states
+    // (before the head-on restages, after them, the ~60 new genre moves alone, and both merged):
+    // pooled over hundreds of songs x2.05-2.18 at every state; over 16-song sets x1.17-4.92 (the old
+    // 16-song sample sat at the bottom, x1.29-1.55, and fell under 1.3 on the merge without the
+    // behaviour changing); over 64-song sets (16 sets per state) never below x1.66, this set x1.73-1.99.
+    const ids = Array.from({ length: 64 }, (_, k) => `theme-${k}`);
     const base = share(ids, 'cardio', { style: style({ pop: 1 }) }, (i) => i.move.themes.includes('hips'));
     const themed = share(ids, 'cardio', { style: style({ pop: 1 }, { themes: ['hips'] }) }, (i) => i.move.themes.includes('hips'));
-    expect(themed).toBeGreaterThan(base * 1.3);
+    expect(themed).toBeGreaterThan(base * 1.4);
   });
 
   it('keeps the level rules: Easy has no jumps and no fast turns, whatever the style', () => {

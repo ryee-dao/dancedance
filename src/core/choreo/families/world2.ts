@@ -80,37 +80,37 @@ export const patterns: PatternSet = {};
 
 export const moves: MoveDef[] = [
   full({
-    id: 'hip-lifts', name: 'Belly Dance Hip Lifts', tags: 'latin pop | hips | hips', beats: 2, level: 'low', d: 1, parts: ['hips'], mirror: true,
+    id: 'hip-lifts', name: 'Belly Dance Hip Lifts', tags: 'latin pop | hips | hips bellydance', beats: 2, level: 'low', d: 1, parts: ['hips'], mirror: true,
     desc: 'One foot a little forward on its ball and the arms held out softly: punch that hip straight up on the beat by straightening the knee, let it fall on the "and", lift again; switch sides.',
     keys: [[0, lift(true)], [0.5, lift(false)], [1, lift(true)], [1.5, lift(false)]],
   }),
   full({
-    id: 'hip-slides', name: 'Hip Slides', tags: 'latin pop | hips | hips', beats: 2, level: 'low', d: 1, parts: ['hips'], bounce: 0.2,
+    id: 'hip-slides', name: 'Hip Slides', tags: 'latin pop | hips | hips bellydance', beats: 2, level: 'low', d: 1, parts: ['hips'], bounce: 0.2,
     desc: 'Knees soft and arms held out at shoulder height: glide the hips straight out to one side and then the other, the chest staying still in the middle.',
     keys: [[0, slide(1)], [1, slide(-1)]],
   }),
   full({
-    id: 'maya', name: 'Maya', tags: 'latin pop | hips | hips wave', beats: 4, level: 'mid', d: 2, parts: ['hips', 'torso'], mirror: true, bounce: 0.1,
+    id: 'maya', name: 'Maya', tags: 'latin pop | hips | hips wave bellydance', beats: 4, level: 'mid', d: 2, parts: ['hips', 'torso'], mirror: true, bounce: 0.1,
     desc: 'A vertical figure eight of the hips, one arm curved overhead and the other out: lift one hip up and out, let it drop and roll in, then lift the other up and out and drop it, smoothly, without stopping.',
     keys: [[0, maya(0)], [1, maya(1)], [2, maya(2)], [3, maya(3)]],
   }),
   full({
-    id: 'hip-shimmy', name: 'Hip Shimmy', tags: 'latin pop | hips | shake hips', beats: 2, level: 'mid', d: 2, parts: ['hips', 'arms'],
+    id: 'hip-shimmy', name: 'Hip Shimmy', tags: 'latin pop | hips | shake hips bellydance', beats: 2, level: 'mid', d: 2, parts: ['hips', 'arms'],
     desc: 'Arms curved up framing the head, knees soft: straighten the knees alternately as fast as you can so the hips shimmer from side to side, the upper body calm.',
     keys: [[0, shim(1)], [0.25, shim(-1)], [0.5, shim(1)], [0.75, shim(-1)], [1, shim(1)], [1.25, shim(-1)], [1.5, shim(1)], [1.75, shim(-1)]],
   }),
   full({
-    id: 'khaleeji-hair-toss', name: 'Khaleeji Hair Toss', tags: 'pop latin | full | shake', beats: 2, level: 'mid', d: 2, parts: ['torso', 'arms'],
+    id: 'khaleeji-hair-toss', name: 'Khaleeji Hair Toss', tags: 'pop latin | full | shake bellydance', beats: 2, level: 'mid', d: 2, parts: ['torso', 'arms'],
     desc: 'The Gulf hair dance: in a wide stance with soft knees and the hands holding the dress at the chest, swing the head and the hair from side to side with the upper body, a big toss on every beat.',
     keys: [[0, toss(1, -0.09)], [1, toss(-1, -0.09)]],
   }),
   full({
-    id: 'khaleeji-step', name: 'Khaleeji Drop Step', tags: 'pop latin | legs arms | hands', beats: 2, level: 'low', d: 1, parts: ['legs', 'arms'], bounce: 0.2,
+    id: 'khaleeji-step', name: 'Khaleeji Drop Step', tags: 'pop latin | legs arms | hands bellydance', beats: 2, level: 'low', d: 1, parts: ['legs', 'arms'], bounce: 0.2,
     desc: 'A small, limping drop step on bent knees, the hands holding the wide sleeves up beside the face to frame it, the head tilting toward the stepping foot.',
     keys: [[0, kStep(1, true)], [0.5, kStep(1, false)], [1, kStep(-1, true)], [1.5, kStep(-1, false)]],
   }),
   full({
-    id: 'saidi-cane-hop', name: 'Saidi Cane Hop', tags: 'party latin | legs arms | jump', beats: 2, level: 'high', d: 2, parts: ['legs', 'jump', 'arms'], mirror: true, jump: true, impact: true,
+    id: 'saidi-cane-hop', name: 'Saidi Cane Hop', tags: 'party latin | legs arms | jump bellydance', beats: 2, level: 'high', d: 2, parts: ['legs', 'jump', 'arms'], mirror: true, jump: true, impact: true,
     desc: 'Saidi style, a cane held up overhead in one hand and the other hand on the hip: hop on one foot pulling the other knee up, step it down in front, and hop again; switch sides.',
     keys: [[0, sLand], [0.5, sHop], [1, sDown], [1.5, { ...sHop, y: 0.03 }]],
   }),
