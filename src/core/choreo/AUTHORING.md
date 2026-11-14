@@ -109,8 +109,9 @@ neighbour). One rule replaces the old "keep the parent open until 16":
   moves (a borrowed move is used no more than an own move on average).
   All borrowed beats stay within half of the song's genre time, so a song
   whose only genre slot is the thin set's keeps its own move. The genre
-  share (20-40 %) doesn't change: borrowing only decides what fills the
-  set's slots.
+  share (40-60 %) doesn't change: borrowing only decides what fills the
+  set's slots (and a thin set out of fitting moves at a slot borrows one
+  rather than lose it to a global move, within the same half).
 - From where (`borrowSources`): a neighbour the song doesn't open itself
   (open sets are its own vocabulary), never one it closes: calm-closed, or
   replaced by its sub-style (a replaced PARENT lends only moves named for
@@ -132,17 +133,31 @@ neighbour). One rule replaces the old "keep the parent open until 16":
 
 ### How a song's genre slots are chosen and shared
 
-The kit's genre accents are whole kit slots (`assignGenres` in
-`generator.ts`), 20-40 % of the danced time. Two rules keep one song's
-genre part from being one move:
+The kit's genre moves are whole kit slots (`assignGenres` in
+`generator.ts`), aiming at half of the danced time (`GENRE_TARGET` 0.5,
+`GENRE_MIN`..`GENRE_MAX` 40-60 %; before Nov 2026 it was 20-40 %, and the
+routines read as a gym class with a few genre accents). These rules keep
+one song's genre part from being one move:
 
 - No slot carries more than `GENRE_SLOT_CAP` (0.35) of the genre time aimed
-  at (`GENRE_TARGET`), so it spreads over about three accents or more:
+  at (`GENRE_TARGET`), so it spreads over several moves:
   `GENRE_PRIORITY` first, then the other slots that fit, smallest first,
   never the verse motif's A or the hook's H1. When a song's kit is too small
   for that to reach `GENRE_MIN` (short songs on Easy), the uncapped choice
-  of before applies. The kit itself doesn't grow: only which of its slots
-  are genre accents changes, so routines stay as learnable.
+  of before applies, and a slot too big to be a genre slot whole (a short
+  song's verse motif A) may give the set its odd runs only (`Slot.odd`:
+  verse 2 dances a genre move where verse 1 had a global one).
+- A verse, build or break genre slot that is still above that cap
+  alternates two moves of its set, run by run (`Slot.odd`, '~b').
+- A genre slot's pick weights are flattened (`GENRE_FLAT`), so songs of
+  one style don't all cast a set's same few favourites (the song's own
+  Latin dance keeps its full `NAMED_DANCE` lead).
+- Easy keeps to simple moves (`EASY_HARD_CAP`: moves above difficulty 1 at
+  most 8 % of its danced time, 14 % with genre slots'): a set with few
+  simple moves (Latin has 2 of its 21) gets less genre time on Easy rather
+  than harder moves; a thin set (one that borrows) keeps what it has.
+  The kit itself doesn't grow: only which of its slots are genre slots
+  changes, so routines stay as learnable.
 - With a sub-style open next to broader sets (R&B with disco & funk and
   hip-hop, metal with rock), the most open sub-style (`leadSubStyle`; never
   `lyrical`) takes `LEAD_SHARE` (0.65) of the genre beats, the other sets
