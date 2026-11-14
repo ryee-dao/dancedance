@@ -71,6 +71,32 @@ export interface Expectation {
   disagreement?: string;
   /** false = nothing found and no memory: only internal consistency is judged. */
   known: boolean;
+  /** What the audio analyser should read (tools/eval/audio.ts scores it); written with the consensus, before analysis. */
+  audio?: AudioTarget;
+}
+
+/** Audio feel a feature like rhythm or texture that research says the song has. */
+export type AudioFeel = 'four-on-the-floor' | 'half-time' | 'swing' | 'syncopated' | 'heavy-distortion' | 'dense-hats' | 'acoustic' | 'beatless';
+
+/**
+ * What the analyser should read from a song's audio, from the researched
+ * consensus (or, for a song nothing was found on, unset).
+ *   character  calm     sparse / quiet / no steady drive (ballad, ambient, recitative)
+ *              soft     gentle and soft-sounding, but on a steady beat (soft pop, romantic bachata, lo-fi)
+ *              mid      an ordinary groove, neither gentle nor hard-hitting
+ *              driving  hard-hitting or high-energy (metal, punk, trap banger, club EDM, hype rap)
+ *   danceBpm   the tempo a person would step to (a range of acceptable readings)
+ *   altBpm     also acceptable (the half / double count when the song is genuinely ambiguous)
+ *   pulse      clear = a steady beat to dance to; weak = slow / loose / rubato; none = beatless
+ */
+export interface AudioTarget {
+  character?: 'calm' | 'soft' | 'mid' | 'driving';
+  danceBpm?: [number, number];
+  altBpm?: [number, number];
+  bpmSource?: string;
+  pulse?: 'clear' | 'weak' | 'none';
+  feels?: AudioFeel[];
+  note?: string;
 }
 
 export interface Verdict {
