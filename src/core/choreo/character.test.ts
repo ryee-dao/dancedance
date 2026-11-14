@@ -14,10 +14,16 @@ import { isNovelty } from './weights';
 
 const LEVELS: Intensity[] = ['chill', 'cardio', 'sweaty'];
 const IDS = Array.from({ length: 12 }, (_, k) => `ch${k}`);
+/**
+ * Shares of novelty moves are a handful of kit slots per routine (16-32 beats each), so they need many
+ * songs: over 12 songs a single slot moves a share by ~0.5 %, and the loud song's own novelty share
+ * (the comparison) swung from 5 % to 19 % between 12-song and 48-song windows (Nov 2026).
+ */
+const MANY = Array.from({ length: 48 }, (_, k) => `ch${k}`);
 
-function shares(style: SongStyle, bpm: number, lv: Intensity, map = (id: string) => songMap(bpm, id)) {
+function shares(style: SongStyle, bpm: number, lv: Intensity, map = (id: string) => songMap(bpm, id), ids: readonly string[] = IDS) {
   let t = 0, jump = 0, nov = 0, lyrical = 0;
-  for (const id of IDS) {
+  for (const id of ids) {
     for (const i of generateRoutine(map(id), lv, { style }).instances) {
       if (i.move.idle || i.move.cooldown) continue;
       t += i.span;
@@ -62,12 +68,17 @@ describe('the song\'s character', () => {
   it('a soft song on a steady beat: no lyrical ballet, no jumps, hardly any novelty or cheer moves, at any level', () => {
     expect(soft.soft).toBeGreaterThan(0.8);
     expect(styleGenres(soft).has('lyrical')).toBe(false);
+    // Measured over 48 songs, three seed sets (ids ch / s / x, Nov 2026, after the trap moves and restaged
+    // twist / mambo were merged): novelty on the soft song 0.6-2.3 % of the danced time, on the loud one
+    // 8.6-19 %, a ratio of 0.07-0.16. Every novelty move seen on the soft song is classified (isNovelty)
+    // and weighted down to 0.08-0.23 by its softness; what remains is the odd slot, not a leak.
     for (const lv of LEVELS) {
-      const a = shares(soft, 104, lv);
-      const b = shares(loud, 104, lv);
+      const a = shares(soft, 104, lv, undefined, MANY);
+      const b = shares(loud, 104, lv, undefined, MANY);
       expect(a.lyrical, lv).toBe(0);
       expect(a.jump, lv).toBeLessThan(0.03);
-      expect(a.nov, lv).toBeLessThan(Math.max(0.02, 0.5 * b.nov));
+      expect(a.nov, lv).toBeLessThan(0.04);
+      expect(a.nov, lv).toBeLessThan(0.35 * b.nov);
     }
   });
 
