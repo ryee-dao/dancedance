@@ -1,6 +1,13 @@
 package app.dancedance.tv
 
+import app.dancedance.tv.PickFixtures.delilah
+import app.dancedance.tv.PickFixtures.extravagantEscalations
+import app.dancedance.tv.PickFixtures.heavyMetal
 import app.dancedance.tv.PickFixtures.hipsDontLie
+import app.dancedance.tv.PickFixtures.purloin
+import app.dancedance.tv.PickFixtures.quieroSerTuyo
+import app.dancedance.tv.PickFixtures.rapSavedMe
+import app.dancedance.tv.PickFixtures.runAway
 import app.dancedance.tv.PickFixtures.shakeItOff
 import app.dancedance.tv.PickFixtures.stayinAlive
 import app.dancedance.tv.PickFixtures.takeOnMe
@@ -96,6 +103,103 @@ class SongPickerTest {
         assertEquals("version", reason(req, takeOnMe, "-iKeUC5_Wyw"))
     }
 
+    // --- real results that used to be "not found" (same as pick.test.ts) ---------------------
+
+    @Test fun rapSavedMeQuotedTitle() {
+        val req = Request("21 Savage, Offset & Metro Boomin", "Rap Saved Me (feat. Quavo)", 258)
+        assertEquals(listOf("official:LK9rgGmrH7I"), ids(req, rapSavedMe))
+        assertEquals("unverified channel using the artist's name", reason(req, rapSavedMe, "1u_Fz7opf-M"))
+        assertEquals("art track with only 534 views", reason(req, rapSavedMe, "r-sK4jS8w8Y"))
+        assertEquals("other media", reason(req, rapSavedMe, "YQbpiY2uXmI"))
+        assertEquals("translation", reason(req, rapSavedMe, "ywAJSXADr3w"))
+        assertEquals("different song or artist", reason(req, rapSavedMe, "LPTlvQ1Zet0"))
+        assertTrue(reason(req, rapSavedMe, "WQL6zlobUJg")!!.contains("not official"))
+    }
+
+    @Test fun quotedText() {
+        val req = Request("21 Savage, Offset & Metro Boomin", "Rap Saved Me (feat. Quavo)", 258)
+        fun up(id: String, title: String) = e(id, title, "21 Savage", true, duration = 258)
+        assertEquals(listOf("official:QUOTEDCURLY"), ids(req, listOf(up("QUOTEDCURLY", "21 Savage – “Rap Saved Me” (Official Audio)"))))
+        assertEquals(listOf("official:QUOTEDNODSH"), ids(req, listOf(up("QUOTEDNODSH", "21 Savage \"Rap Saved Me\" (Official Audio)"))))
+        assertEquals("different song or artist", reason(req, listOf(up("QUOTEDOTHER", "21 Savage, Offset & Metro Boomin - \"Ric Flair Drip\" (Official Audio)")), "QUOTEDOTHER"))
+        assertEquals("different song or artist", reason(req, listOf(up("QUOTEDLONGR", "21 Savage - \"Rap Saved Me Again\" (Official Audio)")), "QUOTEDLONGR"))
+        assertEquals("live", reason(req, listOf(up("QUOTEDLIVE0", "21 Savage - \"Rap Saved Me\" (Live) (Official Audio)")), "QUOTEDLIVE0"))
+        val hot = Request("Chappell Roan", "HOT TO GO!", 184)
+        val lyricLine = e("HOTTOGOLINE", "Chappell Roan - HOT TO GO! (Lyrics) \"you can take me hot to go\"", "Lyrics", duration = 185)
+        assertEquals(listOf("lyric:HOTTOGOLINE"), ids(hot, listOf(lyricLine)))
+        assertEquals("different song or artist", reason(hot.copy(title = "You Can Take Me Hot To Go"), listOf(lyricLine), "HOTTOGOLINE"))
+    }
+
+    @Test fun delilahTitleBrackets() {
+        val req = Request("Fred again.. & Delilah Montagu", "Delilah (pull me out of this)", 251)
+        assertEquals(listOf("music-video:Cl6Rz1Uvi2M"), ids(req, delilah))
+        assertEquals("acoustic", reason(req, delilah, "d943B3MUlbg"))
+        assertEquals("acoustic", reason(req, delilah, "7ZXRc-tTehE"))
+        val session = e("PARISSESSN0", "Fred again.. - Delilah (pull me out of this) (Paris Session)", "Fred again . .", true, duration = 255)
+        assertEquals("official upload, but not lyric/audio", reason(req, listOf(session), "PARISSESSN0"))
+    }
+
+    @Test fun quieroSerTuyoLetra() {
+        val req = Request("Tito Rojas", "Quiero Ser Tuyo", 316)
+        assertEquals("lyric:uHfvfmWgkrg", ids(req, quieroSerTuyo)[0])
+        assertTrue(reason(req, quieroSerTuyo, "AcbBKIShKh8")!!.contains("length 314"))
+        assertEquals("karaoke", reason(req, quieroSerTuyo, "PoXjsyV4Gqo"))
+        assertTrue(reason(req, quieroSerTuyo, "VV20Vo-fbyg")!!.contains("length 313"))
+        assertTrue(reason(req, quieroSerTuyo, "ri5RXLge8gY")!!.contains("only 1110 views"))
+    }
+
+    @Test fun heavyMetalVerifiedArtTrack() {
+        val req = Request("Guy Clark", "Heavy Metal", 218)
+        assertEquals(listOf("topic:cGKvqe5rVU8"), ids(req, heavyMetal))
+        assertTrue(reason(req, heavyMetal, "1mtm499TlPo")!!.contains("length 183"))
+        val unverified = heavyMetal.map { it.copy(verified = false) }
+        assertEquals("art track with only 4438 views", reason(req, unverified, "cGKvqe5rVU8"))
+    }
+
+    @Test fun runAwaySingleVersion() {
+        val req = Request("Real McCoy", "Run Away", 245)
+        assertEquals(listOf("topic:arHdOFutc-0"), ids(req, runAway))
+        assertEquals("version", reason(req, runAway, "_dx0qWHL7dc"))
+        assertEquals("version", reason(req, runAway, "puR8F4I6E6E"))
+        val versions = listOf("Album Version", "Explicit Version", "Single Version").mapIndexed { i, v ->
+            e("SAMEREC%04d".format(i), "Real McCoy - Run Away ($v) (Lyrics)", "Lyrics", duration = 246)
+        }
+        assertEquals(3, ids(req, versions).size)
+        val others = listOf("Video Version", "2024 Version", "Extended Version", "Acoustic Version").mapIndexed { i, v ->
+            e("OTHERVR%04d".format(i), "Real McCoy - Run Away ($v) (Lyrics)", "Lyrics", duration = 246)
+        }
+        assertEquals(emptyList<String>(), ids(req, others))
+    }
+
+    @Test fun purloinOriginalMix() {
+        val req = Request("M-zine", "Purloin", 313)
+        assertEquals(listOf("topic:zjJTNKQA6dI"), ids(req, purloin))
+        assertEquals("different song", reason(req, purloin, "Mjku9GfR63o"))
+        val mixes = listOf("Dava Remix", "Extended Mix", "Club Mix").mapIndexed { i, m ->
+            e("MIXES%06d".format(i), "Purloin ($m)", "M-zine - Topic", views = 300, duration = 313, description = "Provided to YouTube by Triple Vision")
+        }
+        assertEquals(listOf("remix", "remix", "remix"), mixes.map { reason(req, mixes, it.id) })
+    }
+
+    @Test fun lowViewArtTrackOfLittleKnownSong() {
+        val req = Request("LingualX", "Extravagant Escalations", 249)
+        assertEquals(listOf("topic:M_yLkPZZ1Ys"), ids(req, extravagantEscalations))
+        val art = extravagantEscalations[0]
+        fun not(x: Entry, more: List<Entry> = emptyList()) = reason(req, listOf(x) + more, x.id)
+        assertEquals("art track with only 2 views", not(art.copy(duration = 251)))
+        assertEquals("art track with only 2 views", not(art.copy(description = "Extravagant Escalations · LingualX")))
+        assertEquals("art track with only 2 views", not(art.copy(channel = "LingualX", description = "Provided to YouTube by DistroKid")))
+        val other = not(art.copy(channel = "Chill Beats - Topic"))!!
+        assertTrue(other, other == "art track from another channel" || other == "artist not named")
+        val popular = e("POPULARLYRC", "LingualX - Extravagant Escalations (Lyrics)", "Lyrics Hub", views = 2_000_000, duration = 249)
+        assertEquals("art track with only 2 views", not(art, listOf(popular)))
+    }
+
+    @Test fun fallbackQueryIsPlain() {
+        assertEquals("Shakira Hips Don't Lie", SongPicker.fallbackQuery("Shakira", "Hips Don't Lie (feat. Wyclef Jean)"))
+        assertEquals("Taylor Swift Shake It Off (Taylor's Version)", SongPicker.fallbackQuery("Taylor Swift", "Shake It Off (Taylor's Version)"))
+    }
+
     // --- traps ------------------------------------------------------------------------------
 
     private val lev = Request("Dua Lipa", "Levitating", 203)
@@ -113,7 +217,9 @@ class SongPickerTest {
 
     @Test fun fakeTopicChannel() {
         val fake = e("FAKETOPIC00", "Levitating", "Dua Lipa - Topic", views = 1_204, duration = 203, description = "Provided to YouTube by DistroKid Levitat")
-        assertEquals("art track with only 1204 views", reason(lev, listOf(fake), "FAKETOPIC00"))
+        // A search for a known song always brings its popular uploads, and then a genuine art track has views.
+        assertEquals("art track with only 1204 views", reason(lev, listOf(fake, thirdParty), "FAKETOPIC00"))
+        assertEquals("art track with only 1204 views", reason(lev, listOf(fake, official.copy(duration = 260)), "FAKETOPIC00"))
         val elsewhere = e("OTHERTOPIC0", "Levitating", "Pop Hits - Topic", views = 5_000_000, duration = 203, description = "Provided to YouTube by Kontor")
         val r = reason(lev, listOf(elsewhere), "OTHERTOPIC0")!!
         assertTrue(r, r == "art track from another channel" || r == "artist not named")

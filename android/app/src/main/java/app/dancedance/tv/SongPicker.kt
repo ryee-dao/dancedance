@@ -15,8 +15,13 @@ import kotlin.math.roundToInt
  *   1 OFFICIAL     official lyric video or official audio on the artist's own, VEVO or label
  *                  channel (verified); lyric before audio
  *   2 LYRIC        third-party lyric video, most views first (>= 300 k views)
- *   3 TOPIC        the artist's genuine "Provided to YouTube" art track
+ *   3 TOPIC        the artist's genuine "Provided to YouTube" art track (>= 10 k views, or on the
+ *                  artist's verified channel, or, for a little-known song, on the artist's
+ *                  "- Topic" channel at the official length)
  *   4 MUSIC_VIDEO  fallback: the official music video closest in length
+ *
+ * When the two searches ([searchQueries]) rank nothing, the caller runs the plain "Artist Title"
+ * search ([fallbackQuery]) too and ranks all results again.
  *
  * Tiers 1-3 must be within -1 .. +6 s of the official length; the fallback within -2 .. +60 s.
  * Live, remix, cover, sped up, slowed, karaoke, "1 hour", extended, other "versions",
@@ -48,6 +53,8 @@ object SongPicker {
 
     const val LYRIC_MIN_VIEWS = 300_000L
     const val TOPIC_MIN_VIEWS = 10_000L
+    /** A matching upload with this many views makes the song "known" (see [genuineArtTrack]). */
+    const val KNOWN_SONG_VIEWS = 100_000L
     private val WINDOW = -1.0..6.0
     private val MV_WINDOW = -2.0..60.0
 
@@ -69,8 +76,11 @@ object SongPicker {
 
     private val NOISE = setOf(
         "lyrics", "lyric", "video", "official", "audio", "hd", "hq", "4k", "music", "mv", "visualizer", "visualiser",
-        "with", "letra", "oficial", "remastered", "remaster", "full", "song", "explicit", "the",
+        "with", "letra", "letras", "paroles", "lirik", "가사", "歌詞", "oficial", "remastered", "remaster", "full", "song", "explicit", "the",
     )
+
+    /** A lyric video, in English or the usual other words ("Letra", "Paroles", "Lirik", 가사, 歌詞). */
+    private val LYRIC = re("\\blyrics?\\b|\\blyric\\s*video\\b|\\bletras?\\b|\\bparoles\\b|\\blirik\\b|가사|歌詞")
 
     private val FEAT = re("\\s*[(\\[]?\\s*\\b(?:feat|ft|featuring)\\b\\.?\\s.*$")
     private fun stripFeat(s: String) = s.replace(FEAT, "").trim()
@@ -78,24 +88,44 @@ object SongPicker {
     /** A bracketed qualifier that changes which recording it is ("Taylor's Version"). */
     private val QUALIFIER = re("\\b(?:version|remix|mix|live|acoustic|demo|extended|instrumental|sped|slowed|unplugged|stripped|re-?recorded)\\b")
 
-    /** The two searches run for a song. */
-    fun searchQueries(artist: String, title: String): List<String> {
+    /** "Artist Title" without feat. credits or non-qualifier brackets. */
+    private fun queryBase(artist: String, title: String): String {
         val t = Regex("\\s*(?:\\(([^)]*)\\)|\\[([^\\]]*)\\])").replace(title) { m ->
             val inner = m.groups[1]?.value ?: m.groups[2]?.value ?: ""
             if (QUALIFIER.containsMatchIn(inner)) m.value else " "
         }
-        val base = "$artist ${stripFeat(t)}".replace(Regex("\\s+"), " ").trim()
+        return "$artist ${stripFeat(t)}".replace(Regex("\\s+"), " ").trim()
+    }
+
+    /** The two searches run for a song. */
+    fun searchQueries(artist: String, title: String): List<String> {
+        val base = queryBase(artist, title)
         return listOf("$base lyrics", "$base official audio")
     }
 
-    /** Title words without brackets, quotes, features, trailing "| ..." / "// ...", or decoration. */
-    fun coreTokens(title: String): List<String> {
+    /**
+     * The third search, run only when the first two rank nothing: plain "Artist Title". For
+     * little-known songs the "lyrics" / "official audio" words pull in other songs, while the
+     * plain search finds the art track or the upload.
+     */
+    fun fallbackQuery(artist: String, title: String): String = queryBase(artist, title)
+
+    /**
+     * Title words without brackets, quotes, features, trailing "| ..." / "// ...", or decoration.
+     * [keepQuoted] keeps the words inside double quotes (only the marks go): the quotes then hold
+     * the song title (`21 Savage - "Rap Saved Me" Ft Quavo`), not an appended lyric line.
+     */
+    fun coreTokens(title: String, keepQuoted: Boolean = false): List<String> {
         var s = title.split(Regex("\\s(?:\\||//)\\s?"))[0]
         s = s.replace(Regex("\\([^)]*\\)|\\[[^\\]]*\\]|\\{[^}]*\\}|【[^】]*】"), " ")
-        s = s.replace(Regex("\"[^\"]*\"|“[^”]*”"), " ")
+        s = if (keepQuoted) s.replace(Regex("[\"“”]"), " ") else s.replace(Regex("\"[^\"]*\"|“[^”]*”"), " ")
         s = stripFeat(s)
         return toks(s).filter { it !in NOISE }
     }
+
+    /** The ways an upload title's words can be read: quoted text dropped, and (when there is any) kept. */
+    private fun titleReadings(title: String): List<List<String>> =
+        if (Regex("[\"“”]").containsMatchIn(title)) listOf(coreTokens(title), coreTokens(title, true)) else listOf(coreTokens(title))
 
     private fun sameTokens(a: List<String>, b: List<String>) = a.isNotEmpty() && a == b
 
@@ -172,12 +202,15 @@ object SongPicker {
         "version" to re("\\bversion\\b|\\bversi[oó]n\\b|\\brerecord(?:ed|ing)?\\b|\\bre-recorded\\b"),
         "demo" to re("\\bdemo\\b|\\bsnippet\\b|\\bpreview\\b|\\bunreleased\\b|\\bleak(?:ed)?\\b"),
         "other media" to re(
-            "\\breversed\\b|\\bbackwards\\b|\\bbass\\s*boost(?:ed)?\\b|\\btiktok\\b|\\bchipmunk\\b|\\b8\\s*-?\\s*bit\\b|\\bshorts?\\b|\\btutorial\\b|\\bchoreography\\b|\\bdance (?:video|practice|cover)\\b|\\blesson\\b|\\bfan\\s*made\\b|\\bteaser\\b|\\btrailer\\b|\\bbehind the scenes\\b|\\bmaking of\\b|\\binterview\\b",
+            "\\breversed\\b|\\b\\d{3}\\s*hz\\b|\\bbackwards\\b|\\bbass\\s*boost(?:ed)?\\b|\\btiktok\\b|\\bchipmunk\\b|\\b8\\s*-?\\s*bit\\b|\\bshorts?\\b|\\btutorial\\b|\\bchoreography\\b|\\bdance (?:video|practice|cover)\\b|\\blesson\\b|\\bfan\\s*made\\b|\\bteaser\\b|\\btrailer\\b|\\bbehind the scenes\\b|\\bmaking of\\b|\\binterview\\b",
         ),
         "translation" to re(
-            "\\blegendad[oa]\\b|\\btraduc(?:ida|ido|ción|cion|ao|ão)\\b|\\btradução\\b|\\btraduzione\\b|\\bsub(?:titulado|titulada|s?)?\\s*(?:español|espanol|ita|pt|br)\\b|\\bespañol\\b|\\bespanol\\b|\\bперевод\\b|\\bvietsub\\b|\\bthaisub\\b|\\bpolskie\\b|\\bnapisy\\b",
+            "\\blegendad[oa]\\b|\\btraduc(?:ida|ido|ción|cion|ao|ão)\\b|\\btradução\\b|\\btraduzione\\b|\\bsub(?:titulado|titulada|s?)?\\s*(?:español|espanol|ita|pt|br)\\b|\\bespañol\\b|\\bespanol\\b|перевод|해석|번역|和訳|中字|中文字幕|\\bvietsub\\b|\\bthaisub\\b|\\bpolskie\\b|\\bnapisy\\b",
         ),
     )
+
+    /** Labels that name the released recording itself: "(Album Version)", "(Single Version)", "(Explicit Version)", "(Original Mix)". */
+    private val SAME_RECORDING = re("\\b(?:album|single|lp|explicit|dirty)\\s+version\\b|\\boriginal\\s+mix\\b")
 
     /** BAD labels that also disqualify a channel ("Nightcore Hub", "7clouds Acoustic"). */
     private val BAD_CHANNEL = setOf("cover", "sped up", "slowed", "reverb", "nightcore", "8D", "karaoke", "instrumental", "acoustic", "1 hour")
@@ -199,7 +232,8 @@ object SongPicker {
         val title = e.title
         val reqText = "${req.title} ${req.artist}"
         for ((label, r) in BAD) {
-            if (r.containsMatchIn(title) && !r.containsMatchIn(reqText)) return label
+            val t = if (label == "version" || label == "remix") title.replace(SAME_RECORDING, " ") else title
+            if (r.containsMatchIn(t) && !r.containsMatchIn(reqText)) return label
             if (label in BAD_CHANNEL && r.containsMatchIn(e.channel) && !r.containsMatchIn(reqText)) return "$label channel"
         }
         val words = toks(title).toSet()
@@ -214,19 +248,17 @@ object SongPicker {
             val right = title.substring(dash.range.last + 1)
             val inLeft = mentionsArtist(left, variants)
             val inRight = mentionsArtist(right, variants)
-            if ((inLeft && sameTokens(coreTokens(right), want)) || (inRight && sameTokens(coreTokens(left), want))) return null
+            fun isWant(side: String) = titleReadings(side).any { sameTokens(it, want) }
+            if ((inLeft && isWant(right)) || (inRight && isWant(left))) return null
             if (!inLeft && !inRight) return if (mentionsArtist(e.channel, variants)) "different song" else "different artist"
             return "different song or artist"
         }
-        var have = coreTokens(title)
-        for (name in artistTokenLists(req.artist)) {
-            val cut = removeRun(have, name)
-            if (cut != null) {
-                have = cut
-                break
-            }
+        val names = artistTokenLists(req.artist)
+        fun withoutArtist(have: List<String>): List<String> {
+            for (name in names) removeRun(have, name)?.let { return it }
+            return have
         }
-        if (!sameTokens(have, want)) return "different song"
+        if (titleReadings(title).none { sameTokens(withoutArtist(it), want) }) return "different song"
         return if (mentionsArtist(title, variants) || mentionsArtist(e.channel, variants)) null else "artist not named"
     }
 
@@ -247,13 +279,36 @@ object SongPicker {
         val artTrack = re("^\\s*provided to youtube by\\b").containsMatchIn(e.description) || re("\\s-\\s*topic$").containsMatchIn(e.channel)
         return Facts(
             dt = (e.duration ?: 0L).toDouble() - req.durationSec,
-            lyric = re("\\blyrics?\\b|\\blyric\\s*video\\b").containsMatchIn(e.title),
+            lyric = LYRIC.containsMatchIn(e.title),
             audio = re("\\baudio\\b").containsMatchIn(e.title),
             artTrack = artTrack,
             artistChannel = artistChannel,
             official = e.verified && (artistChannel || label) && !artTrack,
-            musicVideo = re("\\bvideo\\b|\\bmv\\b|\\bclip\\b").containsMatchIn(e.title) || !Regex("[(\\[]").containsMatchIn(e.title),
+            musicVideo = re("\\bvideo\\b|\\bmv\\b|\\bclip\\b").containsMatchIn(e.title) ||
+                !Regex("[(\\[]").containsMatchIn(withoutRequestBrackets(e.title, req.title)),
         )
+    }
+
+    private val BRACKETS = Regex("\\(([^)]*)\\)|\\[([^\\]]*)\\]")
+
+    /** [title] without the bracketed parts the requested title has too ("Delilah (pull me out of this)"). */
+    private fun withoutRequestBrackets(title: String, reqTitle: String): String {
+        val own = BRACKETS.findAll(reqTitle).map { normalizeName(it.groups[1]?.value ?: it.groups[2]?.value ?: "") }.toSet()
+        return BRACKETS.replace(title) { m -> if (normalizeName(m.groups[1]?.value ?: m.groups[2]?.value ?: "") in own) " " else m.value }
+    }
+
+    private val TOPIC_CHANNEL = re("\\s-\\s*topic$")
+    private val PROVIDED = re("^\\s*provided to youtube by\\b")
+
+    /**
+     * An art track that needs no view count: uploaded by the artist's own verified channel (an
+     * impostor can't be verified), or, for a little-known song (no matching upload has
+     * [KNOWN_SONG_VIEWS]), a real "Provided to YouTube by" upload on the artist's "- Topic"
+     * channel at the official length (+-1 s).
+     */
+    private fun genuineArtTrack(e: Entry, f: Facts, knownSong: Boolean): Boolean {
+        if (e.verified && !TOPIC_CHANNEL.containsMatchIn(e.channel)) return true
+        return !knownSong && PROVIDED.containsMatchIn(e.description) && TOPIC_CHANNEL.containsMatchIn(e.channel) && abs(f.dt) <= 1.0
     }
 
     /** Rank the candidates: `ranked` in the order to offer them, `rejected` explains the rest. */
@@ -261,6 +316,9 @@ object SongPicker {
         val variants = artistVariants(req.artist)
         val tiers = Tier.entries.associateWith { ArrayList<Pair<Entry, List<Double>>>() }
         val rejected = ArrayList<Rejected>()
+        val why = entries.associateWith { mismatch(req, it, variants) }
+        // A song with a popular upload: a genuine art track of it has views too.
+        val knownSong = entries.any { why[it] == null && (it.views ?: 0L) >= KNOWN_SONG_VIEWS }
         for (e in entries) {
             fun reject(reason: String) = rejected.add(Rejected(e, reason))
             if (e.liveStatus == "is_live" || e.liveStatus == "is_upcoming" || e.liveStatus == "post_live") {
@@ -269,9 +327,9 @@ object SongPicker {
             if (e.duration == null) {
                 reject("no length"); continue
             }
-            val why = mismatch(req, e, variants)
-            if (why != null) {
-                reject(why); continue
+            val whyNot = why[e]
+            if (whyNot != null) {
+                reject(whyNot); continue
             }
             val f = facts(req, e, variants)
             val views = (e.views ?: 0L).toDouble()
@@ -282,7 +340,7 @@ object SongPicker {
                 if (views >= LYRIC_MIN_VIEWS) tiers.getValue(Tier.LYRIC) += e to listOf(-views)
                 else reject("lyric video with only ${e.views ?: 0} views")
             } else if (inWindow && f.artTrack && f.artistChannel) {
-                if (views >= TOPIC_MIN_VIEWS) tiers.getValue(Tier.TOPIC) += e to listOf(-views)
+                if (views >= TOPIC_MIN_VIEWS || genuineArtTrack(e, f, knownSong)) tiers.getValue(Tier.TOPIC) += e to listOf(-views)
                 else reject("art track with only ${e.views ?: 0} views")
             } else if (f.official && f.musicVideo && !f.lyric && f.dt in MV_WINDOW) {
                 tiers.getValue(Tier.MUSIC_VIDEO) += e to listOf(abs(f.dt), -views)

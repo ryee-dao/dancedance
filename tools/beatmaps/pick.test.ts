@@ -1,9 +1,14 @@
+/// <reference types="node" />
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { hipsDontLie, shakeItOff, stayinAlive, takeOnMe } from './pick.fixtures';
+import { KOTLIN_FIXTURES, kotlinFixtures } from './pickFixturesKotlin';
+import { delilah, extravagantEscalations, heavyMetal, hipsDontLie, purloin, quieroSerTuyo, rapSavedMe, runAway, shakeItOff, stayinAlive, takeOnMe } from './pick.fixtures';
 import {
   artistVariants,
   cleanRequest,
   coreTokens,
+  degradedSearch,
+  fallbackQuery,
   parseQueue,
   parseSearch,
   rankCandidates,
@@ -96,6 +101,112 @@ describe('rankCandidates on real search results', () => {
   });
 });
 
+describe('rankCandidates on real search results: cases that used to be "not found"', () => {
+  it('Rap Saved Me: the official upload writes the title in double quotes', () => {
+    const req = { artist: '21 Savage, Offset & Metro Boomin', title: 'Rap Saved Me (feat. Quavo)', durationSec: 258 };
+    expect(ids(req, rapSavedMe)).toEqual(['official:LK9rgGmrH7I']);
+    // Look-alikes in the same results stay out.
+    expect(reasonFor(req, rapSavedMe, '1u_Fz7opf-M')).toBe("unverified channel using the artist's name"); // "21SavageVEVO"
+    expect(reasonFor(req, rapSavedMe, 'r-sK4jS8w8Y')).toBe('art track with only 534 views'); // fake "21 Savage - Topic"
+    expect(reasonFor(req, rapSavedMe, 'YQbpiY2uXmI')).toBe('other media'); // 432 Hz
+    expect(reasonFor(req, rapSavedMe, 'ywAJSXADr3w')).toBe('translation'); // 가사/ 해석
+    expect(reasonFor(req, rapSavedMe, 'LPTlvQ1Zet0')).toBe('different song or artist');
+    expect(reasonFor(req, rapSavedMe, 'WQL6zlobUJg')).toMatch(/not official/); // label upload titled with the album
+  });
+
+  it('quoted text: the quoted song title counts; a quoted other song, a longer title or an appended lyric line do not', () => {
+    const req = { artist: '21 Savage, Offset & Metro Boomin', title: 'Rap Saved Me (feat. Quavo)', durationSec: 258 };
+    const up = (id: string, title: string) => e({ id, title, channel: '21 Savage', verified: true, duration: 258 });
+    expect(ids(req, [up('QUOTEDCURLY', '21 Savage – “Rap Saved Me” (Official Audio)')])).toEqual(['official:QUOTEDCURLY']);
+    expect(ids(req, [up('QUOTEDNODSH', '21 Savage "Rap Saved Me" (Official Audio)')])).toEqual(['official:QUOTEDNODSH']);
+    expect(reasonFor(req, [up('QUOTEDOTHER', '21 Savage, Offset & Metro Boomin - "Ric Flair Drip" (Official Audio)')], 'QUOTEDOTHER')).toBe('different song or artist');
+    expect(reasonFor(req, [up('QUOTEDLONGR', '21 Savage - "Rap Saved Me Again" (Official Audio)')], 'QUOTEDLONGR')).toBe('different song or artist');
+    expect(reasonFor(req, [up('QUOTEDLIVE0', '21 Savage - "Rap Saved Me" (Live) (Official Audio)')], 'QUOTEDLIVE0')).toBe('live');
+    const hot = { artist: 'Chappell Roan', title: 'HOT TO GO!', durationSec: 184 };
+    const lyricLine = e({ id: 'HOTTOGOLINE', title: 'Chappell Roan - HOT TO GO! (Lyrics) "you can take me hot to go"', channel: 'Lyrics', duration: 185 });
+    expect(ids(hot, [lyricLine])).toEqual(['lyric:HOTTOGOLINE']);
+    // The quoted lyric line is not the title of another song either.
+    expect(reasonFor({ ...hot, title: 'You Can Take Me Hot To Go' }, [lyricLine], 'HOTTOGOLINE')).toBe('different song or artist');
+  });
+
+  it("Delilah (pull me out of this): the song title's own brackets don't stop the official upload counting as its video", () => {
+    const req = { artist: 'Fred again.. & Delilah Montagu', title: 'Delilah (pull me out of this)', durationSec: 251 };
+    expect(ids(req, delilah)).toEqual(['music-video:Cl6Rz1Uvi2M']);
+    expect(reasonFor(req, delilah, 'd943B3MUlbg')).toBe('acoustic'); // orchestra version
+    expect(reasonFor(req, delilah, '7ZXRc-tTehE')).toBe('acoustic');
+    // Any other bracket still means "not the plain upload".
+    const session = e({ id: 'PARISSESSN0', title: 'Fred again.. - Delilah (pull me out of this) (Paris Session)', channel: 'Fred again . .', verified: true, duration: 255 });
+    expect(reasonFor(req, [session], 'PARISSESSN0')).toBe('official upload, but not lyric/audio');
+  });
+
+  it('Quiero Ser Tuyo: "Letra" is a lyric video; karaoke and a -2 s upload stay out', () => {
+    const req = { artist: 'Tito Rojas', title: 'Quiero Ser Tuyo', durationSec: 316 };
+    expect(ids(req, quieroSerTuyo)[0]).toBe('lyric:uHfvfmWgkrg'); // 370 k views, 317 s
+    expect(reasonFor(req, quieroSerTuyo, 'AcbBKIShKh8')).toMatch(/length 314/);
+    expect(reasonFor(req, quieroSerTuyo, 'PoXjsyV4Gqo')).toBe('karaoke');
+    expect(reasonFor(req, quieroSerTuyo, 'VV20Vo-fbyg')).toMatch(/length 313/); // verified, "letra", but 3 s short
+    // "Letra" with too few views is still not enough.
+    expect(reasonFor(req, quieroSerTuyo, 'ri5RXLge8gY')).toMatch(/only 1110 views/);
+  });
+
+  it("Heavy Metal (Guy Clark): an art track on the artist's own verified channel needs no view count", () => {
+    const req = { artist: 'Guy Clark', title: 'Heavy Metal', durationSec: 218 };
+    expect(ids(req, heavyMetal)).toEqual(['topic:cGKvqe5rVU8']); // 4438 views
+    expect(reasonFor(req, heavyMetal, '1mtm499TlPo')).toMatch(/length 183/); // another recording
+    // The same upload on an unverified channel of that name is not trusted.
+    const unverified = heavyMetal.map((x) => ({ ...x, verified: false }));
+    expect(reasonFor(req, unverified, 'cGKvqe5rVU8')).toBe('art track with only 4438 views');
+  });
+
+  it('Run Away: "(Single Version)" is the released recording; "(US Version)" is not', () => {
+    const req = { artist: 'Real McCoy', title: 'Run Away', durationSec: 245 };
+    expect(ids(req, runAway)).toEqual(['topic:arHdOFutc-0']);
+    expect(reasonFor(req, runAway, '_dx0qWHL7dc')).toBe('version');
+    expect(reasonFor(req, runAway, 'puR8F4I6E6E')).toBe('version');
+    const versions = ['Album Version', 'Explicit Version', 'Single Version'].map((v, i) =>
+      e({ id: `SAMEREC${String(i).padStart(4, '0')}`, title: `Real McCoy - Run Away (${v}) (Lyrics)`, channel: 'Lyrics', duration: 246 }),
+    );
+    expect(ids(req, versions)).toHaveLength(3);
+    const others = ['Video Version', '2024 Version', 'Extended Version', 'Acoustic Version'].map((v, i) =>
+      e({ id: `OTHERVR${String(i).padStart(4, '0')}`, title: `Real McCoy - Run Away (${v}) (Lyrics)`, channel: 'Lyrics', duration: 246 }),
+    );
+    expect(ids(req, others)).toEqual([]);
+  });
+
+  it('Purloin (M-zine): "(Original Mix)" is the original; remixes and extended mixes are not', () => {
+    const req = { artist: 'M-zine', title: 'Purloin', durationSec: 313 };
+    expect(ids(req, purloin)).toEqual(['topic:zjJTNKQA6dI']);
+    expect(reasonFor(req, purloin, 'Mjku9GfR63o')).toBe('different song'); // another artist's track on its own Topic channel
+    const mixes = ['Dava Remix', 'Extended Mix', 'Club Mix'].map((m, i) =>
+      e({ id: `MIXES${String(i).padStart(6, '0')}`, title: `Purloin (${m})`, channel: 'M-zine - Topic', duration: 313, views: 300, description: 'Provided to YouTube by Triple Vision' }),
+    );
+    expect(mixes.map((m) => reasonFor(req, mixes, m.id))).toEqual(['remix', 'remix', 'remix']);
+  });
+
+  it('Extravagant Escalations (LingualX): a genuine 2-view art track of a little-known song', () => {
+    const req = { artist: 'LingualX', title: 'Extravagant Escalations', durationSec: 249 };
+    expect(ids(req, extravagantEscalations)).toEqual(['topic:M_yLkPZZ1Ys']);
+    const art = extravagantEscalations[0];
+    const not = (x: SearchEntry, more: SearchEntry[] = []) => reasonFor(req, [x, ...more], x.id);
+    // Look-alikes: 2 s off the official length; no "Provided to YouTube" text; not a "- Topic" channel;
+    // another channel's art track; and a song that has a popular upload (then a real art track has views).
+    expect(not({ ...art, duration: 251 })).toBe('art track with only 2 views');
+    expect(not({ ...art, description: 'Extravagant Escalations · LingualX' })).toBe('art track with only 2 views');
+    expect(not({ ...art, channel: 'LingualX', description: 'Provided to YouTube by DistroKid' })).toBe('art track with only 2 views');
+    expect(not({ ...art, channel: 'Chill Beats - Topic' })).toMatch(/art track from another channel|artist not named/);
+    const popular = e({ id: 'POPULARLYRC', title: 'LingualX - Extravagant Escalations (Lyrics)', channel: 'Lyrics Hub', views: 2e6, duration: 249 });
+    expect(not(art, [popular])).toBe('art track with only 2 views');
+  });
+
+  it('the third search is plain "Artist Title"; a degraded answer is recognised', () => {
+    expect(fallbackQuery({ artist: 'Shakira', title: "Hips Don't Lie (feat. Wyclef Jean)" })).toBe("Shakira Hips Don't Lie");
+    expect(fallbackQuery({ artist: 'Taylor Swift', title: "Shake It Off (Taylor's Version)" })).toBe("Taylor Swift Shake It Off (Taylor's Version)");
+    expect(degradedSearch([e({ id: 'NOCHANNEL00', title: 'x', channel: '', views: null })])).toBe(true);
+    expect(degradedSearch([e({ id: 'NOCHANNEL00', title: 'x', channel: '', views: null }), e({ id: 'WITHCHANNEL', title: 'y', channel: 'C' })])).toBe(false);
+    expect(degradedSearch([])).toBe(false);
+  });
+});
+
 describe('rankCandidates traps', () => {
   const req = { artist: 'Dua Lipa', title: 'Levitating', durationSec: 203 };
   const official = e({ id: 'OFFLYRIC000', title: 'Dua Lipa - Levitating (Official Lyrics Video)', channel: 'Dua Lipa', verified: true, duration: 205, views: 140e6 });
@@ -114,7 +225,9 @@ describe('rankCandidates traps', () => {
 
   it('a fake "Topic" channel with a tiny view count is not an art track', () => {
     const fake = e({ id: 'FAKETOPIC00', title: 'Levitating', channel: 'Dua Lipa - Topic', duration: 203, views: 1_204, description: 'Provided to YouTube by DistroKid Levitat' });
-    expect(reasonFor(req, [fake], 'FAKETOPIC00')).toMatch(/art track with only 1204 views/);
+    // A search for a known song always brings its popular uploads, and then a genuine art track has views.
+    expect(reasonFor(req, [fake, thirdParty], 'FAKETOPIC00')).toMatch(/art track with only 1204 views/);
+    expect(reasonFor(req, [fake, { ...official, duration: 260 }], 'FAKETOPIC00')).toMatch(/art track with only 1204 views/);
     const elsewhere = e({ id: 'OTHERTOPIC0', title: 'Levitating', channel: 'Pop Hits - Topic', duration: 203, views: 5e6, description: 'Provided to YouTube by Kontor' });
     expect(reasonFor(req, [elsewhere], 'OTHERTOPIC0')).toMatch(/art track from another channel|artist not named/);
   });
@@ -221,6 +334,11 @@ describe('helpers', () => {
     expect(parseQueue('[{"artist":"A","title":"B","duration":200},{"artist":""},5]')).toEqual([{ artist: 'A', title: 'B', durationSec: 200 }]);
     expect(parseQueue('not json')).toEqual([]);
     expect(parseQueue(JSON.stringify(Array.from({ length: 50 }, (_, i) => ({ artist: 'A', title: `T${i}` }))))).toHaveLength(10);
+  });
+
+  it('the TV tests use the same fixtures (PickFixtures.kt is generated from pick.fixtures.ts)', () => {
+    // Out of date: run `npx tsx tools/beatmaps/pickFixturesKotlin.ts`.
+    expect(readFileSync(KOTLIN_FIXTURES, 'utf8')).toBe(kotlinFixtures());
   });
 
   it('maps oEmbed statuses', () => {
