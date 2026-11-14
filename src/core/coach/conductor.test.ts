@@ -175,4 +175,23 @@ describe('Conductor', () => {
     for (let f = 1; f < 600; f++) a.update(tl, 'det', 'chill', 1 + f / 60);
     expect(a.plan!.key).not.toBe(before);
   });
+
+  it('dances a free-time flow on a finished map with no beat grid (never only the idle groove), on the routine\'s own grid', () => {
+    const map: BeatMap = { v: 1, analyzerVersion: 't', videoId: 'free', duration: 180, bpm: 0, beats: [], downbeats: [], sections: [], source: 'cloud' };
+    const tl: BeatTimeline = { map, live: null, revision: 1 };
+    const c = new Conductor();
+    const pose = createPose();
+    for (let f = 0; f < 600; f++) {
+      c.update(tl, 'free', 'cardio', f / 60);
+      c.evaluate(f / 60, pose);
+    }
+    const p = c.plan!;
+    expect(p.kind).toBe('map');
+    expect(p.grid.length).toBeGreaterThan(100);
+    expect(p.instances.some((i) => !i.move.idle)).toBe(true);
+    // A partial map without beats yet stays idle until it has some.
+    const partial = new Conductor();
+    partial.update({ map: { ...map, partial: true }, live: null, revision: 1 }, 'free', 'cardio', 0);
+    expect(partial.plan!.kind).toBe('idle');
+  });
 });

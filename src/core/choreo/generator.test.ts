@@ -88,8 +88,12 @@ describe('generateRoutine', () => {
     for (const lv of LEVELS) covered(generateRoutine(m, lv));
     const none = { ...songMap(124, 'nodb'), downbeats: [] };
     covered(generateRoutine(none, 'cardio'));
+    // No beat grid: a free-time flow on a nominal grid, marked as such (never an empty routine).
     const empty = { ...songMap(124, 'empty'), beats: [], downbeats: [] };
-    expect(generateRoutine(empty, 'cardio').instances.length).toBe(0);
+    const free = generateRoutine(empty, 'cardio');
+    expect(free.freeTime).toBe(true);
+    covered(free);
+    expect(free.times!.length).toBe(free.beats);
   });
 
   it('mixes intensity measurably; Easy never jumps', () => {

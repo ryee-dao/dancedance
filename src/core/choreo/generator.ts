@@ -21,7 +21,10 @@
  * move is actually danced at. A half-time move's units are twice as long, so
  * its repeats still land on bar and phrase lines. Above HALF_TIME_BPM the
  * COUNT is halved instead (Routine.half: phrases of 16 bars, units doubled),
- * whatever each move does.
+ * whatever each move does. When the audio offers another octave and the
+ * song's genre steps there (danceFeel), the whole song is danced on that
+ * felt grid (Routine.feel, times); a map with no grid at all gets a
+ * free-time flow on a nominal grid (Routine.freeTime).
  *
  * Assembly, in order (generateRoutine):
  *   1. plan the whole song: phrases, holds, and each hold's slot in the
@@ -77,7 +80,7 @@
 
 import type { BeatMap, SectionType } from '../analysis/beatmap';
 import type { Pose } from '../coach/skeleton';
-import { BORROW_CLOSE, BORROW_MAX, FAMILY_GENRE, SUB_OPEN, THEME_GENRES, borrowShare, borrowSources, isSubStyle, genreOpenness as styleOpenness, songGenres, type Genre, type Lend } from './genres';
+import { BORROW_CLOSE, BORROW_MAX, FAMILY_GENRE, LATIN_DANCES, SUB_OPEN, THEME_GENRES, borrowShare, borrowSources, isSubStyle, genreOpenness as styleOpenness, songGenres, type Genre, type Lend, type SubStyle } from './genres';
 import { IDLE_MOVE, MOVES, keysOf, type Level, type Move } from './moves';
 import { getPool, warmPool } from './pool';
 import { BALANCED_POP, readGenre, signatureMoveIds, styleKey, type SongStyle } from './songStyle';
@@ -141,8 +144,20 @@ export interface Routine {
   bpm?: number;
   /** Number of beats covered (instances partition [0, beats)). */
   beats: number;
-  /** Beat times (s) of the map, when known (wall-time checks). */
+  /**
+   * Beat times (s) the instances index into: the map's beats, or the grid the
+   * routine was danced on when it differs from them (a tempo-feel grid at half
+   * or twice the counted tempo, or a free-time grid). Players must time the
+   * instances by these.
+   */
   times?: readonly number[];
+  /** The whole song is danced at this multiple of the map's counted tempo (0.5 / 2; danceFeel); absent = 1. */
+  feel?: number;
+  /**
+   * The map has no beat grid: the routine is a slow free-time flow on a
+   * nominal grid (freeTimeMap; `times`), so the UI can say so. Absent = a real grid.
+   */
+  freeTime?: boolean;
 }
 
 export interface Bar {
@@ -907,13 +922,19 @@ export class Choreographer {
   /** The song's leading sub-style when it opens other sets too (it takes LEAD_SHARE of the genre slots); null = split by openness. */
   private lead: Genre | null = null;
   /** Thin open sets that borrow: the share of their slots, and the borrowed moves' weights (index-aligned with pool). */
-  private borrows = new Map<Genre, { share: number; w: Float64Array }>();
+  private borrows = new Map<Genre, { share: number; own: number; w: Float64Array }>();
   /** Display name of the song combo (one card). */
   private comboName = '';
   /** How each move is danced on this song at this level (speed.ts), cached. */
   private modes = new Map<Move, TempoMode>();
   /** Song beats per move beat of the song combo (half time when any of its moves needs it). */
   private sigMult = 1;
+  /** The song's leading Latin dance (danceOf): moves named for it are favoured (NAMED_DANCE). */
+  private dance: SubStyle | null;
+  /** Most of the danced time jumps may take on this song at this level (jumpCap), and the planned / cast jump beats. */
+  readonly jumpCap: number;
+  private plannedBeats = 0;
+  private jumpBeats = 0;
 
   constructor(seedKey: string, intensity: Intensity, half: boolean, opts: RoutineOpts = {}, bpm?: number) {
     this.intensity = intensity;
@@ -980,7 +1001,7 @@ export class Choreographer {
           const i = at.get(m);
           if (i !== undefined) w[i] = x;
         }
-        this.borrows.set(g, { share: p.share, w });
+        this.borrows.set(g, { share: p.share, own: p.own, w });
       }
     }
     for (const m of DANCE_MOVES) {
@@ -992,7 +1013,9 @@ export class Choreographer {
     }
     // The chorus combo keeps the stable seed (same in 'fresh' mode).
     const genreK = genreScale(this.style, open, intensity, bpm);
-    this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}|${sk}`)), intensity, this.style, open, bpm, genreK);
+    this.dance = danceOf(this.style);
+    this.jumpCap = jumpCap(this.style, intensity, bpm);
+    this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}|${sk}`)), intensity, this.style, open, bpm, genreK, this.jumpCap >= SIG_JUMP_CAP);
     this.comboName = comboName(this.signature);
     this.sigMult = this.signature.some((x) => this.mode(x.move) === 'half') ? 2 : 1;
   }
@@ -1052,6 +1075,10 @@ export class Choreographer {
       let take = Math.min(bars.length, Math.max(1, o.sigUnits ?? (this.intensity === 'chill' ? 1 : 2)) * this.sigUnitBars());
       if (bars.length - take < unitBars) take = bars.length;
       items.push({ kind: 'sig', bars: bars.slice(0, take), section: o.section, phraseNo });
+      // The combo's jumps count against the song's jump budget.
+      const sb = barsEnd(bars.slice(0, take)) - bars[0].start;
+      this.plannedBeats += sb;
+      this.jumpBeats += sb * this.sigJumpShare();
       from = take;
     }
     if (from >= bars.length) return items;
@@ -1068,11 +1095,12 @@ export class Choreographer {
       const soft = typ === undefined ? t <= PALETTE_SOFT : t <= Math.min(PALETTE_SOFT, typ - TIER_MARGIN) || t <= PALETTE_SOFT - 0.15;
       const tier = heavy ? 'heavy' : soft ? 'soft' : 'mid';
       const slot = o.cooldown ? null : this.slotFor(o, tier, drop);
+      const holdBeats = barsEnd(hb) - hb[0].start;
+      if (!o.cooldown) this.plannedBeats += holdBeats;
       if (slot) {
         const s = this.slot(slot, o);
-        const beats = barsEnd(hb) - hb[0].start;
-        s.beats += beats;
-        s.tSum += t * beats;
+        s.beats += holdBeats;
+        s.tSum += t * holdBeats;
       }
       items.push({ kind: 'hold', bars: hb, feels: hf, o, phraseNo, phraseEnd: h.a + h.len === bars.length && !calm, slot, target: t });
     }
@@ -1311,8 +1339,12 @@ export class Choreographer {
    * to the thin set keeps it).
    */
   private assignBorrowing(chosen: readonly string[], genreOf: ReadonlyMap<string, Genre | null>, beats: ReadonlyMap<string, number>): void {
-    const all = chosen.reduce((t, k) => t + (beats.get(k) ?? 0), 0);
+    let all = chosen.reduce((t, k) => t + (beats.get(k) ?? 0), 0);
     let lent = 0;
+    const lentKeys: string[] = [];
+    const setSlot = (k: string, f: (s: Slot) => void) => {
+      for (const s of this.slots.values()) if (s.key === k || s.of === k) f(s);
+    };
     for (const [g, bp] of this.borrows) {
       const keys = chosen.filter((k) => genreOf.get(k) === g);
       if (!keys.length) continue;
@@ -1324,14 +1356,37 @@ export class Choreographer {
       }
       const target = bp.share * total;
       let cur = 0;
+      const borrowed = new Set<string>();
       for (const k of keys) {
         const b = beats.get(k) ?? 0;
         if (b <= 0 || cur >= target - 1e-9 || lent + b > BORROW_MAX * all + 1e-9) continue;
         if (this.planRng() >= Math.min(1, (target - cur) / b)) continue;
         cur += b;
         lent += b;
-        for (const s of this.slots.values()) if (s.key === k || s.of === k) s.borrow = true;
+        borrowed.add(k);
+        lentKeys.push(k);
+        setSlot(k, (s) => (s.borrow = true));
       }
+      // The set can fill only as many of its plain slots as it has moves (a kit never casts a move twice: the
+      // rest would fall to global moves when cast): release those now, the largest kept, so what is lent stays
+      // a minority of what the song really dances of its genre.
+      const plain = keys.filter((k) => !borrowed.has(k)).sort((x, y) => (beats.get(y) ?? 0) - (beats.get(x) ?? 0) || (x < y ? -1 : 1));
+      for (const k of plain.slice(Math.max(1, bp.own))) {
+        all -= beats.get(k) ?? 0;
+        setSlot(k, (s) => (s.genre = null));
+      }
+    }
+    // ... and give back borrowed slots, smallest first, while they are more than BORROW_MAX of it.
+    lentKeys.sort((x, y) => (beats.get(x) ?? 0) - (beats.get(y) ?? 0) || (x < y ? -1 : 1));
+    for (const k of lentKeys) {
+      if (lent <= BORROW_MAX * all + 1e-9) break;
+      const b = beats.get(k) ?? 0;
+      lent -= b;
+      all -= b;
+      setSlot(k, (s) => {
+        s.borrow = false;
+        s.genre = null;
+      });
     }
   }
 
@@ -1357,6 +1412,7 @@ export class Choreographer {
       alt.role = s.role;
       alt.genre = s.genre;
       alt.borrow = s.borrow;
+      if (!alt.beats) alt.beats = barsEnd(it.bars) - it.bars[0].start;
       if (!alt.move || alt.move.base === prev.base) alt.move = this.cast(alt, it);
       m = alt.move;
     }
@@ -1405,6 +1461,10 @@ export class Choreographer {
     const againstM = against.map(partsMask);
     const prevM = prev && !prev.idle ? partsMask(prev) : -1;
     const tiltK = VIGOUR_TILT * (target - 0.5);
+    // The jump budget (jumpCap): a jump only while this slot's planned time (with its variations') still fits in it.
+    const groupBeats = this.groupBeats(s);
+    const jumpsOk = this.jumpRoom(groupBeats);
+    const dance = this.dance;
     // A genre's own moves, or (`lent`) the moves its slot borrows, weighted by their fit.
     const pick = (genre: Genre | null, lent?: Float64Array): Move | null => {
       const w = new Float64Array(pool.length);
@@ -1415,8 +1475,10 @@ export class Choreographer {
         if (x <= 0 || m === prev) continue;
         if (!lent && (genre ? m.genre !== genre : !!m.genre)) continue;
         if (this.kit.has(m)) continue;
+        if (m.jump && !jumpsOk) continue;
         x *= lw[m.level] * this.levelF[i];
         if (x <= 0) continue;
+        if (dance && namedSets(m).includes(dance)) x *= NAMED_DANCE;
         if (this.kitBases.has(m.base)) x *= 0.001;
         // ... and moves on the same footwork as one already cast look alike (three jazz walks).
         if (m.foot && this.kitFeet.has(m.foot)) x *= 0.3;
@@ -1472,12 +1534,36 @@ export class Choreographer {
     this.kit.add(m);
     this.kitBases.add(m.base);
     if (m.foot) this.kitFeet.add(m.foot);
+    if (m.jump) this.jumpBeats += groupBeats;
     return m;
+  }
+
+  /** Planned beats of a base slot and the slots that are its variations ('hook.0+', alternates). */
+  private groupBeats(s: Slot): number {
+    let b = s.beats;
+    for (const x of this.slots.values()) if (x !== s && (x.of === s.key || x.key.startsWith(`${s.key}~`))) b += x.beats;
+    return b;
+  }
+
+  /** Whether `beats` more of jumping still fit in the song's jump budget (jumpCap of the danced time planned so far). */
+  private jumpRoom(beats: number): boolean {
+    if (this.jumpCap <= 0) return false;
+    return this.jumpBeats + beats <= this.jumpCap * this.plannedBeats + 1e-9;
+  }
+
+  /** Share of the song combo's beats that jump. */
+  private sigJumpShare(): number {
+    let all = 0, j = 0;
+    for (const x of this.signature) {
+      all += x.move.beats;
+      if (x.move.jump) j += x.move.beats;
+    }
+    return all ? j / all : 0;
   }
 
   /** A bigger version of `m` for a later chorus: a variation at least as vigorous, the most vigorous favoured. */
   private intensified(m: Move, o: PhraseOpts): Move | null {
-    const list = this.variants(m, o).filter((v) => moveVigour(v) >= moveVigour(m) - 0.02);
+    const list = this.variants(m, o).filter((v) => moveVigour(v) >= moveVigour(m) - 0.02 && (!v.jump || m.jump));
     if (!list.length) return this.variantOf(m, o);
     return pickWeighted(this.rng, list, list.map((v) => 0.2 + moveVigour(v)));
   }
@@ -1491,7 +1577,8 @@ export class Choreographer {
     }
     for (const v of this.varsByBase.get(m.base) ?? []) if (v !== m && this.allowed(v, o)) list.push(v);
     const min = 0.5 * levelFactor(m, this.intensity);
-    return list.filter((v) => v.genre === m.genre && levelFactor(v, this.intensity) >= min && this.mode(v) !== 'out');
+    // A variation that jumps where its move doesn't would spend jump time the budget never gave it.
+    return list.filter((v) => v.genre === m.genre && levelFactor(v, this.intensity) >= min && this.mode(v) !== 'out' && (!v.jump || m.jump));
   }
 
   /** One variation of `m` (evenly), or null. */
@@ -1742,6 +1829,239 @@ export class Choreographer {
   }
 }
 
+// ---------------------------------------------------------------------------
+// The song's own Latin dance
+
+/**
+ * Pick-weight factor of a move NAMED for the song's leading Latin dance
+ * ("Merengue Side Walk" on a merengue, "Mambo Rock" on a salsa, "Bachata
+ * Side Step" on a bachata), wherever it lives: its own set, the Latin set the
+ * dance leans on, or a neighbour's lent moves. Merengue, cha-cha and mambo
+ * share layers in the variation pool and so live together in the Latin set;
+ * this is how a merengue still gets merengue first.
+ */
+export const NAMED_DANCE = 8;
+
+/** The song's leading Latin dance: the strongest Latin-dance sub-style at / above SUB_OPEN (genres.ts LATIN_DANCES), or null. */
+export function danceOf(style: SongStyle): SubStyle | null {
+  let best: SubStyle | null = null, bv = SUB_OPEN - 1e-9;
+  for (const d of LATIN_DANCES) {
+    const v = style.subs?.[d] ?? 0;
+    if (v > bv) (bv = v), (best = d);
+  }
+  return best;
+}
+
+// ---------------------------------------------------------------------------
+// Jumps: how much of a routine may jump
+
+/**
+ * Most of the danced time jumps may take, by level (Easy never jumps), on a
+ * driving song at a brisk felt tempo. Hard is hard through squats, lunges,
+ * kicks and big arms as much as jumps: a third of the time in the air is a
+ * trampoline (measured Nov 2026 on the 102 catalogue songs before the cap:
+ * Hard's median 18 %, its top tenth 39-60 %; a nu-metal song at 98 BPM 41 %,
+ * a hip-hop anthem counted at 150 BPM 63 %).
+ */
+export const JUMP_CAP: Readonly<Record<Intensity, number>> = { chill: 0, cardio: 0.14, sweaty: 0.3 };
+/** The combo may jump (one of its two blocks) only where the song's jump budget is at least this (its jumps come back in every chorus). */
+const SIG_JUMP_CAP = 0.25;
+
+/**
+ * The jump budget of a song at a level: JUMP_CAP x its character x its felt
+ * tempo. Character: none from calm 0.65 up (a calm song doesn't jump; full
+ * below 0.3), and a soft-but-steady song keeps a fifth of it at most.
+ * Tempo: a jump on every beat of a slow song is heavy and hangs, so the
+ * budget falls from full at 118 BPM to 45 % at 92 and below (the tempo the
+ * song is danced at: after danceFeel).
+ */
+export function jumpCap(style: SongStyle, intensity: Intensity, bpm: number | undefined): number {
+  const base = JUMP_CAP[intensity];
+  if (base <= 0) return 0;
+  const r = (x: number, a: number, b: number) => Math.min(1, Math.max(0, (x - a) / (b - a)));
+  const calm = style.calm;
+  const ch = (calm === undefined ? 1 : 1 - r(calm, 0.3, 0.65)) * (1 - 0.8 * Math.min(1, Math.max(0, style.soft ?? 0)));
+  const tempo = bpm && Number.isFinite(bpm) && bpm > 0 ? 0.45 + 0.55 * r(bpm, 92, 118) : 1;
+  return base * ch * tempo;
+}
+
+// ---------------------------------------------------------------------------
+// Tempo feel: the whole song at half or twice the counted tempo
+
+/**
+ * The other octaves of a song's tempo the analysis offers, as plausibility
+ * 0..1 (analyser 1.4.0 traits halfTempo / doubleTempo). The hook for a later
+ * tempo confidence or second candidate: anything that can say how plausible
+ * bpm / 2 and bpm x 2 are fills this.
+ */
+export interface TempoCandidates {
+  half?: number;
+  double?: number;
+}
+
+/** Plausibility from which the analysis supports another octave (recorded sets, Nov 2026: real octave errors read 0.75-1.0, songs counted right mostly 0-0.4, a few 0.6-0.7). */
+export const FEEL_AUDIO = 0.5;
+/** The other octave must sit this much closer (in octaves) to the genre's usual stepping tempo than the counted one. */
+export const FEEL_MARGIN = 0.25;
+/** Calm songs step slower than their genre's usual tempo (a ballad of any genre). */
+const FEEL_CALM = 0.7;
+
+/** The analysis' tempo candidates of a map (its traits). */
+export function tempoCandidates(map: BeatMap): TempoCandidates {
+  const t = map.traits as { halfTempo?: unknown; doubleTempo?: unknown } | undefined;
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
+  return { half: num(t?.halfTempo), double: num(t?.doubleTempo) };
+}
+
+/**
+ * Whether the whole song is danced at half (0.5) or twice (2) its counted
+ * tempo, else 1. Only when the audio and the genre agree: the analysis must
+ * offer that octave (TempoCandidates >= FEEL_AUDIO) AND it must lie clearly
+ * closer to the tempo the song's genre names are usually stepped to
+ * (SongStyle.bpm; a calm song's lower) than the counted one: hip-hop counted
+ * at 150 with a strong half candidate steps at 75; drum and bass counted at
+ * 87 with a strong double candidate at 174; trap at 150 stays (its genre
+ * steps there). Without genre names, or a candidate, nothing changes: the
+ * per-move speed limits (speed.ts) still send fast moves to half time.
+ */
+export function danceFeel(style: SongStyle, bpm: number, cand: TempoCandidates): number {
+  if (!style.bpm || !usableBpm(bpm)) return 1;
+  const center = style.bpm * ((style.calm ?? 0) >= FEEL_CALM && !style.still ? 0.8 : 1);
+  const d = (x: number) => Math.abs(Math.log2(x / center));
+  if ((cand.half ?? 0) >= FEEL_AUDIO && bpm / 2 >= 50 && d(bpm / 2) + FEEL_MARGIN < d(bpm)) return 0.5;
+  if ((cand.double ?? 0) >= FEEL_AUDIO && bpm * 2 <= 210 && d(bpm * 2) + FEEL_MARGIN < d(bpm)) return 2;
+  return 1;
+}
+
+/** A bar reading string resampled to new bars, each taking the reading of old bar `src[k]`. */
+function pickDigits(s: string | undefined, src: readonly number[]): string {
+  return s === undefined ? '' : src.map((k) => s[Math.min(s.length - 1, k)] ?? '5').join('');
+}
+
+/**
+ * The map on its felt grid: every other beat (feel 0.5, keeping the downbeats'
+ * beats; a felt bar is two counted bars) or a beat half-way between each two
+ * (feel 2; a counted bar is two felt bars). Sections (seconds) are kept; bar
+ * readings follow their bars.
+ */
+export function feelMap(map: BeatMap, feel: number): BeatMap {
+  const b = map.beats;
+  const db = map.downbeats ?? [];
+  const bars = map.bars;
+  if (feel === 0.5) {
+    let odd = 0;
+    for (const d of db) odd += d & 1;
+    const p = db.length && odd > db.length / 2 ? 1 : 0;
+    const beats = b.filter((_, i) => (i & 1) === p);
+    const kept: number[] = [];
+    let n = 0;
+    db.forEach((d, j) => {
+      if ((d & 1) !== p) return;
+      if (n++ % 2 === 0) kept.push(j);
+    });
+    const downbeats = kept.map((j) => (db[j] - p) / 2);
+    const out: BeatMap = { ...map, bpm: map.bpm / 2, beats, downbeats };
+    if (bars) {
+      const drops = new Set<number>();
+      for (const k of bars.drops) {
+        let i = kept.length - 1;
+        while (i > 0 && kept[i] > k) i--;
+        if (kept.length) drops.add(i);
+      }
+      out.bars = { energy: pickDigits(bars.energy, kept), bass: pickDigits(bars.bass, kept), change: pickDigits(bars.change, kept), drops: [...drops].sort((x, y) => x - y) };
+    }
+    return out;
+  }
+  if (feel === 2) {
+    const beats: number[] = [];
+    for (let i = 0; i < b.length; i++) {
+      beats.push(b[i]);
+      const next = i + 1 < b.length ? b[i + 1] : b[i] + (b[i] - (b[i - 1] ?? b[i] - 0.5));
+      beats.push(Math.round(((b[i] + next) / 2) * 1000) / 1000);
+    }
+    const downbeats: number[] = [];
+    const src: number[] = [];
+    db.forEach((d, j) => {
+      const end = j + 1 < db.length ? db[j + 1] : b.length;
+      downbeats.push(2 * d);
+      src.push(j);
+      if (end - d >= 4) {
+        downbeats.push(2 * d + 4);
+        src.push(j);
+      }
+    });
+    const out: BeatMap = { ...map, bpm: map.bpm * 2, beats, downbeats };
+    if (bars) {
+      const drops: number[] = [];
+      src.forEach((j, k) => {
+        if (bars.drops.includes(j) && (k === 0 || src[k - 1] !== j)) drops.push(k);
+      });
+      out.bars = { energy: pickDigits(bars.energy, src), bass: pickDigits(bars.bass, src), change: pickDigits(bars.change, src), drops };
+    }
+    return out;
+  }
+  return map;
+}
+
+// ---------------------------------------------------------------------------
+// Free time: a song with no beat grid
+
+/** Fewest beats that count as a grid (the analyser's own floor). */
+const MIN_GRID_BEATS = 16;
+/** Pace range of a free-time flow (BPM). */
+export const FREE_TIME_BPM: readonly [number, number] = [56, 96];
+/** A free-time flow is danced as at least this calm (smooth, held, no jumps), with the lyrical set this open. */
+const FREE_TIME_CALM = 0.72;
+const FREE_TIME_LYRICAL = 0.6;
+
+/**
+ * Whether a map is a finished analysis that found no beat grid (fewer than
+ * MIN_GRID_BEATS beats) in a song of plausible length: it gets a free-time
+ * routine. Bad grids (absurd tempo, broken beats) don't: those stay idle.
+ */
+export function hasFreeTime(map: BeatMap | null | undefined): boolean {
+  if (!map || map.partial || !Array.isArray(map.beats) || map.beats.length >= MIN_GRID_BEATS) return false;
+  const d = map.duration;
+  return typeof d === 'number' && Number.isFinite(d) && d >= 20 && d <= 3 * 3600;
+}
+
+/**
+ * The nominal pace of a free-time flow: a slow version of the tempo the
+ * song's genre is usually stepped to (more so the calmer the song), within
+ * FREE_TIME_BPM; 76 BPM when nothing is known.
+ */
+export function freeTimePace(style: SongStyle): number {
+  const center = style.bpm ?? 100;
+  const calm = style.calm ?? 0.5;
+  return Math.round(Math.min(FREE_TIME_BPM[1], Math.max(FREE_TIME_BPM[0], center * (0.55 + 0.25 * (1 - calm)))));
+}
+
+/** A nominal 4/4 grid at freeTimePace over the song (its sections when it has any, else a verse / chorus template). */
+export function freeTimeMap(map: BeatMap, style: SongStyle): BeatMap {
+  const bpm = freeTimePace(style);
+  const per = 60 / bpm;
+  const beats: number[] = [];
+  const downbeats: number[] = [];
+  for (let t = 0.5, k = 0; t < map.duration - 0.5 && k < MAX_MAP_BEATS; t += per, k++) {
+    beats.push(Math.round(t * 1000) / 1000);
+    if (k % 4 === 0) downbeats.push(k);
+  }
+  const d = map.duration;
+  const secs = Array.isArray(map.sections) && map.sections.length ? map.sections : [
+    { start: 0, end: 0.12 * d, type: 'intro' as const, energy: 0.3 }, { start: 0.12 * d, end: 0.4 * d, type: 'verse' as const, energy: 0.45 },
+    { start: 0.4 * d, end: 0.6 * d, type: 'chorus' as const, energy: 0.6 }, { start: 0.6 * d, end: 0.88 * d, type: 'verse' as const, energy: 0.5 },
+    { start: 0.88 * d, end: d, type: 'outro' as const, energy: 0.3 },
+  ];
+  const { bars: _bars, ...rest } = map;
+  void _bars;
+  return { ...rest, bpm, beats, downbeats, sections: secs };
+}
+
+/** The style a free-time flow is danced with: at least FREE_TIME_CALM calm, the lyrical set open. */
+function freeTimeStyle(style: SongStyle): SongStyle {
+  return { ...style, calm: Math.max(style.calm ?? 0, FREE_TIME_CALM), subs: { ...style.subs, lyrical: Math.max(style.subs?.lyrical ?? 0, FREE_TIME_LYRICAL) } };
+}
+
 /**
  * Danced time of a routine by tier, as the kit accounts for it (GENRE_MIN ..
  * GENRE_MAX): every instance but the idle groove, the cool-down (outro) and a
@@ -1840,7 +2160,7 @@ export function dancedBpm(m: Move, bpm: number | undefined, intensity: Intensity
 function staticWeight(m: Move, style: SongStyle, bpm: number | undefined, genreK: ReadonlyMap<Genre, number>, intensity: Intensity = 'cardio'): number {
   if (moveTempoMode(m, bpm, intensity) === 'out') return 0;
   const eff = dancedBpm(m, bpm, intensity);
-  return styleFactor(m, style) * tempoFactor(m, eff) * calmFactor(m, style.calm, intensity) * busyFactor(m, eff, intensity) * (m.genre ? (genreK.get(m.genre) ?? 1) : 1);
+  return styleFactor(m, style) * tempoFactor(m, eff) * calmFactor(m, style.calm, intensity, style.soft, style.hard) * busyFactor(m, eff, intensity) * (m.genre ? (genreK.get(m.genre) ?? 1) : 1);
 }
 
 /**
@@ -1852,19 +2172,22 @@ function staticWeight(m: Move, style: SongStyle, bpm: number | undefined, genreK
  */
 function pickSignature(
   rng: () => number, intensity: Intensity, style: SongStyle = BALANCED_POP, open: ReadonlySet<Genre> = styleGenres(style),
-  bpm?: number, genreK: ReadonlyMap<Genre, number> = new Map(),
+  bpm?: number, genreK: ReadonlyMap<Genre, number> = new Map(), jumps = true,
 ): SigStep[] {
   const mode = (m: Move) => moveTempoMode(m, bpm, intensity);
-  const fits = (m: Move) => m.beats <= 4 && levelFactor(m, intensity) > 0 && !(m.travel !== 0 && m.beats === 4) && mode(m) !== 'out';
+  const fitsAny = (m: Move) => m.beats <= 4 && levelFactor(m, intensity) > 0 && !(m.travel !== 0 && m.beats === 4) && mode(m) !== 'out';
+  // A curated nod keeps its jumps (it is the song's own move); picked combos jump only where the song's jump budget is ample.
+  const fits = (m: Move) => fitsAny(m) && (jumps || !m.jump);
   const pool = DANCE_MOVES.filter((m) => fits(m) && genreFits(m, open) && (m.level !== 'low' || intensity === 'chill'));
   const weight = (m: Move) =>
     (m.level === 'high' ? (intensity === 'chill' ? 0.3 : intensity === 'cardio' ? 1 : 1.8) : 1.2) * (m.beats === 2 ? 2 : 1) * levelFactor(m, intensity) * staticWeight(m, style, bpm, genreK, intensity);
   // The combo is danced at one speed: half time when either move needs it, so a full-time move in it must read at half time.
   const together = (a: Move, b: Move) => mode(a) === mode(b) || (mode(a) === 'full' ? readsAtHalf(a, bpm ?? 0) : readsAtHalf(b, bpm ?? 0));
-  const nods = (style.signature ?? []).map((id) => DANCE_MOVES.find((m) => m.id === id)).filter((m): m is Move => !!m && fits(m));
+  const nods = (style.signature ?? []).map((id) => DANCE_MOVES.find((m) => m.id === id)).filter((m): m is Move => !!m && fitsAny(m));
   const a = nods[0] ?? pickWeighted(rng, pool, pool.map(weight));
   if (!a) return [];
-  const rest = pool.filter((m) => m !== a && together(a, m));
+  // At most one of its two blocks jumps (it comes back in every chorus: the jump budget counts it).
+  const rest = pool.filter((m) => m !== a && together(a, m) && !(a.jump && m.jump));
   const nb = nods[1] && nods[1] !== a && together(a, nods[1]) ? nods[1] : null;
   const b = nb ?? pickWeighted(rng, rest, rest.map((m) => weight(m) * (1 - 0.7 * partsOverlap(a, m)) * (mode(m) === mode(a) ? 1 : 0.3))) ?? rest[0] ?? a;
   const steps: SigStep[] = [];
@@ -2077,7 +2400,24 @@ export function barFeels(map: BeatMap, bars: readonly Bar[], runs: readonly { ba
 }
 
 /** Generate the full routine for a beat map. */
-export function generateRoutine(map: BeatMap, intensity: Intensity, opts: RoutineOpts = {}): Routine {
+export function generateRoutine(songMap: BeatMap, intensity: Intensity, opts: RoutineOpts = {}): Routine {
+  let map = songMap;
+  let tempoFeel = 1;
+  let freeTime = false;
+  const style0 = opts.style ?? BALANCED_POP;
+  if (!isUsableBeatMap(songMap) && hasFreeTime(songMap)) {
+    // No beat grid at all: a slow free-time flow on a nominal grid (Routine.freeTime, times).
+    map = freeTimeMap(songMap, style0);
+    freeTime = true;
+    opts = { ...opts, style: freeTimeStyle(style0) };
+  } else if (isUsableBeatMap(songMap) && !songMap.partial) {
+    // The whole song at another octave when the audio and the genre agree (danceFeel).
+    tempoFeel = danceFeel(style0, mapTempo(songMap), tempoCandidates(songMap));
+    const fm = tempoFeel !== 1 ? feelMap(songMap, tempoFeel) : null;
+    if (fm && isUsableBeatMap(fm)) map = fm;
+    else tempoFeel = 1;
+  }
+  const extra = { ...(tempoFeel !== 1 ? { feel: tempoFeel } : {}), ...(freeTime ? { freeTime: true } : {}) };
   // Bad data (absurd tempo, non-increasing or non-finite beats): no routine;
   // the conductor dances the idle groove instead.
   const N = isUsableBeatMap(map) ? map.beats.length : 0;
@@ -2091,7 +2431,7 @@ export function generateRoutine(map: BeatMap, intensity: Intensity, opts: Routin
   const firstType = map.sections[0]?.type ?? 'intro';
   if (bars.length === 0) {
     if (pickup > 0) ch.filler(out, 0, pickup, firstType);
-    return { instances: out, signature: ch.signature, half, bpm, beats: N };
+    return { instances: out, signature: ch.signature, half, bpm, beats: N, times: map.beats, ...extra };
   }
 
   const runs = sectionRuns(map, bars);
@@ -2191,7 +2531,7 @@ export function generateRoutine(map: BeatMap, intensity: Intensity, opts: Routin
   const instances = enforceCards(out, { times: map.beats, bars: bars.map((b) => b.start), drops, mult: half ? 2 : 1 });
   // 5. No dash across the floor from one move into the next.
   smoothSteps(instances, map.beats);
-  return { instances, signature: ch.signature, half, bpm, beats: N, times: map.beats };
+  return { instances, signature: ch.signature, half, bpm, beats: N, times: map.beats, ...extra };
 }
 
 // ---------------------------------------------------------------------------

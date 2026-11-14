@@ -289,28 +289,56 @@ export function moveSmoothness(m: Move): number {
 }
 
 /**
- * Character multiplier of a move for a song's calm (0..1; undefined = 1).
- * A calm song (above 0.5) favours smooth, flowing moves and loses
- * percussive accents and jumps; below Hard it also loses vigorous moves, on
- * Hard it keeps them (big, deep, sustained flowing moves: the level still
- * sets how hard you work, the song how it looks). A driving song (below 0.5)
- * leans mildly toward vigorous moves. Continuous, never 0.
+ * Novelty moves: the party file / family (mime, sports, animals) and the fad
+ * and cheerleading moves the families tag as pop or hip-hop (the Floss, the
+ * Dab, Cheer Kick, Ta-Da ...). Fun on a party song, silly on a gentle one.
  */
-export function calmFactor(m: Move, calm: number | undefined, level: LevelName): number {
-  if (calm === undefined || !Number.isFinite(calm)) return 1;
-  const c = clamp(calm);
+const NOVELTY_IDS = new Set(['floss', 'the-dab', 'sprinkler', 'raise-the-roof', 'ta-da', 'peekaboo', 'under-leg-clap', 'the-carlton', 'heisman', 'bunny-hop']);
+const NOVELTY_RE = /(?:^|-)(?:cheer|touchdown|floss|dab|raise-the-roof)(?:-|$)/;
+export function isNovelty(m: Move): boolean {
+  return m.file === 'party' || m.families.includes('party') || NOVELTY_IDS.has(m.base) || NOVELTY_IDS.has(m.id) || NOVELTY_RE.test(m.base);
+}
+
+/**
+ * Character multiplier of a move for a song's calm (0..1; undefined = 1) and
+ * softness / hardness (songStyle.ts soft, hard; undefined = neutral).
+ * A calm song (above 0.5) favours smooth, flowing moves and loses
+ * percussive accents, jumps and novelty moves (at every level); below Hard it
+ * also loses vigorous moves, on Hard it keeps them and favours the big,
+ * smooth ones (range and control: the level still sets how hard you work,
+ * the song how it looks). A driving song (below 0.5) leans mildly toward
+ * vigorous moves. A soft-but-steady song (soft) loses jumps, kicks,
+ * percussive and novelty moves, and leans a little smooth, without the
+ * calm's ballad lean; a hard-hitting one (hard) welcomes sharp, percussive
+ * hits. Continuous, never 0.
+ */
+export function calmFactor(m: Move, calm: number | undefined, level: LevelName, soft?: number, hard?: number): number {
+  let f = 1;
   const smooth = moveSmoothness(m);
-  const vig = moveVigour(m);
-  if (c >= 0.5) {
-    const up = 2 * (c - 0.5);
-    const vigK = level === 'sweaty' ? 0 : level === 'cardio' ? 1.2 : 2;
-    let f = Math.exp(2.2 * up * (smooth - 0.5) * 2 - 3.2 * up * percussive(m, level) - vigK * up * Math.max(0, vig - 0.5) * 2);
-    // A calm song never really jumps, whatever the level.
-    if (m.jump) f *= Math.exp(-3 * up);
-    return f;
+  const perc = percussive(m, level);
+  const nov = isNovelty(m) ? 1 : 0;
+  if (calm !== undefined && Number.isFinite(calm)) {
+    const c = clamp(calm);
+    const vig = moveVigour(m);
+    if (c >= 0.5) {
+      const up = 2 * (c - 0.5);
+      const vigK = level === 'sweaty' ? 0 : level === 'cardio' ? 1.2 : 2;
+      f = Math.exp(2.2 * up * (smooth - 0.5) * 2 - 3.2 * up * perc - vigK * up * Math.max(0, vig - 0.5) * 2 - 4 * up * nov);
+      // Hard on a calm song is demanding through range and control: big, sustained, smooth moves.
+      if (level === 'sweaty') f *= Math.exp(0.8 * up * (vig - 0.5) * 2 * smooth);
+      // A calm song never really jumps, whatever the level.
+      if (m.jump) f *= Math.exp(-3 * up);
+    } else {
+      const dn = 2 * (0.5 - c);
+      f = Math.exp(0.9 * dn * (vig - 0.5) * 2 - 0.6 * dn * (smooth - 0.5) * 2);
+    }
   }
-  const dn = 2 * (0.5 - c);
-  return Math.exp(0.9 * dn * (vig - 0.5) * 2 - 0.6 * dn * (smooth - 0.5) * 2);
+  if (soft !== undefined && Number.isFinite(soft) && soft > 0) {
+    const k = clamp(soft);
+    f *= Math.exp(-3 * k * (m.jump ? 1 : 0) - 2.2 * k * perc - 2 * k * nov + 0.8 * k * (smooth - 0.5) * 2);
+  }
+  if (hard !== undefined && Number.isFinite(hard) && hard > 0) f *= Math.exp(0.6 * clamp(hard) * perc);
+  return f;
 }
 
 /**

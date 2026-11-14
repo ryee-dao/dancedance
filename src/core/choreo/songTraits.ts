@@ -32,9 +32,16 @@ export interface SongTraits {
   heavy?: number;
   /** Minor-mode likelihood (weak evidence; low weight only). */
   minor?: number;
+  /** How hard-hitting the sound is, apart from how rhythmic (analyser 1.4.0+): 0 = soft (voice, piano, acoustic), 1 = distorted / harsh / dense. */
+  intensity?: number;
+  /** How plausible stepping at half the map's bpm is (analyser 1.4.0+). */
+  halfTempo?: number;
+  /** How plausible stepping at twice the map's bpm is (analyser 1.4.0+). */
+  doubleTempo?: number;
 }
 
-export const TRAIT_KEYS: readonly (keyof SongTraits)[] = ['calm', 'drive', 'fourFloor', 'halfFeel', 'bass', 'hats', 'swing', 'syncop', 'heavy', 'minor'];
+/** Every trait a map may carry: the 1.3.0 set and the optional 1.4.0 ones (analysis/traits.ts OPTIONAL_TRAIT_KEYS). Maps without the newer keys behave as before. */
+export const TRAIT_KEYS: readonly (keyof SongTraits)[] = ['calm', 'drive', 'fourFloor', 'halfFeel', 'bass', 'hats', 'swing', 'syncop', 'heavy', 'minor', 'intensity', 'halfTempo', 'doubleTempo'];
 
 /** A clean copy of a traits object: finite numbers only, clamped to 0..1; undefined when nothing usable is left. */
 export function readTraits(raw: unknown): SongTraits | undefined {

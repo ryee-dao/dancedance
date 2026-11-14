@@ -71,13 +71,16 @@ describe('two tiers: global and genre-exclusive', () => {
     expect(global).toBeGreaterThanOrEqual(650);
     // A group is its set plus the sub-style sets split out of it (metal and punk out of rock ...).
     const GROUPS: Record<string, Genre[]> = {
-      rock: ['rock', 'metal', 'punk'], hiphop: ['hiphop', 'trap', 'drill', 'rnb'], latin: ['latin', 'brazil', 'reggaeton'], discofunk: ['discofunk', 'house'], kpop: ['kpop'],
+      rock: ['rock', 'metal', 'punk'], hiphop: ['hiphop', 'trap', 'drill', 'rnb'], discofunk: ['discofunk', 'house'], kpop: ['kpop'],
+      latin: ['latin', 'salsa', 'merengue', 'cumbia', 'bachata', 'chacha', 'flamenco', 'tango', 'mexican', 'brazil', 'reggaeton'],
     };
     for (const [g, sets] of Object.entries(GROUPS)) {
       const n = sets.reduce((t, x) => t + GENRE_MOVES[x].length, 0);
       expect(n, g).toBeGreaterThanOrEqual(45);
       expect(n, g).toBeLessThanOrEqual(100);
-      expect(GENRE_MOVES[sets[0]].length, g).toBeGreaterThanOrEqual(35);
+      // Latin is split by dance (salsa, cumbia, bachata, flamenco ... sets); its parent keeps the basics whose
+      // layers the dances share (merengue, cha-cha, mambo) and the percussion moves.
+      expect(GENRE_MOVES[sets[0]].length, g).toBeGreaterThanOrEqual(g === 'latin' ? 20 : 35);
     }
     // The traditions have moves; the new sub-style sets may still be (nearly) empty until moves are authored.
     for (const g of GENRES) if (!(SUB_STYLES as readonly string[]).includes(g)) expect(GENRE_MOVES[g].length, g).toBeGreaterThan(0);

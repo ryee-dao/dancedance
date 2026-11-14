@@ -27,6 +27,11 @@ const THIN: Record<string, [string[], number, number][]> = {
   amapiano: [[['Amapiano'], 108, 116]],
   punk: [[['Punk rock'], 150, 190], [['Pop punk'], 140, 176]],
   brazil: [[['Samba'], 95, 135], [['Baile funk'], 125, 135], [['Sertanejo'], 90, 130]],
+  salsa: [[['Salsa'], 170, 200], [['Salsa romántica'], 160, 190], [['Mambo'], 180, 200]],
+  cumbia: [[['Cumbia'], 88, 104], [['Cumbia sonidera'], 85, 100]],
+  flamenco: [[['Flamenco'], 100, 135], [['Rumba flamenca'], 105, 125]],
+  tango: [[['Tango'], 110, 125], [['Electrotango'], 115, 125]],
+  mexican: [[['Banda'], 100, 135], [['Norteño'], 110, 140], [['Regional Mexican'], 95, 130]],
 };
 
 interface Song { label: string; style: SongStyle; map: BeatMap }
@@ -167,7 +172,7 @@ describe('a song\'s leading sub-style', () => {
 describe('borrowing: what may be borrowed', () => {
   it('songs of large sets come out exactly as without borrowing (nothing to borrow)', () => {
     const big: [string, string[]][] = [
-      ['rock', ['Alternative rock']], ['hip-hop', ['Hip hop']], ['latin', ['Salsa']], ['disco', ['Disco']], ['funk', ['Funk']], ['k-pop', ['K-pop']],
+      ['rock', ['Alternative rock']], ['hip-hop', ['Hip hop']], ['latin', ['Latin pop']], ['disco', ['Disco']], ['funk', ['Funk']], ['k-pop', ['K-pop']],
       ['country', ['Country']], ['swing', ['Swing']], ['afro', ['Afrobeats']], ['bollywood', ['Bollywood']], ['dancehall', ['Dancehall']], ['pop', ['Pop']], ['ballad', ['Ballad']],
     ];
     for (const [label, genres] of big) {

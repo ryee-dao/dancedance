@@ -193,13 +193,15 @@ describe('duo routine', () => {
     // Medium rarely uses difficulty 3: measured over many songs, since one routine's share swings with its few
     // picks (40 songs, Nov 2026: mean 0.044, about 1 routine in 15 at 0.15 or more, max 0.28 before and after
     // the genre-set merge; the three songs above alone hit 0.22 / 0.14 / 0.03 or 0 / 0.06 / 0.05 by chance).
-    const d3s = Array.from({ length: 24 }, (_, k) => {
+    // 120 songs: a 24-song window swings from 0 to 3 routines at 0.15+ with any change of the kit's casting
+    // (Nov 2026, before / after the jump budget: mean 0.037 / 0.033, 5 / 5 of 120 at 0.15+, max 0.26 / 0.25).
+    const d3s = Array.from({ length: 120 }, (_, k) => {
       const cardio = generateDuoRoutine(songMap(118, k < 3 ? `lv-${'abc'[k]}` : `lv-${k}`), 'cardio');
       const ins = [...cardio.p1, ...cardio.p2];
       return ins.filter((i) => i.move.difficulty > 2).reduce((t, i) => t + i.span, 0) / ins.reduce((t, i) => t + i.span, 0);
     });
     expect(d3s.reduce((t, x) => t + x, 0) / d3s.length).toBeLessThan(0.08);
-    expect(d3s.filter((x) => x >= 0.15).length, d3s.map((x) => x.toFixed(2)).join(' ')).toBeLessThanOrEqual(2);
+    expect(d3s.filter((x) => x >= 0.15).length, d3s.map((x) => x.toFixed(2)).join(' ')).toBeLessThanOrEqual(10);
     // Sweaty uses more partner travel / jumps than cardio over a few songs.
     const travel = (lv: Intensity) =>
       ['s1', 's2', 's3', 's4'].reduce((n, v) => n + generateDuoRoutine(songMap(126, v), lv).phrases.filter((p) => p.kind === 'trade').length, 0);
@@ -232,9 +234,12 @@ describe('duo routine', () => {
     const r = generateDuoRoutine(bad, 'cardio');
     covers(r.p1, r.beats);
     covers(r.p2, r.beats);
+    // No beat grid at all: a free-time flow on a nominal grid (generator.ts freeTimeMap), never nothing.
     const empty: BeatMap = { ...songMap(120, 'empty'), beats: [], downbeats: [], sections: [] };
     const e = generateDuoRoutine(empty, 'sweaty');
-    expect(e.p1).toEqual([]);
+    covers(e.p1, e.beats);
+    covers(e.p2, e.beats);
+    expect(e.beats).toBeGreaterThan(16);
     const noSections: BeatMap = { ...songMap(120, 'nosec'), sections: [] };
     const n = generateDuoRoutine(noSections, 'chill');
     covers(n.p1, n.beats);
@@ -418,8 +423,8 @@ describe('partner moves by style', () => {
   });
 
   it('a thin partner pool leans on the solo kinds instead', () => {
-    // Calm but not yet lyrical: the four gentle general partner moves only on Easy.
-    const thin = resolveSongStyle({ title: 'X', genres: ['pop'] }, { bpm: 90, traits: { calm: 0.64, drive: 0.3 } });
+    // Calm but not yet lyrical (CALM_GENTLE 0.7 .. lyrical ~0.74): the four gentle general partner moves only on Easy.
+    const thin = resolveSongStyle({ title: 'X', genres: ['pop'] }, { bpm: 90, traits: { calm: 0.72, drive: 0.3 } });
     const rich = resolveSongStyle({ title: 'X', genres: ['pop'] }, { bpm: 90, traits: { calm: 0.4, drive: 0.4 } });
     expect(songPartnerMoves(thin, 90, 'chill').length).toBeLessThan(PARTNER_RICH);
     expect(songPartnerMoves(rich, 90, 'chill').length).toBeGreaterThanOrEqual(PARTNER_RICH);

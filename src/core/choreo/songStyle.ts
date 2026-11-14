@@ -55,6 +55,29 @@ export interface SongStyle {
   calm?: number;
   /** Display name of the bass-music sub-style when a genre name said which ("Dubstep", "Drum & bass", "Phonk"). */
   subName?: string;
+  /**
+   * The music's name from the song's genre names, as the owner sees it ("Eurodance", "Blues",
+   * "K-pop", "Classical"); styleLabel uses it ahead of the families (which say how it is DANCED).
+   */
+  label?: string;
+  /** The label already names a sub-style or scene ("Nu metal", "Bachata", "K-pop"): no " · Sub" suffix. */
+  labelSpecific?: boolean;
+  /** Not dance music (classical, ambient, spoken word): a neutral mix, no " · Ballad" suffix. */
+  still?: boolean;
+  /**
+   * Soft-but-steady character 0..1: low audio intensity on a steady beat (or genre names that
+   * say soft: romantic bachata, soft rock). No jumps, kicks or percussive showpieces, but not a
+   * lyrical ballad either (that is `calm`). Undefined = unknown (neutral).
+   */
+  soft?: number;
+  /** Hard-hitting sound 0..1 (audio intensity): sharp, percussive moves suit it. */
+  hard?: number;
+  /** Tempo people usually step to for the song's genre names (BPM); the tempo-octave check and the free-time pace. */
+  bpm?: number;
+  /** The scene a song-level genre name says (K-pop, J-pop ...): it leads the dancing. */
+  scene?: string;
+  /** The calm the genre names alone hint (a calm genre needs no " · Ballad"). */
+  nameCalm?: number;
 }
 
 export interface StyleOverride {
@@ -223,7 +246,14 @@ export function artistCandidates(credit: string): string[] {
 // lexicon in order: compounds first; what an entry matches is removed, so
 // "nu metal" doesn't also read as plain "metal" and "liquid funk" not as funk.
 // Everything a name matches adds up: its families (then normalised per name),
-// sub-style evidence (max), themes, focus, a calm hint.
+// sub-style evidence (max), themes, focus, a calm hint, a softness hint, the
+// tempo people step to, and the name the owner sees (`label`).
+//
+// The vocabulary reviewed (iTunes primary genres, the common Wikipedia /
+// MusicBrainz / TheAudioDB names) and what each maps to is pinned in
+// songStyle.vocab.test.ts. Music that is not dance music (classical,
+// ambient, new age, spoken word ...) reads as `still`: a neutral, smooth
+// family mix, a calm hint, and its own name as the label (never "Pop").
 
 interface Lex {
   re: RegExp;
@@ -237,115 +267,201 @@ interface Lex {
   name?: string;
   /** Confidence of the entry (a vague name like "Soundtrack" says little). */
   conf?: number;
+  /**
+   * The music's name as the owner sees it ("Hip-hop" for "Hip-Hop/Rap");
+   * absent = the genre name as written; null = never names the song (too vague).
+   */
+  label?: string | null;
+  /** Use `label` even when the name as written is clean ("Worldwide" -> "World music"). */
+  fixed?: true;
+  /** A scene label (K-pop, J-pop ...): when any song-level name says it, it leads the dancing (genreEvidence). */
+  scene?: string;
+  /** Not dance music (classical, ambient, spoken word): no "Ballad" suffix, a neutral mix. */
+  still?: true;
+  /** Softness hint 0..1: soft-but-steady music the audio may read as driving (romantic bachata, soft rock, quiet storm). */
+  soft?: number;
+  /** Tempo people usually step to (BPM): the tempo-octave check (generator.ts danceFeel) and the free-time pace. */
+  bpm?: number;
 }
 
 const word = (alts: string) => new RegExp(`(?<![a-z0-9])(?:${alts})(?![a-z0-9])`, 'g');
 const HIPS: FocusMap = { hips: 1.3 };
+/** The neutral mix of music that isn't dance music: smooth global moves only. */
+const STILL: Weights = { pop: 1 };
 
 const LEXICON: readonly Lex[] = [
-  // --- Compounds that contain another entry's words.
-  { re: word('k pop|kpop|korean pop|k rap|korean'), fam: { kpop: 1, pop: 0.4, hiphop: 0.2 } },
-  { re: word('j pop|j rock|anime|c pop|mandopop|cantopop|city pop|j pop rock'), fam: { pop: 0.8, kpop: 0.5, rock: 0.1 } },
-  { re: word('latin trap'), fam: { latin: 0.8, hiphop: 0.6 }, sub: { reggaeton: 0.7, trap: 0.5 }, focus: HIPS },
-  { re: word('reggaeton|dembow|perreo|neoperreo|urbano latino|urbano|latin urban|musica urbana|latin rap|latin hip hop'), fam: { latin: 1, hiphop: 0.4 }, sub: { reggaeton: 1 }, focus: HIPS },
-  { re: word('moombahton'), fam: { latin: 0.6, aerobic: 0.4 }, sub: { reggaeton: 0.6 }, focus: HIPS },
-  { re: word('baile funk|funk carioca|brazilian funk|funk brasileiro|funk ostentacao|brega funk'), fam: { latin: 0.8, hiphop: 0.4 }, sub: { brazil: 1 }, focus: HIPS },
-  { re: word('bossa nova'), fam: { latin: 0.8, pop: 0.3 }, sub: { brazil: 0.8 }, calm: 0.7 },
-  { re: word('samba|axe|pagode|sertanejo|forro|frevo|mpb|musica popular brasileira|brazilian|brasil'), fam: { latin: 1, pop: 0.2 }, sub: { brazil: 1 }, focus: { hips: 1.4 } },
-  { re: word('amapiano|gqom|kwaito|south african house'), fam: { latin: 0.5, hiphop: 0.5, pop: 0.3 }, sub: { amapiano: 1 }, themes: ['afro', 'amapiano'], focus: HIPS },
-  { re: word('afro house|afro tech'), fam: { aerobic: 0.4, latin: 0.4, disco: 0.3 }, sub: { house: 0.7 }, themes: ['afro'], focus: HIPS },
-  { re: word('afrobeats?|afro beats?|afro pop|afropop|afro fusion|afrofusion|afroswing|afro swing|highlife|naija|alte|afro|african'), fam: { latin: 0.5, hiphop: 0.5, pop: 0.4 }, themes: ['afro'], focus: HIPS },
-  { re: word('reggae fusion|dancehall|ragga|raggamuffin'), fam: { latin: 0.5, hiphop: 0.4, pop: 0.3 }, themes: ['dancehall'], focus: HIPS },
-  { re: word('ska punk|skacore|third wave ska'), fam: { rock: 1, pop: 0.2 }, sub: { punk: 1 } },
-  { re: word('ska|rocksteady'), fam: { rock: 0.5, latin: 0.3, pop: 0.3 }, sub: { punk: 0.5 }, themes: ['reggae'] },
-  { re: word('reggae|roots reggae|lovers rock|dub'), fam: { latin: 0.5, hiphop: 0.4, pop: 0.3 }, themes: ['reggae'], focus: HIPS },
-  { re: word('soca|calypso|zouk|kompa'), fam: { latin: 0.5, hiphop: 0.3, pop: 0.3 }, themes: ['soca'], focus: HIPS },
-  { re: word('nu metal|rap metal|rapcore'), fam: { rock: 1, hiphop: 0.3 }, sub: { metal: 0.9 } },
-  { re: word('rap rock'), fam: { rock: 0.8, hiphop: 0.5 }, sub: { metal: 0.45 } },
-  { re: word('trap metal'), fam: { rock: 0.6, hiphop: 0.7 }, sub: { metal: 0.6, trap: 0.6 } },
+  // --- Scenes: they lead the dancing whenever a song-level name says them.
+  { re: word('k pop|kpop|korean pop|k rap|k hip hop|k r and b'), fam: { kpop: 1, pop: 0.4, hiphop: 0.2 }, scene: 'K-pop', label: 'K-pop', fixed: true, bpm: 118 },
+  { re: word('j pop|jpop|idol pop|idol'), fam: { kpop: 0.7, pop: 0.7 }, scene: 'J-pop', label: 'J-pop', fixed: true, bpm: 120 },
+  { re: word('c pop|cpop|mandopop|cantopop hk pop|cantopop|hk pop|tai pop'), fam: { kpop: 0.7, pop: 0.7 }, scene: 'C-pop', label: 'C-pop', fixed: true, bpm: 115 },
+  { re: word('t pop|thai pop|v pop|vpop|p pop|ppop'), fam: { kpop: 0.7, pop: 0.7 }, scene: 'Asian pop', label: 'Asian pop', bpm: 118 },
+  { re: word('j rock|jrock|visual kei|j punk|j ska'), fam: { rock: 1, pop: 0.3 }, label: 'J-rock' },
+  { re: word('anime|anison|vocaloid|j synth'), fam: { pop: 0.8, kpop: 0.5, rock: 0.1 }, label: 'Anime' },
+  { re: word('city pop'), fam: { pop: 0.6, disco: 0.4, funk: 0.4 }, label: 'City pop' },
+  { re: word('enka|kayokyoku|kayo kyoku'), fam: { pop: 1 }, calm: 0.55 },
+  { re: word('korean'), fam: { kpop: 0.8, pop: 0.6 }, label: 'Korean' },
+  // --- Latin: reggaeton and Brazilian split out, then each Latin dance (genres.ts sub-styles).
+  { re: word('latin trap'), fam: { latin: 0.8, hiphop: 0.6 }, sub: { reggaeton: 0.7, trap: 0.5 }, focus: HIPS, bpm: 90 },
+  { re: word('reggaeton|reguetón|dembow|perreo|neoperreo|urbano latino|urbano|latin urban|musica urbana|latin rap|latin hip hop|reggae en espanol'), fam: { latin: 1, hiphop: 0.4 }, sub: { reggaeton: 1 }, focus: HIPS, label: 'Reggaeton', bpm: 95 },
+  { re: word('moombahton'), fam: { latin: 0.6, aerobic: 0.4 }, sub: { reggaeton: 0.6 }, focus: HIPS, bpm: 108 },
+  { re: word('baile funk|funk carioca|brazilian funk|funk brasileiro|funk ostentacao|brega funk|brazilian phonk'), fam: { latin: 0.8, hiphop: 0.4 }, sub: { brazil: 1 }, focus: HIPS, label: 'Baile funk', bpm: 130 },
+  { re: word('bossa nova'), fam: { latin: 0.8, pop: 0.3 }, sub: { brazil: 0.8 }, calm: 0.7, soft: 0.8, label: 'Bossa nova', bpm: 70 },
+  { re: word('samba|axe|pagode|sertanejo|forro|frevo|mpb|musica popular brasileira|choro|brazilian|brasil'), fam: { latin: 1, pop: 0.2 }, sub: { brazil: 1 }, focus: { hips: 1.4 }, bpm: 105 },
+  { re: word('bachata urbana|bachata sensual|bachata romantica|bachata'), fam: { latin: 1, pop: 0.3 }, sub: { bachata: 1 }, focus: { hips: 1.4 }, soft: 0.5, label: 'Bachata', bpm: 128 },
+  { re: word('merengue tipico|merengue|perico ripiao|mambo dominicano'), fam: { latin: 1, pop: 0.2 }, sub: { merengue: 1 }, focus: { hips: 1.4 }, label: 'Merengue', bpm: 140 },
+  { re: word('cumbia villera|cumbia sonidera|cumbia andina|tecnocumbia|cumbia|chicha|porro|champeta'), fam: { latin: 1, pop: 0.2 }, sub: { cumbia: 1 }, focus: { hips: 1.4 }, label: 'Cumbia', bpm: 95 },
+  { re: word('vallenato'), fam: { latin: 1, pop: 0.3 }, sub: { cumbia: 0.7 }, focus: HIPS, label: 'Vallenato', bpm: 110 },
+  { re: word('latin jazz|afro cuban jazz|afro cuban'), fam: { latin: 0.8, funk: 0.4 }, sub: { salsa: 0.6 }, themes: ['swing'], bpm: 160 },
+  { re: word('salsa y tropical'), fam: { latin: 1, pop: 0.2 }, sub: { salsa: 0.6 }, focus: { hips: 1.4 }, label: 'Salsa', bpm: 170 },
+  { re: word('salsa dura|salsa romantica|salsa choke|salsa|timba|songo|pachanga|boogaloo latino|latin boogaloo'), fam: { latin: 1, pop: 0.2 }, sub: { salsa: 1 }, focus: { hips: 1.4 }, label: 'Salsa', bpm: 185 },
+  { re: word('son cubano|son montuno|guaracha|mambo|guajira'), fam: { latin: 1, pop: 0.2 }, sub: { salsa: 0.9 }, focus: { hips: 1.4 }, bpm: 180 },
+  { re: word('rumba flamenca|rumba catalana|flamenco pop|nuevo flamenco|flamenco|sevillanas|bulerias|copla|paso doble|pasodoble'), fam: { latin: 0.8, pop: 0.2 }, sub: { flamenco: 1 }, label: 'Flamenco', bpm: 120 },
+  { re: word('cha cha cha|cha cha|chachacha|danzon|latin ballroom|ballroom|cucaracha'), fam: { latin: 1, pop: 0.2 }, sub: { chacha: 1 }, focus: { hips: 1.4 }, label: 'Cha-cha', bpm: 122 },
+  { re: word('rumba'), fam: { latin: 1, pop: 0.2 }, sub: { chacha: 0.7, salsa: 0.4 }, focus: { hips: 1.4 }, label: 'Rumba', bpm: 110 },
+  { re: word('nuevo tango|tango nuevo|electrotango|electro tango|tango|milonga'), fam: { latin: 0.8, pop: 0.3 }, sub: { tango: 1 }, label: 'Tango', bpm: 118 },
+  { re: word('corridos tumbados|corrido tumbado|corridos belicos'), fam: { latin: 0.9, hiphop: 0.3 }, sub: { mexican: 0.8 }, label: 'Corridos tumbados', bpm: 110 },
+  { re: word('regional mexican|regional mexicano|musica mexicana|mariachi|norteno|nortena|banda sinaloense|banda|corridos|corrido|ranchera|grupera|duranguense|huapango|son jarocho|tejano|tex mex|folklorico|jarabe tapatio|jarabe|hat dance'), fam: { latin: 0.9, pop: 0.2 }, sub: { mexican: 1 }, label: 'Regional Mexican', bpm: 120 },
+  { re: word('bolero|latin ballad|balada|baladas y boleros|baladas'), fam: { latin: 0.8, pop: 0.4 }, calm: 0.65, soft: 0.7, label: 'Bolero', bpm: 80 },
+  { re: word('tropical music|musica tropical|tropical(?! house)'), fam: { latin: 1, pop: 0.2 }, focus: { hips: 1.4 }, label: 'Tropical', bpm: 110 },
+  // --- Africa and the Caribbean.
+  { re: word('amapiano|gqom|kwaito|south african house'), fam: { latin: 0.5, hiphop: 0.5, pop: 0.3 }, sub: { amapiano: 1 }, themes: ['afro', 'amapiano'], focus: HIPS, label: 'Amapiano', bpm: 112 },
+  { re: word('afro house|afro tech'), fam: { aerobic: 0.4, latin: 0.4, disco: 0.3 }, sub: { house: 0.7 }, themes: ['afro'], focus: HIPS, bpm: 122 },
+  { re: word('afrobeats?|afro beats?|afro pop|afropop|afro fusion|afrofusion|afroswing|afro swing|afro trap|highlife|naija|alte|bongo flava|gengetone|coupe decale|kuduro|kizomba|semba|soukous|ndombolo|makossa|mbalax|juju|fuji|afro|african|africa'), fam: { latin: 0.5, hiphop: 0.5, pop: 0.4 }, themes: ['afro'], focus: HIPS, bpm: 105 },
+  { re: word('reggae fusion|dancehall|modern dancehall|ragga|raggamuffin'), fam: { latin: 0.5, hiphop: 0.4, pop: 0.3 }, themes: ['dancehall'], focus: HIPS, label: 'Dancehall', bpm: 98 },
+  { re: word('ska punk|skacore|third wave ska'), fam: { rock: 1, pop: 0.2 }, sub: { punk: 1 }, bpm: 160 },
+  { re: word('ska|rocksteady'), fam: { rock: 0.5, latin: 0.3, pop: 0.3 }, sub: { punk: 0.5 }, themes: ['reggae'], label: 'Ska', bpm: 140 },
+  { re: word('lovers rock'), fam: { latin: 0.5, hiphop: 0.3, pop: 0.4 }, themes: ['reggae'], focus: HIPS, soft: 0.7, label: 'Reggae', bpm: 75 },
+  { re: word('reggae|roots reggae|dub'), fam: { latin: 0.5, hiphop: 0.4, pop: 0.3 }, themes: ['reggae'], focus: HIPS, label: 'Reggae', bpm: 85 },
+  { re: word('soca|calypso|zouk|kompa|compas|bouyon|caribbean'), fam: { latin: 0.5, hiphop: 0.3, pop: 0.3 }, themes: ['soca'], focus: HIPS, bpm: 115 },
+  // --- Metal, punk and their kin.
+  { re: word('nu metal|rap metal|rapcore'), fam: { rock: 1, hiphop: 0.3 }, sub: { metal: 0.9 }, bpm: 100 },
+  { re: word('rap rock'), fam: { rock: 0.8, hiphop: 0.5 }, sub: { metal: 0.45 }, bpm: 100 },
+  { re: word('trap metal'), fam: { rock: 0.6, hiphop: 0.7 }, sub: { metal: 0.6, trap: 0.6 }, bpm: 140 },
+  { re: word('post hardcore|melodic hardcore'), fam: { rock: 1, aerobic: 0.1 }, sub: { punk: 0.7, metal: 0.5 }, bpm: 140 },
   {
-    re: word('metalcore|deathcore|death metal|black metal|thrash metal|thrash|doom metal|heavy metal|power metal|speed metal|groove metal|gothic metal|symphonic metal|alternative metal|industrial metal|progressive metal|djent|sludge metal|glam metal|metal'),
-    fam: { rock: 1, aerobic: 0.1 }, sub: { metal: 1 },
+    re: word('metalcore|deathcore|progressive metalcore|death metal|black metal|thrash metal|thrash|doom metal|heavy metal|power metal|speed metal|groove metal|gothic metal|symphonic metal|alternative metal|industrial metal|progressive metal|djent|sludge metal|sludge|stoner metal|glam metal|grindcore|metal'),
+    fam: { rock: 1, aerobic: 0.1 }, sub: { metal: 1 }, label: 'Metal', bpm: 120,
   },
-  { re: word('hard rock|hair metal'), fam: { rock: 1 }, sub: { metal: 0.45 } },
-  { re: word('post grunge|grunge'), fam: { rock: 1 }, sub: { metal: 0.3 } },
-  { re: word('pop punk|emo pop|easycore'), fam: { rock: 0.8, pop: 0.4 }, sub: { punk: 0.8 } },
-  { re: word('post punk|post punk revival|new wave'), fam: { rock: 0.7, pop: 0.5, disco: 0.2 }, sub: { punk: 0.25 } },
-  { re: word('happy hardcore|uk hardcore|hardcore techno|gabber|hardstyle|jumpstyle'), fam: { aerobic: 0.9, pop: 0.2 }, sub: { edm: 0.9 } },
-  { re: word('hardcore punk|hardcore(?! hip hop| rap)|punk rock|skate punk|street punk|oi|emo(?! rap)|screamo|punk'), fam: { rock: 1, aerobic: 0.3 }, sub: { punk: 1 } },
-  { re: word('power ballad'), fam: { rock: 0.6, pop: 0.6 }, calm: 0.65 },
-  { re: word('soft rock|yacht rock|piano rock|acoustic rock|adult alternative'), fam: { rock: 0.6, pop: 0.6 }, calm: 0.62 },
-  { re: word('folk rock|indie folk|folk pop|contemporary folk|freak folk|anti folk|chamber folk'), fam: { pop: 0.7, rock: 0.4 }, calm: 0.55 },
-  { re: word('rock and roll|rock n roll|rock n rollo|rockabilly|doo wop|surf rock'), fam: { rock: 1, pop: 0.3 }, themes: ['swing'] },
-  { re: word('funk rock|funk metal'), fam: { funk: 0.7, rock: 0.6 } },
-  { re: word('pop rock|power pop|pop punk revival'), fam: { pop: 0.7, rock: 0.6 } },
-  { re: word('dream pop|shoegaze|slowcore|sadcore'), fam: { pop: 0.6, rock: 0.5 }, calm: 0.7 },
-  { re: word('bedroom pop|chamber pop|baroque pop|indie pop|art pop|sophisti pop|alt pop|alternative pop'), fam: { pop: 0.9, rock: 0.3 }, calm: 0.5 },
-  { re: word('drill|uk drill|ny drill|brooklyn drill|chicago drill|bronx drill|jersey drill'), fam: { hiphop: 1 }, sub: { drill: 1, trap: 0.3 } },
-  { re: word('phonk|drift phonk|memphis rap'), fam: { hiphop: 0.6, aerobic: 0.4 }, sub: { bass: 1 }, name: 'Phonk' },
-  { re: word('dubstep|riddim|brostep|tearout'), fam: { aerobic: 0.8, hiphop: 0.2 }, sub: { bass: 1 }, name: 'Dubstep' },
-  { re: word('drum and bass|drum n bass|drum bass|dnb|d and b|jungle|liquid funk|liquid dnb|neurofunk|jump up'), fam: { aerobic: 0.9, hiphop: 0.1 }, sub: { bass: 1 }, name: 'Drum & bass' },
-  { re: word('future bass|bass music|bass house|trap edm|edm trap|midtempo bass'), fam: { aerobic: 0.7, hiphop: 0.3 }, sub: { bass: 0.8, edm: 0.3 } },
-  { re: word('uk garage|2 step|speed garage|garage house|bassline|uk funky'), fam: { aerobic: 0.5, disco: 0.3, hiphop: 0.3 }, sub: { house: 0.6 } },
-  { re: word('grime'), fam: { hiphop: 0.9, aerobic: 0.2 }, sub: { drill: 0.3 } },
-  { re: word('jersey club|baltimore club|footwork|juke|chicago footwork'), fam: { hiphop: 0.6, aerobic: 0.5 }, sub: { bass: 0.3 } },
-  { re: word('big room house|big room|electro house|progressive house|festival|complextro|melbourne bounce'), fam: { aerobic: 0.8, pop: 0.3 }, sub: { edm: 1 } },
-  { re: word('tropical house|melodic house'), fam: { pop: 0.6, aerobic: 0.4, disco: 0.2 }, sub: { house: 0.6, edm: 0.3 }, calm: 0.45 },
-  { re: word('deep house|tech house|future house|french house|disco house|chicago house|acid house|soulful house|piano house|house'), fam: { disco: 0.5, aerobic: 0.5, pop: 0.3 }, sub: { house: 1 } },
-  { re: word('eurodance|eurobeat|euro house|italo dance|hands up'), fam: { pop: 0.5, aerobic: 0.6, disco: 0.2 }, sub: { edm: 0.5 } },
-  { re: word('edm|electronic dance music|trance|psytrance|uplifting trance|techno|hard techno|rave'), fam: { aerobic: 0.8, pop: 0.3 }, sub: { edm: 1 } },
-  { re: word('electropop|electro pop|synth pop|synthpop|synthwave|electroclash|hyperpop'), fam: { pop: 0.8, disco: 0.3, aerobic: 0.3 } },
-  { re: word('dance pop|dance'), fam: { pop: 0.5, aerobic: 0.5, disco: 0.3 } },
-  { re: word('downtempo|chillwave|chillout|chill out|lo fi|lofi|trip hop|ambient|new age|meditation'), fam: { pop: 0.6, hiphop: 0.2 }, calm: 0.82 },
-  { re: word('electronica|electronic|electro(?! swing)|idm|breakbeat|big beat|indietronica'), fam: { aerobic: 0.6, pop: 0.4, disco: 0.15 } },
-  { re: word('post disco|boogie'), fam: { disco: 0.8, funk: 0.6 } },
-  { re: word('nu disco|disco'), fam: { disco: 1, funk: 0.3 } },
-  { re: word('new jack swing'), fam: { hiphop: 0.6, funk: 0.6, pop: 0.3 }, sub: { rnb: 0.7 } },
-  { re: word('quiet storm|slow jam'), fam: { funk: 0.5, pop: 0.5, hiphop: 0.3 }, sub: { rnb: 0.8 }, calm: 0.68 },
-  { re: word('contemporary r and b|alternative r and b|r and b|rhythm and blues|rnb|neo soul|urban contemporary|urban'), fam: { funk: 0.6, hiphop: 0.4, pop: 0.4, disco: 0.1 }, sub: { rnb: 1 } },
-  { re: word('g funk'), fam: { hiphop: 0.8, funk: 0.4 } },
-  { re: word('soul|motown|northern soul|philly soul|funk soul|blue eyed soul'), fam: { funk: 0.8, pop: 0.4, disco: 0.2 }, sub: { rnb: 0.3 } },
-  { re: word('funk'), fam: { funk: 1, disco: 0.3 } },
-  { re: word('cloud rap|emo rap|sad rap'), fam: { hiphop: 0.9, pop: 0.2 }, sub: { trap: 0.5 }, calm: 0.45 },
-  { re: word('crunk|snap|hyphy|rage|plugg|pluggnb'), fam: { hiphop: 1, pop: 0.1 }, sub: { trap: 0.4 } },
-  { re: word('trap'), fam: { hiphop: 1, pop: 0.1 }, sub: { trap: 1 } },
-  { re: word('pop rap|hip pop'), fam: { hiphop: 0.7, pop: 0.6 } },
-  { re: word('country rap|hick hop'), fam: { hiphop: 0.6, pop: 0.3, rock: 0.2 }, themes: ['country'] },
+  { re: word('hard rock|hair metal'), fam: { rock: 1 }, sub: { metal: 0.45 }, bpm: 120 },
+  { re: word('post grunge|grunge'), fam: { rock: 1 }, sub: { metal: 0.3 }, bpm: 110 },
+  { re: word('pop punk|emo pop|easycore'), fam: { rock: 0.8, pop: 0.4 }, sub: { punk: 0.8 }, bpm: 160 },
+  { re: word('post punk revival|post punk|new wave|coldwave'), fam: { rock: 0.7, pop: 0.5, disco: 0.2 }, sub: { punk: 0.25 }, bpm: 130 },
+  { re: word('happy hardcore|uk hardcore|hardcore techno|gabber|hardstyle|jumpstyle|speedcore'), fam: { aerobic: 0.9, pop: 0.2 }, sub: { edm: 0.9 }, bpm: 155 },
+  { re: word('breakcore|drill n bass|drill and bass|digital hardcore'), fam: { aerobic: 0.9, hiphop: 0.1 }, sub: { bass: 0.85 }, name: 'Breakcore', bpm: 175 },
+  { re: word('midwest emo'), fam: { rock: 0.9, pop: 0.3 }, sub: { punk: 0.6 }, bpm: 140 },
+  { re: word('hardcore punk|hardcore(?! hip hop| rap)|punk rock|skate punk|street punk|oi|emo(?! rap)|screamo|punk'), fam: { rock: 1, aerobic: 0.3 }, sub: { punk: 1 }, label: 'Punk', bpm: 170 },
+  { re: word('industrial rock|industrial|ebm|electronic body music|aggrotech|futurepop'), fam: { rock: 0.5, aerobic: 0.5 }, sub: { metal: 0.3 }, label: 'Industrial', bpm: 125 },
+  // --- Rock and pop compounds.
+  { re: word('power ballad'), fam: { rock: 0.6, pop: 0.6 }, calm: 0.65, label: 'Power ballad', bpm: 75 },
+  { re: word('soft rock|yacht rock|piano rock|acoustic rock|adult alternative'), fam: { rock: 0.6, pop: 0.6 }, calm: 0.62, soft: 0.6, bpm: 100 },
+  { re: word('folk rock|indie folk|folk pop|contemporary folk|freak folk|anti folk|chamber folk|americana folk'), fam: { pop: 0.7, rock: 0.4 }, calm: 0.55, soft: 0.5, bpm: 105 },
+  { re: word('rock and roll|rock n roll|rock n rollo|rockabilly|psychobilly|doo wop|surf rock|surf|skiffle'), fam: { rock: 1, pop: 0.3 }, themes: ['swing'], bpm: 150 },
+  { re: word('funk rock|funk metal'), fam: { funk: 0.7, rock: 0.6 }, bpm: 115 },
+  { re: word('pop rock|power pop|pop punk revival|pop rock'), fam: { pop: 0.7, rock: 0.6 }, bpm: 120 },
+  { re: word('dream pop|shoegaze|slowcore|sadcore|post rock|space rock|ethereal wave'), fam: { pop: 0.6, rock: 0.5 }, calm: 0.7, soft: 0.6, bpm: 90 },
+  { re: word('darkwave|gothic rock|goth rock|deathrock|goth'), fam: { rock: 0.6, pop: 0.4, disco: 0.2 }, bpm: 125 },
+  { re: word('bedroom pop|chamber pop|baroque pop|indie pop|art pop|sophisti pop|alt pop|alternative pop'), fam: { pop: 0.9, rock: 0.3 }, calm: 0.5, bpm: 110 },
+  // --- Hip-hop, bass music and electronic.
+  { re: word('drill|uk drill|ny drill|brooklyn drill|chicago drill|bronx drill|jersey drill'), fam: { hiphop: 1 }, sub: { drill: 1, trap: 0.3 }, label: 'Drill', bpm: 142 },
+  { re: word('phonk|drift phonk|memphis rap'), fam: { hiphop: 0.6, aerobic: 0.4 }, sub: { bass: 1 }, name: 'Phonk', label: 'Phonk', bpm: 130 },
+  { re: word('dubstep|riddim|brostep|tearout'), fam: { aerobic: 0.8, hiphop: 0.2 }, sub: { bass: 1 }, name: 'Dubstep', label: 'Dubstep', bpm: 140 },
+  { re: word('drum and bass|drum n bass|drum bass|dnb|d and b|jungle|liquid funk|liquid dnb|neurofunk|jump up|techstep|ragga jungle'), fam: { aerobic: 0.9, hiphop: 0.1 }, sub: { bass: 1 }, name: 'Drum & bass', label: 'Drum & bass', bpm: 172 },
+  { re: word('future bass|bass music|bass house|trap edm|edm trap|midtempo bass'), fam: { aerobic: 0.7, hiphop: 0.3 }, sub: { bass: 0.8, edm: 0.3 }, bpm: 145 },
+  { re: word('uk garage|2 step|speed garage|garage house|bassline|uk funky|garage(?! rock| punk)'), fam: { aerobic: 0.5, disco: 0.3, hiphop: 0.3 }, sub: { house: 0.6 }, bpm: 132 },
+  { re: word('grime'), fam: { hiphop: 0.9, aerobic: 0.2 }, sub: { drill: 0.3 }, label: 'Grime', bpm: 140 },
+  { re: word('jersey club|baltimore club|footwork|juke|chicago footwork|ghetto house|ghettotech'), fam: { hiphop: 0.6, aerobic: 0.5 }, sub: { bass: 0.3 }, bpm: 140 },
+  { re: word('big room house|big room|electro house|progressive house|festival|complextro|melbourne bounce'), fam: { aerobic: 0.8, pop: 0.3 }, sub: { edm: 1 }, bpm: 128 },
+  { re: word('tropical house|melodic house'), fam: { pop: 0.6, aerobic: 0.4, disco: 0.2 }, sub: { house: 0.6, edm: 0.3 }, calm: 0.45, soft: 0.4, bpm: 112 },
+  { re: word('deep house|tech house|future house|french house|disco house|chicago house|acid house|soulful house|piano house|house'), fam: { disco: 0.5, aerobic: 0.5, pop: 0.3 }, sub: { house: 1 }, label: 'House', bpm: 124 },
+  { re: word('eurodance|eurobeat|euro house|italo dance|hands up|hi nrg|hinrg'), fam: { pop: 0.5, aerobic: 0.6, disco: 0.2 }, sub: { edm: 0.5 }, bpm: 135 },
+  { re: word('edm|electronic dance music|trance|psytrance|psychedelic trance|goa trance|uplifting trance|hard trance|techno|hard techno|minimal techno|detroit techno|acid techno|rave'), fam: { aerobic: 0.8, pop: 0.3 }, sub: { edm: 1 }, bpm: 132 },
+  { re: word('electropop|electro pop|synth pop|synthpop|synthwave|retrowave|electroclash|hyperpop|digicore|glitchcore|nightcore'), fam: { pop: 0.8, disco: 0.3, aerobic: 0.3 }, bpm: 120 },
+  { re: word('dance pop|(?<!belly |folk |line |square )dance'), fam: { pop: 0.5, aerobic: 0.5, disco: 0.3 }, label: 'Dance', bpm: 122 },
+  { re: word('dark ambient|ambient|drone|space music|new age|meditation|healing|relaxation|sleep|nature sounds|soundscape|field recording|sound art|musique concrete'), fam: STILL, calm: 0.85, soft: 0.9, still: true, bpm: 70 },
+  { re: word('downtempo|chillwave|chillout|chill out|lo fi hip hop|lo fi|lofi|trip hop|vaporwave'), fam: { pop: 0.6, hiphop: 0.2 }, calm: 0.75, soft: 0.7, bpm: 85 },
+  { re: word('chiptune|8 bit|bitpop|video game music|video games?|vgm|game music'), fam: { aerobic: 0.5, pop: 0.5 }, conf: 0.6, bpm: 130 },
+  { re: word('electronica|electronic|electro(?! swing)|idm|glitch|breakbeat|breaks|big beat|indietronica'), fam: { aerobic: 0.6, pop: 0.4, disco: 0.15 }, label: 'Electronic', bpm: 125 },
+  // --- Disco, soul, R&B, funk.
+  { re: word('post disco|boogie(?! woogie)'), fam: { disco: 0.8, funk: 0.6 }, bpm: 115 },
+  { re: word('nu disco|italo disco|euro disco|disco'), fam: { disco: 1, funk: 0.3 }, label: 'Disco', bpm: 118 },
+  { re: word('new jack swing'), fam: { hiphop: 0.6, funk: 0.6, pop: 0.3 }, sub: { rnb: 0.7 }, bpm: 105 },
+  { re: word('quiet storm|slow jam'), fam: { funk: 0.5, pop: 0.5, hiphop: 0.3 }, sub: { rnb: 0.8 }, calm: 0.68, soft: 0.7, bpm: 70 },
+  { re: word('contemporary r and b|alternative r and b|r and b|rhythm and blues|rnb|neo soul|urban contemporary|urban(?! cowboy)'), fam: { funk: 0.6, hiphop: 0.4, pop: 0.4, disco: 0.1 }, sub: { rnb: 1 }, label: 'R&B', bpm: 90 },
+  { re: word('g funk'), fam: { hiphop: 0.8, funk: 0.4 }, bpm: 92 },
+  { re: word('soul blues|southern soul'), fam: { funk: 0.7, pop: 0.3 }, sub: { rnb: 0.6 }, bpm: 95 },
+  { re: word('soul|motown|northern soul|philly soul|funk soul|blue eyed soul'), fam: { funk: 0.8, pop: 0.4, disco: 0.2 }, sub: { rnb: 0.3 }, label: 'Soul', bpm: 105 },
+  { re: word('acid jazz|jazz funk|jazz fusion|fusion|nu jazz|crossover jazz'), fam: { funk: 0.8, pop: 0.3 }, bpm: 110 },
+  { re: word('go go'), fam: { funk: 1, hiphop: 0.3 }, label: 'Go-go', bpm: 105 },
+  { re: word('funk'), fam: { funk: 1, disco: 0.3 }, label: 'Funk', bpm: 108 },
+  // --- Hip-hop.
+  // The bare umbrella name, however it is written ("Hip hop", "hip-hop", "Rap", "Hip-Hop/Rap"), shows one way.
+  { re: /^ (?:hip hop|hiphop|rap|hip hop rap|rap hip hop) $/g, fam: { hiphop: 1, pop: 0.2, funk: 0.1 }, label: 'Hip-hop', fixed: true, bpm: 92 },
+  { re: word('cloud rap|emo rap|sad rap'), fam: { hiphop: 0.9, pop: 0.2 }, sub: { trap: 0.5 }, calm: 0.45, bpm: 140 },
+  { re: word('crunk|snap|hyphy|rage|plugg|pluggnb'), fam: { hiphop: 1, pop: 0.1 }, sub: { trap: 0.4 }, bpm: 145 },
+  { re: word('trap'), fam: { hiphop: 1, pop: 0.1 }, sub: { trap: 1 }, label: 'Trap', bpm: 145 },
+  { re: word('chopped and screwed|screwed|screw'), fam: { hiphop: 1 }, calm: 0.5, label: 'Chopped and screwed', bpm: 70 },
+  { re: word('pop rap|hip pop'), fam: { hiphop: 0.7, pop: 0.6 }, label: 'Pop rap', bpm: 95 },
+  { re: word('country rap|hick hop'), fam: { hiphop: 0.6, pop: 0.3, rock: 0.2 }, themes: ['country'], bpm: 95 },
+  { re: word('jazz rap|lo fi rap|abstract hip hop'), fam: { hiphop: 1, funk: 0.3 }, calm: 0.45, bpm: 88 },
   {
-    re: word('boom bap|golden age hip hop|old school hip hop|old school rap|east coast hip hop|west coast hip hop|southern hip hop|midwest hip hop|conscious hip hop|gangsta rap|hardcore hip hop|dirty south|miami bass|bounce|hip hop|hiphop|rap'),
-    fam: { hiphop: 1, pop: 0.2, funk: 0.1 },
+    re: word('boom bap|golden age hip hop|old school hip hop|old school rap|east coast hip hop|west coast hip hop|southern hip hop|midwest hip hop|conscious hip hop|gangsta rap|hardcore hip hop|hardcore rap|underground rap|alternative rap|dirty south|miami bass|bounce|horrorcore|deutschrap|hip hop|hiphop|rap'),
+    fam: { hiphop: 1, pop: 0.2, funk: 0.1 }, label: 'Hip-hop', bpm: 92,
   },
-  { re: word('country pop|bro country|pop country'), fam: { pop: 0.7, rock: 0.3, aerobic: 0.2 }, themes: ['country'] },
-  { re: word('country|americana|bluegrass|honky tonk|outlaw country|alt country|western swing|western|red dirt|texas country|cowpunk|nashville sound'), fam: { pop: 0.6, rock: 0.4, aerobic: 0.2 }, themes: ['country'] },
-  { re: word('ballad|ballads|torch song|lullaby|lullabies|lullabye'), fam: { pop: 0.8, rock: 0.2 }, calm: 0.85 },
-  { re: word('singer songwriter|acoustic|unplugged'), fam: { pop: 0.9, rock: 0.2 }, calm: 0.6 },
-  { re: word('smooth jazz|cool jazz|vocal jazz'), fam: { funk: 0.5, pop: 0.5 }, themes: ['swing'], calm: 0.7 },
-  { re: word('electro swing'), fam: { funk: 0.5, aerobic: 0.4, disco: 0.3 }, themes: ['swing'] },
-  { re: word('jazz|swing|big band|lindy hop|jump blues|bebop|dixieland'), fam: { funk: 0.6, pop: 0.3, rock: 0.2 }, themes: ['swing'] },
-  { re: word('blues|rhythm n blues'), fam: { rock: 0.5, funk: 0.5 }, themes: ['swing'], calm: 0.45 },
-  { re: word('bhangra|punjabi'), fam: { pop: 0.6, hiphop: 0.4, aerobic: 0.3 }, themes: ['bhangra', 'bollywood'] },
-  { re: word('garba|dandiya|gujarati'), fam: { pop: 0.7, latin: 0.3 }, themes: ['garba', 'bollywood'] },
-  { re: word('bollywood|filmi|indian pop|indipop|hindi|desi|tollywood|kollywood'), fam: { pop: 0.7, latin: 0.3, disco: 0.2 }, themes: ['bollywood'] },
-  { re: word('arabic|arab|middle eastern|khaleeji|raqs|belly dance|bellydance|arabesque|mahraganat|shaabi|rai|turkish pop|turkish'), fam: { pop: 0.7, latin: 0.3 }, themes: ['bellydance'] },
-  { re: word('hawaiian|hapa haole|hula|polynesian'), fam: { pop: 0.7, latin: 0.2 }, themes: ['hula'] },
-  { re: word('capoeira'), fam: { latin: 0.8 }, themes: ['capoeira'] },
-  { re: word('celtic|irish folk|polka|klezmer|balkan|folk dance|traditional folk|folk|world folk'), fam: { pop: 0.6, party: 0.2, rock: 0.2 }, themes: ['folk'] },
-  { re: word('flamenco|rumba|tango|bachata|merengue|cumbia|salsa|tropical|tropical music|mambo|cha cha|son cubano|timba|vallenato|tejano|salsa y tropical'), fam: { latin: 1, pop: 0.2 }, focus: { hips: 1.4 } },
-  { re: word('bolero|latin ballad|balada'), fam: { latin: 0.8, pop: 0.4 }, calm: 0.65 },
-  { re: word('corridos tumbados|corrido tumbado|corridos belicos'), fam: { latin: 0.9, hiphop: 0.3 } },
-  { re: word('regional mexican|regional mexicano|musica mexicana|mariachi|norteno|banda|corridos|corrido|ranchera|grupera'), fam: { latin: 0.9, pop: 0.2 } },
-  { re: word('latin pop|pop latino|pop in spanish|latin|latino|latina|spanish pop|pop en espanol'), fam: { latin: 0.9, pop: 0.5 }, focus: HIPS },
-  { re: word('fitness|workout|aerobics'), fam: { aerobic: 0.8, pop: 0.5 } },
-  { re: word('children s music|childrens music|children|kids|nursery|novelty|comedy|parody'), fam: { party: 0.7, pop: 0.6, aerobic: 0.4 } },
-  { re: word('christmas|holiday'), fam: { pop: 0.8, party: 0.3, disco: 0.2 } },
-  { re: word('gospel|christian|worship|ccm|inspirational|contemporary christian'), fam: { pop: 0.7, funk: 0.2 }, calm: 0.5 },
-  { re: word('classical|opera|orchestral|instrumental|piano|neoclassical|film score|original score|score'), fam: { pop: 0.7 }, calm: 0.75, conf: 0.6 },
-  { re: word('soundtrack|musicals|musical|show tunes|disney|film|tv soundtrack|film soundtrack'), fam: { pop: 0.7, disco: 0.2, aerobic: 0.2 }, conf: 0.5 },
-  { re: word('easy listening|adult contemporary|traditional pop|vocal pop|vocal|lounge'), fam: { pop: 1, funk: 0.1 }, calm: 0.6 },
-  { re: word('schlager|europop|french pop|german pop|chanson|greek|italian pop|world|worldwide'), fam: { pop: 0.7, latin: 0.3, disco: 0.2 } },
-  { re: word('teen pop|bubblegum pop|bubblegum|pop'), fam: { pop: 1, hiphop: 0.15, disco: 0.1 } },
-  { re: word('alternative rock|alt rock|indie rock|garage rock|britpop|college rock|art rock|progressive rock|psychedelic rock|stoner rock|arena rock|glam rock|southern rock|classic rock|heartland rock|blues rock|gothic rock|post rock|math rock|rock'), fam: { rock: 1, pop: 0.25 } },
-  { re: word('alternative|alt|indie'), fam: { rock: 0.7, pop: 0.5 } },
+  // --- Country and folk.
+  { re: word('country pop|bro country|pop country'), fam: { pop: 0.7, rock: 0.3, aerobic: 0.2 }, themes: ['country'], label: 'Country pop', bpm: 115 },
+  { re: word('cajun|zydeco'), fam: { pop: 0.5, rock: 0.3, party: 0.2 }, themes: ['country'], bpm: 120 },
+  { re: word('country(?! blues)|americana|bluegrass|honky tonk|outlaw country|alt country|western swing|western|red dirt|texas country|cowpunk|nashville sound|urban cowboy'), fam: { pop: 0.6, rock: 0.4, aerobic: 0.2 }, themes: ['country'], label: 'Country', bpm: 110 },
+  // --- Ballads and the gentle.
+  { re: word('piano ballad|ballad|ballads|torch song|lullaby|lullabies|lullabye'), fam: { pop: 0.8, rock: 0.2 }, calm: 0.85, soft: 0.8, label: 'Ballad', bpm: 70 },
+  { re: word('singer songwriter|acoustic(?! blues)|unplugged'), fam: { pop: 0.9, rock: 0.2 }, calm: 0.6, soft: 0.6, label: 'Singer-songwriter', bpm: 95 },
+  // --- Jazz, swing and blues.
+  { re: word('smooth jazz|cool jazz|vocal jazz|jazz vocal'), fam: { funk: 0.5, pop: 0.5 }, themes: ['swing'], calm: 0.7, soft: 0.7, bpm: 100 },
+  { re: word('electro swing'), fam: { funk: 0.5, aerobic: 0.4, disco: 0.3 }, themes: ['swing'], bpm: 125 },
+  { re: word('free jazz|avant garde jazz|avant garde|experimental'), fam: STILL, calm: 0.5, conf: 0.5, bpm: 90 },
+  { re: word('jump blues|boogie woogie'), fam: { funk: 0.5, rock: 0.3, pop: 0.2 }, themes: ['swing'], bpm: 150 },
+  { re: word('jazz|swing|big band|lindy hop|bebop|hard bop|dixieland|trad jazz|ragtime|stride'), fam: { funk: 0.6, pop: 0.3, rock: 0.2 }, themes: ['swing'], label: 'Jazz', bpm: 135 },
+  { re: word('blues rock|electric blues|chicago blues|texas blues|british blues|modern blues|contemporary blues'), fam: { rock: 0.7, funk: 0.4 }, bpm: 115 },
+  { re: word('delta blues|country blues|acoustic blues|piedmont blues|folk blues|classic blues'), fam: { funk: 0.5, pop: 0.3, rock: 0.2 }, sub: { rnb: 0.4 }, calm: 0.5, soft: 0.5, bpm: 90 },
+  // Blues dancing is the slow drag, grind and sway of a pulsing groove: the R&B set's isolations, soul grooves; never headbangs.
+  { re: word('blues'), fam: { funk: 0.6, pop: 0.25, rock: 0.25 }, sub: { rnb: 0.55 }, label: 'Blues', bpm: 100 },
+  // --- Traditions.
+  { re: word('bhangra|punjabi'), fam: { pop: 0.6, hiphop: 0.4, aerobic: 0.3 }, themes: ['bhangra', 'bollywood'], label: 'Bhangra', bpm: 110 },
+  { re: word('garba|dandiya|gujarati'), fam: { pop: 0.7, latin: 0.3 }, themes: ['garba', 'bollywood'], label: 'Garba', bpm: 120 },
+  { re: word('indian classical|carnatic|carnatic classical|hindustani|hindustani classical|ghazals?|bhajan|devotional and spiritual|devotional|kirtan'), fam: STILL, calm: 0.7, still: true, bpm: 75 },
+  { re: word('bollywood|filmi|indian pop|indipop|indian|hindi|desi|tollywood|kollywood|tamil|telugu|malayalam|kannada|regional indian'), fam: { pop: 0.7, latin: 0.3, disco: 0.2 }, themes: ['bollywood'], bpm: 110 },
+  { re: word('qawwali|sufi'), fam: { pop: 0.6, latin: 0.2 }, themes: ['bollywood'], calm: 0.5, bpm: 100 },
+  { re: word('arabic pop|arabic|arab|middle eastern|middle east|khaleeji|levant|maghreb|raqs|belly dance|bellydance|arabesque|mahraganat|shaabi|chaabi|rai|mizrahi|turkish pop|turkish'), fam: { pop: 0.7, latin: 0.3 }, themes: ['bellydance'], bpm: 105 },
+  { re: word('dangdut|koplo|joget'), fam: { pop: 0.7, latin: 0.3 }, focus: HIPS, label: 'Dangdut', bpm: 120 },
+  { re: word('hawaiian|hapa haole|hula|polynesian|hawaii'), fam: { pop: 0.7, latin: 0.2 }, themes: ['hula'], label: 'Hawaiian', bpm: 95 },
+  { re: word('capoeira'), fam: { latin: 0.8 }, themes: ['capoeira'], label: 'Capoeira', bpm: 110 },
+  { re: word('celtic|irish folk|polka|klezmer|balkan|folk dance|traditional folk|volksmusik|german folk|turbo folk|chalga|manele|rebetiko|laiko|sirtaki|dabke|horon|halay|folklore|folk|world folk'), fam: { pop: 0.6, party: 0.2, rock: 0.2 }, themes: ['folk'], label: 'Folk', bpm: 115 },
+  { re: word('fado|chanson|cabaret|canzone|variete|ye ye'), fam: { pop: 0.9, latin: 0.1 }, calm: 0.55, bpm: 100 },
+  // --- Latin umbrella (after its dances).
+  { re: word('alternativo and rock latino|rock en espanol|latin rock|rock latino'), fam: { rock: 0.7, latin: 0.5 }, label: 'Latin rock', bpm: 120 },
+  { re: word('raices|latin folk|andean|nueva cancion|trova'), fam: { latin: 0.8, pop: 0.3 }, label: 'Latin folk', bpm: 105 },
+  { re: word('latin pop|pop latino|pop in spanish|latin|latino|latina|spanish pop|pop en espanol|contemporary latin'), fam: { latin: 0.9, pop: 0.5 }, focus: HIPS, label: 'Latin pop', bpm: 105 },
+  // --- Contexts and umbrellas.
+  { re: word('fitness and workout|fitness|workout|aerobics'), fam: { aerobic: 0.8, pop: 0.5 }, label: 'Workout', bpm: 130 },
+  { re: word('children s music|childrens music|children|kids|nursery rhymes|nursery|novelty|comedy songs|parody'), fam: { party: 0.7, pop: 0.6, aerobic: 0.4 }, label: "Children's music", bpm: 115 },
+  { re: word('christmas|holiday'), fam: { pop: 0.8, party: 0.3, disco: 0.2 }, label: 'Holiday', conf: 0.7, bpm: 115 },
+  { re: word('christian and gospel|gospel|christian|worship|praise and worship|ccm|inspirational|contemporary christian|spirituals'), fam: { pop: 0.7, funk: 0.2 }, calm: 0.5, label: 'Gospel', bpm: 100 },
+  { re: word('hymns?|choral|choir|a cappella|gregorian chant|chant|sacred|requiem|mass|oratorio|cantata'), fam: STILL, calm: 0.85, soft: 0.9, still: true, label: 'Choral', bpm: 70 },
+  {
+    re: word('classical|baroque era|baroque|classical era|romantic era|romantic|renaissance|medieval|early music|modern era|minimalism|impressionist|chamber music|orchestral|symphony|symphonic|concerto|sonata|opera|operetta|art song|lieder|contemporary classical|modern classical|neoclassical|piano'),
+    fam: STILL, calm: 0.8, soft: 0.8, still: true, conf: 0.8, label: 'Classical', bpm: 75,
+  },
+  { re: word('film score|original score|score|cinematic|trailer music'), fam: STILL, calm: 0.7, still: true, conf: 0.6, label: 'Film score', bpm: 80 },
+  { re: word('spoken word|poetry|audiobook|audiobooks|comedy|stand up|asmr|sound effects|speech'), fam: STILL, calm: 0.75, still: true, conf: 0.6, label: 'Spoken word', bpm: 70 },
+  { re: word('soundtrack|musicals|musical theatre|musical|show tunes|broadway|disney|film|tv soundtrack|film soundtrack'), fam: { pop: 0.7, disco: 0.2, aerobic: 0.2 }, conf: 0.5, label: 'Soundtrack', bpm: 110 },
+  { re: word('vocal'), fam: { pop: 1, funk: 0.1 }, calm: 0.6, soft: 0.5, label: 'Vocal standards', fixed: true, bpm: 105 },
+  { re: word('easy listening|adult contemporary|traditional pop|vocal pop|vocal standards|lounge|exotica|space age pop'), fam: { pop: 1, funk: 0.1 }, calm: 0.6, soft: 0.5, bpm: 100 },
+  { re: word('instrumental'), fam: { pop: 0.8 }, calm: 0.6, conf: 0.5, label: 'Instrumental', bpm: 100 },
+  { re: word('schlager|europop|french pop|german pop|italian pop|greek|afrikaans'), fam: { pop: 0.7, latin: 0.3, disco: 0.2 }, bpm: 120 },
+  { re: word('world music|worldbeat|world|worldwide|international'), fam: { pop: 0.6, latin: 0.3, disco: 0.2 }, conf: 0.5, label: 'World music', fixed: true, bpm: 110 },
+  { re: word('chinese|japanese|thai|indonesian|malaysian|filipino|opm|original pilipino music|vietnamese'), fam: { pop: 0.8, kpop: 0.3 }, conf: 0.6, bpm: 110 },
+  { re: word('teen pop|bubblegum pop|bubblegum|pop'), fam: { pop: 1, hiphop: 0.15, disco: 0.1 }, label: 'Pop', bpm: 112 },
+  { re: word('alternative rock|alt rock|indie rock|garage rock|britpop|madchester|college rock|art rock|progressive rock|prog rock|psychedelic rock|psychedelic|stoner rock|arena rock|glam rock|southern rock|classic rock|heartland rock|roots rock|gothic rock|noise rock|math rock|krautrock|rock'), fam: { rock: 1, pop: 0.25 }, label: 'Rock', bpm: 120 },
+  { re: word('alternative|alt|indie'), fam: { rock: 0.7, pop: 0.5 }, label: 'Alternative', bpm: 115 },
 ];
 
 /** One genre name, read: its normalised families and everything else it says (placed = false: nothing matched). */
@@ -356,8 +472,15 @@ interface Reading {
   themes: Set<Theme>;
   focus: FocusMap | null;
   calm: number | null;
+  soft: number | null;
   name?: string;
   conf: number;
+  /** The name the owner sees (null: too vague to name the song). */
+  label: string | null;
+  scene?: string;
+  still: boolean;
+  /** Typical stepping tempo (geometric mean of the matched entries'). */
+  bpm?: number;
 }
 
 /** "R&B/Soul" -> "r and b soul"; "Hip-Hop/Rap" -> "hip hop rap"; "Rock 'n' Roll" -> "rock n roll". */
@@ -368,6 +491,16 @@ function normGenre(s: string): string {
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()} `;
 }
+
+/** A genre name as the owner sees it: as written, trimmed, first letter capitalised; null for store-style compounds ("Hip-Hop/Rap"). */
+function asWritten(name: string): string | null {
+  const s = name.replace(/\s+/g, ' ').trim();
+  if (!s || s.length > 28 || /[/\\|]/.test(s)) return null;
+  // Lower-case tag sources ("edm", "uk garage", "r&b"): their acronyms as people write them.
+  const t = s.split(' ').map((w) => (ACRONYMS.has(w.toLowerCase()) ? w.toUpperCase() : w)).join(' ');
+  return t[0].toUpperCase() + t.slice(1);
+}
+const ACRONYMS = new Set(['uk', 'us', 'edm', 'idm', 'dnb', 'ebm', 'mpb', 'dj', 'ny', 'nyc', 'opm', 'r&b', 'rnb', 'ccm', 'vgm']);
 
 const READINGS = new Map<string, Reading>();
 
@@ -382,9 +515,14 @@ export function readGenre(name: string | undefined): Reading {
   const themes = new Set<Theme>();
   let focus: FocusMap | null = null;
   const calms: number[] = [];
+  const softs: number[] = [];
   let placed = false;
-  let label: string | undefined;
+  let subName: string | undefined;
   let conf = 0;
+  let label: string | null | undefined;
+  let scene: string | undefined;
+  let still = true;
+  let logBpm = 0, nBpm = 0;
   for (const e of LEXICON) {
     e.re.lastIndex = 0;
     if (!e.re.test(s)) continue;
@@ -400,7 +538,13 @@ export function readGenre(name: string | undefined): Reading {
       for (const k of FOCI) if (e.focus[k]) focus[k] = Math.max(focus[k] ?? 1, e.focus[k]!);
     }
     if (e.calm !== undefined) calms.push(e.calm);
-    if (e.name && !label) label = e.name;
+    if (e.soft !== undefined) softs.push(e.soft);
+    if (e.name && !subName) subName = e.name;
+    // The first (most specific) entry names the reading: its label, else the name as written.
+    if (label === undefined) label = e.label === null ? null : e.fixed ? e.label! : (asWritten(key) ?? e.label ?? null);
+    if (e.scene && !scene) scene = e.scene;
+    if (!e.still) still = false;
+    if (e.bpm) (logBpm += Math.log2(e.bpm)), nBpm++;
   }
   const r: Reading = {
     placed,
@@ -409,8 +553,13 @@ export function readGenre(name: string | undefined): Reading {
     themes,
     focus,
     calm: calms.length ? Math.max(...calms) : null,
+    soft: softs.length ? Math.max(...softs) : null,
     conf: placed ? conf : 0,
-    ...(label ? { name: label } : {}),
+    label: placed ? (label ?? null) : null,
+    still: placed && still,
+    ...(subName ? { name: subName } : {}),
+    ...(scene ? { scene } : {}),
+    ...(nBpm ? { bpm: Math.round(2 ** (logBpm / nBpm)) } : {}),
   };
   READINGS.set(key, r);
   return r;
@@ -437,48 +586,95 @@ interface GenreEvidence {
   focus: FocusMap | null;
   /** Calm hint (weighted mean of the names that hint one, pulled toward neutral by the names that don't). */
   calm: number | null;
+  /** Softness hint (as calm: names that say soft-but-steady music). */
+  soft: number | null;
   name?: string;
+  /** The name the owner sees: the strongest named evidence (a scene first). */
+  label?: string;
+  /** That name already names a sub-style or scene. */
+  labelSpecific?: boolean;
+  /** All the placed names are not dance music (classical, ambient ...). */
+  still: boolean;
+  /** The scene a song-level name says (K-pop, J-pop ...), when any does. */
+  scene?: string;
+  /** Typical stepping tempo of the genre names (weighted geometric mean). */
+  bpm?: number;
 }
 
 /**
- * Blend genre names: the song's own list first (weight 1 / (1 + 0.5 i) by
- * position), then the single tag (as a tie-breaker, ITUNES_TIE, when the list
- * placed anything; fully otherwise). Families add by weight; a sub-style
- * takes its best evidence, discounted by position.
+ * How much each kind of genre evidence counts. The song's own list (`genres`,
+ * e.g. its Wikipedia infobox, most important first) is the primary evidence.
+ * The single tag (iTunes primaryGenreName) is the fallback when the list
+ * placed nothing; with a list, it is a tie-breaker: ITUNES_TIE of the family
+ * weight, and its sub-style evidence counts at most ITUNES_SUB (below
+ * SUB_OPEN: it opens a sub-style only together with other evidence, a list
+ * name or the audio; "R&B/Soul" alone never makes a eurodance song R&B).
+ *
+ * Interfaces still to come plug in here: an artist-level list (`artistGenres`,
+ * weak: ARTIST_SHARE at most, the way `artistGenre` is blended in
+ * resolveSongStyle) and list entries carrying their level (song / album /
+ * artist), which would scale an entry's weight like the tag's.
  */
 const ITUNES_TIE = 0.3;
+export const ITUNES_SUB = 0.4;
+/**
+ * A list name's sub-style evidence falls by position (1 - 0.12 i) to this floor: from the fifth name on it
+ * can't open a sub-style alone (SUB_OPEN), as the tag can't ("Eurodance, electronic, dance, house, euro
+ * house, R&B": no slow-jam R&B on a eurodance song).
+ */
+const LIST_POS_FLOOR = 0.4;
+/** A scene a song-level name says takes this share of the families (it leads the dancing: BTS with "pop rap, boom bap, hip hop, alt-pop, K-pop"). */
+const SCENE_LEAD = 0.6;
+
 function genreEvidence(list: readonly string[] | undefined, tag: string | undefined): GenreEvidence {
-  const items: { r: Reading; w: number; pos: number }[] = [];
+  const items: { r: Reading; w: number; pos: number; tag: boolean }[] = [];
   (list ?? []).forEach((g, i) => {
     if (typeof g !== 'string') return;
     const r = readGenre(g);
-    if (r.placed) items.push({ r, w: r.conf / (1 + 0.5 * i), pos: Math.max(0.6, 1 - 0.1 * i) });
+    if (r.placed) items.push({ r, w: r.conf / (1 + 0.5 * i), pos: Math.max(LIST_POS_FLOOR, 1 - 0.12 * i), tag: false });
   });
+  const listed = items.length > 0;
   if (typeof tag === 'string' && tag.trim()) {
     const r = readGenre(tag);
-    if (r.placed) items.push(items.length ? { r, w: ITUNES_TIE * r.conf, pos: 0.7 } : { r, w: r.conf, pos: r.conf });
+    if (r.placed) items.push(listed ? { r, w: ITUNES_TIE * r.conf, pos: ITUNES_SUB, tag: true } : { r, w: r.conf, pos: r.conf, tag: true });
   }
-  const out: GenreEvidence = { fam: null, subs: {}, themes: new Set(), focus: null, calm: null };
+  const out: GenreEvidence = { fam: null, subs: {}, themes: new Set(), focus: null, calm: null, soft: null, still: false };
   if (!items.length) return out;
   const fam: Record<string, number> = {};
-  let cw = 0, cs = 0, wAll = 0;
-  for (const { r, w, pos } of items) {
+  let cw = 0, cs = 0, sw = 0, ss = 0, wAll = 0, lb = 0, lw = 0;
+  let labelW = -1;
+  let scene: Reading | null = null;
+  for (const it of items) {
+    const { r, w, pos } = it;
     wAll += w;
     for (const f of FAMILIES) if (r.fam[f]) fam[f] = (fam[f] ?? 0) + w * r.fam[f]!;
     for (const k of SUB_STYLES) if (r.subs[k]) out.subs[k] = Math.max(out.subs[k] ?? 0, r.subs[k]! * pos);
     for (const t of r.themes) out.themes.add(t);
     if (r.focus && !out.focus) out.focus = r.focus;
-    if (r.calm !== null) {
-      cw += w;
-      cs += w * r.calm;
-    }
+    if (r.calm !== null) (cw += w), (cs += w * r.calm);
+    if (r.soft !== null) (sw += w), (ss += w * r.soft);
     if (r.name && !out.name) out.name = r.name;
+    const specific = !!r.scene || r.themes.size > 0 || Object.values(r.subs).some((v) => (v ?? 0) >= 0.45);
+    if (r.label && w > labelW) (labelW = w), (out.label = r.label), (out.labelSpecific = specific);
+    // A bare umbrella first ("Pop", "Rock") and its own compound second ("Pop rock"): the compound says more.
+    else if (r.label && !it.tag && items.indexOf(it) === 1 && out.label && r.label.length > out.label.length && r.label.toLowerCase().includes(out.label.toLowerCase())) (out.label = r.label), (out.labelSpecific = specific);
+    if (r.bpm) (lb += w * Math.log2(r.bpm)), (lw += w);
+    if (r.scene && !it.tag && !scene) scene = r;
   }
   out.fam = normWeights(fam);
+  if (scene && out.fam) {
+    out.fam = blend(out.fam, scene.fam, SCENE_LEAD);
+    out.scene = scene.scene;
+    out.label = scene.label ?? scene.scene;
+    out.labelSpecific = true;
+  }
+  out.still = items.every((x) => x.r.still);
   if (cw > 0) {
     const neutral = 0.4;
     out.calm = neutral + (cs / cw - neutral) * Math.min(1, (cw / wAll) * 1.5);
   }
+  if (sw > 0) out.soft = (ss / sw) * Math.min(1, (sw / wAll) * 1.5);
+  if (lw > 0) out.bpm = Math.round(2 ** (lb / lw));
   return out;
 }
 
@@ -585,7 +781,15 @@ const SUB_GROUP: Readonly<Record<SubStyle, readonly Family[]>> = {
   metal: ['rock'], punk: ['rock'], trap: ['hiphop'], drill: ['hiphop'], rnb: ['hiphop', 'pop'],
   house: ['disco', 'aerobic', 'pop'], edm: ['aerobic', 'pop', 'disco'], bass: ['aerobic', 'hiphop'],
   reggaeton: ['latin', 'hiphop'], brazil: ['latin'], amapiano: ['latin', 'hiphop'], lyrical: [...FAMILIES],
+  salsa: ['latin'], merengue: ['latin'], cumbia: ['latin'], bachata: ['latin'], chacha: ['latin'], flamenco: ['latin'], tango: ['latin'], mexican: ['latin'],
 };
+
+/** The strongest family of a mix. */
+function topFamily(fam: Weights): Family | null {
+  let best: Family | null = null, bv = 0;
+  for (const f of FAMILIES) if ((fam[f] ?? 0) > bv) (bv = fam[f]!), (best = f);
+  return best;
+}
 
 /** How well a family mix fits a sub-style's group (1 when the group leads, 0 when it is absent). */
 function groupFit(fam: Weights, s: SubStyle): number {
@@ -691,6 +895,22 @@ export function signatureMoveIds(): string[] {
   return [...ids];
 }
 
+/** Calm from which the lyrical (ballad) set starts to open, and where it is fully open (analyser 1.4.0 calm: soft-but-steady songs read ~0.4-0.64, ballads 0.79+). */
+export const LYRICAL_CALM: readonly [number, number] = [0.62, 0.86];
+/** Audio intensity range over which a song goes from soft (1) to not soft (0) ... */
+const SOFT_INTENSITY: readonly [number, number] = [0.2, 0.45];
+/** ... as long as its rhythm is not all-out (a trance lead is tonal, its drive is not soft). */
+const SOFT_DRIVE: readonly [number, number] = [0.85, 1];
+/** Intensity from which a song is hard-hitting (1 at the top of the range). */
+const HARD_INTENSITY: readonly [number, number] = [0.7, 0.9];
+/**
+ * Trap and drill from the audio need a genre name for them: a half-time feel
+ * is what any song counted at double tempo shows (analyser 1.4.0: halfTempo
+ * includes halfFeel), so without a trap / drill name the audio evidence counts
+ * only this much (below SUB_OPEN on its own).
+ */
+const HALF_FEEL_ALONE = 0.35;
+
 export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyle {
   const curated = song.style ?? (song.videoId ? STARTER_STYLES.get(song.videoId) : undefined);
   const traits = readTraits(priors?.traits);
@@ -717,7 +937,9 @@ export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyl
   }
   if (!families) families = { ...BALANCED_POP.families };
   if (source !== 'override' && artistEv?.fam) families = blend(families, artistEv.fam, ARTIST_SHARE);
-  const prior = priorWeights(bpm);
+  // Music that isn't dance music keeps its neutral mix (no tempo lean).
+  const still = source === 'genre' && ev.still;
+  const prior = still ? null : priorWeights(bpm);
   if (prior) families = blend(families, prior, PRIOR_SHARE[source]);
 
   // Character: calm from the traits (the title / genre names hint when they are missing).
@@ -729,20 +951,32 @@ export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyl
   if (calm !== undefined) calm = clamp(calm);
   // A calm song leans a little toward pop (smooth, flowing), keeping its family; curated mixes stay as written.
   if (calm !== undefined && calm > 0.5 && source !== 'override') families = blend(families, { pop: 1 }, CALM_POP * 2 * (calm - 0.5));
+  // Soft-but-steady: low audio intensity on a beat that isn't all-out, or genre names that say so
+  // (the analyser reads soft-but-bright styles such as bachata as driving: the genre carries them).
+  const intensity = traits?.intensity;
+  let soft: number | undefined;
+  if (intensity !== undefined) soft = (1 - ramp(intensity, SOFT_INTENSITY[0], SOFT_INTENSITY[1])) * (1 - ramp(traits?.drive ?? 0.5, SOFT_DRIVE[0], SOFT_DRIVE[1]));
+  if (ev.soft !== null) soft = Math.max(soft ?? 0, ev.soft);
+  const hard = intensity !== undefined ? ramp(intensity, HARD_INTENSITY[0], HARD_INTENSITY[1]) : undefined;
 
   // Sub-styles: the genre names' evidence, reinforced by the traits where the song's group fits.
   const subs: Subs = {};
   const ts = traits ? traitSubs(traits, bpm) : {};
+  const trapNamed = (ev.subs.trap ?? 0) >= SUB_KEEP || (ev.subs.drill ?? 0) >= SUB_KEEP;
   for (const s of SUB_STYLES) {
     if (s === 'lyrical') continue;
     const word = ev.subs[s] ?? 0;
-    const trait = (ts[s] ?? 0) * groupFit(families, s);
+    let trait = (ts[s] ?? 0) * groupFit(families, s);
+    if ((s === 'trap' || s === 'drill') && !trapNamed) trait *= HALF_FEEL_ALONE;
+    // The bass-music set's half-time bounce on a song whose names say hip-hop is the same misread (and not its floor).
+    if (s === 'bass' && !word && topFamily(families) === 'hiphop') trait *= HALF_FEEL_ALONE;
     const art = (artistEv?.subs[s] ?? 0) * ARTIST_SHARE;
     const v = 1 - (1 - word) * (1 - 0.85 * trait) * (1 - art);
     if (v >= SUB_KEEP) subs[s] = Math.round(v * 1000) / 1000;
   }
   if (calm !== undefined) {
-    const ly = ramp(calm, 0.55, 0.8);
+    // The true ballad: calm, and (when the audio says) soft-sounding too.
+    const ly = ramp(calm, LYRICAL_CALM[0], LYRICAL_CALM[1]) * (intensity !== undefined ? 1 - ramp(intensity, 0.35, 0.6) : 1);
     if (ly >= SUB_KEEP) subs.lyrical = Math.round(ly * 1000) / 1000;
   }
 
@@ -760,6 +994,14 @@ export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyl
   if (Object.keys(subs).length) out.subs = subs;
   if (calm !== undefined) out.calm = Math.round(calm * 1000) / 1000;
   if (ev.name && subs.bass !== undefined) out.subName = ev.name;
+  if (ev.label) out.label = ev.label;
+  if (ev.calm !== null) out.nameCalm = Math.round(ev.calm * 1000) / 1000;
+  if (ev.labelSpecific) out.labelSpecific = true;
+  if (still) out.still = true;
+  if (soft !== undefined) out.soft = Math.round(soft * 1000) / 1000;
+  if (hard !== undefined) out.hard = Math.round(hard * 1000) / 1000;
+  if (ev.bpm) out.bpm = ev.bpm;
+  if (ev.scene) out.scene = ev.scene;
   return out;
 }
 
@@ -776,7 +1018,11 @@ function topFamilies(s: SongStyle): Family[] {
 const SUB_HEAD: Readonly<Record<SubStyle, string | null>> = {
   metal: 'Rock', punk: 'Rock', trap: 'Hip-hop', drill: 'Hip-hop', rnb: null, house: 'Electronic', edm: 'Electronic', bass: 'Electronic',
   reggaeton: 'Latin', brazil: 'Latin', amapiano: 'Afro', lyrical: null,
+  salsa: null, merengue: null, cumbia: null, bachata: null, chacha: null, flamenco: null, tango: null, mexican: null,
 };
+
+/** A family as a music style name: "Dance", not "Aerobics" (families say how a song is danced, the label what it is). */
+const MUSIC_LABEL: Readonly<Record<Family, string>> = { ...FAMILY_LABEL, aerobic: 'Dance', latin: 'Latin' };
 
 /** Tradition themes that name the song ahead of its families (a country song's families are pop / rock). */
 const THEME_HEAD: readonly (readonly [Theme, string])[] = [
@@ -801,20 +1047,41 @@ export function labelSub(s: SongStyle): SubStyle | null {
   return best;
 }
 
-/** Human label, e.g. "Latin groove", "Rock", "Disco · Funk", "Hip-hop · Drill", "Rock · Ballad". */
+/** Label of a song nothing is known about (no genre, no audio): it gets a balanced mix of styles. */
+export const UNKNOWN_LABEL = 'Mixed styles';
+
+/**
+ * Human label of the MUSIC, in ordinary words: the song's genre name when it
+ * has one ("Eurodance", "Blues", "K-pop", "Classical", "Nu metal"), with a
+ * sub-style the name doesn't say ("Hip-hop · Drill") or " · Ballad" for a
+ * calm song (never on music that isn't dance music); without genre names the
+ * tradition or the families ("Disco · Funk", "Rock", "Dance": never
+ * "Aerobics"); "Ballad" for a calm song known only by its audio, "Mixed
+ * styles" when nothing is known.
+ */
 export function styleLabel(s: SongStyle): string {
   const top = topFamilies(s);
   const tradition = THEME_HEAD.find(([t]) => s.themes.includes(t))?.[1];
-  const head = tradition ?? (top.length ? FAMILY_LABEL[top[0]] : FAMILY_LABEL.pop);
-  if (s.calm !== undefined && s.calm >= BALLAD_CALM) return `${head} · Ballad`;
+  const fams = top.length ? top.map((f) => MUSIC_LABEL[f]).join(' · ') : null;
+  if (s.still && s.label) return s.label;
+  if (s.calm !== undefined && s.calm >= BALLAD_CALM) {
+    const head = s.label ?? tradition ?? (s.source === 'override' || s.source === 'genre' ? (top.length ? MUSIC_LABEL[top[0]] : null) : null);
+    if (!head) return 'Ballad';
+    // A calm genre (smooth jazz, downtempo, bossa nova) is calm by its name: no suffix for what the name says.
+    if (s.label && (s.nameCalm ?? 0) >= BALLAD_CALM - 0.05) return head;
+    return /ballad|lullab/i.test(head) ? head : `${head} · Ballad`;
+  }
   const sub = labelSub(s);
-  if (sub) {
+  if (sub && !(s.label && s.labelSpecific)) {
     const name = sub === 'bass' && s.subName ? s.subName : GENRE_LABEL[sub];
+    if (s.label) return s.label.toLowerCase().includes(name.toLowerCase()) ? s.label : `${s.label} · ${name}`;
     const h = SUB_HEAD[sub];
     return h ? `${h} · ${name}` : name;
   }
+  if (s.label) return s.label;
   if (tradition) return tradition;
-  return top.length ? top.map((f) => FAMILY_LABEL[f]).join(' · ') : FAMILY_LABEL.pop;
+  if (s.source === 'fallback') return UNKNOWN_LABEL;
+  return fams ?? UNKNOWN_LABEL;
 }
 
 /** Short stable string for seeding: "disco:0.50,funk:0.50|kick,spin" (+ "|trap:0.90" sub-styles, "|c0.80" calm when known). */
