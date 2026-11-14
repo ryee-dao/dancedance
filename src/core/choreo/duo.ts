@@ -50,7 +50,7 @@
 
 import type { BeatMap, SectionType } from '../analysis/beatmap';
 import { genreOpenness, type Genre } from './genres';
-import { GENRE_MAX, comboName, generateRoutine, genreFits, hashString, mulberry32, styleGenres, type Intensity, type MoveInstance, type Routine, type SigStep } from './generator';
+import { GENRE_MAX, comboName, feelMap, generateRoutine, genreFits, hashString, mulberry32, styleGenres, toneFits, toneGate, type Intensity, type MoveInstance, type Routine, type SigStep, type ToneGate } from './generator';
 import type { SongStyle } from './songStyle';
 import { IDLE_MOVE, MOVES, type Move } from './moves';
 import { PARTNER_MOVES, partnerCard, partnerOf, partnerTempoMode, type PartnerMove } from './duoMoves';
@@ -220,10 +220,14 @@ function genreBeats(ins: readonly MoveInstance[]): number {
   return g;
 }
 
-/** Whether a partner move suits a song by style (its genre sets open) and character (gentle only from CALM_GENTLE up). */
-function suitsSong(pm: PartnerMove, open: ReadonlySet<Genre> | null, calm: number | undefined): boolean {
+/**
+ * Whether a partner move suits a song by style (its genre sets open), character (gentle only from CALM_GENTLE up) and
+ * tone (generator.ts toneFits: neither player's half too loud for the song).
+ */
+function suitsSong(pm: PartnerMove, open: ReadonlySet<Genre> | null, calm: number | undefined, gate?: ToneGate): boolean {
   if (pm.styles.length && !pm.styles.some((g) => open?.has(g))) return false;
   if (calm !== undefined && calm >= CALM_GENTLE && !pm.gentle) return false;
+  if (gate && ![...pm.p1, ...pm.p2].every((m) => toneFits(m, gate, false))) return false;
   return true;
 }
 
@@ -234,7 +238,8 @@ function suitsSong(pm: PartnerMove, open: ReadonlySet<Genre> | null, calm: numbe
  */
 export function songPartnerMoves(style: SongStyle | undefined, bpm: number | undefined, intensity: Intensity): PartnerMove[] {
   const open = style ? styleGenres(style) : null;
-  return PARTNER_MOVES.filter((pm) => partnerAllowed(pm, intensity, 'verse') && suitsSong(pm, open, style?.calm) && partnerTempoMode(pm, bpm, intensity) !== 'out');
+  const gate = style ? toneGate(style, bpm) : undefined;
+  return PARTNER_MOVES.filter((pm) => partnerAllowed(pm, intensity, 'verse') && suitsSong(pm, open, style?.calm, gate) && partnerTempoMode(pm, bpm, intensity) !== 'out');
 }
 
 /** Median beat interval of a beat-time list -> BPM (undefined when unusable). */
@@ -265,6 +270,8 @@ export class DuoChoreographer {
   private openness = new Map<Genre, number>();
   /** The song's calm (SongStyle.calm), when known. */
   private calm: number | undefined;
+  /** The song's tone gate (generator.ts toneGate), when its style is known. */
+  private gate: ToneGate | undefined;
   /** The routine's tempo (each move's own half time, speed.ts), when known. */
   private bpm: number | undefined;
   /** Genre time each track may have (beats) and has so far: the single routine's, then as phrases change it. */
@@ -292,6 +299,7 @@ export class DuoChoreographer {
       const all = genreOpenness(this.o.style);
       for (const g of this.open) this.openness.set(g, all.get(g) ?? 1);
       this.calm = this.o.style.calm;
+      this.gate = toneGate(this.o.style, this.bpm);
     } else {
       // No style given: the genres the single routine uses (its signature nod aside).
       const open = new Set<Genre>();
@@ -464,7 +472,7 @@ export class DuoChoreographer {
 
   /** Whether a partner move suits this song at all: its style, the song's calm, its tempo. */
   private suits(pm: PartnerMove): boolean {
-    return suitsSong(pm, this.open, this.calm) && this.modeOf(pm) !== 'out';
+    return suitsSong(pm, this.open, this.calm, this.gate) && this.modeOf(pm) !== 'out';
   }
 
   /** Whether a partner move may fill this unit: level, song, exact fit, flow, and the genre share. */
@@ -558,7 +566,8 @@ export class DuoChoreographer {
     const all = MOVES.filter(
       (c) =>
         !c.idle && !c.cooldown && c !== m && c.base !== m.base && c.beats === m.beats && c.travel === 0 && !c.fastTurn && difficultyOk(c.difficulty, it) && !(c.jump && it === 'chill') &&
-        !(c.jump && calm !== undefined && calm >= CALM_GENTLE) && c.level === m.level && (!this.open || genreFits(c, this.open)) && (genreOk || !c.genre) && mode(c) !== 'out',
+        !(c.jump && calm !== undefined && calm >= CALM_GENTLE) && c.level === m.level && (!this.open || genreFits(c, this.open)) && (genreOk || !c.genre) && mode(c) !== 'out' &&
+        (!this.gate || toneFits(c, this.gate, false)),
     );
     const want: TempoMode = mainHalf ? 'half' : 'full';
     const same = all.filter((c) => mode(c) === want);
@@ -784,7 +793,10 @@ export function duoFromRoutine(r: Routine, o: DuoOpts): DuoRoutine {
 /** Generate the duo routine for a beat map (wraps generateRoutine). */
 export function generateDuoRoutine(map: BeatMap, intensity: Intensity, opts: Parameters<typeof generateRoutine>[2] = {}, salt = ''): DuoRoutine {
   const r = generateRoutine(map, intensity, opts);
-  return duoFromRoutine(r, { seedKey: `${map.videoId}${salt ? `|${salt}` : ''}`, intensity, style: opts.style, downbeats: map.downbeats });
+  // The downbeats of the grid the routine is danced on: the map's, a tempo feel's own (half / twice the counted
+  // tempo: other beat indices), none on a free-time grid (regular bars).
+  const downbeats = r.times === undefined || r.times === map.beats ? map.downbeats : r.feel && r.feel !== 1 ? feelMap(map, r.feel).downbeats : undefined;
+  return duoFromRoutine(r, { seedKey: `${map.videoId}${salt ? `|${salt}` : ''}`, intensity, style: opts.style, ...(downbeats ? { downbeats } : {}) });
 }
 
 /** P2's mirror-unison instance for a P1 instance (live / idle plans). */
