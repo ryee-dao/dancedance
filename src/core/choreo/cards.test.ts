@@ -59,14 +59,17 @@ describe('no move flashes by: every card lasts a bar and MIN_CARD_SEC (published
           const d = generateDuoRoutine(s.map, lv, { style: s.style, fresh });
           const r = generateRoutine(s.map, lv, { style: s.style, fresh });
           covered(r.instances, r.beats);
-          for (const x of shortCards(r, s.map.beats)) bad.push(`${tag} single ${x}`);
+          // The beat times the instances index into: the routine's own grid when it is danced at half or twice
+          // the counted tempo (tempo feel: TV, SICKO MODE), else the map's beats.
+          const times = r.times ?? s.map.beats;
+          for (const x of shortCards(r, times)) bad.push(`${tag} single ${x}`);
           for (const [a, b] of duoCards(d)) {
             cards++;
-            if (!cardLongEnough(s.map.beats, a, b)) bad.push(`${tag} duo @${a} ${b - a}b`);
+            if (!cardLongEnough(times, a, b)) bad.push(`${tag} duo @${a} ${b - a}b`);
           }
           cards += cardsOf(r.instances).length;
           for (const [who, ins] of [['single', r.instances], ['p1', d.p1], ['p2', d.p2]] as const) {
-            for (const st of transitionSteps(ins, s.map.beats, who === 'single' ? undefined : duoOwner)) {
+            for (const st of transitionSteps(ins, times, who === 'single' ? undefined : duoOwner)) {
               if (st.perBeat > MAX_ROOT_SPEED || st.perSec > MAX_ROOT_SPEED_SEC) fast.push(`${tag} ${who} @${st.from} ${st.perBeat.toFixed(2)}/beat ${st.perSec.toFixed(2)}/s ${st.a.move.id} -> ${st.b.move.id}`);
             }
           }
