@@ -33,7 +33,8 @@ export const moves: Partial<Record<string, string>> = {
     // high: deep, sustained range and control (Hard), no jumps
     lunge-sweep-rise grand-plie developpe-side side-tilt spiral-sink`,
   metal: `horns-to-crowd doom-sway hammer-stomp arms-out-lean-back wall-of-death circle-pit-call`,
-  punk: `shout-along-bounce slam-bump picking-up-change hardcore-windmill cross-skank`,
+  punk: `shout-along-bounce slam-bump picking-up-change hardcore-windmill cross-skank
+    grounded-pogo arm-in-arm-sway`,
   brazil: `samba-de-roda samba-turn forro-basic axe-wave-step descer-rebolando frevo-scissors passinho-tap frevo-squat`,
   amapiano: `log-drum-bounce amapiano-shuffle low-squat-walk air-piano knee-drop-groove`,
 };
