@@ -1572,7 +1572,7 @@ export class StageRenderer2D {
       if (showStrip) strip = { x: w * 0.69, y: h * 0.15, w: w * 0.28, h: Math.min(h * 0.64, hudY - h * 0.15), vertical: true };
     } else {
       scale = Math.min(h * 0.46, w * 0.7);
-      floorY = h * (showStrip ? 0.66 : 0.84);
+      floorY = h * (showStrip ? 0.65 : 0.84); // strip from 0.71: room for a foot stepped toward the viewer
       if (!showStrip) floorY = Math.min(floorY, hudY - scale * FEET_BELOW_FLOOR);
       figX = w * 0.5;
       if (showStrip) strip = { x: w * 0.05, y: h * 0.71, w: w * 0.9, h: Math.max(h * 0.12, Math.min(h * 0.2, hudY - h * 0.71)), vertical: false };
