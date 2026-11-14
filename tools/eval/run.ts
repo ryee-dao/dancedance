@@ -62,6 +62,10 @@
  *   score            pass B is what the app passes (src/ui/coachStage.ts routineInfo):
  *                    the looked-up list with its levels and the artist's genres; per level
  *                    also the borrowed share, the tempo feel and the danced tempo.
+ * Since run-20261116:
+ *   find             also saves the raw search candidates (queries, every merged entry with its
+ *                    strict tier or rejection reason, descriptions cut to 120 chars) in W/candidates.json;
+ *                    --comments-out FILE (outside the repo) takes the comment text, videos.json the count.
  * Round two (seed 20261115, sample drawn with --exclude of both earlier samples) and
  * round one re-scored with the current code: data/run-20261115 (and its round1-rescore/).
  */
@@ -98,8 +102,19 @@ const audioRoot = resolve(arg('audio-dir') ?? join(tmpdir(), 'dancedance-eval-au
 mkdirSync(mapsDir, { recursive: true });
 const pause = () => sleep(3000 + Math.random() * 5000);
 
+/** Raw search candidates per song (since run-20261116): queries and entries, descriptions truncated. */
+interface CandidateRecord {
+  queries: string[];
+  entries: (Omit<SearchEntry, 'description'> & { description: string; tier?: string; rejected?: string })[];
+}
+
 async function find() {
   const videos = readJson<Record<string, VideoPick>>(videosPath, {});
+  const candidatesPath = join(work!, 'candidates.json');
+  const candidates = readJson<Record<string, CandidateRecord>>(candidatesPath, {});
+  // Comment text stays out of the repository: --comments-out <file outside the repo>, videos.json keeps the count.
+  const commentsOut = arg('comments-out');
+  const comments = readJson<Record<string, string[]>>(commentsOut, {});
   for (const s of sample.songs) {
     if (videos[s.key]?.status === 'ok' || videos[s.key]?.status === 'not-found') continue;
     console.error(`find ${s.artist} - ${s.title}`);
@@ -108,8 +123,10 @@ async function find() {
       // (a degraded answer is asked once more), then the plain "Artist Title" search when
       // they rank nothing. A pick from these is strict; only after that are the view floors relaxed.
       const lists: SearchEntry[][] = [];
+      const queries: string[] = [];
       const search = async (q: string) => {
         await pause();
+        queries.push(q);
         let list = parseSearch(await searchVideos(q, {}));
         if (degradedSearch(list)) {
           await pause();
@@ -135,6 +152,21 @@ async function find() {
         ranked = rankCandidates(req, entries.map((e) => ({ ...e, views: Math.max(e.views ?? 0, 10_000_000) }))).ranked;
       }
       const r = ranked[0];
+      {
+        const strictRank = rankCandidates(req, entries);
+        const tierOf = new Map(strictRank.ranked.map((x) => [x.entry.id, x.tier as string]));
+        const whyNot = new Map(strictRank.rejected.map((x) => [x.entry.id, x.reason]));
+        candidates[s.key] = {
+          queries,
+          entries: entries.map((e) => ({
+            ...e,
+            description: e.description.replace(/\s+/g, ' ').trim().slice(0, 120),
+            ...(tierOf.has(e.id) ? { tier: tierOf.get(e.id) } : {}),
+            ...(whyNot.has(e.id) ? { rejected: whyNot.get(e.id) } : {}),
+          })),
+        };
+        writeFileSync(candidatesPath, `${JSON.stringify(candidates, null, 1)}\n`);
+      }
       if (!r) {
         videos[s.key] = { status: 'not-found', message: `${entries.length} search results (3 searches), none matches the song and its length` };
       } else {
@@ -142,13 +174,18 @@ async function find() {
         videos[s.key] = { status: 'ok', id: e.id, title: e.title, channel: e.channel, tier: `${strict ? '' : 'relaxed-'}${fallback ? 'plain-' : ''}${r.tier}`, seconds: e.duration, views: e.views, strictPick: strict, fallbackSearch: fallback };
         if (!process.argv.includes('--no-comments')) {
           await pause();
-          videos[s.key].comments = topComments(e.id);
+          const c = topComments(e.id);
+          if (commentsOut) {
+            comments[s.key] = c;
+            writeFileSync(commentsOut, `${JSON.stringify(comments, null, 1)}\n`);
+            videos[s.key].commentCount = c.length;
+          } else videos[s.key].comments = c;
         }
       }
     } catch (err) {
       videos[s.key] = { status: 'error', message: String((err as Error).message ?? err).slice(0, 300) };
     }
-    console.error(`  ${videos[s.key].status} ${videos[s.key].tier ?? ''} ${videos[s.key].id ?? videos[s.key].message ?? ''} (${videos[s.key].comments?.length ?? 0} comments)`);
+    console.error(`  ${videos[s.key].status} ${videos[s.key].tier ?? ''} ${videos[s.key].id ?? videos[s.key].message ?? ''} (${videos[s.key].commentCount ?? videos[s.key].comments?.length ?? 0} comments)`);
     writeFileSync(videosPath, `${JSON.stringify(videos, null, 2)}\n`);
   }
 }

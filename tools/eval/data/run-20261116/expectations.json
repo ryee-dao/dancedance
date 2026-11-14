@@ -1,0 +1,1805 @@
+{
+ "185717604": {
+  "memory": {
+   "family": "rock",
+   "sub": "soft rock / pop rock",
+   "energy": "mid",
+   "rhythm": "syncopated shuffle-style percussion groove, ~92 BPM"
+  },
+  "consensus": {
+   "family": "rock",
+   "sub": "soft rock (yacht-era pop rock with world-percussion loop)",
+   "energy": "mid",
+   "rhythm": "looped, syncopated percussion groove (Porcaro / Castro), shuffle-tinged; 93 BPM (Karaoke-Version, Mixgraph, university analysis), 92 BPM (Musiciwant); Musicnotes marks half note = 184 in 2/2, i.e. the same tempo",
+   "dance": "A relaxed, mid-energy groove for easy side-steps, sways and light hip and shoulder movement on the beat; no jumps or high intensity, a classic singalong rather than a club or partner-dance track.",
+   "line": "Rock / soft rock, warm nostalgic, syncopated percussion-loop groove, step ~93 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (Africa (Toto song))",
+    "says": "1982 soft rock song by Toto, final track of Toto IV, written by David Paich and Jeff Porcaro; US No. 1 in Feb 1983; later an internet meme.",
+    "url": "https://en.wikipedia.org/wiki/Africa_(Toto_song)"
+   },
+   {
+    "site": "Stereogum (music theory column)",
+    "says": "Opening groove is a percussion loop played by Jeff Porcaro and Lenny Castro; synth hook enters after a four-bar percussion intro.",
+    "url": "https://stereogum.com/2204304/toto-africa-music-theory/columns"
+   },
+   {
+    "site": "Mix magazine (Classic Tracks)",
+    "says": "Percussion integral to the composition; built up as a loop with instruments added one by one.",
+    "url": "https://www.mixonline.com/recording/classic-tracks/classic-tracks-totos-africa-375305"
+   },
+   {
+    "site": "professionalmoron.com (Jeff Porcaro profile)",
+    "says": "Calls Porcaro the half-time shuffle groove master; Africa is where he is most subtle.",
+    "url": "https://professionalmoron.com/2020/03/23/jeff-porcaro/"
+   },
+   {
+    "site": "Karaoke-Version",
+    "says": "Backing track at the original tempo, 93 BPM, C sharp minor.",
+    "url": "https://www.karaoke-version.com/mp3-backingtrack/toto/africa.html"
+   },
+   {
+    "site": "Mixgraph / Musiciwant / songbpm",
+    "says": "93 BPM C sharp minor (Mixgraph); 92 BPM, andante (Musiciwant).",
+    "url": "https://www.mixgraph.io/tracks/toto-africa"
+   },
+   {
+    "site": "Musicnotes sheet music",
+    "says": "Marked 'moderately', half note = 184 (2/2), equivalent to ~92 BPM.",
+    "url": "https://apps.musicnotes.com/sheetmusic/toto/africa/MN0176971"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "Nostalgic, emotional memories (parents, Kenya sunsets), 'such a classic', continent jokes; no dance talk."
+   }
+  ],
+  "disagreement": "Some BPM listings at 100-105 refer to the Sabaton cover, not this recording.",
+  "known": true,
+  "audio": {
+   "character": "mid",
+   "danceBpm": [
+    91,
+    94
+   ],
+   "bpmSource": "Karaoke-Version 93, Mixgraph 93, Stuttgart university analysis 93, Musiciwant 92, Musicnotes half note = 184 in 2/2",
+   "pulse": "clear",
+   "feels": [
+    "syncopated"
+   ],
+   "note": "Felt at a moderate ~93 BPM: steady, unhurried percussion groove with a shuffle tinge; neither slow ballad nor fast. Notation at 184 is just cut-time spelling of the same tempo."
+  }
+ },
+ "189259142": {
+  "memory": {
+   "family": "R&B/soul",
+   "sub": "R&B ballad / hip-hop soul",
+   "energy": "calm",
+   "rhythm": "slow half-time backbeat"
+  },
+  "consensus": {
+   "family": "R&B/soul",
+   "sub": "contemporary R&B ballad (slow-burning, bluesy, 'live funk beat'; Organized Noize production)",
+   "energy": "calm",
+   "rhythm": "slow steady R&B backbeat around 78 BPM (Karaoke-Version 78, chordu 78.2, DJ library 78 / Traktor 78.3; Mixmeister 156.6 double)",
+   "dance": "Slow, close R&B steps: a two-step sway or slow-dance/partner sway with body rolls; low intensity, no jumps.",
+   "line": "R&B/soul / contemporary R&B ballad, yearning and dramatic, slow funk-tinged backbeat, step ~78 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (Don't Let Go (Love))",
+    "says": "Genre R&B; 1996 single from Set It Off soundtrack / EV3; described as slow-burning, yearning R&B ballad with a 'live funk beat'; 4:52 album version.",
+    "url": "https://en.wikipedia.org/wiki/Don%27t_Let_Go_(Love)"
+   },
+   {
+    "site": "Karaoke-Version",
+    "says": "Tempo variable around 78 BPM, key F; genres R&B, film soundtracks.",
+    "url": "https://www.karaoke-version.com/karaoke/en-vogue/don-t-let-go-love.html"
+   },
+   {
+    "site": "chordu",
+    "says": "Tempo 78.2 bpm.",
+    "url": "https://chordu.com/chords-tabs-en-vogue-don-t-let-go-love-version-2-id_Uyu7Oq7qApo"
+   },
+   {
+    "site": "DJ library listing (cs.ubc.ca music DB)",
+    "says": "Published BPM 78; Traktor 78.3; Mixmeister 156.6 (double).",
+    "url": "https://www.cs.ubc.ca/~davet/music/track/POBO1996_003/POBO1996_003-07.html"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "Nostalgic love for a classic R&B song, 'always gonna be vibe'; lyric quotes about wanting more than friends."
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "soft",
+   "danceBpm": [
+    76,
+    80
+   ],
+   "altBpm": [
+    154,
+    158
+   ],
+   "bpmSource": "Karaoke-Version 78; chordu 78.2; DJ library 78 / Traktor 78.3; Mixmeister 156.6",
+   "pulse": "clear",
+   "note": "Felt SLOW: a ballad on a steady backbeat around 78 BPM; the 156 reading is a double-count detection. Album length 4:52 matches durationSec 292; the picked lyric video is 296 s."
+  }
+ },
+ "211280601": {
+  "memory": {
+   "family": "Latin (bachata)",
+   "sub": "bachata / romantic bachata",
+   "energy": "mid",
+   "rhythm": "bachata 4-beat with tap, ~125 BPM"
+  },
+  "consensus": {
+   "family": "Latin (bachata)",
+   "sub": "bachata (urban/romantic bachata, with pop / R&B influences on the album)",
+   "energy": "mid",
+   "rhythm": "bachata 4/4 groove, 125 BPM (SongBPM, Mixgraph)",
+   "dance": "A natural fit for partner bachata: the basic side-to-side three steps plus tap at a moderate, steady pace, romantic and close-hold, no jumps.",
+   "line": "Latin / bachata, romantic and heartbroken, bachata 4/4, step ~125 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (We Broke the Rules)",
+    "says": "Aventura's 2002 second album: bachata with pop, hip-hop and R&B influences; 'Enséñame a Olvidar' is track 8 (~5:52), written by Anthony 'Romeo' Santos.",
+    "url": "https://en.wikipedia.org/wiki/We_Broke_the_Rules"
+   },
+   {
+    "site": "Spanish Wikipedia (via es-academic)",
+    "says": "Single from the album; describes it as an Aventura bachata single.",
+    "url": "https://es-academic.com/dic.nsf/eswiki/432982"
+   },
+   {
+    "site": "SongBPM / Mixgraph (Spotify-derived, counted once)",
+    "says": "125 BPM, A-flat major, 5:49, 4/4; 'very danceable', average energy.",
+    "url": "https://songbpm.com/@aventura/ensename-a-olvidar"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "Nostalgic love for Romeo and Aventura; 'never goes out of style'; dancing emoji."
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "mid",
+   "danceBpm": [
+    123,
+    127
+   ],
+   "bpmSource": "SongBPM 125 (half 63 / double 250); Mixgraph 125.",
+   "pulse": "clear",
+   "note": "Felt at a moderate bachata pace (~125, stepped on every beat). Duration 5:49 matches the album version; a separate live version exists and was not counted."
+  }
+ },
+ "300735237": {
+  "consensus": {
+   "family": "punk",
+   "sub": "punk (artist-level only)",
+   "energy": "driving",
+   "rhythm": "",
+   "dance": "If it is the fast punk the band is described as, it suits high-energy bouncing, pogo jumps and loose moshing; this is inferred from the artist's genre only.",
+   "line": "Punk / punk, energetic, rhythm unknown, step BPM unknown"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Last.fm artist wiki (Noggin Toboggan)",
+    "says": "User-written bio: punk band formed summer 1996; second album 'Snapcase' released March 1999 on Bettie Rocket Records; bio partly joking.",
+    "url": "https://last.fm/music/Noggin+Toboggan/+wiki"
+   },
+   {
+    "site": "Web search note",
+    "says": "Not to be confused with the hardcore band Snapcase; AllMusic/Last.fm list this album under the name Snapcase, a likely catalogue mix-up.",
+    "url": ""
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "No comments returned (auto-generated Topic channel)."
+   }
+  ],
+  "disagreement": "The album title 'Snapcase' collides with the hardcore band Snapcase; sources about that band are not counted.",
+  "known": true,
+  "audio": {
+   "note": "No BPM or track-level description found. Only artist-level punk label; 1:55 length is consistent with fast punk but not confirmed. danceBpm omitted."
+  }
+ },
+ "588338026": {
+  "memory": {
+   "family": "pop",
+   "sub": "French pop / chanson",
+   "energy": "calm",
+   "rhythm": "gentle acoustic, light beat"
+  },
+  "consensus": {
+   "family": "pop",
+   "sub": "French chanson / French pop concept album ('disque scénarisé', musical-comedy-like)",
+   "energy": "",
+   "rhythm": "",
+   "dance": "Song-level details not found; as a theatrical, humorous French chanson duet from a concept album, it suits gentle, expressive swaying or light character-style movement rather than high-energy dancing.",
+   "line": "Pop / French chanson concept-album duet, wry and tender, rhythm unknown, step unknown"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (Olivier Libaux, EN/FR)",
+    "says": "Imbécile (2007, Discograph): 'scripted' concept album of four characters at a dinner, voiced by Katerine, Noguerra, JP Nataf, Barbara Carlotti; Libaux called it a farewell to English pop.",
+    "url": "https://wikiwand.com/en/Olivier_Libaux"
+   },
+   {
+    "site": "Magazine Chanson française (Paperblog)",
+    "says": "Concept album in French chanson tradition (Brassens, Barbara), humour and derision, tender and comic, hints of musical comedy; 'Ils sont marrants les gens' is track 4.",
+    "url": "https://www.paperblog.fr/75410/imbecile/"
+   },
+   {
+    "site": "2007 review cited in search (via franco.wiki)",
+    "says": "Nataf plays René, Carlotti plays Thérèse; produced with Stéphane 'Alf' Briat (Air, Phoenix).",
+    "url": "https://franco.wiki/fr/Olivier_Libaux.html"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "One fond comment: glad to re-listen to this record."
+   }
+  ],
+  "disagreement": "No source describes this specific track's tempo or energy; memory guess 'calm' is unconfirmed.",
+  "known": true,
+  "audio": {
+   "note": "No song-level tempo or energy source found; character, pulse and danceBpm omitted. Album context suggests gentle chanson-pop, but unverified."
+  }
+ },
+ "709034581": {
+  "consensus": {
+   "family": "",
+   "sub": "",
+   "energy": "",
+   "rhythm": "",
+   "dance": "",
+   "line": ""
+  },
+  "evidence": "none",
+  "sources": [
+   {
+    "site": "Web search (artist + title + album)",
+    "says": "No page found for Andy Cornflower, 'Multigame' or 'My First Dream'; results were unrelated games and other musicians named Andy.",
+    "url": ""
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "No comments returned (uploaded by a Russian-language music channel)."
+   }
+  ],
+  "known": false,
+  "audio": {
+   "note": "No source found for genre or tempo; nothing beyond the store tag Alternative. All audio fields omitted."
+  }
+ },
+ "724635463": {
+  "memory": {
+   "family": "country",
+   "sub": "country-pop duet",
+   "energy": "mid",
+   "rhythm": "mid-tempo country beat"
+  },
+  "consensus": {
+   "family": "country",
+   "sub": "country-pop duet (cover of Sonny & Cher's 1971 pop song; No. 1 Hot Country Songs 1979)",
+   "energy": "mid",
+   "rhythm": "steady mid-tempo country beat, 'train' rhythm per listeners; ~89-93 BPM (Karaoke-Version 89.38, AcousticBrainz 93, songbpm 185 with half-time 93)",
+   "dance": "Easy beginner country line dance or partner two-step: walks, shuffles, jazz box and coaster steps (two beginner 32-count line dances are set to it); moderate energy, no jumps.",
+   "line": "Country / country-pop duet, warm and upbeat, steady train-like country beat, step ~91 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (All I Ever Need Is You (song))",
+    "says": "Rogers & West 1979 version hit No. 1 Hot Country Songs, No. 38 AC; on Classics (1979); original Sonny & Cher 1971 pop.",
+    "url": "https://en.wikipedia.org/wiki/All_I_Ever_Need_Is_You_(song)"
+   },
+   {
+    "site": "Karaoke-Version",
+    "says": "89.38 BPM, key A as the original; genres Pop, Country.",
+    "url": "https://www.karaoke-version.com/karaoke/dottie-west/all-i-ever-need-is-you.html"
+   },
+   {
+    "site": "AcousticBrainz",
+    "says": "Estimated tempo about 93 for the Rogers/West track (search snippet).",
+    "url": "https://acousticbrainz.org/655cc8b2-8a67-489a-91e7-bce46cd60699"
+   },
+   {
+    "site": "songbpm",
+    "says": "185 BPM, half-time 93; key A major; 3:10.",
+    "url": "https://songbpm.com/@kenny-rogers/all-i-ever-need-is-you"
+   },
+   {
+    "site": "linedance.com / BootStepper / linedancerweb",
+    "says": "Beginner 32-count line dances (Roger Neff 2018; Yvonne Krause-Schenck 2013) with shuffles, jazz box, triple steps, coasters.",
+    "url": "https://linedance.com/dance/137313/all-i-ever-need-is-you"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "Tributes to both singers; 'sound of a train as its rhythm', 'makes me perk up'; compared to Islands in the Stream."
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "mid",
+   "danceBpm": [
+    88,
+    94
+   ],
+   "altBpm": [
+    183,
+    187
+   ],
+   "bpmSource": "Karaoke-Version 89.38; AcousticBrainz ~93; songbpm 185 (half 93)",
+   "pulse": "clear",
+   "note": "Felt at a moderate ~90 BPM walking/shuffle pace (line dances use shuffles); songbpm's 185 is the double count. This compilation track is 3:06, matching the original 1979 recording length."
+  }
+ },
+ "828341367": {
+  "memory": {
+   "family": "R&B/soul",
+   "sub": "quiet storm / contemporary R&B",
+   "energy": "mid",
+   "rhythm": "smooth mid-tempo groove ~100 BPM"
+  },
+  "consensus": {
+   "family": "R&B/soul",
+   "sub": "synth-soul / 80s contemporary R&B (soul, synth-pop)",
+   "energy": "mid",
+   "rhythm": "smooth mid-tempo groove, 98 BPM (SongBPM, Tunebat)",
+   "dance": "Smooth old-school R&B groove for a relaxed two-step, side-to-side sway and couple dancing at gentle-moderate energy; no jumps.",
+   "line": "R&B/soul / glossy 80s synth-soul, warm and romantic, smooth mid-tempo groove, step ~98 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (Happy, Surface song)",
+    "says": "Genres soul and synth-pop; Feb 1987, 3:57; #2 Billboard R&B, #20 Hot 100; cover of Hi-Tension's 'You Make Me Happy'.",
+    "url": "https://en.wikipedia.org/wiki/Happy_(Surface_song)"
+   },
+   {
+    "site": "Stereogum (quoted on Wikipedia)",
+    "says": "Calls it a 'glossy synth-soul single'.",
+    "url": "https://en.wikipedia.org/wiki/Happy_(Surface_song)"
+   },
+   {
+    "site": "SongBPM / Tunebat (Spotify-derived, counted once)",
+    "says": "98 BPM, C major, 3:57; Tunebat lists the Extended Version on Surface (Expanded Edition) at 98 BPM too.",
+    "url": "https://songbpm.com/@surface/happy"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "Old-school R&B nostalgia; 'still smooth and cool'; memories of riding around jamming to it."
+   }
+  ],
+  "disagreement": "Store says 1986; Wikipedia gives a February 1987 single release (album 1986).",
+  "known": true,
+  "audio": {
+   "character": "soft",
+   "danceBpm": [
+    96,
+    100
+   ],
+   "bpmSource": "SongBPM 98 (double 196); Tunebat 98 (Extended Version).",
+   "pulse": "clear",
+   "note": "Felt at a smooth, moderate ~98; gentle and polished rather than hard-hitting. 240 s track is close to the 3:57 listing."
+  }
+ },
+ "961995056": {
+  "consensus": {
+   "family": "",
+   "sub": "",
+   "energy": "",
+   "rhythm": "",
+   "dance": "",
+   "line": ""
+  },
+  "evidence": "none",
+  "sources": [
+   {
+    "site": "Web search (artist, album, title)",
+    "says": "No page found for Kaffikannski, '7 Minutes from Dawn' or this track; hits were coffee products and an unrelated band (Gentilesky).",
+    "url": ""
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "No comments available."
+   }
+  ],
+  "known": false,
+  "audio": {
+   "note": "Nothing beyond the store listing (Electronic tag, which does not count); no style, energy or tempo can be supported."
+  }
+ },
+ "1045696596": {
+  "consensus": {
+   "family": "metal",
+   "sub": "Christian metalcore / hardcore ('spirit-filled hardcore'), screams with clean emo-style choruses",
+   "energy": "driving",
+   "rhythm": "chugging distorted riffs, heavy rhythms; no BPM found",
+   "dance": "High-intensity mosh-style movement: headbanging, stomps, jumps and two-step on the heavy parts; not a partner dance.",
+   "line": "Metal / Christian metalcore-hardcore, aggressive with clean choruses, heavy chugging riffs, step BPM not sourced"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Jesus Freak Hideout review",
+    "says": "'Spirit-filled hardcore': crunchy 'chugga-chugga' guitars, screams/growls plus clean emo choruses; track 5 'Preaching to the Choir' (3:09) targets church fakers.",
+    "url": "https://www.jesusfreakhideout.com/cdreviews/HeavyWorship.asp"
+   },
+   {
+    "site": "Eternal Terror review",
+    "says": "Metal and hardcore akin to As I Lay Dying / Emmure, furious vocals; 'Preaching to the Choir' has clean harmony choruses.",
+    "url": "https://eternal-terror.com/2011/09/13/the-great-commission-heavy-worship/"
+   },
+   {
+    "site": "Wikipedia / Spirit of Metal / Lambgoat",
+    "says": "Christian metalcore band from Riverside, CA; Heavy Worship (2011, Ain't No Grave) their second album.",
+    "url": "https://www.wikipedia.org/wiki/The_Great_Commission_(band)"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "No comments available."
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "driving",
+   "pulse": "clear",
+   "feels": [
+    "heavy-distortion"
+   ],
+   "note": "Heavy, aggressive metalcore with clean choruses; reviews give no tempo and no BPM site found, so danceBpm omitted. Duration 3:09 matches the reviewed album track."
+  }
+ },
+ "1101462014": {
+  "consensus": {
+   "family": "jazz",
+   "sub": "contemporary / chamber jazz piano trio, ECM-influenced European-style jazz",
+   "energy": "mid",
+   "rhythm": "acoustic piano-bass-drums trio, group interplay; album ranges from relaxed to frenetic tempos; no BPM found for this track",
+   "dance": "Not dance music: suited to free, contemplative interpretive or contemporary movement rather than set steps; low-to-moderate intensity, no jumps.",
+   "line": "Jazz / chamber jazz piano trio, bright lyrical and contemplative, acoustic trio interplay, step BPM unknown"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "All About Jazz (Mark Sullivan review)",
+    "says": "Album is bright, lyrical and impressionistic, like extroverted ECM artists; group sound, no drum solos; track not discussed individually.",
+    "url": "https://www.allaboutjazz.com/inerrant-space-refraction-rare-colour-records-review-by-mark-sullivan"
+   },
+   {
+    "site": "Bandcamp (triorefraction)",
+    "says": "Australian piano trio (Broomhead, Foster, Tarento), Rare Colour 2016; tags european jazz, modern jazz, chamber jazz, ambient; Never Since 6:00.",
+    "url": "https://triorefraction.bandcamp.com/album/inerrant-space"
+   },
+   {
+    "site": "australianjazz.net interview",
+    "says": "Music moves between serenity and urgency, relaxed tempos to frenetic pieces; chamber / ECM aesthetic, 'contemplative adventure journey'.",
+    "url": "https://australianjazz.net/2016/08/chris-broomhead-refraction/"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "No comments returned (uploaded by the band's drummer's channel)."
+   }
+  ],
+  "known": true,
+  "audio": {
+   "pulse": "weak",
+   "feels": [
+    "acoustic"
+   ],
+   "note": "Album-level sources only; nothing on 'Never Since' specifically, so character and danceBpm omitted. Acoustic piano trio; pulse marked weak as chamber/ECM-style jazz is described as loose and impressionistic, but the track could be steadier. Video is 370 s vs 361 s listing, likely padding."
+  }
+ },
+ "1110492456": {
+  "consensus": {
+   "family": "",
+   "sub": "",
+   "energy": "",
+   "rhythm": "",
+   "dance": "",
+   "line": ""
+  },
+  "evidence": "none",
+  "sources": [
+   {
+    "site": "Web search (artist + title + EP)",
+    "says": "No page found for Withinroots, 'All Night' or the 'Two Years Back' EP; only unrelated similarly named acts.",
+    "url": ""
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "No comments returned (auto-generated Topic channel)."
+   }
+  ],
+  "known": false,
+  "audio": {
+   "note": "No source found for genre or tempo; nothing beyond the store tag R&B/Soul. All audio fields omitted."
+  }
+ },
+ "1203777162": {
+  "memory": {
+   "family": "R&B/soul",
+   "sub": "funk / soul pop",
+   "energy": "mid",
+   "rhythm": "funky mid-tempo groove"
+  },
+  "consensus": {
+   "family": "R&B/soul",
+   "sub": "British soul / funky soul-pop with spoken-word interludes and strings",
+   "energy": "mid",
+   "rhythm": "funky mid-tempo groove, 108 BPM (SongBPM)",
+   "dance": "Mid-tempo funky soul groove suited to grooving, side-steps, hip and shoulder moves and casual 70s-style dancing at moderate energy; no need for jumps.",
+   "line": "R&B/soul / British funky soul, tense and storytelling, funky mid-tempo groove, step ~108 BPM"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Wikipedia (Brother Louie, Hot Chocolate song)",
+    "says": "1973 RAK single by British soul band Hot Chocolate; spoken parts by Alexis Korner, strings by Phil Dennys; single 4:23. Infobox genres (funk, disco, blue-eyed soul) are for the Stories cover.",
+    "url": "https://en.wikipedia.org/wiki/Brother_Louie_(Hot_Chocolate_song)"
+   },
+   {
+    "site": "Classic Song of the Day",
+    "says": "Calls Hot Chocolate a British soul band; Stories cover similar-sounding but without spoken bits.",
+    "url": "https://classicsongoftheday.com/brother-louie-hot-chocolate-stories/"
+   },
+   {
+    "site": "Songfacts",
+    "says": "Spoken interludes by blues musician Alexis Korner; no genre wording.",
+    "url": "https://www.songfacts.com/facts/hot-chocolate/brother-louie"
+   },
+   {
+    "site": "SongBPM",
+    "says": "108 BPM, A minor, 4:59 (matches this recording's length).",
+    "url": "https://songbpm.com/@hot-chocolate/brother-louie"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "'Very funky'; praise for crisp 70s drums (Cozy Powell); comparisons with the Stories cover."
+   }
+  ],
+  "disagreement": "Genre labels found are artist-level ('British soul band'); the funk/disco tags on Wikipedia belong to the Stories cover. This 4:59 track is longer than the 4:23 single.",
+  "known": true,
+  "audio": {
+   "character": "mid",
+   "danceBpm": [
+    106,
+    110
+   ],
+   "bpmSource": "SongBPM 108 (half 54 / double 216), entry length 4:59 matches.",
+   "pulse": "clear",
+   "note": "Felt at a moderate funky pace (~108). Long 4:59 version with spoken-word interludes (may briefly break the groove)."
+  }
+ },
+ "1411648267": {
+  "memory": {
+   "family": "jazz",
+   "sub": "traditional pop / Great American Songbook standard, country-tinged",
+   "energy": "calm",
+   "rhythm": "gentle light swing, slow-to-mid tempo"
+  },
+  "consensus": {
+   "family": "jazz",
+   "sub": "traditional pop / Great American Songbook vocal standard (Sinatra tribute), with country steel-guitar accents",
+   "energy": "calm",
+   "rhythm": "gentle, easy standard arrangement; 84 BPM (songbpm, AcousticBrainz), songbpm notes a 168 double-time reading",
+   "dance": "Suits a slow, gentle sway or an easy foxtrot-style box step with a partner; low energy, no jumps, smooth walking steps.",
+   "line": "Jazz / traditional pop standard (country-tinged), warm and wistful, easy gentle beat, step ~84 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (My Way, Willie Nelson album)",
+    "says": "2018 Legacy Recordings album of Frank Sinatra-associated standards.",
+    "url": "https://en.wikipedia.com/wiki/My_Way_(Willie_Nelson_album)"
+   },
+   {
+    "site": "AllMusic review (via search summary)",
+    "says": "Balances Great American Songbook standards such as 'Young at Heart' with songs written with Sinatra in mind.",
+    "url": ""
+   },
+   {
+    "site": "Daily Herald / Country Standard Time / Rolling Stone reviews",
+    "says": "Understated standards set; 'Great American Songbook Willie rather than country Willie'; experience lends grace to 'Young at Heart'.",
+    "url": "https://countrystandardtime.com/d/cdreview.asp?xid=6756"
+   },
+   {
+    "site": "Jazz Music Archives",
+    "says": "Lists My Way in its jazz catalogue.",
+    "url": "https://jazzmusicarchives.com/album/willie-nelson/my-way"
+   },
+   {
+    "site": "AcousticBrainz",
+    "says": "My Way track 10, 2:46, 84 BPM, G major; models lean jazz / folk-country; 'not danceable' classifier.",
+    "url": "https://acousticbrainz.org/4c4f7fb7-a232-4c27-b0f2-258bd433a089"
+   },
+   {
+    "site": "songbpm",
+    "says": "84 BPM (double-time 168), G major, 2:45.",
+    "url": "https://songbpm.com/@willie-nelson/young-at-heart"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "Warm praise; 'countrified (steel guitar accents)' take, sung 'so pleasantly'; Toy Story / Sesame Street vibes."
+   }
+  ],
+  "disagreement": "Store tag Jazz; listeners hear it as country-tinged (steel guitar). Reviewers call it songbook/traditional pop rather than country.",
+  "known": true,
+  "audio": {
+   "character": "soft",
+   "danceBpm": [
+    82,
+    86
+   ],
+   "bpmSource": "songbpm 84 (lists 168 as double-time), AcousticBrainz 84",
+   "pulse": "clear",
+   "note": "Felt slow-to-moderate at ~84: a gentle, easygoing standard sung softly. 168 is the double count of the same tempo, not a likely step rate for this mellow arrangement. Swing feel not confirmed by a source, so not listed."
+  }
+ },
+ "1440813515": {
+  "memory": {
+   "family": "pop",
+   "sub": "new wave / synth-pop",
+   "energy": "mid",
+   "rhythm": "12/8 shuffle, ~112 BPM"
+  },
+  "consensus": {
+   "family": "pop",
+   "sub": "new wave, synth-pop",
+   "energy": "mid",
+   "rhythm": "12/8 shuffle ('driving shuffle', 'jolly rather than square'); ~112 BPM (Wikipedia 112; Karaoke-Version 112.08; key DBs 111-112; DJ analyses 111.7/112.1). Melodics 168 and Hooktheory 240 are other counting conventions.",
+   "dance": "Relaxed mid-tempo social dancing: a bouncy shuffle step or sway on the ~112 pulse with a light swing lilt; easygoing rather than high intensity, no jumps needed.",
+   "line": "Pop / new wave synth-pop, wistful-but-upbeat, 12/8 shuffle, step ~112 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia",
+    "says": "New wave / synth-pop; 12/8, 112 BPM, D major; band credits a 'driving shuffle' inspired by Simple Minds' 'Waterfront'.",
+    "url": "https://en.wikipedia.org/wiki/Everybody_Wants_to_Rule_the_World"
+   },
+   {
+    "site": "Karaoke-Version",
+    "says": "Backing track at the original tempo, 112.08 BPM.",
+    "url": "https://www.karaoke-version.com/mp3-backingtrack/tears-for-fears/everybody-wants-to-rule-the-world.html"
+   },
+   {
+    "site": "AudioKeychain",
+    "says": "112 BPM, key Gm/6A (key differs from other sources; tempo agrees).",
+    "url": "https://www.audiokeychain.com/track/tvG/tears-for-fears-everybody-wants-to-rule-the-world"
+   },
+   {
+    "site": "Melodics / MusicRadar",
+    "says": "Drum lesson in 12/8 (listed 168 BPM, counting a different subdivision); described as a bouncy 12/8 shuffle.",
+    "url": "https://melodics.com/learn-to-play/everybody-wants-to-rule-the-world-by-tears-for-fears-on-drums"
+   },
+   {
+    "site": "Rebel Music Teacher blog",
+    "says": "Notes a cross-rhythm in the intro before the 12/8 groove settles.",
+    "url": "https://rebelmusicteacher.squarespace.com/blog/2017/1/9/cross-rhyhthm-in-tears-for-fearss-everybody-wants-to-rule-the-world"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "'Timeless masterpiece', 80s nostalgia, multigenerational favourite."
+   }
+  ],
+  "disagreement": "Tempo listings vary by counting: 112 (dotted-quarter beat) vs Melodics 168 and Hooktheory 240 (4/4 double reading). Keys listed as D vs Gm across DBs.",
+  "known": true,
+  "audio": {
+   "character": "mid",
+   "danceBpm": [
+    110,
+    114
+   ],
+   "bpmSource": "Wikipedia 112; Karaoke-Version 112.08; AudioKeychain 112; DJ analyses 111.7 / 112.1; Melodics 168 (12/8 different count); Hooktheory 240 (4/4 double-time reading).",
+   "pulse": "clear",
+   "feels": [
+    "swing"
+   ],
+   "note": "Felt at a moderate ~112 shuffle pulse: neither slow nor fast. Intro has a brief cross-rhythm before the 12/8 shuffle locks in."
+  }
+ },
+ "1440843361": {
+  "memory": {
+   "family": "rock",
+   "sub": "blues rock / soft rock",
+   "energy": "mid",
+   "rhythm": "laid-back mid-tempo groove"
+  },
+  "consensus": {
+   "family": "rock",
+   "sub": "blues rock / pop rock (smooth, Van Morrison-like per Record World)",
+   "energy": "mid",
+   "rhythm": "laid-back, smooth 4/4 groove ~82-83 BPM (Musicnotes 82, Klang 83, Mixmeister 83.2; Traktor 166 = double)",
+   "dance": "Easygoing, relaxed rock groove suited to casual swaying, side steps and light two-step moves at a slow-moderate pace; no jumps or high-intensity moves.",
+   "line": "Rock / blues-pop rock, mellow and playful, laid-back 4/4 groove, step ~83 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (The Joker, song)",
+    "says": "Genre rock; album version 4:26, single version 3:36; Record World called it 'a smooth piece' reminiscent of Van Morrison.",
+    "url": "https://en.wikipedia.org/wiki/The_Joker_(Steve_Miller_Band_song)"
+   },
+   {
+    "site": "Wikipedia (The Joker, album)",
+    "says": "1973 album listed as blues rock.",
+    "url": "https://en.wikipedia.org/wiki/The_Joker_(album)"
+   },
+   {
+    "site": "AllMusic",
+    "says": "Album filed under Pop/Rock.",
+    "url": "https://www.allmusic.com/search/all/the+joker"
+   },
+   {
+    "site": "Musicnotes",
+    "says": "Sheet music tempo 82 BPM, 4/4.",
+    "url": "https://www.musicnotes.com/sheetmusic/steve-miller-band/the-joker/MN0068564"
+   },
+   {
+    "site": "Klang.io",
+    "says": "83 BPM.",
+    "url": "https://songs.klang.io/en/s/Steve%20Miller%20Band/The%20Joker/dV3AziKTBUo"
+   },
+   {
+    "site": "UBC/Waterloo track database (Mixmeister/Traktor)",
+    "says": "Greatest Hits track: Mixmeister 83.2 BPM; Traktor ~166 (double).",
+    "url": "https://www.cs.ubc.ca/~davet/music/track/STVEMILR_GH2/STVEMILR_GH2-08.html"
+   },
+   {
+    "site": "Karaoke-Version",
+    "says": "Variable tempo around 82 BPM.",
+    "url": "https://www.karaoke-version.com/karaoke/steve-miller-band/the-joker.html"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "'Space cowboy' nostalgia; porch-and-music relaxed vibe; one calls it 90s 'soft-alternative' style."
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "soft",
+   "danceBpm": [
+    80,
+    85
+   ],
+   "altBpm": [
+    164,
+    168
+   ],
+   "bpmSource": "Musicnotes 82; Klang.io 83; Mixmeister 83.2 (Traktor 166); Karaoke-Version ~82; piano sites 80-82.",
+   "pulse": "clear",
+   "note": "Felt SLOW-to-moderate and laid-back at ~83; the 166 reading is a detector double. durationSec 218 matches the 3:36 single edit used on Greatest Hits 1974-78."
+  }
+ },
+ "1442442750": {
+  "memory": {
+   "family": "hip-hop",
+   "sub": "lo-fi hip hop",
+   "energy": "calm",
+   "rhythm": "laid-back boom-bap, ~80 BPM"
+  },
+  "consensus": {
+   "family": "hip-hop",
+   "sub": "lo-fi hip hop / jazzy chillhop beat (instrumental, piano-led)",
+   "energy": "calm",
+   "rhythm": "laid-back lo-fi beat; 86 BPM (songbpm, double 172)",
+   "dance": "Very relaxed grooving: slow head-nod bounce, sways and easy step-touches; low intensity, no jumps.",
+   "line": "Hip-hop / lo-fi hip hop, calm and dreamy, laid-back lo-fi beat, step ~86 BPM"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "songbpm",
+    "says": "86 BPM (double 172), F#/Gb minor, 2:50.",
+    "url": "https://songbpm.com/@burbank/cherry-lips"
+   },
+   {
+    "site": "Last.fm (cherry lips)",
+    "says": "On album 'beside'; tags only usa/american; similar artists potsu, elijah who, Kudasaibeats (lofi beatmakers).",
+    "url": "https://www.last.fm/music/burbank/_/cherry+lips"
+   },
+   {
+    "site": "dropspot.news (search snippet, artist profile)",
+    "says": "Burbank is a young producer with buttery, jazz-infused, atmospheric lofi tracks (artist-level).",
+    "url": "https://dropspot.news/?p=2280"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "'Calm', 'so calming', 'relaxed and peaceful'; piano recalls J. Cole 'Friends', 'nice lofi hommage'."
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "soft",
+   "danceBpm": [
+    84,
+    88
+   ],
+   "bpmSource": "songbpm 86 (double 172)",
+   "pulse": "clear",
+   "note": "Felt SLOW and relaxed: lofi beat around 86 BPM. Genre is artist-level and from comments only; no song-level review."
+  }
+ },
+ "1443134345": {
+  "memory": {
+   "family": "hip-hop",
+   "sub": "hip-house / new jack swing",
+   "energy": "driving",
+   "rhythm": "four-on-the-floor house beat ~120 BPM"
+  },
+  "consensus": {
+   "family": "hip-hop",
+   "sub": "hip house / new jack swing (Teddy Riley-produced cover of the Gamble & Huff / Third World song)",
+   "energy": "driving",
+   "rhythm": "uptempo house-style dance beat; 120 BPM (songbpm), 119.92 BPM 'same as original' (Karaoke-Version); a Power Trakks catalogue lists 149.5",
+   "dance": "An upbeat party track for energetic house / new jack swing steps (running man, bounces, side-steps); high energy, small jumps and bouncy footwork fit.",
+   "line": "Hip-hop / hip house-new jack swing, joyful party, four-on-the-floor dance beat, step ~120 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (Now That We Found Love)",
+    "says": "Heavy D & the Boyz 1991 version, genre hip house / new jack swing, produced by Teddy Riley, Aaron Hall sings the chorus; cover of a Gamble & Huff song.",
+    "url": "https://en.wikipedia.org/wiki/Now_That_We_Found_Love"
+   },
+   {
+    "site": "twostepcub blog (song of the day)",
+    "says": "Calls it their biggest pop hit, peaking at No. 11; framed as new jack / house cover.",
+    "url": "https://twostepcub.blogspot.com/2017/12/songoftheday-12117-one-two-tell-me-what.html"
+   },
+   {
+    "site": "Karaoke-Version",
+    "says": "119.92 BPM, same as original tempo, C minor; genres Dance, Hip-Hop, R&B, Rap.",
+    "url": "https://www.karaoke-version.com/karaoke/aaron-hall/now-that-we-found-love.html"
+   },
+   {
+    "site": "songbpm",
+    "says": "120 BPM, 4:18.",
+    "url": "https://songbpm.com/@heavy-d-the-boyz/now-that-we-found-love"
+   },
+   {
+    "site": "Power Trakks catalogue (cs.ubc.ca)",
+    "says": "Lists 149.5 BPM, 4:17.",
+    "url": "https://www.cs.ubc.ca/~davet/music/track/POWERTRK_021/POWERTRK_021-14.html"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "No comments returned."
+   }
+  ],
+  "disagreement": "Power Trakks gives 149.5 BPM versus 120 from songbpm and Karaoke-Version; the 120 readings agree with each other and the hip-house style, so 149.5 is treated as an outlier or a different mix. Key differs (A flat major vs C minor) between sources.",
+  "known": true,
+  "audio": {
+   "character": "driving",
+   "danceBpm": [
+    118,
+    122
+   ],
+   "bpmSource": "songbpm 120, Karaoke-Version 119.92; Power Trakks 149.5 (outlier)",
+   "pulse": "clear",
+   "feels": [
+    "four-on-the-floor"
+   ],
+   "note": "Felt fast and bouncy at ~120, the standard hip-house tempo. Four-on-the-floor inferred from the hip-house genre label in Wikipedia and Karaoke-Version's Dance tag, not from a direct description of the drums."
+  }
+ },
+ "1473487611": {
+  "memory": {
+   "family": "Afrobeats",
+   "sub": "afrobeats / afro-dancehall",
+   "energy": "mid",
+   "rhythm": "syncopated afro-dancehall groove, around 100 BPM"
+  },
+  "consensus": {
+   "family": "reggae/dancehall",
+   "sub": "dancehall, Afropop (Major Lazer dancehall production, reggae-heavy; dance-pop)",
+   "energy": "mid",
+   "rhythm": "dancehall / afropop syncopated groove with prominent bass line; ~101-102 BPM (AcousticBrainz 101, JamZone 102; songbpm 67 in 3/4 is a 2:3 misread)",
+   "dance": "Bouncy mid-energy afro-dancehall steps (hip rolls, whines, shoulder and footwork grooves as in the Black Is King video); a party 'weekend banger' that suits grooving rather than jumps.",
+   "line": "Reggae/dancehall / dancehall-Afropop, celebratory and regal, syncopated dancehall bounce, step ~101 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (Already (song))",
+    "says": "Infobox genres: dancehall, Afropop; Firstpost called it 'reggae-heavy'; from The Lion King: The Gift (2019), video in Black Is King.",
+    "url": "https://en.wikipedia.org/wiki/Already_(song)"
+   },
+   {
+    "site": "Riddimsworld / Afrovibes reviews",
+    "says": "Signature Major Lazer dancehall sound with catchy bass line; Shatta Wale adds African flavour; 'weekend banger'.",
+    "url": "https://riddimsworld.com/major-lazer-beyonce-and-shatta-wale-release-already/"
+   },
+   {
+    "site": "Guardian Nigeria",
+    "says": "Beyonce and Shatta Wale immerse themselves in the Afropop genre.",
+    "url": "https://guardian.ng/?p=1194086"
+   },
+   {
+    "site": "Music Will JamZone",
+    "says": "102 BPM, D minor; genre Dance, International Pop.",
+    "url": "https://jamzone.musicwill.org/songs/already"
+   },
+   {
+    "site": "AcousticBrainz",
+    "says": "Analysed bpm about 101.",
+    "url": "https://acousticbrainz.org/995b0c5a-403a-4f84-b3c5-2b87e3538299"
+   },
+   {
+    "site": "songbpm",
+    "says": "67 BPM (double 134), 3 beats per bar, D major, 3:43.",
+    "url": "https://songbpm.com/@beyonce/already"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "Pride from Ghana/Nigeria in Shatta Wale feature, 'tap into your africanism', love for the vibe; no tempo remarks."
+   }
+  ],
+  "disagreement": "Memory said family Afrobeats; sources name dancehall + Afropop (Wikipedia lists dancehall first). songbpm's 67 BPM in 3/4 conflicts with 101-102 from two other sources (67 x 1.5 = 100.5, a metre misread).",
+  "known": true,
+  "audio": {
+   "character": "mid",
+   "danceBpm": [
+    99,
+    103
+   ],
+   "bpmSource": "AcousticBrainz 101; Music Will JamZone 102; songbpm 67 (3/4, double 134) treated as a misread",
+   "pulse": "clear",
+   "feels": [
+    "syncopated"
+   ],
+   "note": "Felt at mid tempo around 100 BPM, typical dancehall/afropop pocket. The 67/134 reading is not a half/double of 101, so no altBpm given."
+  }
+ },
+ "1482724511": {
+  "memory": {
+   "family": "J-pop",
+   "sub": "electronic J-pop (ex-Vocaloid producer)",
+   "energy": "mid",
+   "rhythm": "programmed pop beat"
+  },
+  "consensus": {
+   "family": "J-pop",
+   "sub": "J-pop (singer-songwriter, ex-Vocaloid producer; Last.fm tags j-pop, utaite)",
+   "energy": "",
+   "rhythm": "128 BPM, E minor (songbpm); no description of the groove found",
+   "dance": "Likely suits J-pop style choreography at a moderate-to-quick 128 BPM step; no dance context found.",
+   "line": "J-pop / J-pop, mood unknown, 4/4 pop beat, step ~128 BPM"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Last.fm (bunny)",
+    "says": "Track tags: japanese, j-pop, utaite; artist is a singer-songwriter and former VOCALOID producer.",
+    "url": "https://www.last.fm/music/Yoh+Kamiyama/_/bunny"
+   },
+   {
+    "site": "Wikipedia (Yumemiru Kodomo / Yoh Kamiyama)",
+    "says": "2nd mini-album, Oct 23 2019 on e.w.e.; bunny is track 3; Oricon #33; artist genre J-pop, Vocaloid roots.",
+    "url": "https://en.wikipedia.org/wiki/Yumemiru_Kodomo"
+   },
+   {
+    "site": "songbpm",
+    "says": "128 BPM, E minor, 3:34.",
+    "url": "https://songbpm.com/@yoh-kamiyama/bunny"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "No comments available."
+   }
+  ],
+  "known": true,
+  "audio": {
+   "danceBpm": [
+    126,
+    130
+   ],
+   "bpmSource": "songbpm 128 (3:34 matches durationSec 214)",
+   "note": "Only a single Spotify-derived BPM; no review describes the sound, so character, pulse and feels are omitted. Whether it feels fast at 128 or half-time at 64 is unconfirmed."
+  }
+ },
+ "1486109884": {
+  "consensus": {
+   "family": "",
+   "sub": "",
+   "energy": "",
+   "rhythm": "",
+   "dance": "",
+   "line": ""
+  },
+  "evidence": "none",
+  "sources": [
+   {
+    "site": "Web search (artist, album, title, feature)",
+    "says": "No page found for 'Piano Jane', Katie Jane, or 'Relax: Deep Exploration'; only generic relaxing-piano playlists, unrelated.",
+    "url": ""
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "No comments available."
+   }
+  ],
+  "known": false,
+  "audio": {
+   "note": "No source. Artist/album names suggest relaxation piano but that is only the listing itself; no character or BPM supported."
+  }
+ },
+ "1496293910": {
+  "consensus": {
+   "family": "pop",
+   "sub": "lo-fi / bedroom-style alternative pop (artist-level only)",
+   "energy": "calm",
+   "rhythm": "",
+   "dance": "Artist is described as dreamy, dark and subdued lo-fi, which suits slow swaying or minimal, relaxed movement; inferred from artist-level description only.",
+   "line": "Pop / lo-fi bedroom pop, dark and intimate, rhythm unknown, step BPM unknown"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Complex / Pigeons & Planes (2017, via search snippet)",
+    "says": "Massachusetts artist, 19 at the time; music ranges from dreamy lo-fi to futuristic ambient; dark, subdued, intimate.",
+    "url": "https://www.complex.com/pigeons-and-planes/2017/06/reddish-blu"
+   },
+   {
+    "site": "Last.fm / SoundCloud artist pages",
+    "says": "Massachusetts artist (Last.fm), LA on SoundCloud; tracks credited 'prod. 6silky', 'prod. meltycanon'; no 'daisy' page found.",
+    "url": "https://m.soundcloud.com/reddishblu"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "No comments returned (auto-generated Topic channel)."
+   }
+  ],
+  "known": true,
+  "audio": {
+   "note": "Nothing found about 'daisy' itself; only artist-level lo-fi / ambient description. No BPM source; danceBpm omitted."
+  }
+ },
+ "1542433776": {
+  "consensus": {
+   "family": "rock",
+   "sub": "heartland rock / indie rock, jangle, atmospheric, psychedelic (Bandcamp tags); artist also described as pre-war blues, cowpunk, dark Americana",
+   "energy": "mid",
+   "rhythm": "full-band rock beat with shakers, tambourine and claps; 125 BPM (songbpm, half 63)",
+   "dance": "Easygoing rock/Americana steps: walking two-step or swaying with claps; moderate energy, no high-intensity jumps evidenced.",
+   "line": "Rock / heartland indie rock, reflective and atmospheric, jangly band groove, step ~125 BPM"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Bandcamp (Buck the Taxidermist, Made for Greatness)",
+    "says": "Released Jan 11 2019, Lexington KY; tags rock, atmospheric, heartland rock, indie rock, jangle, psychedelic; full band plus shakers, tambourines, claps.",
+    "url": "https://buckthetaxidermist.bandcamp.com/track/made-for-greatness"
+   },
+   {
+    "site": "Smiley Pete event listing (search snippet, artist-level)",
+    "says": "Project of Kyle Ayres; sound between pre-war blues, cowpunk and dark Americana.",
+    "url": "https://smileypete.com/events/levitt-amp-berea-music-series-hooten-hallers-buck-taxidermist"
+   },
+   {
+    "site": "songbpm",
+    "says": "125 BPM (half 63, double 250), 4:35.",
+    "url": "https://songbpm.com/@buck-the-taxidermist/made-for-greatness"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "No comments available."
+   }
+  ],
+  "known": true,
+  "audio": {
+   "danceBpm": [
+    123,
+    127
+   ],
+   "bpmSource": "songbpm 125 (half 63); duration 4:35 matches durationSec 275",
+   "note": "Only the artist's own Bandcamp tags describe the track; energy/character not confirmed by an outside source, so character omitted. Whether heartland/jangle rock at 125 is felt at 125 or half at ~63 is unverified."
+  }
+ },
+ "1565560200": {
+  "consensus": {
+   "family": "",
+   "sub": "",
+   "energy": "",
+   "rhythm": "",
+   "dance": "",
+   "line": ""
+  },
+  "evidence": "none",
+  "sources": [
+   {
+    "site": "Web search (several queries)",
+    "says": "No page, review, tag or BPM entry found for Rosec 'Destination (feat. Rhymy)' (2021); songbpm has no entry.",
+    "url": ""
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "No comments available."
+   }
+  ],
+  "known": false,
+  "audio": {
+   "note": "No source for tempo or sound."
+  }
+ },
+ "1669270635": {
+  "consensus": {
+   "family": "metal",
+   "sub": "doom/death metal (death-doom; early-90s Greek underground)",
+   "energy": "mid",
+   "rhythm": "slow, heavy doom/death metal riffing (no BPM found)",
+   "dance": "Heavy, slow death-doom suits slow headbanging and weighty, grounded stomps rather than fast or bouncy steps; jumps do not fit the crushing slow mood.",
+   "line": "Metal / doom-death, dark and crushing, slow heavy riffs, step unknown"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Sleaszy Rider Records (label)",
+    "says": "Greek doom/death metal band; compilation of their demo and 7-inch tracks up to 1993 (before becoming On Thorns I Lay), first time on CD, 10 March 2023; track 2 'As the Sky Turns Black'.",
+    "url": "https://sleaszyrider.com/release/from-golgotha-we-rise"
+   },
+   {
+    "site": "musichearts.fm / Wikipedia (On Thorns I Lay) - artist level",
+    "says": "Athens band: Paralysis (1992) > Phlebotomy (1993) > On Thorns I Lay (1995); brutal death metal early, later death-doom/gothic.",
+    "url": "https://musichearts.fm/artists/7513-on-thorns-i-lay"
+   },
+   {
+    "site": "AllMusic / Hoopla",
+    "says": "Catalog listings, 2023, 46:24; no rating or style text.",
+    "url": "https://www.hoopladigital.com/music/From-Golgotha-We-Rise-Phlebotomy/19125907"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "No comments available."
+   }
+  ],
+  "disagreement": "Not to be confused with the Dutch band Phlebotomized. Reviews (Behind The Veil 7/10, Metal Zone 7/10) were mentioned but not read.",
+  "known": true,
+  "audio": {
+   "feels": [
+    "heavy-distortion"
+   ],
+   "note": "Doom/death metal is heavy and distorted but typically slow; no BPM source, so danceBpm, character and pulse omitted. Likely felt SLOW and heavy, unverified for this track."
+  }
+ },
+ "1675732755": {
+  "consensus": {
+   "family": "",
+   "sub": "",
+   "energy": "",
+   "rhythm": "",
+   "dance": "",
+   "line": ""
+  },
+  "evidence": "none",
+  "sources": [
+   {
+    "site": "Bandcamp (SlugWeed artist page)",
+    "says": "'One Man Project From New England', ~189 releases, cannabis-themed titles; no genre tags; this album and track not found.",
+    "url": "https://slugweed.bandcamp.com/"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "No comments available."
+   }
+  ],
+  "known": false
+ },
+ "1717358148": {
+  "memory": {
+   "family": "Latin (cumbia)",
+   "sub": "Mexican / Tex-Mex sax-led cumbia (grupera)",
+   "energy": "mid",
+   "rhythm": "cumbia two-step beat"
+  },
+  "consensus": {
+   "family": "Latin (cumbia)",
+   "sub": "Mexican cumbia (artist-level; Fito Olivares y su Grupo / La Pura Sabrosura)",
+   "energy": "mid",
+   "rhythm": "cumbia beat (artist-level inference); no BPM found for this recording",
+   "dance": "Social cumbia partner dancing: basic side/back-step cumbia footwork with turns at a relaxed party energy; no jumps needed (comments place it at fiestas).",
+   "line": "Latin / Mexican cumbia, festive party mood, cumbia beat, step BPM not sourced"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Wikipedia (Fito Olivares)",
+    "says": "Fito Olivares (1947-2023) was a Mexican cumbia musician and saxophonist, died in Houston.",
+    "url": "https://en.wikipedia.org/wiki/Fito_Olivares"
+   },
+   {
+    "site": "AllMusic (Tambores Y Sabor)",
+    "says": "Album entry: released Dec 5, 1994, 29:54, recorded at Garza Sound Studios, Houston. No track-level genre text retrieved.",
+    "url": "https://www.allmusic.com/album/tambores-y-sabor-mw0000591991"
+   },
+   {
+    "site": "Viberate (Fito Olivares)",
+    "says": "Lists 'Que Te Vas' (1995) among Fito Olivares' well-known singles.",
+    "url": "https://www.viberate.com/artist/fito-olivares"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "Party greetings ('andamos en la fiesta'), people singing along; lyric video."
+   }
+  ],
+  "disagreement": "No source describes this specific track's sound; genre is from the artist. A 75 BPM Shazam figure found for 'Que Te Vas' belongs to Los Temerarios (1998), a different song, and was not counted.",
+  "known": true,
+  "audio": {
+   "character": "mid",
+   "pulse": "clear",
+   "note": "Assumed a steady cumbia groove from the artist's genre; no BPM site or tab found for this recording, so danceBpm omitted."
+  }
+ },
+ "1739416297": {
+  "memory": {
+   "family": "reggae/dancehall",
+   "sub": "reggae rock / acoustic surf reggae",
+   "energy": "calm",
+   "rhythm": "laid-back reggae offbeat skank"
+  },
+  "consensus": {
+   "family": "reggae/dancehall",
+   "sub": "reggae re-working of an acoustic singer-songwriter / surf-folk song (Stick Figure-produced reggae rock)",
+   "energy": "calm",
+   "rhythm": "laid-back reggae groove; original album version measured 150 BPM, felt ~75 (half-time); no reading found for the Stick Figure version",
+   "dance": "Relaxed, low-intensity swaying and easy side-to-side reggae steps on the slow half-time pulse; no jumps or high-intensity moves suit this chill, comforting track.",
+   "line": "Reggae / acoustic surf-reggae (Stick Figure rework), chill and warm, laid-back reggae groove, step ~75 BPM (original version; rework unmeasured)"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "JamBase",
+    "says": "Jack Johnson reimagined his 2013 hit 'Home' with reggae outfit Stick Figure; benefit single for Kokua Hawaii Foundation.",
+    "url": "https://www.jambase.com/article/jack-johnson-stick-figure-home"
+   },
+   {
+    "site": "The Pier (reggae news site)",
+    "says": "Covers the release of Jack Johnson w/ Stick Figure 'Home' as a new reggae release (April 2024).",
+    "url": "https://thepier.org/new-release-jack-johnson-w-stick-figure-home/"
+   },
+   {
+    "site": "jackjohnsonmusic.com",
+    "says": "Official page for 'Home' with Stick Figure, produced by Stick Figure; tied to Earth Day and Kokua's 20th anniversary.",
+    "url": "https://jackjohnsonmusic.com/home_with_stick_figure/"
+   },
+   {
+    "site": "Last.fm",
+    "says": "Track 'Home (With Stick Figure)' tagged acoustic, singer-songwriter, chill, alternative.",
+    "url": "https://last.fm/music/Jack+Johnson/_/Home+(With+Stick+Figure)"
+   },
+   {
+    "site": "SongBPM / AcousticBrainz / Musicnotes / Shazam (ORIGINAL 2013 album version, 3:02 - not this recording)",
+    "says": "Original 'Home' from From Here to Now to You: 150 BPM (half 75); Musicnotes q=75; Shazam 75. Not counted for the 3:30 Stick Figure version.",
+    "url": "https://songbpm.com/@jack-johnson/home"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "Calm, comforting morning/garden/cuddling listening; 'comforts the homebody'; several praise 'this version'."
+   }
+  ],
+  "disagreement": "All tempo readings found are for the 2013 original (3:02); the 2024 Stick Figure rework (3:30) may have a different tempo. Note the picked YouTube video is titled 'Home (Album Version)' (213 s), length close to the rework but title suggests possible version mismatch.",
+  "known": true,
+  "audio": {
+   "character": "soft",
+   "pulse": "clear",
+   "note": "Felt SLOW and laid-back (chill reggae). danceBpm omitted: only the original version's tempo (150, felt 75) is sourced; the Stick Figure version is likely in that slow range but unverified."
+  }
+ },
+ "1772540945": {
+  "consensus": {
+   "family": "",
+   "sub": "",
+   "energy": "",
+   "rhythm": "",
+   "dance": "",
+   "line": ""
+  },
+  "evidence": "none",
+  "sources": [
+   {
+    "site": "Web search (several queries)",
+    "says": "No page found for artist Legendaire, album Melography or song Wayoo.",
+    "url": ""
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "No comments available."
+   }
+  ],
+  "known": false
+ },
+ "1773144745": {
+  "consensus": {
+   "family": "classical",
+   "sub": "Hindustani classical raga (Raag Shyam Kalyan, evening raga of Kalyan thaat), sarod (Swarnendu Mandal); marketed as healing / meditation music",
+   "energy": "calm",
+   "rhythm": "not described; tala vs. free alap unknown; no BPM",
+   "dance": "Not dance music: suits slow, flowing stretching or meditative movement rather than stepping; no jumps or intensity.",
+   "line": "Classical / Hindustani raga (healing), meditative, rhythm unsourced, no step BPM"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Asian Arts Initiative / Duisburg Philharmonic artist pages",
+    "says": "Swarnendu Mandal is a Kolkata sarod player and musicologist (Senia-Shahjahanpur gharana). No page found for Kalyan Majumdar or this album.",
+    "url": "https://asianartsinitiative.org/archive/artists/swarnendu"
+   },
+   {
+    "site": "Artium Academy / Darbar (raga reference)",
+    "says": "Shyam Kalyan: Kalyan thaat, first prahar of night, 'meandering gait'. Raga-level, not this recording.",
+    "url": "https://artiumacademy.com/music-theory/hindustani-classical/ragas/shyam-kalyan"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "One comment: 'Feeling better now'."
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "calm",
+   "note": "Calm is inferred from the healing/meditation framing and Hindustani raga format; no source says whether the 5-minute track is unmetered alap or set to tabla, so pulse and BPM omitted."
+  }
+ },
+ "1820264339": {
+  "memory": {
+   "family": "K-pop",
+   "sub": "pop ballad duet / musical-theatre pop",
+   "energy": "mid",
+   "rhythm": "mid-tempo pop backbeat that builds"
+  },
+  "consensus": {
+   "family": "K-pop",
+   "sub": "pop ballad duet / musical-theatre number (alt-pop ballad) from an animated film soundtrack",
+   "energy": "calm",
+   "rhythm": "slow, tender ballad in 4/4 with a variable tempo; 140 BPM (Tunebat), ~140 variable (Karaoke-Version), felt at half (~70)",
+   "dance": "A slow, emotional duet suited to gentle swaying, expressive arm and lyrical movement or a slow partner sway; low intensity, no jumps.",
+   "line": "K-pop / pop ballad duet, tender and hopeful, slow half-time ballad beat, step ~70 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Songfacts",
+    "says": "Rumi and Jinu duet (EJAE, Andrew Choi); the film's only traditional musical number; slows things down for a tender, private moment.",
+    "url": "https://www.songfacts.com/facts/rumi-and-jinu/free"
+   },
+   {
+    "site": "Stay Free Radio review",
+    "says": "Lists it as Ballad, Alt-pop; emotional storytelling.",
+    "url": "https://www.stayfreeradioip.com/post/kpop-demon-hunters-free-meaning-and-review"
+   },
+   {
+    "site": "Neon Music / soundtrack rankings",
+    "says": "Deeply emotional ballad where Rumi drops her armour around Jinu.",
+    "url": "https://neonmusic.co.uk/?p=69869"
+   },
+   {
+    "site": "Tunebat",
+    "says": "140 BPM, C sharp major, 3:08.",
+    "url": "https://tunebat.com/Info/Free-Rumi-Jinu-EJAE-Andrew-Choi-KPop-Demon-Hunters-Cast/5DxDLsW6PsLz5gkwC7Mk5S"
+   },
+   {
+    "site": "Karaoke-Version",
+    "says": "Tempo variable (around 140 BPM), key D flat, 3:09.",
+    "url": "https://www.karaoke-version.com/mp3-backingtrack/kpop-demon-hunters/free.html"
+   },
+   {
+    "site": "Musicnotes",
+    "says": "Sheet music in 4/4; no tempo marking shown.",
+    "url": "https://api.musicnotes.com/sheetmusic/kpop-demon-hunters/free/MN0305845"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "Very emotional, tearful stories; love the duet chemistry and Jinu's rap part; one calls it a 'banger'."
+   }
+  ],
+  "disagreement": "Memory said mid energy; sources describe a slow, tender ballad (calm). Store tag K-Pop, but it is a musical-theatre-style ballad rather than an idol dance track.",
+  "known": true,
+  "audio": {
+   "character": "soft",
+   "danceBpm": [
+    68,
+    72
+   ],
+   "altBpm": [
+    138,
+    140
+   ],
+   "bpmSource": "Tunebat 140; Karaoke-Version ~140 (variable)",
+   "pulse": "clear",
+   "feels": [
+    "half-time"
+   ],
+   "note": "Felt SLOW: a tender ballad (Songfacts) whose ~140 database reading is the double count; stepping falls at ~70. Karaoke-Version marks the tempo variable, so the pulse loosens in places."
+  }
+ },
+ "1822642848": {
+  "memory": {
+   "family": "Latin (Latin trap)",
+   "sub": "Latin trap",
+   "energy": "mid",
+   "rhythm": "trap beat with 808s and hi-hats"
+  },
+  "consensus": {
+   "family": "Latin (Latin trap)",
+   "sub": "Latin trap (urbano), with a regional-Mexican intro by Los Alegres del Barranco",
+   "energy": "mid",
+   "rhythm": "trap beat; one listing gives 100 BPM, B minor",
+   "dance": "Swagger-heavy urbano/trap moves: bounce, shoulder and arm accents, grounded hip-hop footwork at moderate energy rather than jumps.",
+   "line": "Latin / Latin trap, gritty and boastful, trap beat, step ~100 BPM"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Lyric sites (lyricsworldyou / lyricsraag)",
+    "says": "Describe it as a gritty trap track about street credibility; released June 27, 2025; ~2:38; producers Nely 'El Arma Secreta' and M. De La Cruz.",
+    "url": "https://lyricsworldyou.com/little-demon-lyrics-anuel-aa/"
+   },
+   {
+    "site": "Lyricsbull / Buenamusica",
+    "says": "Intro credited to Los Alegres del Barranco with Anuel AA; listed among Real Hasta la Muerte 2 tracks.",
+    "url": "https://www.lyricsbull.com/?p=62142"
+   },
+   {
+    "site": "Qobuz",
+    "says": "Single released June 26, 2025 on Real Hasta La Muerte, LLC.",
+    "url": "https://www.qobuz.com/ca-en/interpreter/anuel-aa/2582913"
+   },
+   {
+    "site": "Beatport (recommendation listing)",
+    "says": "Little Demon: 100 BPM, B minor, 2025-06-26.",
+    "url": "https://www.beatport.com/track/-/20931226"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "Mexican fans (Guadalajara) excited about the 'dueño del palenque' intro; praise for flow."
+   }
+  ],
+  "disagreement": "Credits and lengths differ across lyric sites (2:38 vs this 2:46 recording). The 100 BPM figure comes from a single Beatport recommendation listing whose attribution is unverified; Baby Demon (86 BPM) is a different song.",
+  "known": true,
+  "audio": {
+   "character": "mid",
+   "danceBpm": [
+    98,
+    102
+   ],
+   "bpmSource": "Beatport listing: 100 BPM (only source).",
+   "pulse": "clear",
+   "note": "Moderate tempo trap; single unconfirmed tempo source. Trap may be felt as a half-time bounce over the 100 count, but no source supports a half figure."
+  }
+ },
+ "1829701947": {
+  "memory": {
+   "family": "bollywood",
+   "sub": "romantic film song, melodic",
+   "energy": "mid",
+   "rhythm": "gentle mid-tempo filmi beat"
+  },
+  "consensus": {
+   "family": "bollywood",
+   "sub": "romantic Hindi film song, 90s / A.R. Rahman-style melodic love song with South Indian flavour",
+   "energy": "mid",
+   "rhythm": "melodic love song with sargam passages and punchy drums; no BPM found for this recording",
+   "dance": "Suits graceful, romantic filmi-style movement: swaying, flowing arm gestures and gentle steps, couple-style; moderate to low energy, no jumps.",
+   "line": "Bollywood / romantic 90s-style film song, tender and nostalgic, melodic with punchy drums, step BPM unknown"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Pinkvilla",
+    "says": "Sonu Nigam says it has a South Indian, A.R. Rahman / 90s flavour (like 'Yeh Haseen Vaadiyan'); sargam passages and drums give a solid, punchy effect.",
+    "url": "https://www.pinkvilla.com/cinema/param-sundaris-pardesiya-song-reminds-sonu-nigam-of-a-r-rahman-and-90s-sometimes-people-do-1395808"
+   },
+   {
+    "site": "Tellychakkar",
+    "says": "Calls it a soulful romantic song led by Sonu Nigam's voice; Sachin-Jigar composition, lyrics by Amitabh Bhattacharya.",
+    "url": "https://www.tellychakkar.com/movie/movie-news/pardesiya-here-and-sonu-nigam-s-voice-leads-the-year-s-most-soulful-song-param"
+   },
+   {
+    "site": "IBTimes India / Bollywood Hungama / Lokmat",
+    "says": "First track from Param Sundari, a love song set in Kerala; viral hit praised for melody and visuals.",
+    "url": "https://www.ibtimes.co.in/copying-shah-rukh-khan-netizens-love-pardesiya-song-not-chemistry-between-janhvi-sidharth-885733"
+   },
+   {
+    "site": "Glamsham",
+    "says": "Critical take: 'looks good but feels nothing'.",
+    "url": "https://glamsham.com/?p=823032"
+   },
+   {
+    "site": "guitartabsexplorer (chords)",
+    "says": "User chord sheet lists key D sharp minor, capo 1.",
+    "url": "https://www.guitartabsexplorer.com/misc-soundtrack/param-sundari---pardesiya-chords"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "Many compare it to 'Yeh Haseen Vaadiyan'; 90s Sonu Nigam feel; praise for beat, lyrics and voice."
+   }
+  ],
+  "disagreement": "Shazam's 125 BPM 'Pardesiya' is a different 2025 Epidemic Sound track, not this film song; not counted.",
+  "known": true,
+  "audio": {
+   "character": "soft",
+   "pulse": "clear",
+   "note": "No BPM source found for this recording (songbpm / tunebat pages not found), so danceBpm omitted. Described as a melodic romantic love song with steady, punchy drums; likely felt at a relaxed tempo, but not sourced."
+  }
+ },
+ "1838737598": {
+  "memory": {
+   "family": "pop",
+   "sub": "soul-pop / big-band swing pop",
+   "energy": "driving",
+   "rhythm": "fast brassy swing"
+  },
+  "consensus": {
+   "family": "pop",
+   "sub": "big-band pop / jazz-soul (retro soul-pop with big-band brass)",
+   "energy": "driving",
+   "rhythm": "upbeat big-band pop groove in 4/4, rapid-fire vocals; 116 BPM (songbpm, bonedo)",
+   "dance": "High-energy retro steps: swing / jive-flavoured footwork, Charleston kicks and sassy jazz-dance arms; energetic, small kicks and hops fit.",
+   "line": "Pop / big-band jazz-soul, sassy and theatrical, upbeat brassy groove, step ~116 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "At The Barrier (single review)",
+    "says": "Combines jazz and soul; sassy and soulful, rapid-fire raspy delivery, theatrical chorus, memorable bridge.",
+    "url": "https://atthebarrier.com/2025/09/25/raye-where-is-my-husband-single-review/"
+   },
+   {
+    "site": "Ticketmaster UK track-by-track / album reviews",
+    "says": "Anthemic pop big-band number; big-band energy through a glossy soul-pop lens; 'big band banger'.",
+    "url": "https://discover.ticketmaster.co.uk/music/raye-this-music-may-contain-hope-track-by-track-album-review-76687/"
+   },
+   {
+    "site": "songbpm",
+    "says": "116 BPM (half 58, double 232), G#/Ab major, 4/4, 3:17; high energy.",
+    "url": "https://songbpm.com/@raye/where-is-my-husband-h3c6e"
+   },
+   {
+    "site": "bonedo.de",
+    "says": "Vocal-challenge article: tempo 116 BPM.",
+    "url": "https://www.bonedo.de/artikel/where-is-my-husband-von-raye-bist-du-bereit-fuer-die-vocal-challenge/"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "Fire but hard to sing along, 'running out of breath', basically rapping, 'surreal vibe'."
+   }
+  ],
+  "disagreement": "Memory said swing; sources say big band / jazz-soul and name swing only at album level, not for this single.",
+  "known": true,
+  "audio": {
+   "character": "driving",
+   "danceBpm": [
+    114,
+    118
+   ],
+   "bpmSource": "songbpm 116 (half 58 / double 232); bonedo 116",
+   "pulse": "clear",
+   "note": "Felt FAST/upbeat at 116 with dense, rapid vocals and brass. Swing feel not confirmed by sources for this track."
+  }
+ },
+ "1876044804": {
+  "consensus": {
+   "family": "Latin (cumbia)",
+   "sub": "Chilean tecnocumbia / 'onda sound' (artist-level)",
+   "energy": "mid",
+   "rhythm": "cumbia beat on electronic drums and synthesizers (artist-level); no BPM found",
+   "dance": "Party cumbia: simple cumbia side-steps and hip sway, solo or with a partner, at a festive mid energy; a comment recalls dancing to it in late-90s fiestas.",
+   "line": "Latin / Chilean tecnocumbia (onda sound), festive, cumbia beat with synths, step BPM not sourced"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Buenamusica (Amerika'n Sound biography)",
+    "says": "Chilean cumbia group from Iquique (1995), leading act of 'onda sound'/tecnocumbia: synthesizers, electronic drums, pop staging; first album 'Onda nueva' (1996).",
+    "url": "https://buenamusica.com/amerikan-sound/biografia"
+   },
+   {
+    "site": "Puntoticket / Viberate artist pages",
+    "says": "Artist listings confirm a Chilean cumbia act; hits like 'Haciendo el amor', 'Nena'. Nothing on this track.",
+    "url": "https://www.puntoticket.com/evento/Amerikan-Sound-Club-Chocolate-Barrio-Bellavista"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "Northern-Chile pride, a 'Skynorio' meme revival, one recalls dancing to it in the late 90s."
+   }
+  ],
+  "disagreement": "Album 'Onda Tropical' (1995) not found in any source; the biography gives 1996 'Onda nueva' as the first album. Genre is artist-level only.",
+  "known": true,
+  "audio": {
+   "character": "mid",
+   "pulse": "clear",
+   "note": "Steady cumbia groove inferred from the artist's tecnocumbia style; no BPM site found for this track, so danceBpm omitted."
+  }
+ },
+ "1881400792": {
+  "memory": {
+   "family": "rock",
+   "sub": "indie pop / folktronica",
+   "energy": "mid",
+   "rhythm": "banjo / acoustic-driven pop beat"
+  },
+  "consensus": {
+   "family": "rock",
+   "sub": "indie pop (lightweight indie-pop with laptop/electro-pop touches, Postal Service-like; glockenspiel, banjo, synth)",
+   "energy": "mid",
+   "rhythm": "energetic acoustic verses with electro buzz and staccato guitar in the chorus; 130 BPM (songbpm)",
+   "dance": "Light, bouncy indie-pop steps: skips, bounces and easy footwork at a brisk ~130 BPM; cheerful but not high-intensity.",
+   "line": "Rock / indie pop, catchy and cheerful, acoustic strum with electro buzz, step ~130 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Drowned in Sound (Weathervanes review)",
+    "says": "'Kilojoules' energetic with electro buzz; simple acoustic verses, glock and synth melody, garbled electronics and staccato guitar; earnest lightweight indie-pop.",
+    "url": "https://www.drownedinsound.org/archive-album-review-freelance-whales-weathervanes-4140755/"
+   },
+   {
+    "site": "Spectrum Culture",
+    "says": "Band fares better on catchier tracks like 'Starring' and 'Kilojoules'.",
+    "url": "https://spectrumculture.com/2010/04/05/freelance-whales-weathervanes/"
+   },
+   {
+    "site": "Sputnikmusic (user review)",
+    "says": "Kilojoules fun and catchy.",
+    "url": "https://www.sputnikmusic.com/review/35521/Freelance-Whales-Weathervanes"
+   },
+   {
+    "site": "songbpm",
+    "says": "130 BPM, G major, 3:20.",
+    "url": "https://songbpm.com/@freelance-whales/kilojoules"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "No comments available."
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "mid",
+   "danceBpm": [
+    128,
+    132
+   ],
+   "bpmSource": "songbpm 130 (3:20 matches durationSec 200)",
+   "pulse": "clear",
+   "feels": [
+    "acoustic"
+   ],
+   "note": "Felt brisk/upbeat (reviewer: 'energetic'); acoustic verses with electronic chorus textures."
+  }
+ },
+ "6830290039": {
+  "consensus": {
+   "family": "",
+   "sub": "",
+   "energy": "",
+   "rhythm": "",
+   "dance": "",
+   "line": ""
+  },
+  "evidence": "none",
+  "sources": [
+   {
+    "site": "Web search (artist + title, artist alone)",
+    "says": "No page found for an artist named Zavyre or this 2026 single; all 'Another Life' hits are other artists (SZA, Motionless in White, Damian Bast, etc.) and do not count.",
+    "url": ""
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "Heartbreak / moving-on song; listeners say it 'tugs my heart', reminds them of an ex; one says it went viral on Instagram."
+   }
+  ],
+  "known": false,
+  "audio": {
+   "note": "No source on sound or tempo. Comments only suggest an emotional breakup song; tempo, beat and energy cannot be supported, so no BPM or character given."
+  }
+ },
+ "6775875168": {
+  "consensus": {
+   "family": "",
+   "sub": "",
+   "energy": "",
+   "rhythm": "",
+   "dance": "",
+   "line": ""
+  },
+  "evidence": "none",
+  "sources": [
+   {
+    "site": "Web search (artist + title, artist alone)",
+    "says": "No page found for 'The Velvet Label' as a music act or for this song; 'Siete Pecados' hits are a Spanish wine brand, unrelated.",
+    "url": ""
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "Praise for a male singer's intense, 'smooth' voice; Spanish lyrics; one names him Yael. Nothing on rhythm."
+   }
+  ],
+  "known": false,
+  "audio": {
+   "note": "No source on style or tempo. Comments call it 'smooth' and focus on the voice; store tag (Latin Jazz) does not count. No BPM or character can be supported."
+  }
+ },
+ "6793653164": {
+  "consensus": {
+   "family": "",
+   "sub": "",
+   "energy": "",
+   "rhythm": "",
+   "dance": "",
+   "line": ""
+  },
+  "evidence": "none",
+  "sources": [
+   {
+    "site": "Web search (several queries)",
+    "says": "No artist page, review, BPM entry or tag found for Queen Butterfly 'Unapologetic' (2026); songbpm has no entry.",
+    "url": ""
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "Women's empowerment / healing anthem, 'touched my soul', found on TikTok; spoken-style lyric quotes; no tempo or style remarks."
+   }
+  ],
+  "known": false,
+  "audio": {
+   "note": "No source for tempo or sound; comments suggest an inspirational, lyric-heavy soul song but nothing supports a character or BPM."
+  }
+ },
+ "6814092011": {
+  "memory": {
+   "family": "reggae/dancehall",
+   "sub": "dancehall",
+   "energy": "mid",
+   "rhythm": "dancehall riddim"
+  },
+  "consensus": {
+   "family": "reggae/dancehall",
+   "sub": "dancehall (romantic / sensual lover-man dancehall); possible afrobeats touches unconfirmed",
+   "energy": "mid",
+   "rhythm": "dancehall riddim; no BPM found",
+   "dance": "Dancehall moves at a mid groove: bounce, wining and partner whine, with dancehall step routines; sensual rather than high-impact, jumps not needed.",
+   "line": "Reggae-dancehall / dancehall, sensual-romantic, dancehall riddim, step BPM not sourced"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Jamaica Observer (Vanquish track-by-track review)",
+    "says": "Praises 'Gimmi Love' beat as perfect for a dancehall playlist; blends romance with explicit content.",
+    "url": "https://jamaicaobserver.com/2019/12/29/vanquish-a-play-by-play-review-of-popcaans-second-album"
+   },
+   {
+    "site": "Hypebeast / The Fader / OkayAfrica",
+    "says": "Vanquish (Dec 2019) is dancehall star Popcaan's surprise 10-track mixtape, his OVO Sound debut.",
+    "url": "https://hypebeast.com/2019/12/popcaan-vanquish-mixtape-stream"
+   },
+   {
+    "site": "Lyreka",
+    "says": "Describes it as a dancehall track about desire with a chant-style hook (site's own reading).",
+    "url": "https://www.lyreka.com/song/popcaan-gimmi-love-lyrics"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "'Big chune', 'lit', listen with headphones; one says the riddim sounds like an OVO riddim."
+   }
+  ],
+  "disagreement": "One search summary attributed 'afrobeats elements' to the instrumental but no source text confirming it was retrieved.",
+  "known": true,
+  "audio": {
+   "character": "mid",
+   "pulse": "clear",
+   "note": "Steady dancehall riddim per review; no song-specific BPM found (Mixgraph's Popcaan catalog median 98 is artist-wide and not used)."
+  }
+ }
+}

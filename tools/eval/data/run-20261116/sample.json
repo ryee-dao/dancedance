@@ -1,0 +1,506 @@
+{
+  "seed": 20261116,
+  "createdAt": "2026-11-14T12:41:36.762Z",
+  "songs": [
+    {
+      "key": "185717604",
+      "half": "known",
+      "artist": "Toto",
+      "title": "Africa",
+      "collection": "Toto IV",
+      "genre": "Rock",
+      "durationSec": 295,
+      "releaseYear": 1982,
+      "source": "chart us/21"
+    },
+    {
+      "key": "1739416297",
+      "half": "known",
+      "artist": "Jack Johnson & Stick Figure",
+      "title": "Home",
+      "collection": "Home - Single",
+      "genre": "Reggae",
+      "durationSec": 210,
+      "releaseYear": 2024,
+      "source": "chart us/24"
+    },
+    {
+      "key": "6830290039",
+      "half": "known",
+      "artist": "Zavyre",
+      "title": "Another Life",
+      "collection": "Another Life - Single",
+      "genre": "Singer/Songwriter",
+      "durationSec": 205,
+      "releaseYear": 2026,
+      "source": "chart us/10"
+    },
+    {
+      "key": "1473487611",
+      "half": "known",
+      "artist": "Beyoncé, Shatta Wale & Major Lazer",
+      "title": "ALREADY",
+      "collection": "The Lion King: The Gift",
+      "genre": "Soundtrack",
+      "durationSec": 223,
+      "releaseYear": 2019,
+      "source": "term 'afrobeats'"
+    },
+    {
+      "key": "1411648267",
+      "half": "known",
+      "artist": "Willie Nelson",
+      "title": "Young at Heart",
+      "collection": "My Way",
+      "genre": "Jazz",
+      "durationSec": 166,
+      "releaseYear": 2018,
+      "source": "chart us/11"
+    },
+    {
+      "key": "1440843361",
+      "half": "known",
+      "artist": "Steve Miller Band",
+      "title": "The Joker",
+      "collection": "Greatest Hits 1974-78",
+      "genre": "Rock",
+      "durationSec": 218,
+      "releaseYear": 1973,
+      "source": "term 'classic rock'"
+    },
+    {
+      "key": "6775875168",
+      "half": "known",
+      "artist": "The Velvet Label",
+      "title": "Siete Pecados",
+      "collection": "Siete Pecados - Single",
+      "genre": "Latin Jazz",
+      "durationSec": 197,
+      "releaseYear": 2026,
+      "source": "chart us/11"
+    },
+    {
+      "key": "189259142",
+      "half": "known",
+      "artist": "En Vogue",
+      "title": "Don't Let Go (Love)",
+      "collection": "The Very Best of En Vogue",
+      "genre": "R&B/Soul",
+      "durationSec": 292,
+      "releaseYear": 1996,
+      "source": "chart us/15"
+    },
+    {
+      "key": "1443134345",
+      "half": "known",
+      "artist": "Heavy D & The Boyz",
+      "title": "Now That We Found Love (feat. Aaron Hall)",
+      "collection": "Peaceful Journey",
+      "genre": "Hip-Hop/Rap",
+      "durationSec": 258,
+      "releaseYear": 1991,
+      "source": "term 'old school hip hop'"
+    },
+    {
+      "key": "211280601",
+      "half": "known",
+      "artist": "Aventura",
+      "title": "Enséñame a Olvidar",
+      "collection": "We Broke the Rules",
+      "genre": "Música tropical",
+      "durationSec": 349,
+      "releaseYear": 2002,
+      "source": "term 'bachata'"
+    },
+    {
+      "key": "1717358148",
+      "half": "known",
+      "artist": "Fito Olivares",
+      "title": "Que Te Vas Y Te Vas",
+      "collection": "Tambores Y Sabor",
+      "genre": "Pop Latino",
+      "durationSec": 199,
+      "releaseYear": 1994,
+      "source": "chart us/12"
+    },
+    {
+      "key": "6793653164",
+      "half": "known",
+      "artist": "Queen Butterfly",
+      "title": "Unapologetic",
+      "collection": "Perfect",
+      "genre": "R&B/Soul",
+      "durationSec": 273,
+      "releaseYear": 2026,
+      "source": "chart us/15"
+    },
+    {
+      "key": "1829701947",
+      "half": "known",
+      "artist": "Sachin-Jigar, Sonu Nigam & Krishnakali Saha",
+      "title": "Pardesiya (From \"Param Sundari\")",
+      "collection": "Pardesiya (From \"Param Sundari\") - Single",
+      "genre": "Soundtrack",
+      "durationSec": 232,
+      "releaseYear": 2025,
+      "source": "term 'bollywood'"
+    },
+    {
+      "key": "1203777162",
+      "half": "known",
+      "artist": "Hot Chocolate",
+      "title": "Brother Louie",
+      "collection": "70s Hits Essentials",
+      "genre": "Pop",
+      "durationSec": 299,
+      "releaseYear": 1973,
+      "source": "term '70s hits'"
+    },
+    {
+      "key": "1440813515",
+      "half": "known",
+      "artist": "Tears for Fears",
+      "title": "Everybody Wants to Rule the World",
+      "collection": "Songs from the Big Chair",
+      "genre": "Pop",
+      "durationSec": 251,
+      "releaseYear": 1985,
+      "source": "chart br"
+    },
+    {
+      "key": "724635463",
+      "half": "known",
+      "artist": "Kenny Rogers & Dottie West",
+      "title": "All I Ever Need Is You",
+      "collection": "Country Classics: Kenny Rogers",
+      "genre": "Country",
+      "durationSec": 186,
+      "releaseYear": 1995,
+      "source": "term 'country classics'"
+    },
+    {
+      "key": "1820264339",
+      "half": "known",
+      "artist": "Rumi, JINU, EJAE, Andrew Choi & KPop Demon Hunters Cast",
+      "title": "Free",
+      "collection": "KPop Demon Hunters (Soundtrack from the Netflix Film)",
+      "genre": "K-Pop",
+      "durationSec": 188,
+      "releaseYear": 2025,
+      "source": "term 'k-pop'"
+    },
+    {
+      "key": "1822642848",
+      "half": "known",
+      "artist": "Anuel AA",
+      "title": "Little Demon",
+      "collection": "Little Demon - Single",
+      "genre": "Urbano latino",
+      "durationSec": 166,
+      "releaseYear": 2025,
+      "source": "term 'trap'"
+    },
+    {
+      "key": "1876044804",
+      "half": "known",
+      "artist": "Amerika'n Sound",
+      "title": "Cumbia",
+      "collection": "Onda Tropical",
+      "genre": "Latin",
+      "durationSec": 158,
+      "releaseYear": 1995,
+      "source": "term 'cumbia'"
+    },
+    {
+      "key": "1838737598",
+      "half": "known",
+      "artist": "RAYE",
+      "title": "WHERE IS MY HUSBAND!",
+      "collection": "WHERE IS MY HUSBAND! - Single",
+      "genre": "Pop",
+      "durationSec": 197,
+      "releaseYear": 2025,
+      "source": "chart in"
+    },
+    {
+      "key": "1110492456",
+      "half": "obscure",
+      "artist": "Withinroots",
+      "title": "All Night",
+      "collection": "Two Years Back - EP",
+      "genre": "R&B/Soul",
+      "durationSec": 213,
+      "releaseYear": 2016,
+      "source": "word 'withindoors'"
+    },
+    {
+      "key": "588338026",
+      "half": "obscure",
+      "artist": "Olivier Libaux",
+      "title": "Ils sont marrant les gens (feat. JP Nataf & Barbara Carlotti)",
+      "collection": "Imbécile",
+      "genre": "French Pop",
+      "durationSec": 223,
+      "releaseYear": 2007,
+      "source": "word 'imbased'"
+    },
+    {
+      "key": "1045696596",
+      "half": "obscure",
+      "artist": "The Great Commission",
+      "title": "Preaching to the Choir",
+      "collection": "Heavy Worship",
+      "genre": "Metal",
+      "durationSec": 189,
+      "releaseYear": 2011,
+      "source": "word 'preachingly'"
+    },
+    {
+      "key": "1482724511",
+      "half": "obscure",
+      "artist": "YOH KAMIYAMA",
+      "title": "Bunny",
+      "collection": "Yumemiru Kodomo",
+      "genre": "J-Pop",
+      "durationSec": 214,
+      "releaseYear": 2019,
+      "source": "word 'bunny'"
+    },
+    {
+      "key": "300735237",
+      "half": "obscure",
+      "artist": "NogginToboggan",
+      "title": "Noggin Toboggan",
+      "collection": "Snapcase",
+      "genre": "Alternative",
+      "durationSec": 115,
+      "releaseYear": 1999,
+      "source": "word 'tarbogan'"
+    },
+    {
+      "key": "828341367",
+      "half": "obscure",
+      "artist": "Surface",
+      "title": "Happy",
+      "collection": "Surface (Expanded Edition)",
+      "genre": "R&B/Soul",
+      "durationSec": 240,
+      "releaseYear": 1986,
+      "source": "word 'surfacy'"
+    },
+    {
+      "key": "1773144745",
+      "half": "obscure",
+      "artist": "Kalyan Majumdar & Swarnendu Mandal",
+      "title": "Raag Shyam Kalyan for Cough, Asthma & Chronic Bronchitis",
+      "collection": "Ragas That Heal, Vol. 1",
+      "genre": "New Age",
+      "durationSec": 300,
+      "releaseYear": 2024,
+      "source": "word 'bronchitic'"
+    },
+    {
+      "key": "1565560200",
+      "half": "obscure",
+      "artist": "Rosec",
+      "title": "Destination (feat. Rhymy)",
+      "collection": "Destination (feat. Rhymy) - Single",
+      "genre": "Hip-Hop/Rap",
+      "durationSec": 197,
+      "releaseYear": 2021,
+      "source": "word 'rhymy'"
+    },
+    {
+      "key": "1496293910",
+      "half": "obscure",
+      "artist": "Reddish Blu",
+      "title": "daisy",
+      "collection": "daisy - Single",
+      "genre": "Pop",
+      "durationSec": 121,
+      "releaseYear": 2020,
+      "source": "word 'reedish'"
+    },
+    {
+      "key": "1772540945",
+      "half": "obscure",
+      "artist": "Legendaire",
+      "title": "Wayoo",
+      "collection": "Melography",
+      "genre": "French Pop",
+      "durationSec": 174,
+      "releaseYear": 2024,
+      "source": "word 'megalography'"
+    },
+    {
+      "key": "6814092011",
+      "half": "obscure",
+      "artist": "Popcaan",
+      "title": "Gimmi Love",
+      "collection": "Vanquish",
+      "genre": "Reggae",
+      "durationSec": 139,
+      "releaseYear": 2019,
+      "source": "word 'vinquish'"
+    },
+    {
+      "key": "1442442750",
+      "half": "obscure",
+      "artist": "Burbank",
+      "title": "Cherry Lips",
+      "collection": "Beside",
+      "genre": "Hip-Hop/Rap",
+      "durationSec": 170,
+      "releaseYear": 2018,
+      "source": "word 'burbank'"
+    },
+    {
+      "key": "709034581",
+      "half": "obscure",
+      "artist": "Andy Cornflower",
+      "title": "Multigame",
+      "collection": "My First Dream",
+      "genre": "Alternative",
+      "durationSec": 153,
+      "releaseYear": 2013,
+      "source": "word 'multivane'"
+    },
+    {
+      "key": "1669270635",
+      "half": "obscure",
+      "artist": "Phlebotomy",
+      "title": "As the Sky Turns Black",
+      "collection": "From Golgotha We Rise",
+      "genre": "Metal",
+      "durationSec": 300,
+      "releaseYear": 2023,
+      "source": "word 'phlebotomic'"
+    },
+    {
+      "key": "961995056",
+      "half": "obscure",
+      "artist": "Kaffikannski",
+      "title": "Gentilize (Little Green Dragon)",
+      "collection": "7 Minutes from Dawn",
+      "genre": "Electronic",
+      "durationSec": 230,
+      "releaseYear": 2015,
+      "source": "word 'gentilize'"
+    },
+    {
+      "key": "1542433776",
+      "half": "obscure",
+      "artist": "Buck the Taxidermist",
+      "title": "Made for Greatness",
+      "collection": "Made for Greatness - Single",
+      "genre": "Rock",
+      "durationSec": 275,
+      "releaseYear": 2019,
+      "source": "word 'taxidermist'"
+    },
+    {
+      "key": "1101462014",
+      "half": "obscure",
+      "artist": "Refraction",
+      "title": "Never Since",
+      "collection": "Inerrant Space",
+      "genre": "Jazz",
+      "durationSec": 361,
+      "releaseYear": 2016,
+      "source": "word 'inerrant'"
+    },
+    {
+      "key": "1675732755",
+      "half": "obscure",
+      "artist": "SlugWeed",
+      "title": "Landway",
+      "collection": "We Met In the Astral Planes",
+      "genre": "Alternative",
+      "durationSec": 279,
+      "releaseYear": 2023,
+      "source": "word 'landways'"
+    },
+    {
+      "key": "1486109884",
+      "half": "obscure",
+      "artist": "Piano Jane",
+      "title": "Journey (feat. Katie Jane)",
+      "collection": "Relax: Deep Exploration",
+      "genre": "Worldwide",
+      "durationSec": 254,
+      "releaseYear": 2019,
+      "source": "word 'exprobration'"
+    },
+    {
+      "key": "1881400792",
+      "half": "obscure",
+      "artist": "Freelance Whales",
+      "title": "Kilojoules",
+      "collection": "Weathervanes",
+      "genre": "Alternative",
+      "durationSec": 200,
+      "releaseYear": 2009,
+      "source": "word 'freelage'"
+    }
+  ],
+  "skipped": [
+    {
+      "source": "chart gb",
+      "artist": "U2",
+      "title": "Street Of Dreams",
+      "genre": "Alternative",
+      "why": "in an earlier sample (song or artist)"
+    },
+    {
+      "source": "term 'gangsta rap'",
+      "artist": "Young Jeezy",
+      "title": "Amazin'",
+      "genre": "Hip-Hop/Rap",
+      "why": "in an earlier sample (song or artist)"
+    },
+    {
+      "source": "chart us/11",
+      "artist": "Frank Sinatra",
+      "title": "Come Fly with Me",
+      "genre": "Jazz",
+      "why": "in an earlier sample (song or artist)"
+    },
+    {
+      "source": "term 'old school hip hop'",
+      "artist": "Beastie Boys",
+      "title": "Brass Monkey",
+      "genre": "Hip-Hop/Rap",
+      "why": "in an earlier sample (song or artist)"
+    },
+    {
+      "source": "word 'tarbogan'",
+      "artist": "NogginToboggan",
+      "title": "Gutterpunk",
+      "genre": "Alternative",
+      "why": "length 78 s"
+    },
+    {
+      "source": "word 'bronchitic'",
+      "artist": "David Peace Harmony",
+      "title": "Healing to Repair Acute Bronchitis",
+      "genre": "Electronic",
+      "why": "\"Meditation\" in title / album / artist"
+    },
+    {
+      "source": "word 'stereocamera'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'scalprum'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'unitively'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'myelogenetic'",
+      "why": "no iTunes results"
+    }
+  ]
+}

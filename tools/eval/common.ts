@@ -62,8 +62,8 @@ export interface EvidenceSource {
 export interface Expectation {
   /** The judge's guess from memory alone; absent = "unknown to judge" from memory. */
   memory?: Guess;
-  /** The researched consensus (written before the pipeline ran, never revised after). */
-  consensus?: Guess & { line: string };
+  /** The researched consensus (written before the pipeline ran, never revised after); `dance` (since run-20261116): what dancing would suit it. */
+  consensus?: Guess & { line: string; dance?: string };
   /** 'several' independent sources agree, a 'single' source, or 'none' found (then memory, else unknown). */
   evidence: 'several' | 'single' | 'none';
   sources: EvidenceSource[];
