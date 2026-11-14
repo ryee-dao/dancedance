@@ -27,17 +27,37 @@
  * showings split the roles. Chill uses only difficulty-1 partner
  * moves (no jumps, no crossing); Sweaty favours travelling partner moves and
  * jumps.
+ *
+ * Partner moves fit the song the way single-player moves do (the same song
+ * information: open genre sets, calm, level, tempo):
+ *   - style: a partner move tagged with genre sets (PartnerMove.styles: a
+ *     dap for hip-hop, a counterbalance for lyrical) is only danced on songs
+ *     whose style opens one of them, and is favoured there; it counts as
+ *     genre time, so the duo never goes past the single-player genre share
+ *     (generator.ts GENRE_MAX, or the routine's own share when higher).
+ *     Untagged ones (high five, clap patterns) suit any song their
+ *     character fits;
+ *   - calm: from CALM_GENTLE up (ballads) only gentle partner moves (no
+ *     jumps, no impact, no claps or slaps); below it the single-player
+ *     character weight (weights.ts calmFactor) leans the pick;
+ *   - tempo: every partner move has its own speed limit (duoMoves.ts
+ *     partnerSpeed, both tracks and the depth); above it the pair dance it
+ *     at half time together, or it is left out (partnerTempoMode).
+ * When a song leaves few partner moves to choose from, some of the template's
+ * partner phrases go to the single-player kinds (complement, canon, mirror,
+ * call) instead, so a thin pool doesn't repeat itself.
  */
 
 import type { BeatMap, SectionType } from '../analysis/beatmap';
-import type { Genre } from './genres';
-import { comboName, generateRoutine, genreFits, hashString, mulberry32, styleGenres, type Intensity, type MoveInstance, type Routine, type SigStep } from './generator';
+import { genreOpenness, type Genre } from './genres';
+import { GENRE_MAX, comboName, generateRoutine, genreFits, hashString, mulberry32, styleGenres, type Intensity, type MoveInstance, type Routine, type SigStep } from './generator';
 import type { SongStyle } from './songStyle';
 import { IDLE_MOVE, MOVES, type Move } from './moves';
-import { PARTNER_MOVES, partnerCard, partnerOf, type PartnerMove } from './duoMoves';
+import { PARTNER_MOVES, partnerCard, partnerOf, partnerTempoMode, type PartnerMove } from './duoMoves';
 import { partOf, renamed, rootOffset, tileMove as cardTile } from './cards';
 import { CH } from '../coach/skeleton';
-import { moveTempoMode } from './speed';
+import { moveTempoMode, type TempoMode } from './speed';
+import { calmFactor } from './weights';
 import { WALK_SPEED, smoothSteps } from './flow';
 
 export type DuoKind = 'unison' | 'chase' | 'mirror' | 'complement' | 'call' | 'canon' | 'split' | 'partner' | 'trade';
@@ -70,6 +90,10 @@ export interface DuoOpts {
    * uses are open.
    */
   style?: SongStyle;
+  /** The song's tempo (Routine.bpm, else from its beat times). */
+  bpm?: number;
+  /** The map's downbeats (beat indices): partner and complement tiles start on them. Without them, on regular bars only. */
+  downbeats?: readonly number[];
 }
 
 // ---------------------------------------------------------------------------
@@ -102,7 +126,14 @@ const TEMPLATES: Record<Intensity, Partial<Record<SectionType | 'warmup', DuoKin
   },
 };
 
-const TRADE_IDS = new Set(['duo-do-si-do', 'duo-cross-over']);
+/** From this calm up (a ballad; lyrical opens at ~0.68) a song gets only gentle partner moves. */
+export const CALM_GENTLE = 0.6;
+/** A song with fewer partner moves than this to choose from leans on the single-player kinds instead. */
+export const PARTNER_RICH = 6;
+/** Pick weight of a style-tagged partner move on a song that opens its style (times the openness). */
+const STYLE_W = 2.5;
+/** What a thin pool's partner phrases become instead, in turn. */
+const SOLO_KINDS: readonly DuoKind[] = ['complement', 'canon', 'mirror', 'call'];
 
 // ---------------------------------------------------------------------------
 // Unit grouping
@@ -168,22 +199,78 @@ function difficultyOk(d: number, intensity: Intensity): boolean {
 function partnerAllowed(pm: PartnerMove, intensity: Intensity, section: SectionType): boolean {
   if (!difficultyOk(pm.difficulty, intensity)) return false;
   if (pm.jump && intensity === 'chill') return false;
+  if (pm.trade && intensity === 'chill') return false;
   if ((section === 'intro' || section === 'outro') && pm.level !== 'low') return false;
   return true;
+}
+
+/** Danced beats of an instance list by tier (idle groove and cool-down aside): genre = genre-set moves and style-tagged partner moves. */
+function genreBeats(ins: readonly MoveInstance[]): number {
+  let g = 0;
+  for (const i of ins) {
+    if (i.move.idle || i.move.cooldown) continue;
+    const own = partnerOf(i.move);
+    if (own ? own.pm.styles.length > 0 : !!i.move.genre) g += i.span;
+  }
+  return g;
+}
+
+/** Whether a partner move suits a song by style (its genre sets open) and character (gentle only from CALM_GENTLE up). */
+function suitsSong(pm: PartnerMove, open: ReadonlySet<Genre> | null, calm: number | undefined): boolean {
+  if (pm.styles.length && !pm.styles.some((g) => open?.has(g))) return false;
+  if (calm !== undefined && calm >= CALM_GENTLE && !pm.gentle) return false;
+  return true;
+}
+
+/**
+ * The partner moves a song offers at a level (style, calm, tempo and level
+ * rules; verse sections, crossings included), as the duo choreographer
+ * chooses among them. For tests and reports.
+ */
+export function songPartnerMoves(style: SongStyle | undefined, bpm: number | undefined, intensity: Intensity): PartnerMove[] {
+  const open = style ? styleGenres(style) : null;
+  return PARTNER_MOVES.filter((pm) => partnerAllowed(pm, intensity, 'verse') && suitsSong(pm, open, style?.calm) && partnerTempoMode(pm, bpm, intensity) !== 'out');
+}
+
+/** Median beat interval of a beat-time list -> BPM (undefined when unusable). */
+function bpmOfTimes(times: readonly number[] | undefined): number | undefined {
+  if (!times || times.length < 3) return undefined;
+  const iv: number[] = [];
+  for (let k = 1; k < times.length; k++) {
+    const d = times[k] - times[k - 1];
+    if (d > 0 && Number.isFinite(d)) iv.push(d);
+  }
+  if (!iv.length) return undefined;
+  iv.sort((a, b) => a - b);
+  const bpm = 60 / iv[iv.length >> 1];
+  return Number.isFinite(bpm) && bpm > 0 ? bpm : undefined;
 }
 
 export class DuoChoreographer {
   private rng: () => number;
   private memo = new Map<string, { kind: DuoKind; partner?: PartnerMove }>();
-  private complements = new Map<Move, Move>();
+  private complements = new Map<string, Move | null>();
   private recentPartners: PartnerMove[] = [];
   private familyW = new Map<string, number>();
   private sigRun = '';
   /** P2's name for the split combo (its blocks the other way round). */
   private splitName = '';
   private open: ReadonlySet<Genre> | null = null;
+  /** How strongly the song opens each genre (genres.ts genreOpenness), 1 when only the routine is known. */
+  private openness = new Map<Genre, number>();
+  /** The song's calm (SongStyle.calm), when known. */
+  private calm: number | undefined;
   /** The routine's tempo (each move's own half time, speed.ts), when known. */
   private bpm: number | undefined;
+  /** Genre time each track may have (beats) and has so far: the single routine's, then as phrases change it. */
+  private genreCap = Infinity;
+  private genre1 = 0;
+  private genre2 = 0;
+  /** Partner moves (not crossing) this song offers at this level, whatever the section: thin = lean on the solo kinds. */
+  private poolSize = 0;
+  private soloTurn = 0;
+  private tempoModes = new Map<PartnerMove, TempoMode>();
+  private downbeats: ReadonlySet<number> | null = null;
 
   constructor(private o: DuoOpts) {
     this.rng = mulberry32(hashString(`${o.seedKey}|duo|${o.intensity}`));
@@ -191,16 +278,31 @@ export class DuoChoreographer {
 
   build(r: Routine): DuoRoutine {
     const half = r.half;
-    this.bpm = r.bpm;
+    this.bpm = this.o.bpm ?? r.bpm ?? bpmOfTimes(r.times);
+    this.downbeats = this.o.downbeats?.length ? new Set(this.o.downbeats) : null;
     const h = r.signature.length >> 1;
     this.splitName = comboName([...r.signature.slice(h), ...r.signature.slice(0, h)]);
-    if (this.o.style) this.open = styleGenres(this.o.style);
-    else {
+    if (this.o.style) {
+      this.open = styleGenres(this.o.style);
+      const all = genreOpenness(this.o.style);
+      for (const g of this.open) this.openness.set(g, all.get(g) ?? 1);
+      this.calm = this.o.style.calm;
+    } else {
       // No style given: the genres the single routine uses (its signature nod aside).
       const open = new Set<Genre>();
       for (const inst of r.instances) if (inst.move.genre && !inst.sig) open.add(inst.move.genre);
       this.open = open;
+      for (const g of open) this.openness.set(g, 1);
+      // Lyrical only opens on a calm song (songStyle.ts): a routine that dances it is one.
+      if (open.has('lyrical')) this.calm = 0.75;
     }
+    // Genre time: never past the single-player share (GENRE_MAX, or the routine's own when it is higher).
+    let danced = 0;
+    for (const inst of r.instances) if (!inst.move.idle && !inst.move.cooldown) danced += inst.span;
+    const g0 = genreBeats(r.instances);
+    this.genreCap = Math.max(g0, GENRE_MAX * danced);
+    this.genre1 = this.genre2 = g0;
+    this.poolSize = PARTNER_MOVES.filter((pm) => !pm.trade && partnerAllowed(pm, this.o.intensity, 'verse') && this.suits(pm)).length;
     // The song's style, as the single routine expressed it: family weights from its moves.
     for (const inst of r.instances) {
       if (inst.move.idle || inst.move.cooldown) continue;
@@ -247,9 +349,14 @@ export class DuoChoreographer {
         const m = this.memo.get(memoKey);
         kind = m?.kind ?? template[idxInPhrase % template.length];
         partner = m?.partner;
+        // A thin partner pool (a ballad on Easy, a style with few partner moves): some of its phrases go to the solo kinds.
+        if (!m && kind === 'partner' && this.poolSize < PARTNER_RICH && this.rng() * PARTNER_RICH >= this.poolSize) kind = this.soloKind(lastKind);
         if (kind === lastKind && kind !== 'unison' && kind !== 'partner') kind = 'mirror' === kind ? 'unison' : 'mirror';
       }
       const made = this.make(u, kind, partner, half, p1[p1.length - 1], p2[p2.length - 1]);
+      const gu = genreBeats(u.ins);
+      this.genre1 += genreBeats(made.p1) - gu;
+      this.genre2 += genreBeats(made.p2) - gu;
       if (!u.sig && u.phrase !== -1 && !this.memo.has(memoKey)) this.memo.set(memoKey, { kind: made.kind, partner: made.partner });
       p1.push(...made.p1);
       p2.push(...made.p2);
@@ -285,10 +392,16 @@ export class DuoChoreographer {
       }
       case 'complement': {
         if (!main || main.travel !== 0) return this.make(u, 'mirror', undefined, half, prev1, prev2);
-        const b = this.complementOf(main);
+        // P2's own move may add genre time only while the track stays within the genre share.
+        const room = this.genreCap - this.genre2 + genreBeats(u.ins) + 1e-9;
+        const b = this.complementOf(main, mainHalf, room >= u.end - u.start);
         const bMode = b && this.bpm ? moveTempoMode(b, this.bpm, this.o.intensity) : null;
         if (!b || bMode === 'out') return this.make(u, 'mirror', undefined, half, prev1, prev2);
-        return { p1: u.ins.map((i) => copy(i)), p2: tileOne(b, u.start, u.end, bMode ? bMode === 'half' : half, u.section, u.phrase, true), kind };
+        const bHalf = bMode ? bMode === 'half' : mainHalf;
+        if (!this.onBars(u, b.beats * (bHalf ? 2 : 1))) return this.make(u, 'mirror', undefined, half, prev1, prev2);
+        const p2 = tileOne(b, u.start, u.end, bHalf, u.section, u.phrase, true);
+        if (genreBeats(p2) > room) return this.make(u, 'mirror', undefined, half, prev1, prev2);
+        return { p1: u.ins.map((i) => copy(i)), p2, kind };
       }
       case 'call': {
         if (!main) return unison();
@@ -323,31 +436,83 @@ export class DuoChoreographer {
       }
       case 'partner':
       case 'trade': {
-        const fits = (p: PartnerMove) => (u.end - u.start) % (p.beats * (half ? 2 : 1)) === 0 && joins(p, prev1, prev2);
-        const pm = partner && partnerAllowed(partner, this.o.intensity, u.section) && fits(partner) ? partner : this.pickPartner(u, kind === 'trade', half, prev1, prev2);
+        const pm = partner && partner.trade === (kind === 'trade') && this.partnerOk(partner, u, half, prev1, prev2) ? partner : this.pickPartner(u, kind === 'trade', half, prev1, prev2);
         if (!pm) return kind === 'trade' ? this.make(u, 'partner', undefined, half, prev1, prev2) : this.make(u, 'mirror', undefined, half, prev1, prev2);
-        const tiles = tilePartner(pm, u.start, u.end, half, u.section, u.phrase);
+        const tiles = tilePartner(pm, u.start, u.end, this.partnerHalf(pm, half), u.section, u.phrase);
         if (!tiles) return this.make(u, 'mirror', undefined, half, prev1, prev2);
-        return { ...tiles, kind: TRADE_IDS.has(pm.id) ? 'trade' : 'partner', partner: pm };
+        return { ...tiles, kind: pm.trade ? 'trade' : 'partner', partner: pm };
       }
     }
   }
 
-  private pickPartner(u: Unit, trade: boolean, half: boolean, prev1?: MoveInstance, prev2?: MoveInstance): PartnerMove | undefined {
+  /** How the pair dance a partner move on this song at this level (cached). */
+  private modeOf(pm: PartnerMove): TempoMode {
+    let m = this.tempoModes.get(pm);
+    if (!m) this.tempoModes.set(pm, (m = partnerTempoMode(pm, this.bpm, this.o.intensity)));
+    return m;
+  }
+
+  /** A partner move at half time on this song (its own speed limit); the routine's count when the tempo is unknown. */
+  private partnerHalf(pm: PartnerMove, half: boolean): boolean {
+    return this.bpm ? this.modeOf(pm) === 'half' : half;
+  }
+
+  /** Whether a partner move suits this song at all: its style, the song's calm, its tempo. */
+  private suits(pm: PartnerMove): boolean {
+    return suitsSong(pm, this.open, this.calm) && this.modeOf(pm) !== 'out';
+  }
+
+  /** Whether a partner move may fill this unit: level, song, exact fit, flow, and the genre share. */
+  private partnerOk(pm: PartnerMove, u: Unit, half: boolean, prev1?: MoveInstance, prev2?: MoveInstance): boolean {
+    if (!partnerAllowed(pm, this.o.intensity, u.section) || !this.suits(pm)) return false;
     const len = u.end - u.start;
-    const mult = half ? 2 : 1;
+    const span = pm.beats * (this.partnerHalf(pm, half) ? 2 : 1);
+    if (span > len || len % span !== 0 || !joins(pm, prev1, prev2) || !this.onBars(u, 4 * (span / pm.beats))) return false;
+    if (pm.styles.length) {
+      const gu = genreBeats(u.ins);
+      if (Math.max(this.genre1, this.genre2) - gu + len > this.genreCap + 1e-9) return false;
+    }
+    return true;
+  }
+
+  /**
+   * Whether tiles of `step` beats from the unit's start all start on bar
+   * lines: on the map's downbeats when known; otherwise only units of whole
+   * 4-beat bars whose own instances are whole moves (an odd bar shows up in
+   * the single routine as a part of a move or a fill).
+   */
+  private onBars(u: Unit, step: number): boolean {
+    if (this.downbeats) {
+      for (let b = u.start; b < u.end; b += step) if (!this.downbeats.has(b)) return false;
+      return true;
+    }
+    return (u.end - u.start) % 4 === 0 && u.ins.every((i) => !i.fill && !i.move.part);
+  }
+
+  /** The next solo kind for a partner phrase a thin pool gives up (never the kind just danced). */
+  private soloKind(last: DuoKind | null): DuoKind {
+    let k = SOLO_KINDS[this.soloTurn++ % SOLO_KINDS.length];
+    if (k === last) k = SOLO_KINDS[this.soloTurn++ % SOLO_KINDS.length];
+    return k;
+  }
+
+  private pickPartner(u: Unit, trade: boolean, half: boolean, prev1?: MoveInstance, prev2?: MoveInstance): PartnerMove | undefined {
     const it = this.o.intensity;
     const sectionHigh = u.section === 'chorus' || u.section === 'drop';
-    // Partner moves that fill the phrase exactly (no half-done move at its end), and can follow
+    // Partner moves that suit the song, fill the phrase exactly (no half-done move at its end), and can follow
     // what the two are doing (straight after another partner move: from where it left them).
-    const pool = PARTNER_MOVES.filter((pm) => partnerAllowed(pm, it, u.section) && pm.beats * mult <= len && len % (pm.beats * mult) === 0 && TRADE_IDS.has(pm.id) === trade && joins(pm, prev1, prev2));
+    const pool = PARTNER_MOVES.filter((pm) => pm.trade === trade && this.partnerOk(pm, u, half, prev1, prev2));
+    const total = [...this.familyW.values()].reduce((a, b) => a + b, 0) || 1;
     const weights = pool.map((pm) => {
       // Flow: closer to where each dancer is and how they face, the better (the walk-in is shorter).
       let w = Math.exp(-POS_W * (entryGap(pm, prev1, prev2)));
       let fam = 0;
       pm.families.forEach((f, i) => (fam += (this.familyW.get(f) ?? 0) * (i === 0 ? 1 : 0.5)));
-      const total = [...this.familyW.values()].reduce((a, b) => a + b, 0) || 1;
       w *= 0.4 + 2.5 * (fam / total);
+      // The song's own style: a partner move of a set it opens is its vocabulary.
+      if (pm.styles.length) w *= 1 + STYLE_W * Math.max(...pm.styles.map((g) => this.openness.get(g) ?? 0));
+      // The song's character, as for single-player moves (smooth on calm songs, vigorous on driving ones).
+      w *= partnerCalm(pm, this.calm, it);
       if (pm.level === 'high') w *= sectionHigh ? 2 : it === 'sweaty' ? 1.2 : 0.5;
       if (pm.level === 'low') w *= it === 'chill' ? 1.6 : sectionHigh ? 0.5 : 1;
       if (it === 'sweaty' && (pm.jump || pm.difficulty >= 2)) w *= 1.8;
@@ -371,13 +536,28 @@ export class DuoChoreographer {
     return pick;
   }
 
-  private complementOf(m: Move): Move | undefined {
-    const hit = this.complements.get(m);
-    if (hit) return hit;
+  /**
+   * P2's move for a complement phrase: a different in-place move of the same
+   * length and level from the song's open sets (genre ones only when
+   * `genreOk`: the track has genre time left), danced at the same tempo mode
+   * as P1's when one exists (both full or both half time), fitting the song's
+   * character (no jumps on a calm song).
+   */
+  private complementOf(m: Move, mainHalf: boolean, genreOk: boolean): Move | undefined {
+    const key = `${m.id}|${mainHalf ? 'h' : 'f'}|${genreOk ? 'g' : ''}`;
+    const hit = this.complements.get(key);
+    if (hit !== undefined) return hit ?? undefined;
     const it = this.o.intensity;
-    const pool = MOVES.filter(
-      (c) => !c.idle && !c.cooldown && c !== m && c.base !== m.base && c.beats === m.beats && c.travel === 0 && !c.fastTurn && difficultyOk(c.difficulty, it) && !(c.jump && it === 'chill') && c.level === m.level && (!this.open || genreFits(c, this.open)),
+    const calm = this.calm;
+    const mode = (c: Move): TempoMode => (this.bpm ? moveTempoMode(c, this.bpm, it) : mainHalf ? 'half' : 'full');
+    const all = MOVES.filter(
+      (c) =>
+        !c.idle && !c.cooldown && c !== m && c.base !== m.base && c.beats === m.beats && c.travel === 0 && !c.fastTurn && difficultyOk(c.difficulty, it) && !(c.jump && it === 'chill') &&
+        !(c.jump && calm !== undefined && calm >= CALM_GENTLE) && c.level === m.level && (!this.open || genreFits(c, this.open)) && (genreOk || !c.genre) && mode(c) !== 'out',
     );
+    const want: TempoMode = mainHalf ? 'half' : 'full';
+    const same = all.filter((c) => mode(c) === want);
+    const pool = same.length ? same : all;
     let best: Move | undefined;
     let bestS = -Infinity;
     for (const c of pool) {
@@ -385,16 +565,27 @@ export class DuoChoreographer {
       let s = 1 - partsOverlap(m, c);
       if (!c.focus.some((f) => m.focus.includes(f))) s += 0.6;
       if (c.families.some((f) => m.families.includes(f))) s += 0.5;
+      if (m.genre && c.genre === m.genre) s += 0.4;
       if (c.jump !== m.jump) s -= 0.6;
+      s += 0.6 * Math.log(calmFactor(c, calm, it));
       s += this.rng() * 0.5;
       if (s > bestS) {
         bestS = s;
         best = c;
       }
     }
-    if (best) this.complements.set(m, best);
+    this.complements.set(key, best ?? null);
     return best;
   }
+}
+
+/** The single-player character weight (weights.ts calmFactor) of a partner move: the mean over both players' halves. */
+function partnerCalm(pm: PartnerMove, calm: number | undefined, level: Intensity): number {
+  if (calm === undefined) return 1;
+  let s = 0;
+  const hs = [...pm.p1, ...pm.p2];
+  for (const m of hs) s += Math.log(calmFactor(m, calm, level));
+  return Math.exp(s / hs.length);
 }
 
 /** P1 plays the signature as is; P2 plays it rotated by half (the other block first), so the roles swap. */
@@ -588,7 +779,7 @@ export function duoFromRoutine(r: Routine, o: DuoOpts): DuoRoutine {
 /** Generate the duo routine for a beat map (wraps generateRoutine). */
 export function generateDuoRoutine(map: BeatMap, intensity: Intensity, opts: Parameters<typeof generateRoutine>[2] = {}, salt = ''): DuoRoutine {
   const r = generateRoutine(map, intensity, opts);
-  return duoFromRoutine(r, { seedKey: `${map.videoId}${salt ? `|${salt}` : ''}`, intensity, style: opts.style });
+  return duoFromRoutine(r, { seedKey: `${map.videoId}${salt ? `|${salt}` : ''}`, intensity, style: opts.style, downbeats: map.downbeats });
 }
 
 /** P2's mirror-unison instance for a P1 instance (live / idle plans). */

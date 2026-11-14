@@ -1,13 +1,14 @@
 /**
  * Checks for partner moves (duoMoves.ts): per-half key checks, looped
- * playback of the whole move for both players, and contact points lining up.
- * Pure TypeScript (no DOM). Used by the tests and the authoring probe.
+ * playback of the whole move for both players, contact points lining up,
+ * bodies staying apart, and the speed limit. Pure TypeScript (no DOM). Used
+ * by the tests and the authoring probe (`npx tsx tools/moves/duoCheck.ts`).
  */
 
 import { PoseEvaluator } from '../coach/animator';
 import { createPose, createSkeleton, solveSkeleton, J, type Skeleton } from '../coach/skeleton';
 import { partnerLoop } from './duo';
-import { DUO_HOME, partnerDepth, type PartnerMove, type Player } from './duoMoves';
+import { DUO_HOME, partnerDepth, partnerSpeed, type PartnerMove, type Player } from './duoMoves';
 import { checkKeys, checkSkeleton } from './validate';
 
 /** Solved skeletons of both players at move beat `b` (pair space: P1 home at -DUO_HOME/2), plus depth. */
@@ -42,6 +43,49 @@ export function contactReport(pm: PartnerMove): { at: number; dist: number; tol:
     const b = jointWorld(f, c.b[0], c.b[1]);
     return { at: c.at, dist: Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]), tol: c.tol ?? 0.07 };
   });
+}
+
+/** Closest the two bodies come (chest / pelvis, floor distance) over the move, and the beat where. */
+export function bodyGap(pm: PartnerMove, step = 0.25): { gap: number; at: number } {
+  let gap = Infinity, at = 0;
+  for (let b = 0; b < pm.beats; b += step) {
+    const f = partnerFrame(pm, b);
+    for (const j of [J.CHEST, J.PELVIS]) {
+      const p = jointWorld(f, 1, j), q = jointWorld(f, 2, j);
+      const d = Math.hypot(p[0] - q[0], p[2] - q[2]);
+      if (d < gap) {
+        gap = d;
+        at = b;
+      }
+    }
+  }
+  return { gap, at };
+}
+
+/** Bodies closer than this (chest / pelvis) pass through each other (duo.test). */
+export const MIN_BODY_GAP = 0.25;
+
+export interface PartnerReport {
+  id: string;
+  /** Validity problems (validatePartner) plus contacts that don't meet and bodies too close. */
+  problems: string[];
+  /** Speed limit (move beats per minute) and what sets it. */
+  limit: number;
+  by: string;
+  /** Contact distances. */
+  contacts: { at: number; dist: number; tol: number }[];
+  gap: number;
+}
+
+/** Everything the checks know about a partner move (authoring probe: `npx tsx tools/moves/duoCheck.ts`). */
+export function partnerReport(pm: PartnerMove): PartnerReport {
+  const problems = validatePartner(pm);
+  const contacts = contactReport(pm);
+  for (const c of contacts) if (c.dist > c.tol) problems.push(`contact at beat ${c.at} misses: ${c.dist.toFixed(3)} > ${c.tol}`);
+  const { gap, at } = bodyGap(pm);
+  if (gap <= MIN_BODY_GAP) problems.push(`bodies ${gap.toFixed(2)} apart at beat ${at} (min ${MIN_BODY_GAP})`);
+  const sp = partnerSpeed(pm);
+  return { id: pm.id, problems, limit: sp.limit, by: sp.by, contacts, gap };
 }
 
 /** Every validity problem of a partner move (empty = valid). */
