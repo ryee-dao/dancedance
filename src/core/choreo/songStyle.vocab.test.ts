@@ -53,7 +53,8 @@ describe('genre vocabulary', () => {
     ['K-Pop', 'K-pop', ['kpop'], []],
     ['J-Pop', 'J-pop', ['kpop'], []],
     ['Mandopop', 'C-pop', ['kpop'], []],
-    ['bachata', 'Bachata', ['bachata', 'latin'], ['salsa', 'cumbia', 'brazil']],
+    // Bachata grew past MIN_GENRE_SET in the genre survey: Latin no longer opens outright, it lends (genres.ts NEIGHBOURS).
+    ['bachata', 'Bachata', ['bachata'], ['salsa', 'cumbia', 'brazil']],
     ['salsa', 'Salsa', ['salsa'], ['bachata', 'brazil']],
     ['cumbia', 'Cumbia', ['cumbia', 'latin'], ['salsa', 'brazil']],
     ['merengue', 'Merengue', ['latin'], ['salsa', 'brazil']],

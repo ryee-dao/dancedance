@@ -10,6 +10,13 @@
  *             tambourine, the bow and rise, the praise-break shout and its
  *             hops, step-team stomps; opened by gospel / worship / praise
  *             names (families/gospel.ts).
+ *   country   (grown) heel splits, the zydeco
+ *             rubboard scratch, the rolling vine, slappin' leather
+ *             (families/country2.ts).
+ *   bachata   (grown) the turn, the body wave, the hair comb, Dominican
+ *             cross steps, the double tap (families/latin2.ts).
+ *   tango     (grown) forward ochos, the boleo, the cruzada, the lunge, the
+ *             caricia, the molinete (families/latin2.ts).
  */
 
 export const moves: Partial<Record<string, string>> = {
@@ -20,4 +27,9 @@ export const moves: Partial<Record<string, string>> = {
     choir-two-step handkerchief-wave tambourine-praise praise-bow-rise praise-shout
     // high
     shout-hop step-team-stomp-clap`,
+  // More country (families/country2.ts), added to the line-dance / hoedown set.
+  country: `heel-splits rubboard-scratch rolling-vine slap-leather`,
+  // The thin Latin-dance sets (families/latin2.ts).
+  bachata: `bachata-turn bachata-body-wave bachata-hair-comb dominican-cross-step bachata-double-tap`,
+  tango: `tango-ocho tango-boleo tango-cruzada tango-lunge tango-caricia tango-molinete`,
 };

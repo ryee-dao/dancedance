@@ -46,7 +46,7 @@ describe('genre survey sets', () => {
   });
 
   it.each(UNCHANGED)('%j opens exactly what it did', (genres, want) => {
-    const o = [...open({ genres })].filter((g) => g !== 'lyrical').sort();
+    const o: Genre[] = [...open({ genres })].filter((g) => g !== 'lyrical').sort();
     expect(o).toEqual([...want].sort());
     for (const g of ADDED) expect(o.includes(g), `${genres}: ${g}`).toBe(false);
   });
