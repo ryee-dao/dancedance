@@ -290,6 +290,9 @@ const HIPS: FocusMap = { hips: 1.3 };
 const STILL: Weights = { pop: 1 };
 
 const LEXICON: readonly Lex[] = [
+  // --- "Christian rock", "Christian hip hop" ...: the music is its second word's, not a gospel floor (the prefix
+  // alone is read and removed here, before anything else, so the rest reads as rock, metal, hip-hop ...).
+  { re: word('christian(?= (?:rock|metal|punk|hardcore|metalcore|alternative|hip hop|rap|hiphop|edm|electronic|dance|pop punk|ska|indie))|christian alternative'), fam: {}, conf: 0.5 },
   // --- Scenes: they lead the dancing whenever a song-level name says them.
   { re: word('k pop|kpop|korean pop|k rap|k hip hop|k r and b'), fam: { kpop: 1, pop: 0.4, hiphop: 0.2 }, scene: 'K-pop', label: 'K-pop', fixed: true, bpm: 118 },
   { re: word('j pop|jpop|idol pop|idol'), fam: { kpop: 0.7, pop: 0.7 }, scene: 'J-pop', label: 'J-pop', fixed: true, bpm: 120 },
@@ -381,6 +384,13 @@ const LEXICON: readonly Lex[] = [
   { re: word('downtempo|chillwave|chillout|chill out|lo fi hip hop|lo fi|lofi|trip hop|vaporwave'), fam: { pop: 0.6, hiphop: 0.2 }, calm: 0.75, soft: 0.7, bpm: 85 },
   { re: word('chiptune|8 bit|bitpop|video game music|video games?|vgm|game music'), fam: { aerobic: 0.5, pop: 0.5 }, conf: 0.6, bpm: 130 },
   { re: word('electronica|electronic|electro(?! swing)|idm|glitch|breakbeat|breaks|big beat|indietronica'), fam: { aerobic: 0.6, pop: 0.4, disco: 0.15 }, label: 'Electronic', bpm: 125 },
+  // --- Gospel and worship (before soul and R&B: "gospel soul", "urban contemporary gospel" are gospel floors).
+  // Gospel opens the gospel set (the choir step and claps, raised-hand praise, the praise-break shout); worship /
+  // CCM names, whose floor is the raised hands and the sway rather than the shout, open it less firmly (with a
+  // list, the iTunes "Christian & Gospel" tag alone stays below SUB_OPEN, as every tag does).
+  { re: word('southern gospel|bluegrass gospel|country gospel'), fam: { pop: 0.7, rock: 0.15, funk: 0.15 }, sub: { gospel: 0.8 }, calm: 0.5, bpm: 100 },
+  { re: word('urban contemporary gospel|contemporary gospel|traditional gospel|black gospel|gospel music|gospel soul|praise break|gospel'), fam: { pop: 0.7, funk: 0.2 }, sub: { gospel: 1 }, calm: 0.5, label: 'Gospel', bpm: 100 },
+  { re: word('christian and gospel|christian|worship|praise and worship|ccm|inspirational|contemporary christian|spirituals'), fam: { pop: 0.7, funk: 0.2 }, sub: { gospel: 0.6 }, calm: 0.5, label: 'Gospel', bpm: 100 },
   // --- Disco, soul, R&B, funk.
   { re: word('post disco|boogie(?! woogie)'), fam: { disco: 0.8, funk: 0.6 }, bpm: 115 },
   { re: word('nu disco|italo disco|euro disco|disco'), fam: { disco: 1, funk: 0.3 }, label: 'Disco', bpm: 118 },
@@ -444,7 +454,6 @@ const LEXICON: readonly Lex[] = [
   { re: word('fitness and workout|fitness|workout|aerobics'), fam: { aerobic: 0.8, pop: 0.5 }, label: 'Workout', bpm: 130 },
   { re: word('children s music|childrens music|children|kids|nursery rhymes|nursery|novelty|comedy songs|parody'), fam: { party: 0.7, pop: 0.6, aerobic: 0.4 }, label: "Children's music", bpm: 115 },
   { re: word('christmas|holiday'), fam: { pop: 0.8, party: 0.3, disco: 0.2 }, label: 'Holiday', conf: 0.7, bpm: 115 },
-  { re: word('christian and gospel|gospel|christian|worship|praise and worship|ccm|inspirational|contemporary christian|spirituals'), fam: { pop: 0.7, funk: 0.2 }, calm: 0.5, label: 'Gospel', bpm: 100 },
   { re: word('hymns?|choral|choir|a cappella|gregorian chant|chant|sacred|requiem|mass|oratorio|cantata'), fam: STILL, calm: 0.85, soft: 0.9, still: true, label: 'Choral', bpm: 70 },
   {
     re: word('classical|baroque era|baroque|classical era|romantic era|romantic|renaissance|medieval|early music|modern era|minimalism|impressionist|chamber music|orchestral|symphony|symphonic|concerto|sonata|opera|operetta|art song|lieder|contemporary classical|modern classical|neoclassical|piano'),
@@ -782,6 +791,7 @@ const SUB_GROUP: Readonly<Record<SubStyle, readonly Family[]>> = {
   house: ['disco', 'aerobic', 'pop'], edm: ['aerobic', 'pop', 'disco'], bass: ['aerobic', 'hiphop'],
   reggaeton: ['latin', 'hiphop'], brazil: ['latin'], amapiano: ['latin', 'hiphop'], lyrical: [...FAMILIES],
   salsa: ['latin'], merengue: ['latin'], cumbia: ['latin'], bachata: ['latin'], chacha: ['latin'], flamenco: ['latin'], tango: ['latin'], mexican: ['latin'],
+  gospel: ['pop', 'funk'],
 };
 
 /** The strongest family of a mix. */
@@ -1019,6 +1029,7 @@ const SUB_HEAD: Readonly<Record<SubStyle, string | null>> = {
   metal: 'Rock', punk: 'Rock', trap: 'Hip-hop', drill: 'Hip-hop', rnb: null, house: 'Electronic', edm: 'Electronic', bass: 'Electronic',
   reggaeton: 'Latin', brazil: 'Latin', amapiano: 'Afro', lyrical: null,
   salsa: null, merengue: null, cumbia: null, bachata: null, chacha: null, flamenco: null, tango: null, mexican: null,
+  gospel: null,
 };
 
 /** A family as a music style name: "Dance", not "Aerobics" (families say how a song is danced, the label what it is). */

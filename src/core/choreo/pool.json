@@ -1,8 +1,8 @@
 {
- "catalogueHash": "b02aeb24",
+ "catalogueHash": "e65ed99a",
  "threshold": 0.085,
  "stats": {
-  "baseMoves": 1233,
+  "baseMoves": 1244,
   "candidates": 8890,
   "counted": 1308,
   "ornaments": 2479,

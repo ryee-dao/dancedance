@@ -14,6 +14,7 @@ readable from the front, and distinct**. Quality beats quantity: do not pad.
 | `families/latin.ts`, `disco.ts`, `funk.ts`, `hiphop.ts`, `pop.ts`, `rock.ts`, `kpop.ts`, `party.ts` | one style family each (`party` = mime, sports, novelty) |
 | `families/afro.ts`, `retro.ts`, `world.ts` | traditions: afrobeats / dancehall / soca, swing / country / folk, Bollywood / hula / belly dance ... |
 | `families/named.ts` | named variations: recombinations promoted to first-class moves with their own names |
+| `families/gospel.ts`, `country2.ts`, ... | the genre survey's additions (Nov 2026): gospel, more country, ... (one file per tradition; ids in `genreSets/variety.ts`) |
 
 ## Two tiers: global and genre-exclusive
 
@@ -22,9 +23,11 @@ exclusive to one GENRE set, listed by id in `genres.ts` (`GENRE_MOVES`) and
 `genreSets/*.ts`: rock, hip-hop, Latin, disco & funk, K-pop, country, swing,
 afro, Caribbean, South Asian, folk, belly dance, hula, capoeira, and the
 sub-style sets metal, punk, trap, drill, R&B, house, EDM, bass music,
-reggaeton, Brazilian, amapiano, lyrical and the Latin dances salsa,
-merengue, cumbia, bachata, cha-cha, flamenco, tango, regional Mexican (see
-"Genre sets" below). A genre-exclusive move is only
+reggaeton, Brazilian, amapiano, lyrical, the Latin dances salsa,
+merengue, cumbia, bachata, cha-cha, flamenco, tango, regional Mexican, and
+gospel (see "Genre sets" below; the sets added or grown in the genre survey,
+`tools/eval/data/genre-dance-survey.md`, list their ids in
+`genreSets/variety.ts`). A genre-exclusive move is only
 used on songs whose style opens that genre (`songGenres`: the style's
 tradition themes, its leading families, its sub-style scores, gated by the
 song's calm). When you add a move that only
@@ -171,6 +174,7 @@ borrow needs a `NEIGHBOURS` entry with the dance reason next to it.
 | `tango` | tango walk | tango, nuevo tango, electrotango | closes Latin; borrows flamenco, lyrical (calm) | `genres.ts` RAW |
 | `mexican` | folklórico skirt, hat dance heels | regional Mexican, banda, norteño, mariachi, corridos, Tejano | closes Latin; borrows cumbia, folk (polka), country | `genres.ts` RAW |
 | `merengue`, `chacha` | (their steps are Latin's) | merengue; cha-cha, danzón, rumba, ballroom | open Latin; NAMED_DANCE favours their moves | - |
+| `gospel` | choir step and clap, choir two-step, raised-hand praise, lifted hands, point to heaven, handkerchief wave, tambourine, bow and rise, the praise-break shout and shout hops, step-team stomps | gospel (traditional, urban contemporary, southern), worship, CCM, contemporary Christian, the iTunes "Christian & Gospel" tag; "Christian rock / metal / hip hop" read as their second word | none; borrows R&B, soul / funk grooves, lyrical (calm) | `genreSets/variety.ts` |
 
 Country is one set: its moves are line-dance / hoedown steps, which serve
 country-pop at tempo as well; a country ballad closes it by its calm (and

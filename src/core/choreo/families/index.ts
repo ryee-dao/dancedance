@@ -26,6 +26,7 @@ import * as electronic from './electronic';
 import * as urban from './urban';
 import * as lyrical from './lyrical';
 import * as named from './named';
+import * as gospel from './gospel';
 
 export interface FamilyFile {
   patterns: PatternSet;
@@ -33,7 +34,7 @@ export interface FamilyFile {
 }
 
 /** Family files by name (the --family argument of tools/moves/check.ts). */
-export const FAMILY_FILES: Readonly<Record<string, FamilyFile>> = { shared, aerobic, cooldown, latin, disco, funk, hiphop, pop, rock, kpop, party, afro, retro, world, electronic, urban, lyrical, named };
+export const FAMILY_FILES: Readonly<Record<string, FamilyFile>> = { shared, aerobic, cooldown, latin, disco, funk, hiphop, pop, rock, kpop, party, afro, retro, world, electronic, urban, lyrical, named, gospel };
 
 /**
  * Definition errors (duplicate ids, unknown patterns, bad tags), by file. A
