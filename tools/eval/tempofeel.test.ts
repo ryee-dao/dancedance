@@ -4,8 +4,9 @@
  * the free time of a beatless map, without audio: every saved sample with a
  * researched stepping tempo (expectations / audio targets `danceBpm`, `altBpm`).
  *
- *   run-20261115 and its round1-rescore,  the saved analyser 1.4.0 maps, styled as the app
- *   fast-20261114                          does (the looked-up genres, levels, artist genres);
+ *   run-20261116 (round three),            the saved analyser 1.4.0 maps, styled as the app
+ *   run-20261115 and its round1-rescore,   does (the looked-up genres, levels, artist genres);
+ *   fast-20261114
  *                                          fast-20261114: 28 well-known genuinely fast songs
  *                                          (pop, hip-hop, rock, rock and roll, ska, northern
  *                                          soul, K-pop, merengue) and controls, hand-picked
@@ -22,7 +23,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { BeatMap } from '../../src/core/analysis';
 import { traitsFromStats } from '../../src/core/analysis/traits';
-import { calmToned, danceFeel, feelAudio, generateRoutine, STEADY_TIME_BPM, tempoCandidates } from '../../src/core/choreo/generator';
+import { calmToned, danceFeel, FEEL_DOUBLE_REACH, feelAudio, generateRoutine, STEADY_TIME_BPM, tempoCandidates } from '../../src/core/choreo/generator';
 import { resolveSongStyle, type SongStyle } from '../../src/core/choreo/songStyle';
 import { traitsOf } from '../../src/core/choreo/songTraits';
 import type { GenreLookup } from '../../src/genre';
@@ -97,6 +98,7 @@ function statsMap(key: string, s: RecordedStats['songs'][string]): BeatMap {
 function load(): Case[] {
   const out: Case[] = [];
   for (const [set, dir, expect, targets] of [
+    ['r3', 'run-20261116', 'run-20261116/expectations.json', ''],
     ['r2', 'run-20261115', 'run-20261115/expectations.json', ''],
     ['r1', 'run-20261115/round1-rescore', 'run-20261113/expectations.json', 'run-20261113/audio-targets.json'],
     ['fast', 'fast-20261114', 'fast-20261114/audio-targets.json', ''],
@@ -180,6 +182,27 @@ describe.skipIf(!existsSync(join(DATA, 'run-20261115', 'maps')))('real music: th
     console.log(`[tempofeel] half counts stepped at the tempo ${half.filter((g) => g.feel === 2).length}/${half.length}; not: ${half.filter((g) => g.feel !== 2).map(label).join('; ')}`);
     expect(strong.length).toBeGreaterThanOrEqual(4);
     expect(strong.filter((g) => g.feel !== 2).map(label)).toEqual([]);
+  });
+
+  it('round three: an album\'s names never drive the half-time exemption; a double stays within its genre\'s reach', () => {
+    const at = (set: string, key: string) => graded.find((g) => g.set === set && g.key === key)!;
+    // KPop Demon Hunters "Free": a ~70 ballad counted 140 (half 1.0, backbeat 1.0); the soundtrack album's "trap EDM"
+    // read as bass music no longer keeps the count.
+    const free = at('r3', '1820264339');
+    expect(free.style.subs?.bass ?? 0).toBeGreaterThan(0.4);
+    expect(free.style.songLevel?.subs?.bass ?? 0).toBeLessThan(0.3);
+    expect(free.danced).toBeCloseTo(70, 0);
+    // Kenny Rogers & Dottie West: a country-pop duet counted 92 with a strong double (1.0) is not stepped at 185.
+    const kenny = at('r3', '724635463');
+    expect(kenny.feel).toBe(1);
+    // The doubles that step right (fast-20261114) keep theirs.
+    for (const k of ['footloose', 'shakeitoff', 'happy', 'stillstanding']) expect(at('fast', k).feel, k).toBe(2);
+    // Every double danced lands within FEEL_DOUBLE_REACH of its genre's tempo, or its sub-styles span fast dancing.
+    for (const g of graded.filter((x) => x.feel === 2)) {
+      const center = g.style.bpm! * ((g.style.calm ?? 0) >= 0.7 && !g.style.still ? 0.8 : 1);
+      const fast = Math.max(...['punk', 'metal', 'bass', 'edm', 'trap', 'drill'].map((s) => (g.style.songLevel?.subs ?? g.style.subs)?.[s as 'punk'] ?? 0));
+      if (fast < 0.5) expect(Math.log2(g.danced / center), label(g)).toBeLessThanOrEqual(FEEL_DOUBLE_REACH);
+    }
   });
 
   it('most songs are danced in their researched range', () => {

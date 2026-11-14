@@ -10,7 +10,11 @@
  * 1. Names are put in the common spelling (names.ts).
  * 2. Junk control:
  *    - a crowd tag (MusicBrainz) with a single vote counts only when another
- *      source reports the same genre or a narrower form of it;
+ *      source reports the same genre or a narrower form of it; on an artist
+ *      page whose tags all have one vote (one tagger is all there is), also
+ *      when another site reports a broader form, at LONE_TAGGER_SHARE
+ *      ("cumbia, cumbia mexicana, tejano" for an artist the store calls
+ *      "Latin" is kept, not collapsed to "latin");
  *    - a name whose broad family (rock, pop/dance, urban, country...) agrees
  *      with no other source, when at least two other source groups do say
  *      something placeable, counts CONTRA_SHARE; a song source's first name
@@ -53,6 +57,14 @@
  *    in full when the song sources only say umbrellas (a store's "Música
  *    tropical": rule 5 decides there).
  *
+ * 8. Corroborated lift (liftUnderUmbrella): when everything the song's own
+ *    sources say is an umbrella ("pop" for Hot Chocolate's Brother Louie),
+ *    an album genre that independent PROVIDERS agree on at the album and
+ *    artist levels (funk: MusicBrainz, Wikimedia and iTunes) joins the song
+ *    level after the umbrella, at most MAX_LIFTED. Agreement is scaled by
+ *    how close the name is to the umbrella; the same provider at two levels
+ *    counts once, the artist's genre alone never lifts.
+ *
  * 7. Song forms (names.ts FORMS: "ballad", "power ballad") are not genres:
  *    they take part in no family check and no ranking, and the best one a
  *    song source reports follows the genres (MAX_FORMS). The choreographer
@@ -61,7 +73,7 @@
  * Genres are only ever taken from what a source said exactly; relations
  * only add weight.
  */
-import { broaderThan, canonicalGenre, displayName, families, genreSpecificity, related } from './names';
+import { broaderThan, canonicalGenre, displayName, families, genreSpecificity, isForm, related } from './names';
 import type { GenreLevel, GenreSource, SourceId, SourceOutcome } from './types';
 
 export const MAX_GENRES = 6;
@@ -112,6 +124,19 @@ export const ECHO_RATES: Partial<Record<SourceId, number>> = {
 };
 export const ECHO_MIN = 0.7;
 export const ECHO_FLOOR = 0.1;
+/** A single-vote tag of a page whose tags all have one vote, placed by another site's broader report, counts this much. */
+export const LONE_TAGGER_SHARE = 0.6;
+/**
+ * Rule 8 (corroborated lift): an album genre under a bare song-level umbrella joins the song level from this
+ * agreement (independent providers, closeness to the umbrella) ...
+ */
+export const LIFT_MIN = 1.5;
+/** ... a provider that says it only about the artist counts this much (an album answer 1) ... */
+export const LIFT_ARTIST = 0.5;
+/** ... and a name that is not a narrower form of the song's umbrella this much (soul, funk under "pop") ... */
+export const LIFT_FAR = 0.5;
+/** ... at most this many. */
+export const MAX_LIFTED = 2;
 
 export function echoShare(id: SourceId): number {
   const rate = ECHO_RATES[id];
@@ -230,10 +255,21 @@ function control(lists: SourceList[]): void {
   // Single votes need another source.
   for (const l of lists) {
     if (!l.src.strictNames) continue;
+    // An artist page whose tags all have one vote: one tagger's say, no votes to tell junk from knowledge.
+    // (A recording's or an album's single votes stay junk control: chart tags, "boom bap" on a K-pop song.)
+    const oneTagger = l.src.level === 'artist' && l.entries.every((e) => e.count === undefined || e.count <= 1);
     l.entries = l.entries.filter((e) => {
       if (e.count === undefined || e.count > 1) return true;
-      // The same genre or a narrower form of it; a broader report ("pop" for "dream pop") says too little.
-      return lists.some((m) => m !== l && tier(m) === tier(l) && m.entries.some((x) => x.key === e.key || broaderThan(e.key, x.key)));
+      const others = lists.filter((m) => m !== l && tier(m) === tier(l));
+      // The same genre or a narrower form of it; a broader report ("pop" for "dream pop") says too little ...
+      if (others.some((m) => m.entries.some((x) => x.key === e.key || broaderThan(e.key, x.key)))) return true;
+      // ... unless the tagger is all there is: then a broader report from another site places the tag in a family
+      // that site confirms (MusicBrainz "cumbia, cumbia mexicana" for an artist the store calls "Latin"). It counts less.
+      if (oneTagger && others.some((m) => m.entries.some((x) => broaderThan(x.key, e.key)))) {
+        e.factor *= LONE_TAGGER_SHARE;
+        return true;
+      }
+      return false;
     });
   }
   // Echo of the same site's artist answer: every song genre is the site's artist genre. A genre that
@@ -344,6 +380,33 @@ export function umbrellasLast<T extends { key: string }>(list: T[], credible: (x
 
 const round = (x: number) => Math.round(x * 1000) / 1000;
 
+/**
+ * Rule 8: the album genres (`candidates`) that join the song level when everything the song's own sources say
+ * (`songKeys`) is an umbrella. Agreement counts PROVIDERS (source groups), not sources: MusicBrainz at the
+ * album and at the artist level is one say. Each provider reporting a candidate (or a narrower form of it) at the
+ * album level adds 1, one reporting it only about the artist LIFT_ARTIST; the sum is scaled by closeness (1 for a
+ * narrower form of the song's umbrella: R&B under pop; LIFT_FAR otherwise: funk under pop) and must reach
+ * LIFT_MIN. An album source and an artist source must both say it: the album's genre alone is the album's
+ * (rule 6), and the artist's genre alone never lifts (it is a score: artistGenres). Strongest first.
+ */
+function liftUnderUmbrella(songKeys: ReadonlySet<string>, candidates: readonly string[], album: readonly SourceList[], artist: readonly SourceList[], umbrellaSpec: number): string[] {
+  const umbrellas = [...songKeys].filter((k) => !isForm(k));
+  if (!umbrellas.length || umbrellas.some((k) => genreSpecificity(k) >= umbrellaSpec)) return [];
+  const says = (l: SourceList, g: string) => l.entries.some((e) => !e.form && (e.key === g || broaderThan(g, e.key)));
+  const out: { key: string; lift: number }[] = [];
+  for (const g of new Set(candidates)) {
+    if (isForm(g) || genreSpecificity(g) < umbrellaSpec || !album.some((l) => says(l, g))) continue;
+    if (!artist.some((l) => says(l, g))) continue;
+    const by = new Map<string, number>();
+    for (const l of album) if (says(l, g)) by.set(l.src.group, 1);
+    for (const l of artist) if (says(l, g) && !by.has(l.src.group)) by.set(l.src.group, LIFT_ARTIST);
+    const near = umbrellas.some((u) => broaderThan(u, g)) ? 1 : LIFT_FAR;
+    const lift = [...by.values()].reduce((a, b) => a + b, 0) * near;
+    if (lift >= LIFT_MIN - 1e-9) out.push({ key: g, lift });
+  }
+  return out.sort((a, b) => b.lift - a.lift).slice(0, MAX_LIFTED).map((x) => x.key);
+}
+
 export function combineGenres(outcomes: Partial<Record<SourceId, SourceOutcome>>, sources: readonly SourceInfo[], max = MAX_GENRES, w: RankWeights = DEFAULT_WEIGHTS): Combined {
   const lists = readLists(outcomes, sources, w.positionDecay);
   control(lists);
@@ -387,8 +450,19 @@ export function combineGenres(outcomes: Partial<Record<SourceId, SourceOutcome>>
   // Rule 4b: an album genre that narrows the song's own names comes before them only with credible album
   // support (two album sources); one Discogs style ("New Jack Swing" on a Celine Dion album) follows them.
   const lone = (x: Cand) => x.level === 'album' && x.albumDirect < CREDIBLE_ALBUM;
-  const songList = [...ranked.filter((x) => !lone(x)), ...ranked.filter(lone)];
-  const albumList = order([...albumKeys].filter((g) => !songTier.has(g)).map((g) => scoreOf(g, 'album')));
+  const lead = ranked.filter((x) => !lone(x));
+  let songList = [...lead, ...ranked.filter(lone)];
+  let albumList = order([...albumKeys].filter((g) => !songTier.has(g)).map((g) => scoreOf(g, 'album')));
+  // Rule 8: under a bare song-level umbrella, album genres that independent providers agree on join the song level:
+  // in place when they already lead with it, else right after the song's own names (strongest agreement first).
+  const lifted = liftUnderUmbrella(songKeys, [...songList, ...albumList].filter((x) => x.level === 'album').map((x) => x.key), album, artist, w.umbrellaSpec);
+  if (lifted.length) {
+    const up = (x: Cand) => lifted.includes(x.key);
+    const all = [...songList, ...albumList];
+    const raised = lifted.filter((k) => !lead.some((x) => x.key === k)).map((k) => ({ ...all.find((x) => x.key === k)!, level: 'song' as const }));
+    songList = [...lead.map((x) => (up(x) ? { ...x, level: 'song' as const } : x)), ...raised, ...ranked.filter((x) => lone(x) && !up(x))];
+    albumList = albumList.filter((x) => !up(x));
+  }
   const scored: ScoredGenre[] = [...songList, ...albumList].map(({ songDirect: _s, albumDirect: _a, ...x }) => x);
   // Song forms ("ballad") never compete with genres: the best one a song source reports follows them (an album's
   // "Ballad" style says the album has ballads, not that this song is one; album sources still corroborate).

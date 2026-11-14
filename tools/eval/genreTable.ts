@@ -20,7 +20,7 @@ function row(name: string, source: string): string {
   const fam = Object.entries(s.families).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0)).slice(0, 2).map(([f, w]) => `${f} ${(w ?? 0).toFixed(2)}`).join(', ');
   const subs = Object.entries(r.subs).map(([k, v]) => `${k} ${(v ?? 0).toFixed(2)}`).join(', ');
   const hint = [r.calm !== null ? `calm ${r.calm}` : '', r.soft !== null ? `soft ${r.soft}` : '', r.bpm ? `${r.bpm} BPM` : ''].filter(Boolean).join(', ');
-  return `| ${cell(name)} | ${source} | ${cell(styleLabel(s))} | ${fam} | ${subs} | ${[...r.themes].join(', ')}${r.scene ? ` scene ${r.scene}` : ''} | ${r.still ? 'not dance music' : ''} | ${hint} | ${[...styleGenres(s)].join(', ') || '-'} |`;
+  return `| ${cell(name)} | ${source} | ${cell(styleLabel(s))} | ${fam} | ${subs} | ${[...r.themes].join(', ')}${r.lively ? `${r.lively} when lively` : ''}${r.bright ? `${r.bright} when bright` : ''}${r.scene ? ` scene ${r.scene}` : ''} | ${r.still ? 'not dance music' : ''} | ${hint} | ${[...styleGenres(s)].join(', ') || '-'} |`;
 }
 
 console.log('# Genre vocabulary: what each name maps to (songStyle.ts)\n');

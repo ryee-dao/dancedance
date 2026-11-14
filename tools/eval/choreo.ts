@@ -10,8 +10,8 @@
  *   npx tsx tools/eval/choreo.ts --table before.json after.json  (every song, before / after side by side, markdown)
  *   npx tsx tools/eval/choreo.ts --set levels [--recombine] --out x.json   (the run with genre-lookups-levels.json)
  *   npx tsx tools/eval/choreo.ts --set catalog [--genres <genres.json>] [--recombine] --out x.json
- *   npx tsx tools/eval/choreo.ts --set round2|round1r [--recombine] --out x.json   (data/run-20261115 and its
- *            round1-rescore/: their genre-lookups.json, as saved or recombined; part of --set all)
+ *   npx tsx tools/eval/choreo.ts --set round3|round2|round1r [--recombine] --out x.json   (data/run-20261116,
+ *            data/run-20261115 and its round1-rescore/: their genre-lookups.json, as saved or recombined; part of --set all)
  *
  * Inputs per set:
  *   run      data/run-20261113: sample, stats.json (traits re-mapped with the
@@ -309,7 +309,7 @@ if (process.argv[1]?.endsWith('choreo.ts')) {
     if (which === 'levels') out.push(...evalSet(join(DATA, 'run-20261113'), 'run', false, await readLookups(join(DATA, 'run-20261113', 'genre-lookups-levels.json'), recombined, titlesOf(join(DATA, 'run-20261113')))));
     if (which === 'all' || which === 'heldout') out.push(...evalSet(join(DATA, 'heldout-20261114'), 'heldout', false));
     // Round two (seed 20261115) and round one re-looked-up (its round1-rescore/): the lookups as the app passes them.
-    for (const [name, sub] of [['round2', 'run-20261115'], ['round1r', join('run-20261115', 'round1-rescore')]] as const) {
+    for (const [name, sub] of [['round3', 'run-20261116'], ['round2', 'run-20261115'], ['round1r', join('run-20261115', 'round1-rescore')]] as const) {
       if (which === 'all' || which === name) out.push(...evalSet(join(DATA, sub), name, false, await readLookups(join(DATA, sub, 'genre-lookups.json'), recombined, titlesOf(join(DATA, sub)))));
     }
     if (which === 'all' || which === 'famous') out.push(...famous());

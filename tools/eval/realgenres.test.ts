@@ -5,8 +5,9 @@
  * the current src/genre rules, the analyser's recorded trait statistics
  * (stats.json) re-mapped with the current traitsFromStats, and the style the
  * app would resolve from them. Sets: run-20261115 (round two, 37 songs
- * analysed), its round1-rescore/ (round one looked up again, 30), and the
- * catalog's lookups (public/genres.json, ~100 songs, no audio).
+ * analysed), its round1-rescore/ (round one looked up again, 30),
+ * run-20261116 (round three, 40) and the catalog's lookups
+ * (public/genres.json, ~100 songs, no audio).
  *
  * First the rules over every song (enough songs that a rule holding by luck
  * would show), then the round-two findings song by song, then the fixes that
@@ -27,6 +28,7 @@ import type { RecordedStats } from './stats';
 const DATA = join(__dirname, 'data');
 const ROUND2 = join(DATA, 'run-20261115');
 const ROUND1 = join(ROUND2, 'round1-rescore');
+const ROUND3 = join(DATA, 'run-20261116');
 const CATALOG = join(__dirname, '..', '..', 'public', 'genres.json');
 const read = <T>(p: string): T => JSON.parse(readFileSync(p, 'utf8')) as T;
 
@@ -117,10 +119,11 @@ describe.skipIf(!have)('recorded songs: genre names -> dance sets', () => {
   it('round two, song by song', () => {
     // A. Genre names that opened the wrong set.
     expect(by(/Desirae Garcia/).open.has('folk')).toBe(false);
-    for (const re of [/Sentimental Mood/, /Lee Konitz/]) {
-      expect(by(re).open.has('discofunk'), String(re)).toBe(false);
-      expect(by(re).open.has('swing'), String(re)).toBe(true);
-    }
+    for (const re of [/Sentimental Mood/, /Lee Konitz/]) expect(by(re).open.has('discofunk'), String(re)).toBe(false);
+    // Swing from the swing era's names ("big band" on Ellington & Coltrane); since round three a drumless cool-jazz
+    // duo (Lee Konitz, no beat found) is jazz danced gently, not Lindy steps.
+    expect(by(/Sentimental Mood/).open.has('swing')).toBe(true);
+    expect(by(/Lee Konitz/).open.has('swing')).toBe(false);
     const sertanejo = by(/Peão Carreiro/);
     expect(sertanejo.open.has('brazil')).toBe(false);
     expect(sertanejo.open.has('country')).toBe(true);
@@ -169,6 +172,37 @@ describe.skipIf(!have)('recorded songs: genre names -> dance sets', () => {
       if (/^bachata$/i.test(s.lists.genres[0] ?? '')) expect(s.open.has('bachata'), s.name).toBe(true);
       if (/^cumbia$/i.test(s.lists.genres[0] ?? '')) expect(s.open.has('cumbia'), s.name).toBe(true);
     }
+  });
+
+  it.skipIf(!existsSync(join(ROUND3, 'genre-lookups.json')))('round three, song by song', async () => {
+    const round3 = await loadSet(ROUND3);
+    expect(round3.length).toBeGreaterThanOrEqual(38);
+    const r3 = (name: RegExp) => round3.find((x) => name.test(x.name)) ?? (() => { throw new Error(`no recorded song ${name}`); })();
+    // 1. Under a bare song-level "pop", the funk that album and artist providers agree on joins the song level.
+    const louie = r3(/Brother Louie/);
+    expect(louie.lists.genres.slice(0, 2)).toEqual(['pop', 'funk']);
+    expect(louie.lists.genreLevels?.slice(0, 2)).toEqual(['song', 'song']);
+    expect(louie.open.has('discofunk')).toBe(true);
+    expect(louie.label).toBe('Pop · Funk');
+    // ... the artist's reggaeton alone (no dembow in the audio) does not open its set under "urbano".
+    const anuel = r3(/Little Demon/);
+    expect(anuel.open.has('reggaeton')).toBe(false);
+    expect(anuel.open.has('latin')).toBe(true);
+    // 2. The artist's MusicBrainz "cumbia" (one tagger) is kept, and refines the store's "Pop Latino".
+    const fito = r3(/Fito Olivares/);
+    expect(fito.lists.artistGenres).toContain('cumbia');
+    expect(fito.open.has('cumbia')).toBe(true);
+    // 5. Stand-in sets: J-pop is no K-pop idol set; a calm piano trio no Lindy; the album's salsa no leak into bachata.
+    expect(r3(/YOH KAMIYAMA/).open.has('kpop')).toBe(false);
+    expect(r3(/YOH KAMIYAMA/).label).toBe('J-pop');
+    expect(r3(/Refraction/).open.has('swing')).toBe(false);
+    const aventura = r3(/Aventura/);
+    expect(aventura.open.has('bachata')).toBe(true);
+    for (const g of ['salsa', 'merengue']) expect(aventura.open.has(g), g).toBe(false);
+    // 6. "Turns" in "As the Sky Turns Black" is narration, not a spin cue.
+    expect(r3(/As the Sky Turns Black/).style.themes).not.toContain('spin');
+    // The artist's "metal" on a track with no distorted guitars stays a flavour.
+    expect(r3(/SlugWeed/).open.has('metal')).toBe(false);
   });
 
   it.skipIf(!existsSync(CATALOG))('catalog: We Found Love and Sorry do not lead with R&B', () => {

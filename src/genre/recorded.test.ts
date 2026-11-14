@@ -52,8 +52,10 @@ describe('recorded lookups', () => {
     expect(l.sources.wikipedia).toMatchObject({ status: 'none', reason: expect.stringContaining('by another artist') });
     expect(l.sources['musicbrainz-album']).toMatchObject({ links: { discogsMaster: '2422489', wikidata: 'Q56208868' } });
     expect(said(l, 'discogs-album')).toEqual(['Cumbia', 'Vallenato', 'Latin']);
-    expect(l.genres).toEqual(['tropical', 'vallenato', 'cumbia', 'latin']);
-    expect(l.genreLevels).toEqual(['song', 'album', 'album', 'album']);
+    // The store's "tropical" is an umbrella: cumbia, which the album and the artist agree on (combine.ts rule 8),
+    // joins the song level; the album's vallenato stays the album's.
+    expect(l.genres).toEqual(['tropical', 'cumbia', 'vallenato', 'latin']);
+    expect(l.genreLevels).toEqual(['song', 'song', 'album', 'album']);
     expect(l.genres).not.toContain('Latin pop');
     expect(l.artistGenres![0]).toBe('cumbia');
   });

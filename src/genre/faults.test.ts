@@ -86,6 +86,61 @@ describe('album genres, song forms, first and last names', () => {
   });
 });
 
+describe('round three: agreement under a bare umbrella, one tagger\'s specific names', () => {
+  // Shaped like Hot Chocolate "Brother Louie": the song sources say pop; album and artist sources at three providers
+  // (MusicBrainz, Wikimedia, iTunes) say soul / funk / disco.
+  const louie = {
+    musicbrainz: found(['pop', 'vocal'], [1, 1]),
+    itunes: found(['Pop']),
+    'musicbrainz-album': found(['disco', 'soul', 'contemporary pop/rock', 'funk', 'pop', 'r&b'], [4, 3, 2, 2, 1, 1]),
+    'wikipedia-album': found(['Soul']),
+    'wikidata-album': found(['pop music', 'funk', 'rhythm and blues']),
+    'itunes-album': found(['Funk']),
+    'musicbrainz-artist': found(['soul', 'funk', 'disco', 'pop', 'pop soul', 'pop rock'], [5, 3, 2, 2, 2, 1]),
+    'wikipedia-artist': found(['R&B', 'funk', 'soul', 'disco']),
+    'wikidata-artist': found(['funk', 'disco', 'soul', 'pop music']),
+    'itunes-artist': found(['R&B/Soul']),
+  };
+
+  it('a style that independent album and artist providers agree on joins the song level after the umbrella', () => {
+    const c = combineGenres(louie, DEFAULT_SOURCES);
+    expect(c.genres.slice(0, 2)).toEqual(['pop', 'funk']);
+    expect(c.levels.slice(0, 2)).toEqual(['song', 'song']);
+    // Soul and disco: two providers (MusicBrainz and Wikimedia at both levels count once each), not narrower than pop.
+    expect(c.levels[c.genres.indexOf('soul')]).toBe('album');
+  });
+
+  it('not from the album alone, the artist alone, or one provider at two levels', () => {
+    const { 'musicbrainz-artist': _m, 'wikipedia-artist': _w, 'wikidata-artist': _d, 'itunes-artist': _i, ...albumOnly } = louie;
+    expect(combineGenres(albumOnly, DEFAULT_SOURCES).levels.slice(1).every((l) => l === 'album')).toBe(true);
+    const artistOnly = { musicbrainz: louie.musicbrainz, itunes: louie.itunes, 'musicbrainz-artist': louie['musicbrainz-artist'], 'wikipedia-artist': louie['wikipedia-artist'], 'wikidata-artist': louie['wikidata-artist'] };
+    expect(combineGenres(artistOnly, DEFAULT_SOURCES).genres).toEqual(['pop']);
+    const oneProvider = { musicbrainz: louie.musicbrainz, itunes: louie.itunes, 'musicbrainz-album': found(['funk', 'pop'], [3, 2]), 'musicbrainz-artist': found(['funk', 'soul'], [4, 2]) };
+    const c = combineGenres(oneProvider, DEFAULT_SOURCES);
+    expect(c.levels[c.genres.indexOf('funk')]).toBe('album');
+    // A song that names its style itself is not lifted: the album's names stay the album's.
+    const named = combineGenres({ ...louie, wikipedia: found(['Glam rock']) }, DEFAULT_SOURCES);
+    expect(named.levels[named.genres.indexOf('glam rock')]).toBe('song');
+    expect(named.levels[named.genres.indexOf('funk')]).toBe('album');
+  });
+
+  it('an artist page with one tagger keeps its specific names when another site places them (Fito Olivares: cumbia)', () => {
+    const fito = {
+      itunes: found(['Pop Latino']),
+      'itunes-album': found(['Pop Latino']),
+      'musicbrainz-artist': found(['cumbia', 'cumbia mexicana', 'latin', 'tejano'], [1, 1, 1, 1]),
+      'itunes-artist': found(['Latin']),
+    };
+    const c = combineGenres(fito, DEFAULT_SOURCES);
+    expect(c.artistGenres).toEqual(expect.arrayContaining(['cumbia', 'latin']));
+    // With no other site placing them (nothing broader elsewhere), one tagger's names stay out.
+    expect(combineGenres({ itunes: found(['Pop Latino']), 'musicbrainz-artist': found(['cumbia', 'tejano'], [1, 1]) }, DEFAULT_SOURCES).artistGenres).toEqual([]);
+    // A recording's single votes stay junk control (one tagger's "boom bap" on a K-pop song).
+    const rec = combineGenres({ musicbrainz: found(['k-pop', 'boom bap'], [1, 1]), itunes: found(['K-Pop']), wikipedia: found(['hip hop']) }, DEFAULT_SOURCES);
+    expect(rec.genres).not.toContain('boom bap');
+  });
+});
+
 describe('the title as song-level evidence', () => {
   it('an exact, specific genre name of the vocabulary', () => {
     expect(titleGenre('Reggaeton')).toBe('Reggaeton');

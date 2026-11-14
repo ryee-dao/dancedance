@@ -44,18 +44,22 @@ describe('genre vocabulary', () => {
     ['Blues', 'Blues', ['rnb'], ['rock', 'swing']],
     ['jump blues', 'Jump blues', ['swing'], ['rock']],
     ['Texas blues', 'Texas blues', ['rock'], ['swing']],
-    // Jazz dances the swing set (or smooth and flowing), never the disco & funk floor.
-    ['Jazz', 'Jazz', ['swing'], ['discofunk']],
+    // Jazz dances the swing set (or smooth and flowing), never the disco & funk floor: the swing set from the swing
+    // era's names, plain jazz only on a lively song (no audio here: gentle).
+    ['Jazz', 'Jazz', [], ['discofunk', 'swing']],
     ['swing', 'Swing', ['swing'], ['discofunk']],
-    ['vocal jazz', 'Vocal jazz', ['swing'], ['discofunk']],
-    ['bop', 'Bop', ['swing'], ['discofunk']],
+    ['big band', 'Big band', ['swing'], ['discofunk']],
+    ['vocal jazz', 'Vocal jazz', [], ['discofunk', 'swing']],
+    ['bop', 'Bop', [], ['discofunk', 'swing']],
     ['Electronic', 'Electronic', [], ['discofunk']],
     ['Eurodance', 'Eurodance', ['edm'], ['rnb']],
     ['R&B/Soul', 'R&B', ['rnb'], []],
     ['Hip-Hop/Rap', 'Hip-hop', ['hiphop'], ['trap']],
     ['K-Pop', 'K-pop', ['kpop'], []],
-    ['J-Pop', 'J-pop', ['kpop'], []],
-    // C-pop / Mandopop: its own scene, pop and ballad material by the traits, not K-pop's aegyo point choreography.
+    // J-pop and C-pop / Mandopop: their own scenes, pop and ballad material by the traits, not K-pop's aegyo point
+    // choreography; idol pop dances it.
+    ['J-Pop', 'J-pop', [], ['kpop']],
+    ['idol pop', 'Idol pop', ['kpop'], []],
     ['Mandopop', 'C-pop', [], ['kpop']],
     ['C-pop', 'C-pop', [], ['kpop']],
     ['Cantopop', 'C-pop', [], ['kpop']],

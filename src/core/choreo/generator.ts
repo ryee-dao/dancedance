@@ -2215,14 +2215,27 @@ export function feelAudio(map: BeatMap): FeelAudio {
 /** A song this calm is not stepped fast whatever its genre (a cloud-rap ballad is not a trap banger). */
 const FAST_CALM: readonly [number, number] = [0.6, 0.8];
 
-/** How much a song's genre names span fast dancing their usual tempo hides (FAST_SUBS, FAST_THEMES), 0..1, unless the song is calm. */
-function fastStyle(style: SongStyle): number {
+/**
+ * How much a song's genre names span fast dancing their usual tempo hides (FAST_SUBS, and with `themes` the
+ * FAST_THEMES), 0..1, unless the song is calm. Album-level names aside (SongStyle.songLevel): a soundtrack's
+ * "trap EDM" or a compilation's "punk" says nothing of how this song steps.
+ */
+function fastStyle(style: SongStyle, themes = true): number {
+  const subs = style.songLevel ? style.songLevel.subs : style.subs;
   let f = 0;
-  for (const s of FAST_SUBS) f = Math.max(f, style.subs?.[s] ?? 0);
-  for (const t of style.themes) if (FAST_THEMES.includes(t)) f = Math.max(f, style.themeW?.[t] ?? 1);
+  for (const s of FAST_SUBS) f = Math.max(f, subs?.[s] ?? 0);
+  if (themes) for (const t of style.songLevel?.themes ?? style.themes) if (FAST_THEMES.includes(t)) f = Math.max(f, style.themeW?.[t] ?? 1);
   const calm = style.calm ?? 0;
   return f * (1 - Math.min(1, Math.max(0, (calm - FAST_CALM[0]) / (FAST_CALM[1] - FAST_CALM[0]))));
 }
+
+/**
+ * A doubled count lands at most this far (octaves) above the genre's usual stepping tempo, outside the sub-styles
+ * that span fast dancing (fastStyle without the traditions): pop at 112 doubles up to ~176, country pop at 115 to
+ * ~180 (a duet counted 92 is not stepped at 185); skate punk at 187 is. The recorded doubles that step right land
+ * 0.45-0.61 octave above their genre's tempo (I'm Still Standing 0.61); Kenny Rogers' duet would land 0.72.
+ */
+export const FEEL_DOUBLE_REACH = 0.65;
 
 /**
  * Whether the whole song is danced at half (0.5) or twice (2) its counted
@@ -2248,7 +2261,13 @@ function fastStyle(style: SongStyle): number {
  * the margin falls as for half with the candidate's strength, as far as the
  * song is energetic (not calm, not soft): drum and bass counted at 87, Shake
  * It Off at 80, Footloose at 87 with strong double candidates step at the
- * double; a ballad's busy piano doesn't.
+ * double; a ballad's busy piano doesn't. The margin falls only into a tempo
+ * the genre is danced at (FEEL_DOUBLE_REACH above its usual tempo, any for
+ * sub-styles that span fast dancing): a country-pop duet counted 92 is not
+ * stepped at 185.
+ * The genre exemptions (fast styles, the half-time backbeat of trap, drill and
+ * bass music) read the song-level names (SongStyle.songLevel): an album's names
+ * say nothing of how this song steps (a soundtrack's "trap EDM" on its ballad).
  * Without genre names nothing changes: the per-move speed limits (speed.ts)
  * still send fast moves to half time.
  */
@@ -2260,7 +2279,9 @@ export function danceFeel(style: SongStyle, bpm: number, cand: TempoCandidates, 
   if (bpm / 2 >= 50) {
     const half = cand.half ?? 0;
     const backbeat = cand.halfBackbeat ?? half;
-    const beatStyle = Math.max(style.subs?.trap ?? 0, style.subs?.drill ?? 0, style.subs?.bass ?? 0);
+    // (Album-level names aside: SongStyle.songLevel.)
+    const own = style.songLevel ? style.songLevel.subs : style.subs;
+    const beatStyle = Math.max(own?.trap ?? 0, own?.drill ?? 0, own?.bass ?? 0);
     const a = half > backbeat ? half : half * (1 - FEEL_BACKBEAT_STYLE * beatStyle);
     let margin = a >= FEEL_AUDIO ? FEEL_MARGIN - (FEEL_MARGIN + FEEL_HALF_LEAN) * r(a, FEEL_AUDIO, FEEL_AUDIO_FULL) : Infinity;
     if (fastStyle(style) < FAST_STYLE) {
@@ -2279,7 +2300,9 @@ export function danceFeel(style: SongStyle, bpm: number, cand: TempoCandidates, 
     // -> 187). Not on a calm or soft one (a ballad's busy accompaniment is not its step).
     const it = audio.intensity;
     const soundSoft = it === undefined ? 0 : (1 - r(it, FEEL_SOFT_INTENSITY[0], FEEL_SOFT_INTENSITY[1])) * (1 - r(audio.drive ?? 0.5, FEEL_SOFT_DRIVE[0], FEEL_SOFT_DRIVE[1]));
-    const energy = (1 - r(style.calm ?? 0, FEEL_DOUBLE_CALM[0], FEEL_DOUBLE_CALM[1])) * (1 - Math.max(soundSoft, style.soft ?? 0));
+    // Only into a tempo the genre is danced at (FEEL_DOUBLE_REACH), unless its sub-styles span fast dancing.
+    const reach = fastStyle(style, false) >= FAST_STYLE || Math.log2((bpm * 2) / center) <= FEEL_DOUBLE_REACH;
+    const energy = reach ? (1 - r(style.calm ?? 0, FEEL_DOUBLE_CALM[0], FEEL_DOUBLE_CALM[1])) * (1 - Math.max(soundSoft, style.soft ?? 0)) : 0;
     const margin = FEEL_MARGIN - (FEEL_MARGIN + FEEL_HALF_LEAN) * r(dbl, FEEL_AUDIO, FEEL_AUDIO_FULL) * energy;
     if (d(bpm * 2) + margin < d(bpm)) return 2;
   }
