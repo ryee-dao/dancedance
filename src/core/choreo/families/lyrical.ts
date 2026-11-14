@@ -294,7 +294,25 @@ const CHANGE_B: PoseSpec = { y: -0.11, x: 0, bend: 16, nod: 4, rf: [0.16, 0, 0.0
 const SKANK_X: PoseSpec = { y: -0.08, bend: 8, nod: 4, rf: [-0.03, 0, 0.08], lf: [-0.08, 0, 0], kneeR: 0.2, r: at(1, 0.22, 0.62, -0.08, [0.5, -0.3, -1]), l: at(-1, -0.1, 0.82, 0.24, E_DOWN), ...FIST };
 const SKANK_O: PoseSpec = { y: -0.03, bend: 4, rf: [0.09, 0, 0], lf: [-0.09, 0, 0], r: at(1, 0.18, 0.7, 0.1, E_DOWN), l: at(-1, -0.18, 0.7, 0.1, E_DOWN), ...FIST };
 
+/** Arms draped over the shoulders of the people either side (the sing-along sway). */
+const DRAPE_R = at(1, 0.4, 0.74, 0.06, [1, 0.6, -0.2]);
+const DRAPE_L = at(-1, -0.4, 0.74, 0.06, [1, 0.6, -0.2]);
+const ARMSWAY_A: PoseSpec = { y: -0.05, x: 0.04, hips: 0.035, tilt: 4, lean: 8, head: 5, nod: -8, rf: [0.13, 0, 0], lf: [-0.13, 0.015, 0], kneeL: 0.08, r: DRAPE_R, l: DRAPE_L, handR: 0.5, handL: 0.5 };
+
 const punk: MoveDef[] = [
+  full({
+    id: 'grounded-pogo', name: 'Grounded Pogo', tags: 'rock | legs |', beats: 1, level: 'low', d: 1, parts: ['legs', 'torso'], bounce: 0.2,
+    desc: 'The pogo without leaving the floor: body stiff and upright with the fists crossed over the chest, spring up onto the balls of the feet on every beat and drop back onto the heels, the head nodding down hard.',
+    keys: [
+      [0, { y: -0.005, nod: -6, shR: 0.5, shL: 0.5, rf: [0.07, 0, 0], lf: [-0.07, 0, 0], ...TOES, r: at(1, -0.06, 0.72, 0.17, [0.6, -1, 0]), l: at(-1, 0.06, 0.69, 0.2, [0.6, -1, 0]), ...FIST }],
+      [0.5, { y: -0.06, nod: 12, shR: 0.2, shL: 0.2, rf: [0.07, 0, 0], lf: [-0.07, 0, 0], kneeR: 0.04, kneeL: 0.04, r: at(1, -0.06, 0.7, 0.17, [0.6, -1, 0]), l: at(-1, 0.06, 0.67, 0.2, [0.6, -1, 0]), ...FIST }],
+    ],
+  }),
+  full({
+    id: 'arm-in-arm-sway', name: 'Arm-in-Arm Sway', tags: 'rock | arms hips | wave', beats: 4, level: 'low', d: 1, parts: ['arms', 'hips', 'torso'], bounce: 0.2,
+    desc: 'The sing-along sway: arms out and draped over the shoulders of the people either side, chin up and singing, sway slowly from side to side with the whole row, two beats each way.',
+    keys: [[0, ARMSWAY_A], [1, { ...ARMSWAY_A, y: -0.04, lean: 7 }], [2, mir(ARMSWAY_A)], [3, mir({ ...ARMSWAY_A, y: -0.04, lean: 7 })]],
+  }),
   full({
     id: 'shout-along-bounce', name: 'Shout-Along Bounce', tags: 'rock | arms | punch', beats: 2, level: 'low', d: 1, parts: ['arms', 'legs'], mirror: true, bounce: 0.4,
     desc: 'Bounce on the balls of the feet, one hand cupped at the mouth shouting the chorus, the other fist punching the air on every beat.',

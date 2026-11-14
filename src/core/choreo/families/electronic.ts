@@ -109,6 +109,48 @@ const COCK_L = at(-1, -0.22, 0.98, 0.08, [1, 0.3, -0.3]);
 const CHOP_R = at(1, 0.1, 0.66, 0.26, [1, -0.3, -0.2]);
 const CHOP_L = at(-1, -0.1, 0.66, 0.26, [1, -0.3, -0.2]);
 
+// --- Added Nov 2026 -----------------------------------------------------------------
+/** Techno stomp: flat-footed weight change on every beat, the free heel up, fists swinging low in opposition. */
+const technoA: PoseSpec = {
+  y: -0.06, x: 0.02, hips: 0.015, bend: 6, nod: 9, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], pitchL: 22, kneeL: 0.12, kneeR: 0.04,
+  r: at(1, 0.19, 0.55, -0.05, [1, 0, -0.5]), l: at(-1, -0.12, 0.64, 0.18, [1, -0.3, -0.2]), handR: 0.2, handL: 0.2,
+};
+const technoMid: PoseSpec = {
+  y: -0.035, x: 0, hips: 0, bend: 3, nod: 1, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], pitchL: 0, pitchR: 0, kneeL: 0.03, kneeR: 0.03,
+  r: at(1, 0.18, 0.58, 0.07, [1, -0.3, -0.2]), l: at(-1, -0.18, 0.58, 0.07, [1, -0.3, -0.2]), handR: 0.2, handL: 0.2,
+};
+
+/** DJ mime: one hand cupping the headphone to the ear, the other scratching the record at waist height. */
+const djA: PoseSpec = {
+  y: -0.07, nod: 11, head: -7, turn: -6, bend: 4, rf: [0.11, 0, 0], lf: [-0.11, 0, 0], kneeR: 0.06, kneeL: 0.06,
+  l: at(-1, -0.115, 0.95, 0.01, [1, 0.4, -0.2]), r: at(1, 0.2, 0.6, 0.21, [1, -0.3, -0.2]), handL: 0.7, handR: 0.8,
+};
+const djB: PoseSpec = { ...djA, y: -0.035, nod: 3, r: at(1, 0.08, 0.6, 0.25, [1, -0.3, -0.2]) };
+
+/** Build & drop: palms lifting through the build, onto the toes with the hands high, then everything drops. */
+const buildLow: PoseSpec = {
+  y: -0.06, nod: 4, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], kneeR: 0.05, kneeL: 0.05,
+  r: at(1, 0.2, 0.55, 0.16, [1, -0.3, -0.2]), l: at(-1, -0.2, 0.55, 0.16, [1, -0.3, -0.2]), ...OPEN,
+};
+const buildChest: PoseSpec = {
+  y: -0.035, nod: -2, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], pitchR: 10, pitchL: 10,
+  r: at(1, 0.2, 0.78, 0.2, [1, -0.3, -0.2]), l: at(-1, -0.2, 0.78, 0.2, [1, -0.3, -0.2]), ...OPEN,
+};
+const buildHigh: PoseSpec = {
+  y: -0.005, nod: -10, bend: -4, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], pitchR: 28, pitchL: 28,
+  r: [150, 12, 156, 12], l: [150, 12, 156, 12], ...OPEN,
+};
+const buildDrop: PoseSpec = {
+  y: -0.09, nod: 14, bend: 9, shR: 0.8, shL: 0.8, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], kneeR: 0.1, kneeL: 0.1,
+  r: at(1, 0.18, 0.64, 0.17, [1, -0.3, -0.2]), l: at(-1, -0.18, 0.64, 0.17, [1, -0.3, -0.2]), ...FIST,
+};
+
+/** Strobe arm: one straight arm stepping up in frozen frames, as if lit by a strobe, the body hitting with each frame. */
+const strobe = (elev: number, y: number, nod: number, lean: number): PoseSpec => ({
+  y, nod, lean, rf: [0.11, 0, 0], lf: [-0.11, 0, 0], kneeR: 0.04 - y * 0.6, kneeL: 0.04 - y * 0.6,
+  r: [elev, 6, elev + 4, 6], l: at(-1, -0.18, 0.56, 0.12, [1, -0.3, -0.2]), handR: 1, handL: 0.3,
+});
+
 export const moves: MoveDef[] = [
   // --- House --------------------------------------------------------------------
   full({
@@ -229,6 +271,21 @@ export const moves: MoveDef[] = [
     desc: 'Both straight arms sweep together in one big slow arc, from low at one side up past the high diagonal to straight overhead and over to the other side, swaying with them.',
     keys: [[0, tranceLow], [1, tranceRise], [2, tranceTop], [3, mir(tranceRise)]],
   }),
+  full({
+    id: 'techno-stomp', name: 'Techno Stomp', tags: 'aerobic | legs | stomp', beats: 2, level: 'low', d: 1, parts: ['legs', 'arms'],
+    desc: 'Techno floor step: shift the weight from foot to foot on every beat, flat-footed with the free heel lifting, the elbows bent and the fists swinging low in opposition, the head nodding down with each step.',
+    keys: [[0, technoA], [0.5, technoMid], [1, mir(technoA)], [1.5, technoMid]],
+  }),
+  full({
+    id: 'dj-scratch', name: 'DJ Scratch', tags: 'party hiphop | arms | hands', beats: 2, level: 'low', d: 1, parts: ['arms'], mirror: true,
+    desc: 'Cup one hand over the ear like holding a headphone, head tipped into it and nodding, while the other hand scratches a record back and forth at waist height on every beat; switch sides.',
+    keys: [[0, djA], [0.5, djB], [1, djA], [1.5, djB]],
+  }),
+  full({
+    id: 'build-and-drop', name: 'Build & Drop', tags: 'aerobic pop | arms full |', beats: 4, level: 'mid', d: 1, parts: ['arms', 'legs'],
+    desc: 'Drop into the knees with the fists pulled in on the one, then through the build lift the palms from the hips to the chest and up overhead, rising onto the toes, ready to drop again.',
+    keys: [[0, buildDrop], [1, buildLow], [2, buildChest], [3, buildHigh]],
+  }),
 
   // --- Bass music: dubstep, drum & bass, phonk --------------------------------------
   full({
@@ -299,6 +356,16 @@ export const moves: MoveDef[] = [
       [0, { y: -0.13, bend: 12, nod: 14, shR: 1, shL: 1, rf: [0.16, 0, 0.02], lf: [-0.12, 0, 0], kneeR: 0.15, kneeL: 0.15, r: at(1, 0.2, 0.46, 0.18, [1, 0, -0.3]), l: at(-1, -0.2, 0.46, 0.18, [1, 0, -0.3]), ...FIST }],
       [1, { y: -0.04, bend: 0, nod: -4, shR: 0, shL: 0, rf: [0.14, 0, 0], lf: [-0.12, 0, 0], kneeR: 0, kneeL: 0, r: at(1, 0.2, 0.8, 0.16, [1, -0.3, -0.2]), l: at(-1, -0.2, 0.8, 0.16, [1, -0.3, -0.2]), ...FIST }],
       [1.5, { y: -0.02, bend: -2, nod: -6, rf: [0.13, 0, 0], lf: [-0.13, 0.12, 0.06], kneeL: 0.2, r: at(1, 0.22, 0.92, 0.12, [1, -0.3, -0.2]), l: at(-1, -0.22, 0.92, 0.12, [1, -0.3, -0.2]), ...FIST }],
+    ],
+  }),
+  full({
+    id: 'strobe-arm', name: 'Strobe Arm', tags: 'hiphop funk | arms | hands', beats: 4, level: 'low', d: 1, parts: ['arms'], mirror: true,
+    desc: 'As if under a strobe light: one straight arm jumps up in frozen frames, low, out to the side, high, and straight up, one frame a beat with the body hitting each freeze, then floats back down.',
+    keys: [
+      [0, strobe(40, -0.07, 6, 0)], [0.5, strobe(40, -0.05, 3, 0)],
+      [1, strobe(88, -0.07, 4, -2)], [1.5, strobe(88, -0.05, 2, -2)],
+      [2, strobe(132, -0.07, -2, -4)], [2.5, strobe(132, -0.05, -4, -4)],
+      [3, strobe(166, -0.07, -8, -5)],
     ],
   }),
 ];
