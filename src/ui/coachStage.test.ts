@@ -37,6 +37,24 @@ describe('coach stage routine personalisation', () => {
     expect(routineInfo(ballad, { bpm: 78, sections: [] }, { getGenres: boom }).style.source).toBe('fallback');
   });
 
+  it('passes the levels of the genre list and the whole artist list through', () => {
+    const song = { kind: 'youtube' as const, videoId: 'wfl', title: 'We Found Love', artist: 'Rihanna' };
+    const genres = () => ['R&B', 'electro house', 'EDM'];
+    // Album-level R&B beside the song's electro house: a weaker score, not the label.
+    const leveled = routineInfo(song, null, { getGenres: genres, getGenreLevels: () => ['album', 'song', 'song'] });
+    expect(leveled.label).not.toMatch(/R&B/);
+    expect(routineInfo(song, null, { getGenres: genres }).label).toBe('R&B');
+    // Levels that do not match the list are ignored; a throwing dep is no crash.
+    expect(routineInfo(song, null, { getGenres: genres, getGenreLevels: () => ['album'] }).label).toBe('R&B');
+    expect(routineInfo(song, null, { getGenres: genres, getGenreLevels: () => { throw new Error('l'); } }).label).toBe('R&B');
+    // The artist list is a small blend; it is used ahead of the single artist genre.
+    const plain = routineInfo(song, null, { getGenres: () => ['pop'] });
+    const art = routineInfo(song, null, { getGenres: () => ['pop'], getArtistGenres: () => ['heavy metal', 'thrash metal'], getArtistGenre: () => 'disco' });
+    expect((art.style.families.rock ?? 0) - (plain.style.families.rock ?? 0)).toBeGreaterThan(0);
+    expect((art.style.families.rock ?? 0) - (plain.style.families.rock ?? 0)).toBeLessThanOrEqual(0.15);
+    expect(art.style.families.disco ?? 0).toBeLessThanOrEqual(plain.style.families.disco ?? 0);
+  });
+
   it("'same' ignores the play count; 'fresh' mixes it into the key", () => {
     const same = routineInfo(item, null, { getRoutineMode: () => 'same', getPlayCount: () => 4 });
     const f4 = routineInfo(item, null, { getRoutineMode: () => 'fresh', getPlayCount: () => 4 });

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-14T08:47:17.293Z",
+  "updatedAt": "2026-11-14T09:17:19.575Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -10,16 +10,16 @@
       "genres": [
         "synth-pop",
         "new wave",
-        "electronic",
         "new romantic",
+        "electronic",
         "pop rock",
         "pop"
       ],
       "genreLevels": [
         "song",
         "song",
-        "song",
         "album",
+        "song",
         "album",
         "song"
       ],
@@ -282,7 +282,7 @@
         "disco",
         "synth-pop",
         "pop",
-        "electronic"
+        "pop rock"
       ],
       "genreLevels": [
         "song",
@@ -290,7 +290,7 @@
         "song",
         "song",
         "song",
-        "song"
+        "album"
       ],
       "artistGenres": [
         "pop rock",
@@ -986,16 +986,16 @@
         "house",
         "folktronica",
         "electro house",
-        "EDM",
-        "electronic"
+        "big room house",
+        "euro house"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
         "album",
-        "song",
-        "song"
+        "album",
+        "album"
       ],
       "artistGenres": [
         "house",
@@ -1964,16 +1964,16 @@
         "electropop",
         "dance-pop",
         "art pop",
-        "electronic",
         "alt-pop",
-        "pop"
+        "pop",
+        "trap"
       ],
       "genreLevels": [
         "song",
         "song",
         "album",
-        "song",
         "album",
+        "song",
         "song"
       ],
       "artistGenres": [
@@ -6630,8 +6630,8 @@
       ],
       "genres": [
         "disco",
-        "R&B",
         "funk",
+        "R&B",
         "soul",
         "pop",
         "jazz"
@@ -7889,17 +7889,17 @@
         "pop rock",
         "indie pop",
         "funk-pop",
-        "pop",
         "soft rock",
-        "rock"
+        "pop",
+        "psychedelic pop"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "song",
         "album",
-        "song"
+        "song",
+        "album"
       ],
       "artistGenres": [
         "soft rock",
@@ -8393,8 +8393,8 @@
         "electropop",
         "pop rock",
         "alternative rock",
-        "rock",
         "synth-pop",
+        "rock",
         "pop"
       ],
       "genreLevels": [
@@ -8899,12 +8899,12 @@
         "BerNfXSuvJ0"
       ],
       "genres": [
-        "R&B",
         "tropical house",
         "dance-pop",
         "dancehall pop",
         "moombahton",
-        "pop"
+        "R&B",
+        "pop soul"
       ],
       "genreLevels": [
         "song",
@@ -8912,7 +8912,7 @@
         "song",
         "song",
         "song",
-        "song"
+        "album"
       ],
       "artistGenres": [
         "R&B",
@@ -10195,9 +10195,9 @@
         "alternative rock",
         "nu metal",
         "rap metal",
-        "alternative",
         "metal",
-        "electronic rock"
+        "electronic rock",
+        "alternative"
       ],
       "genreLevels": [
         "song",
@@ -13089,7 +13089,7 @@
         "nu-disco",
         "R&B",
         "alternative hip hop",
-        "pop"
+        "synth-pop"
       ],
       "genreLevels": [
         "song",
@@ -13097,7 +13097,7 @@
         "song",
         "album",
         "song",
-        "song"
+        "album"
       ],
       "artistGenres": [
         "alternative hip hop",
@@ -13774,8 +13774,8 @@
         "hip house",
         "pop rap",
         "electro",
-        "hip hop",
-        "dance-pop"
+        "dance-pop",
+        "electropop"
       ],
       "genreLevels": [
         "song",
@@ -14548,17 +14548,17 @@
       "genres": [
         "pop rock",
         "funk-pop",
-        "pop",
         "disco",
         "electropop",
+        "pop",
         "new wave"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "song",
         "album",
+        "song",
         "album"
       ],
       "artistGenres": [
@@ -15862,16 +15862,16 @@
         "pop rock",
         "folk rock",
         "folk pop",
-        "pop",
         "soft rock",
+        "pop",
         "alternative rock"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "song",
         "album",
+        "song",
         "song"
       ],
       "artistGenres": [
@@ -16832,8 +16832,8 @@
       ],
       "genres": [
         "soul",
-        "pop",
         "neo soul",
+        "pop",
         "hip hop"
       ],
       "genreLevels": [
@@ -17053,18 +17053,18 @@
       "genres": [
         "dance-pop",
         "folktronica",
-        "EDM",
         "pop rap",
-        "pop",
-        "hip house"
+        "hip house",
+        "EDM",
+        "house"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
+        "album",
         "song",
-        "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "pop rap",
@@ -18279,16 +18279,16 @@
         "alternative rock",
         "funk rock",
         "pop rock",
-        "alternative",
         "funk metal",
-        "rap rock"
+        "rap rock",
+        "alternative"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "song",
         "album",
+        "song",
         "song"
       ],
       "artistGenres": [
@@ -18526,8 +18526,8 @@
         "funk rock",
         "funk metal",
         "stadium rock",
-        "alternative",
-        "pop rock"
+        "pop rock",
+        "rock"
       ],
       "genreLevels": [
         "song",
@@ -18790,16 +18790,16 @@
         "funk rock",
         "alternative rock",
         "funk",
-        "alternative",
         "pop rock",
-        "rock"
+        "rock",
+        "alternative"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "song",
         "album",
+        "song",
         "song"
       ],
       "artistGenres": [
@@ -19494,16 +19494,16 @@
         "alternative rock",
         "pop rock",
         "stadium rock",
-        "alternative",
         "funk metal",
+        "alternative",
         "funk rock"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "song",
         "album",
+        "song",
         "album"
       ],
       "artistGenres": [
@@ -19740,12 +19740,12 @@
         "GchEVSx9XEA"
       ],
       "genres": [
-        "R&B",
-        "pop",
         "electro house",
-        "EDM",
         "dubstep",
-        "electro"
+        "EDM",
+        "electro",
+        "house",
+        "R&B"
       ],
       "genreLevels": [
         "song",
@@ -21024,15 +21024,15 @@
         "pop rap",
         "synth-pop",
         "Britpop",
-        "electronic",
-        "teen pop"
+        "teen pop",
+        "R&B"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
         "song",
-        "song",
+        "album",
         "album"
       ],
       "artistGenres": [
@@ -21296,8 +21296,8 @@
         "R&B",
         "electropop",
         "dance-pop",
-        "pop",
         "electro",
+        "pop",
         "electronic"
       ],
       "genreLevels": [
@@ -22285,7 +22285,7 @@
         "synthwave",
         "new wave",
         "electro house",
-        "electronic"
+        "dance-pop"
       ],
       "genreLevels": [
         "song",
@@ -22572,9 +22572,9 @@
         "synth-pop",
         "alternative R&B",
         "new wave",
-        "R&B",
         "synthwave",
-        "dance-pop"
+        "dance-pop",
+        "synth-rock"
       ],
       "genreLevels": [
         "song",
@@ -23136,10 +23136,10 @@
       "genres": [
         "indietronica",
         "indie pop",
-        "electronic",
         "alternative rock",
         "alternative",
-        "rock"
+        "electronic",
+        "synth-pop"
       ],
       "genreLevels": [
         "song",
@@ -23147,7 +23147,7 @@
         "song",
         "song",
         "song",
-        "song"
+        "album"
       ],
       "artistGenres": [
         "alternative rock",
@@ -23402,15 +23402,15 @@
         "industrial hip hop",
         "rap rock",
         "alternative rock",
-        "rock",
-        "indie pop"
+        "indie pop",
+        "electropop"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
         "album",
-        "song",
+        "album",
         "album"
       ],
       "artistGenres": [
@@ -24441,8 +24441,8 @@
         "alternative rock",
         "rap rock",
         "trip hop",
-        "hip hop",
-        "electronic rock"
+        "electronic rock",
+        "big beat"
       ],
       "genreLevels": [
         "song",
@@ -24724,7 +24724,7 @@
         "dub",
         "reggae",
         "alternative rock",
-        "rock"
+        "reggae pop"
       ],
       "genreLevels": [
         "song",
@@ -24732,7 +24732,7 @@
         "song",
         "song",
         "song",
-        "song"
+        "album"
       ],
       "artistGenres": [
         "alternative rock",
@@ -25259,15 +25259,15 @@
         "alternative rock",
         "rap rock",
         "indie rock",
-        "rock",
-        "electropop"
+        "electropop",
+        "indie pop"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
         "album",
-        "song",
+        "album",
         "album"
       ],
       "artistGenres": [

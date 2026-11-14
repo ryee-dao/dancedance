@@ -95,6 +95,30 @@ describe('ranking for specificity', () => {
     expect(c.genres[0]).toBe('K-pop');
   });
 
+  it("album sources repeating the album's umbrella do not lift it over the song's own specific names", () => {
+    // Shaped like We Found Love: the song sources say electro house / EDM; one tags R&B; the album's sources all say R&B.
+    const song = { wikipedia: found(['EDM']), wikidata: found(['electro house']), musicbrainz: found(['contemporary r&b', 'dubstep', 'electronic'], [3, 3, 2]) };
+    const album = { 'wikipedia-album': found(['Pop', 'dance', 'R&B']), 'wikidata-album': found(['rhythm and blues']), 'musicbrainz-album': found(['pop', 'contemporary r&b', 'dance-pop'], [5, 3, 2]), 'discogs-album': found(['R&B', 'Pop']) };
+    const alone = combineGenres(song, DEFAULT_SOURCES);
+    const both = combineGenres({ ...song, ...album }, DEFAULT_SOURCES);
+    const rank = (c: typeof both, g: string) => c.genres.indexOf(g);
+    expect(rank(both, 'R&B')).toBeGreaterThan(rank(both, 'electro house'));
+    expect(rank(both, 'R&B')).toBeGreaterThan(rank(both, 'EDM'));
+    // The umbrella's score is what the song sources give it.
+    const score = (c: typeof both, k: string) => c.scored.find((s) => s.key === k)!.score;
+    expect(score(both, 'r&b')).toBeCloseTo(score(alone, 'r&b'), 1);
+    // A specific genre is still confirmed by the album (here by its related "dance"; below by the same name).
+    expect(score(both, 'dubstep')).toBeGreaterThan(score(alone, 'dubstep'));
+    const confirmed = combineGenres({ ...song, 'discogs-album': found(['Dubstep']) }, DEFAULT_SOURCES);
+    expect(score(confirmed, 'dubstep')).toBeGreaterThan(score(alone, 'dubstep'));
+  });
+
+  it('when the song sources only say umbrellas, the album supports them as before', () => {
+    const c = combineGenres({ itunes: found(['Música tropical']), 'discogs-album': found(['Bachata']), 'itunes-album': found(['Música tropical']) }, DEFAULT_SOURCES);
+    const plain = combineGenres({ itunes: found(['Música tropical']), 'discogs-album': found(['Bachata']) }, DEFAULT_SOURCES);
+    expect(c.scored.find((s) => s.key === 'tropical')!.score).toBeGreaterThan(plain.scored.find((s) => s.key === 'tropical')!.score);
+  });
+
   it('the umbrella rule only moves a genre under its own narrower forms', () => {
     const list = [{ key: 'pop' }, { key: 'hip hop' }, { key: 'k pop' }];
     expect(umbrellasLast(list, () => true).map((x) => x.key)).toEqual(['hip hop', 'k pop', 'pop']);

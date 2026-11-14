@@ -354,7 +354,7 @@ export function songGenreLevels(videoId: string): GenreLevelName[] | undefined {
 /**
  * The artist's usual genres, best first, when known (the artist-level
  * sources of src/genre). Weak evidence about the song: the choreographer
- * takes it as `artistGenre` (a small capped share), never as the song's genre.
+ * takes the list as `artistGenres` (a small capped share), never as the song's genre.
  */
 export function songArtistGenres(videoId: string): string[] | undefined {
   const own = addedSongs.find(videoId)?.artistGenres;

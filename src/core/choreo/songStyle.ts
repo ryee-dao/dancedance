@@ -13,14 +13,17 @@
  *     name is read by its words and known compounds ("Southern hip hop",
  *     "nu metal", "dance-pop", "drum and bass"), several names BLEND (order
  *     weights them), and a name nothing places is ignored, not guessed;
+ *     `genreLevels` says which names are about the song and which about its
+ *     album: album names beside song names are a weaker score, and add a
+ *     dance only where they narrow the song's own broad names (genreEvidence);
  *   - the song's absolute audio traits (songTraits.ts, from the beat map):
  *     they decide the CHARACTER on top of any genre (calm, heavy,
  *     four-on-the-floor, half-time feel ...), and the lean itself when there
  *     is no genre at all;
  *   - tempo (a weak prior, <= 15 %), title keywords (themes, a calm hint);
- *   - `artistGenre`: the artist's usual genre, a small blended score (at
- *     most ARTIST_SHARE of the families and of each sub-style score), never
- *     the base.
+ *   - `artistGenres` (or the single `artistGenre`): the artist's usual
+ *     genres, a small blended score (all together at most ARTIST_SHARE of the
+ *     families and of each sub-style score), never the base.
  *
  * The genre family comes from the track's genre names; the character from
  * the audio: "Hard Rock" says nothing about My Immortal being a piano
@@ -95,8 +98,15 @@ export interface SongInfo {
   genre?: string;
   /** The song's own genre names, most important first (e.g. its Wikipedia infobox): primary evidence. */
   genres?: readonly string[];
+  /**
+   * Level of each `genres` entry ('song': about the track; 'album': about its album), same order. Album names
+   * beside song names are a weaker score (genreEvidence). Absent, or not matching `genres`: all song-level.
+   */
+  genreLevels?: readonly string[];
   /** The artist's usual genre: a small blended score at most, never the base. */
   artistGenre?: string;
+  /** The artist's usual genres, best first (used instead of `artistGenre` when given): together at most ARTIST_SHARE. */
+  artistGenres?: readonly string[];
   style?: StyleOverride;
 }
 
@@ -627,13 +637,43 @@ interface GenreEvidence {
  * SUB_OPEN: it opens a sub-style only together with other evidence, a list
  * name or the audio; "R&B/Soul" alone never makes a eurodance song R&B).
  *
- * Interfaces still to come plug in here: an artist-level list (`artistGenres`,
- * weak: ARTIST_SHARE at most, the way `artistGenre` is blended in
- * resolveSongStyle) and list entries carrying their level (song / album /
- * artist), which would scale an entry's weight like the tag's.
+ * Levels (`genreLevels`, parallel to `genres`): the list holds names about
+ * the song itself ('song') and about its album ('album'). The style is about
+ * the song, so beside any song-level name an album-level name is a weaker
+ * score, one rule for all of them:
+ *   - its family / label / calm / tempo weight is ALBUM_FAM of a song-level
+ *     name's at the same place (positions count within each level);
+ *   - its sub-style evidence counts at most ALBUM_SUB (below SUB_OPEN, like the
+ *     tag's: it opens a set only together with other evidence), its themes and
+ *     body focus not at all, and it never names a scene;
+ *   - except where it NARROWS the song's own names (narrowsSong): it says a
+ *     dance (a sub-style, scene or tradition) in the main family of a broad
+ *     song-level name, and no song-level name of that family says one. Then
+ *     its dance counts as a song-level name's would at its place: bachata
+ *     under "Latin pop, tropical", cumbia under "tropical". R&B from the album
+ *     next to "electro house", rock next to "K-pop", nu metal next to
+ *     "alternative metal" stay weak.
+ * With no song-level name at all, album names are the best evidence there is
+ * and count ALBUM_ALONE of a song-level name's (weights and sub-styles).
+ * The relation is the lexicon's own (a name's families and what it says), not
+ * the lookup's genre vocabulary.
+ *
+ * The artist's genres (`artistGenres`, best first; or the single
+ * `artistGenre`) are read as a list of their own and blended in at
+ * ARTIST_SHARE at most (resolveSongStyle).
  */
 const ITUNES_TIE = 0.3;
 export const ITUNES_SUB = 0.4;
+/** Weight of an album-level name beside song-level ones, relative to a song-level name at the same place. */
+export const ALBUM_FAM = 0.3;
+/** Most sub-style evidence an album-level name gives beside song-level ones, unless it narrows them (below SUB_OPEN). */
+export const ALBUM_SUB = 0.4;
+/** Album-level names when there is no song-level name: nearly song-level evidence. */
+export const ALBUM_ALONE = 0.85;
+/** Share of a name's families its main family must have for the name to be a form of that family (bachata 0.77 latin; reggae 0.42: a blend). */
+const NARROW_SHARE = 0.6;
+/** Sub-style score from which a name says which dance (hard rock's metal 0.45 does; grunge's 0.3 does not). */
+const SPECIFIC_SUB = 0.45;
 /**
  * A list name's sub-style evidence falls by position (1 - 0.12 i) to this floor: from the fifth name on it
  * can't open a sub-style alone (SUB_OPEN), as the tag can't ("Eurodance, electronic, dance, house, euro
@@ -643,12 +683,56 @@ const LIST_POS_FLOOR = 0.4;
 /** A scene a song-level name says takes this share of the families (it leads the dancing: BTS with "pop rap, boom bap, hip hop, alt-pop, K-pop"). */
 const SCENE_LEAD = 0.6;
 
-function genreEvidence(list: readonly string[] | undefined, tag: string | undefined): GenreEvidence {
-  const items: { r: Reading; w: number; pos: number; tag: boolean }[] = [];
-  (list ?? []).forEach((g, i) => {
-    if (typeof g !== 'string') return;
-    const r = readGenre(g);
-    if (r.placed) items.push({ r, w: r.conf / (1 + 0.5 * i), pos: Math.max(LIST_POS_FLOOR, 1 - 0.12 * i), tag: false });
+/** A reading's own family when one family makes up at least NARROW_SHARE of it (bachata: latin; reggae, a latin / hip-hop blend: none). */
+function mainFamily(r: Reading): Family | null {
+  const f = topFamily(r.fam);
+  return f && (r.fam[f] ?? 0) >= NARROW_SHARE ? f : null;
+}
+/** The name says which dance, scene or tradition (a sub-style, a scene, a theme), not only the broad family. */
+function isSpecific(r: Reading): boolean {
+  return !!r.scene || r.themes.size > 0 || Object.values(r.subs).some((v) => (v ?? 0) >= SPECIFIC_SUB);
+}
+/**
+ * Whether an album-level name narrows what the song-level names say: it is specific, it is a form of one
+ * family (mainFamily), song-level names lead with that family, and they are all broad there ("tropical",
+ * "Latin pop", "hip hop", "rock", "electronic": its umbrella); none of them says a dance of that family
+ * already. Bachata under "Latin pop, tropical", cumbia under "tropical": yes. R&B under "electro house"
+ * (another family), rock under "K-pop" (not specific), nu metal next to "alternative metal" (the song
+ * already says which): no.
+ */
+function narrowsSong(a: Reading, song: readonly Reading[]): boolean {
+  const f = mainFamily(a);
+  if (!f || !isSpecific(a)) return false;
+  const kin = song.filter((s) => topFamily(s.fam) === f);
+  return kin.length > 0 && !kin.some(isSpecific);
+}
+
+function genreEvidence(list: readonly string[] | undefined, tag: string | undefined, levels?: readonly string[]): GenreEvidence {
+  /** album: an album-level name beside song-level ones; adds: ... that narrows them (its dance, themes and focus count). */
+  const items: { r: Reading; w: number; pos: number; tag: boolean; album?: true; adds?: boolean }[] = [];
+  // Levels apply only when they match the list entry for entry; without them every name is song-level.
+  const lv = Array.isArray(levels) && list && levels.length === list.length ? levels : undefined;
+  const read = (list ?? []).map((g, at) => ({ r: typeof g === 'string' ? readGenre(g) : null, album: lv?.[at] === 'album', at })).filter((x): x is { r: Reading; album: boolean; at: number } => !!x.r?.placed);
+  const songNames = read.filter((x) => !x.album).map((x) => x.r);
+  // Positions count within a level (an album name listed among the song's own does not push them down), except
+  // that an album name narrowing the song's names keeps the place the lookup gave it among them.
+  const posAt = (i: number) => Math.max(LIST_POS_FLOOR, 1 - 0.12 * i);
+  const isAlbum = (j: number) => lv?.[j] === 'album';
+  read.forEach(({ r, album, at }) => {
+    let i = 0;
+    for (let j = 0; j < at; j++) if (isAlbum(j) === album) i++;
+    let w = r.conf / (1 + 0.5 * i);
+    let pos = posAt(i);
+    if (album && !songNames.length) {
+      // Nothing is known about the song itself: its album's names are the best evidence there is.
+      w *= ALBUM_ALONE;
+      pos *= ALBUM_ALONE;
+      items.push({ r, w, pos, tag: false });
+    } else if (album) {
+      // Beside the song's own names an album name is a weaker score; it adds a dance only where it narrows them.
+      const adds = narrowsSong(r, songNames);
+      items.push({ r, w: w * ALBUM_FAM, pos: adds ? posAt(at) : Math.min(pos, ALBUM_SUB), tag: false, album: true, adds });
+    } else items.push({ r, w, pos, tag: false });
   });
   const listed = items.length > 0;
   if (typeof tag === 'string' && tag.trim()) {
@@ -666,17 +750,19 @@ function genreEvidence(list: readonly string[] | undefined, tag: string | undefi
     wAll += w;
     for (const f of FAMILIES) if (r.fam[f]) fam[f] = (fam[f] ?? 0) + w * r.fam[f]!;
     for (const k of SUB_STYLES) if (r.subs[k]) out.subs[k] = Math.max(out.subs[k] ?? 0, r.subs[k]! * pos);
-    for (const t of r.themes) out.themes.add(t);
-    if (r.focus && !out.focus) out.focus = r.focus;
+    // An album name that does not narrow the song's own names brings no tradition and no body focus.
+    const own = !it.album || it.adds;
+    if (own) for (const t of r.themes) out.themes.add(t);
+    if (own && r.focus && !out.focus) out.focus = r.focus;
     if (r.calm !== null) (cw += w), (cs += w * r.calm);
     if (r.soft !== null) (sw += w), (ss += w * r.soft);
     if (r.name && !out.name) out.name = r.name;
-    const specific = !!r.scene || r.themes.size > 0 || Object.values(r.subs).some((v) => (v ?? 0) >= 0.45);
+    const specific = isSpecific(r);
     if (r.label && w > labelW) (labelW = w), (out.label = r.label), (out.labelSpecific = specific);
     // A bare umbrella first ("Pop", "Rock") and its own compound second ("Pop rock"): the compound says more.
-    else if (r.label && !it.tag && items.indexOf(it) === 1 && out.label && r.label.length > out.label.length && r.label.toLowerCase().includes(out.label.toLowerCase())) (out.label = r.label), (out.labelSpecific = specific);
+    else if (r.label && !it.tag && !it.album && items.indexOf(it) === 1 && out.label && r.label.length > out.label.length && r.label.toLowerCase().includes(out.label.toLowerCase())) (out.label = r.label), (out.labelSpecific = specific);
     if (r.bpm) (lb += w * Math.log2(r.bpm)), (lw += w);
-    if (r.scene && !it.tag && !scene) scene = r;
+    if (r.scene && !it.tag && !it.album && !scene) scene = r;
   }
   out.fam = normWeights(fam);
   if (scene && out.fam) {
@@ -933,8 +1019,10 @@ export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyl
   const curated = song.style ?? (song.videoId ? STARTER_STYLES.get(song.videoId) : undefined);
   const traits = readTraits(priors?.traits);
   const bpm = priors?.bpm;
-  const ev = genreEvidence(Array.isArray(song.genres) ? song.genres : undefined, song.genre);
-  const artistEv = typeof song.artistGenre === 'string' ? genreEvidence(undefined, song.artistGenre) : null;
+  const ev = genreEvidence(Array.isArray(song.genres) ? song.genres : undefined, song.genre, Array.isArray(song.genreLevels) ? song.genreLevels : undefined);
+  // The artist's genres: their own list (positions weigh them), blended in at ARTIST_SHARE at most below.
+  const artistList = Array.isArray(song.artistGenres) ? song.artistGenres.filter((g): g is string => typeof g === 'string') : [];
+  const artistEv = artistList.length ? genreEvidence(artistList, undefined) : typeof song.artistGenre === 'string' ? genreEvidence(undefined, song.artistGenre) : null;
 
   // Families: curated > genre names > traits > balanced mix.
   let families: Weights | null = null;

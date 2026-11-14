@@ -72,8 +72,11 @@ describe('recorded lookups', () => {
     expect(said(l, 'musicbrainz')).toContain('hip hop');
     expect(l.genres).not.toContain('hip hop');
     expect(l.genres.slice(0, 2)).toEqual(['dream pop', 'synth-pop']);
-    // "electronic" stays last: Discogs and the album's MusicBrainz tags also say it.
-    expect(l.genres.indexOf('electronic')).toBe(l.genres.length - 1);
+    // "electronic" (MusicBrainz's song tags) is an umbrella next to the song's specific names: Discogs and the album's
+    // MusicBrainz tags repeating it do not lift it (combine.ts rule 6), so the album's narrower "downtempo" takes the last place.
+    expect(l.genres).not.toContain('electronic');
+    expect(l.genres[l.genres.length - 1]).toBe('downtempo');
+    expect(l.genreLevels![l.genres.length - 1]).toBe('album');
   });
 
   it('Prince Royce: two album sources say bachata, which narrows the store\'s "Música tropical"', async () => {

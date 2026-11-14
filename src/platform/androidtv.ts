@@ -52,8 +52,9 @@
  */
 
 import type { AddedSong } from '../beat/cloud';
-import { GenreRunner } from '../genre/background';
-import { parseGenreLookup } from '../genre/lookup';
+// The genre lookup (src/genre, with its 248 KB vocabulary) is loaded only when the TV's background runner
+// first starts (installGenreLookups): neither the web bundle nor the TV's first paint carries it.
+import type { GenreRunner } from '../genre/background';
 import type { GenreLookup } from '../genre/types';
 import { parseUpdateState, type AppUpdates, type UpdateState } from './appUpdate';
 import { fetchVideoInfo, limitConcurrency, cleanTitle } from '../player/playlistReader';
@@ -556,37 +557,50 @@ function installAddedSongs(b: BridgeClient): void {
  * v7: genres for songs added on the TV, looked up in the background by the
  * page (src/genre) and stored natively with the song. Starts 20 s after app
  * open (songs still lacking genres, or due again) and 5 s after a song is added.
+ * The lookup code is imported then (a separate chunk), never at start-up.
  */
 function installGenreLookups(b: BridgeClient): void {
   const n = b.native;
   if (typeof n.setSongGenres !== 'function') return;
   const root = document.getElementById('app');
-  const runner = new GenreRunner({
-    songs: () =>
-      localAdded.map((s) => ({
-        videoId: s.videoId,
-        artist: s.artist,
-        title: s.title,
-        ...(s.durationSec > 0 ? { durationSec: s.durationSec } : {}),
-        ...(s.genre ? { itunesGenre: s.genre } : {}),
-        genreLookup: parseGenreLookup(s.genreLookup),
-      })),
-    save(videoId, lookup) {
-      try {
-        return n.setSongGenres?.(videoId, JSON.stringify(lookup)) === true;
-      } catch (err) {
-        console.warn('[dd:tv] setSongGenres failed', err);
-        return false;
-      }
-    },
-    // Never while a song plays or its audio is being downloaded / prepared.
-    busy: () => preparing.size > 0 || !!root?.querySelector(':scope > .screen.play'),
-    fetch: (url, init) => fetch(url, init),
-    log: (line) => console.info(line),
-  });
-  runner.kick(20_000);
+  let runner: Promise<GenreRunner | null> | null = null;
+  const load = () =>
+    (runner ??= Promise.all([import('../genre/background'), import('../genre/lookup')]).then(
+      ([{ GenreRunner }, { parseGenreLookup }]) =>
+        new GenreRunner({
+          songs: () =>
+            localAdded.map((s) => ({
+              videoId: s.videoId,
+              artist: s.artist,
+              title: s.title,
+              ...(s.durationSec > 0 ? { durationSec: s.durationSec } : {}),
+              ...(s.genre ? { itunesGenre: s.genre } : {}),
+              genreLookup: parseGenreLookup(s.genreLookup),
+            })),
+          save(videoId, lookup) {
+            try {
+              return n.setSongGenres?.(videoId, JSON.stringify(lookup)) === true;
+            } catch (err) {
+              console.warn('[dd:tv] setSongGenres failed', err);
+              return false;
+            }
+          },
+          // Never while a song plays or its audio is being downloaded / prepared.
+          busy: () => preparing.size > 0 || !!root?.querySelector(':scope > .screen.play'),
+          fetch: (url, init) => fetch(url, init),
+          log: (line) => console.info(line),
+        }),
+      (err: unknown) => {
+        console.warn('[dd:tv] genre lookup failed to load', err);
+        runner = null; // try again on the next kick
+        return null;
+      },
+    ));
+  /** Start a run after `delayMs`: the module loads once the delay is over, so start-up never waits for it. */
+  const kick = (delayMs: number) => setTimeout(() => void load().then((r) => r?.kick(0)), delayMs);
+  kick(20_000);
   b.on('addedSongsChanged', ({ added }) => {
-    if (added) runner.kick(5000);
+    if (added) kick(5000);
   });
 }
 

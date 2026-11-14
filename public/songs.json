@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-14T07:53:00.946Z",
+  "updatedAt": "2026-11-14T09:17:19.575Z",
   "songs": [
     {
       "videoId": "_Vj092UgKwQ",
@@ -45,15 +45,15 @@
         "pop rap",
         "synth-pop",
         "Britpop",
-        "electronic",
-        "teen pop"
+        "teen pop",
+        "R&B"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
         "song",
-        "song",
+        "album",
         "album"
       ],
       "artistGenres": [

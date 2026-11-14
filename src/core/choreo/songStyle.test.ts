@@ -135,6 +135,85 @@ describe('artist credits (signature nods only)', () => {
     expect(alone.source).toBe('fallback');
     expect(top(alone)).toBe('pop');
   });
+
+  it("the artist's whole list is still a small score: together at most ARTIST_SHARE", () => {
+    const plain = resolveSongStyle({ title: 'Z', genres: ['pop'] });
+    const many = resolveSongStyle({ title: 'Z', genres: ['pop'], artistGenres: ['heavy metal', 'thrash metal', 'death metal', 'nu metal'] });
+    for (const f of FAMILIES) expect(Math.abs((many.families[f] ?? 0) - (plain.families[f] ?? 0)), f).toBeLessThanOrEqual(0.15 + 1e-9);
+    expect(many.subs?.metal ?? 0).toBeLessThanOrEqual(ARTIST_SHARE + 1e-9);
+    expect(songGenres(many).has('metal')).toBe(false);
+    // The list replaces the single name: its first entry alone gives the same as `artistGenre`.
+    const one = resolveSongStyle({ title: 'Z', genres: ['pop'], artistGenre: 'disco' });
+    expect(resolveSongStyle({ title: 'Z', genres: ['pop'], artistGenres: ['disco'] }).families).toEqual(one.families);
+  });
+});
+
+describe('genre levels: album names are a weaker score beside the song\'s own', () => {
+  const S = 'song', A = 'album';
+  const open = (genres: string[], genreLevels?: string[]) => songGenres(resolveSongStyle({ title: 'Z', genres, ...(genreLevels ? { genreLevels } : {}) }));
+
+  it('an album name that narrows a broad song-level name adds its dance', () => {
+    // A song the sources call only "Latin pop" / "tropical", whose album says which dance.
+    expect(open(['Latin pop', 'bachata', 'tropical'], [S, A, S]).has('bachata')).toBe(true);
+    expect(open(['tropical', 'cumbia'], [S, A]).has('cumbia')).toBe(true);
+    expect(open(['hip hop', 'trap'], [S, A]).has('trap')).toBe(true);
+    // The label stays the song's own name, with the dance it narrows to.
+    expect(styleLabel(resolveSongStyle({ title: 'Z', genres: ['tropical', 'cumbia'], genreLevels: [S, A] }))).toBe('Tropical · Cumbia');
+  });
+
+  it('an album name of another family neither names the song nor opens its set', () => {
+    // A song whose own names say electro house; the album (and artist) are R&B.
+    const s = resolveSongStyle({ title: 'Z', genres: ['R&B', 'electro house', 'EDM'], genreLevels: [A, S, S] });
+    expect(styleLabel(s)).not.toMatch(/R&B/);
+    expect(songGenres(s).has('rnb')).toBe(false);
+    expect(songGenres(s).has('edm')).toBe(true);
+    expect(top(s)).toBe(top(resolveSongStyle({ title: 'Z', genres: ['electro house', 'EDM'] })));
+    // The same name at song level does both: the level is what changed.
+    expect(styleLabel(resolveSongStyle({ title: 'Z', genres: ['R&B', 'electro house', 'EDM'] }))).toBe('R&B');
+  });
+
+  it('a broad album name does not dilute a scene or a specific song-level name', () => {
+    const songOnly = resolveSongStyle({ title: 'Z', genres: ['pop rap', 'K-pop', 'pop', 'hip hop'] });
+    const withAlbum = resolveSongStyle({ title: 'Z', genres: ['pop rap', 'K-pop', 'pop', 'hip hop', 'pop rock', 'rock'], genreLevels: [S, S, S, S, A, A] });
+    const asSong = resolveSongStyle({ title: 'Z', genres: ['pop rap', 'K-pop', 'pop', 'hip hop', 'pop rock', 'rock'] });
+    expect(styleLabel(withAlbum)).toBe('K-pop');
+    expect(songGenres(withAlbum).has('rock')).toBe(false);
+    expect(withAlbum.families.rock ?? 0).toBeLessThan(asSong.families.rock ?? 0);
+    expect(Math.abs((withAlbum.families.kpop ?? 0) - (songOnly.families.kpop ?? 0))).toBeLessThan(0.03);
+  });
+
+  it('an album dance in a family the song already names specifically stays weak', () => {
+    // The song says which metal; the album's nu metal adds no evidence of its own.
+    const base = resolveSongStyle({ title: 'Z', genres: ['soft rock', 'alternative metal'] });
+    const s = resolveSongStyle({ title: 'Z', genres: ['soft rock', 'alternative metal', 'nu metal'], genreLevels: [S, S, A] });
+    expect(s.subs?.metal).toBe(base.subs?.metal);
+    // An album's metal beside a song-level "alternative rock" and a specific "punk": the song said punk, metal stays closed.
+    expect(open(['punk', 'alternative rock', 'metal'], [S, S, A]).has('metal')).toBe(false);
+  });
+
+  it('calm still closes the showpiece sets whatever the levels say', () => {
+    const calm = { calm: 0.92, intensity: 0.2, drive: 0.2, heavy: 0.3 };
+    const s = resolveSongStyle({ title: 'Z', genres: ['alternative metal', 'soft rock', 'alternative rock', 'gothic rock', 'nu metal', 'pop rock'], genreLevels: [S, S, S, S, A, S] }, { bpm: 76, traits: calm });
+    const g = songGenres(s);
+    expect(g.has('metal')).toBe(false);
+    expect(g.has('rock')).toBe(false);
+    expect(g.has('lyrical')).toBe(true);
+  });
+
+  it('with no song-level name, album names act nearly as song-level ones', () => {
+    const alb = resolveSongStyle({ title: 'Z', genres: ['bachata', 'Latin pop'], genreLevels: [A, A] });
+    const sng = resolveSongStyle({ title: 'Z', genres: ['bachata', 'Latin pop'] });
+    expect(styleLabel(alb)).toBe(styleLabel(sng));
+    expect(songGenres(alb)).toEqual(songGenres(sng));
+    expect(alb.subs?.bachata ?? 0).toBeGreaterThanOrEqual(0.85 * (sng.subs?.bachata ?? 0) - 1e-9);
+  });
+
+  it('without levels, or levels that do not match the list, every name is song-level', () => {
+    const genres = ['Latin pop', 'R&B', 'bachata'];
+    const plain = resolveSongStyle({ title: 'Z', genres });
+    expect(resolveSongStyle({ title: 'Z', genres, genreLevels: [S, S, S] })).toEqual(plain);
+    expect(resolveSongStyle({ title: 'Z', genres, genreLevels: [S, A] })).toEqual(plain);
+  });
 });
 
 describe('genre mapping', () => {

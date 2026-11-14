@@ -57,7 +57,14 @@ export interface CoachStageDeps {
   getGenre?: (videoId: string) => string | undefined;
   /** The song's own genre names, most important first (e.g. its Wikipedia infobox), when known. Read once per song. Primary evidence. */
   getGenres?: (videoId: string) => readonly string[] | undefined;
-  /** The artist's usual genre, when known: a small blended score only. Read once per song. */
+  /**
+   * Level of each getGenres() entry ('song': about the track; 'album': about its album), same order, when known.
+   * Album names beside song names count as a weaker score (songStyle.ts genreEvidence). Read once per song.
+   */
+  getGenreLevels?: (videoId: string) => readonly string[] | undefined;
+  /** The artist's usual genres, best first, when known: together a small blended score only. Read once per song. */
+  getArtistGenres?: (videoId: string) => readonly string[] | undefined;
+  /** The artist's usual genre (used when getArtistGenres gives nothing): a small blended score only. Read once per song. */
   getArtistGenre?: (videoId: string) => string | undefined;
   /** Dev bench: force a song style (families / themes / signature). */
   getStyleOverride?: () => StyleOverride | undefined;
@@ -438,7 +445,7 @@ export interface RoutineInfo {
 export function routineInfo(
   item: FrameInfo['item'],
   map: { bpm: number; sections: readonly { energy: number }[]; traits?: unknown } | null,
-  deps: Pick<CoachStageDeps, 'getRoutineMode' | 'getPlayCount' | 'getGenre' | 'getGenres' | 'getArtistGenre' | 'getStyleOverride'>,
+  deps: Pick<CoachStageDeps, 'getRoutineMode' | 'getPlayCount' | 'getGenre' | 'getGenres' | 'getGenreLevels' | 'getArtistGenres' | 'getArtistGenre' | 'getStyleOverride'>,
 ): RoutineInfo {
   const videoId = item.kind === 'youtube' ? item.videoId : undefined;
   const artist = item.kind === 'youtube' ? item.artist : undefined;
@@ -451,13 +458,25 @@ export function routineInfo(
   };
   const genre = read(deps.getGenre);
   const list = read(deps.getGenres);
-  const genres = Array.isArray(list) ? list.filter((g): g is string => typeof g === 'string') : undefined;
-  const artistGenre = read(deps.getArtistGenre);
+  const levelList = read(deps.getGenreLevels);
+  // Levels are kept only when they match the list entry for entry (a dropped non-string entry drops its level).
+  const pairs = Array.isArray(list) ? list.map((g, i) => [g, Array.isArray(levelList) && levelList.length === list.length ? levelList[i] : undefined] as const).filter(([g]) => typeof g === 'string') : [];
+  const genres = pairs.map(([g]) => g as string);
+  const levels = pairs.every(([, l]) => l === 'song' || l === 'album') ? pairs.map(([, l]) => l as string) : undefined;
+  const artistList = read(deps.getArtistGenres);
+  const artistGenres = Array.isArray(artistList) ? artistList.filter((g): g is string => typeof g === 'string') : [];
+  const artistGenre = artistGenres.length ? undefined : read(deps.getArtistGenre);
   const secs = map?.sections ?? [];
   const energy = secs.length ? secs.reduce((a, s) => a + s.energy, 0) / secs.length : undefined;
   const override = deps.getStyleOverride?.();
   const style = resolveSongStyle(
-    { videoId, title: item.title, artist, genre, ...(genres?.length ? { genres } : {}), ...(typeof artistGenre === 'string' ? { artistGenre } : {}), ...(override ? { style: override } : {}) },
+    {
+      videoId, title: item.title, artist, genre,
+      ...(genres.length ? { genres } : {}),
+      ...(genres.length && levels ? { genreLevels: levels } : {}),
+      ...(artistGenres.length ? { artistGenres } : typeof artistGenre === 'string' ? { artistGenre } : {}),
+      ...(override ? { style: override } : {}),
+    },
     map ? { bpm: map.bpm, energy, traits: traitsOf(map) } : undefined,
   );
   let fresh: number | undefined;

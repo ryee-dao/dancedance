@@ -36,6 +36,16 @@
  *    not buried under "pop" just because more sources repeat "pop", and an
  *    album two sources call bachata puts "bachata" above the store's
  *    "Música tropical".
+ * 6. Album support never lifts a song-level umbrella over the song's own
+ *    specific names. Album sources agree most on the album's (and the
+ *    artist's) broad genre: R&B for a Rihanna or Justin Bieber album. Added
+ *    to the R&B a song source also lists, that put "R&B" above "electro
+ *    house" on We Found Love and above "dancehall pop" on Sorry. So when the
+ *    song sources report any non-umbrella genre, an umbrella they report is
+ *    scored on song-level support only. Album support still counts for every
+ *    non-umbrella genre (it confirms "tropical house", it adds "bachata"), and
+ *    in full when the song sources only say umbrellas (a store's "Música
+ *    tropical": rule 5 decides there).
  *
  * Genres are only ever taken from what a source said exactly; relations
  * only add weight.
@@ -315,6 +325,7 @@ export function combineGenres(outcomes: Partial<Record<SourceId, SourceOutcome>>
   // Album genres that narrow a genre the song sources reported join the song list.
   const refining = [...albumKeys].filter((a) => !songKeys.has(a) && [...songKeys].some((s) => broaderThan(s, a)));
   const songTier = new Set([...songKeys, ...refining]);
+  const songSpecific = [...songKeys].some((k) => genreSpecificity(k) >= w.umbrellaSpec);
 
   interface Cand extends ScoredGenre {
     songDirect: number;
@@ -323,7 +334,9 @@ export function combineGenres(outcomes: Partial<Record<SourceId, SourceOutcome>>
   const scoreOf = (g: string, level: GenreLevel): Cand => {
     const s = support(g, song, 1);
     const a = support(g, album, w.albumShare);
-    const score = s.total + a.total + w.specWeight * genreSpecificity(g) + 0.1 * Math.max(s.early, a.early);
+    // Rule 6: beside a specific song-level name, a song-level umbrella is ranked on what the song sources say alone.
+    const albumCounts = !(level === 'song' && songSpecific && genreSpecificity(g) < w.umbrellaSpec);
+    const score = s.total + (albumCounts ? a.total : 0) + w.specWeight * genreSpecificity(g) + 0.1 * Math.max(s.early, a.early);
     return { name: displayName(g), key: g, score: round(score), level, by: [...s.by, ...a.by], songDirect: s.direct, albumDirect: a.direct / w.albumShare };
   };
   const credible = (x: Cand) => x.songDirect >= CREDIBLE || x.albumDirect >= CREDIBLE_ALBUM;
