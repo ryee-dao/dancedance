@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Family } from './families';
-import { generateRoutine, type Intensity, type MoveInstance, type RoutineOpts } from './generator';
+import { cardsOf } from './cards';
+import { generateRoutine, moveVigour, type Intensity, type MoveInstance, type RoutineOpts } from './generator';
+import { moveSmoothness } from './weights';
 import { MOVES } from './moves';
 import { BALANCED_POP, resolveSongStyle, signatureMoveIds, songSignature, type SongStyle } from './songStyle';
 import { songMap } from './testutil';
@@ -139,5 +141,67 @@ describe('song style -> routine', () => {
     expect(v('sweaty')).toBeGreaterThan(0.2);
     expect(v('cardio')).toBeGreaterThan(0.1);
     expect(v('chill')).toBeLessThan(v('cardio'));
+  });
+});
+
+describe('song character x level', () => {
+  const IDS = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6'];
+  /** Danced-time averages over a few songs at one level (no grooves, cool-down or combo). */
+  function stats(st: SongStyle, bpm: number, lv: Intensity) {
+    let t = 0, jump = 0, genre = 0, smooth = 0, vig = 0, keys = 0, cards = 0, cardBeats = 0;
+    const ids = new Set<string>();
+    for (const id of IDS) {
+      const r = generateRoutine(songMap(bpm, id), lv, { style: st });
+      for (const i of r.instances) {
+        if (i.move.idle || i.move.cooldown || i.sig) continue;
+        t += i.span;
+        if (i.move.jump) jump += i.span;
+        if (i.move.genre) genre += i.span;
+        smooth += moveSmoothness(i.move) * i.span;
+        vig += moveVigour(i.move) * i.span;
+        // Keys per SONG beat: how busy the coach is on the music.
+        keys += (i.move.keys.length / i.move.beats / (i.half ? 2 : 1)) * i.span;
+        ids.add(i.move.base);
+      }
+      for (const c of cardsOf(r.instances)) {
+        cards++;
+        cardBeats += c.end - c.start;
+      }
+    }
+    return { jump: jump / t, genre: genre / t, smooth: smooth / t, vig: vig / t, keys: keys / t, card: cardBeats / cards, ids };
+  }
+  const ballad = resolveSongStyle({ title: 'My Immortal', genre: 'Hard Rock' }, { bpm: 78, traits: { calm: 0.9, heavy: 0.2, drive: 0.15 } });
+  const driving = resolveSongStyle({ title: 'Bring Me to Life', genre: 'Hard Rock' }, { bpm: 78, traits: { calm: 0.15, heavy: 0.8, drive: 0.85 } });
+
+  it('a calm "Hard Rock" song (My Immortal) gets no rock showpieces, no jumps, smooth moves and longer holds', () => {
+    const SHOWPIECES = /headbang|hair-swing|air-guitar|pogo|mosh|circle-pit|windmill|rock-star-jump|guitar/;
+    for (const lv of ['chill', 'cardio', 'sweaty'] as const) {
+      const c = stats(ballad, 78, lv);
+      const d = stats(driving, 78, lv);
+      expect(c.genre, lv).toBe(0);
+      expect([...c.ids].filter((id) => SHOWPIECES.test(id)), lv).toEqual([]);
+      expect(c.jump, lv).toBeLessThan(0.01);
+      expect(c.smooth, lv).toBeGreaterThan(d.smooth + 0.1);
+      expect(c.card, lv).toBeGreaterThan(d.card);
+      // The driving song of the same family keeps its rock accents.
+      expect(d.genre, lv).toBeGreaterThan(0.15);
+    }
+  });
+
+  it('the level still sets the work: Hard on a ballad is bigger than Easy, without jumps; Easy on a banger stays on the beat', () => {
+    const easy = stats(ballad, 78, 'chill');
+    const hard = stats(ballad, 78, 'sweaty');
+    expect(hard.vig).toBeGreaterThan(easy.vig + 0.15);
+    expect(hard.jump).toBeLessThan(0.01);
+    expect(hard.smooth).toBeGreaterThan(0.6);
+    const banger = resolveSongStyle({ title: 'X', genre: 'Dance' }, { bpm: 170, traits: { calm: 0.1, drive: 0.9, fourFloor: 0.9 } });
+    const bEasy = stats(banger, 170, 'chill');
+    const bHard = stats(banger, 170, 'sweaty');
+    expect(bEasy.jump).toBe(0);
+    // About a key per song beat at most: on the beat, not a frantic full-speed sequence.
+    expect(bEasy.keys).toBeLessThan(1.05);
+    expect(bEasy.vig).toBeLessThan(bHard.vig - 0.2);
+    // ... and the banger's character still shows on Hard: more vigorous than the ballad.
+    expect(bHard.vig).toBeGreaterThan(hard.vig + 0.1);
   });
 });

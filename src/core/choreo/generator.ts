@@ -82,7 +82,7 @@ import { IDLE_MOVE, MOVES, keysOf, type Level, type Move } from './moves';
 import { getPool, warmPool } from './pool';
 import { BALANCED_POP, styleKey, type SongStyle } from './songStyle';
 import { busyFactor, calmFactor, difficultyFactor, impactFactor, moveVigour, moveWeights, poseStepCost, tempoFactor } from './weights';
-import { moveTempoMode, readsAtHalf, type TempoMode } from './speed';
+import { moveSpeed, moveTempoMode, readsAtHalf, type TempoMode } from './speed';
 import { enforceCards, partOf, pauseOf, renamed, tileMove } from './cards';
 import { smoothSteps } from './flow';
 
@@ -354,7 +354,7 @@ let warmNext = 0;
 /**
  * Fill the generator's caches ahead of the first routine, for about
  * `budgetMs` per call (idle time on the home screen): the variation pool,
- * then every pickable move's soft weights. Only caches that the first
+ * then every pickable move's soft weights and speed limit. Only caches that the first
  * routine would otherwise fill itself, so routines are unchanged. True when done.
  */
 export function warmGenerator(budgetMs: number): boolean {
@@ -364,6 +364,7 @@ export function warmGenerator(budgetMs: number): boolean {
   while (warmNext < moves.length) {
     const m = moves[warmNext++];
     moveWeights(m);
+    moveSpeed(m);
     moveVigour(m);
     if ((warmNext & 15) === 0 && performance.now() >= until) break;
   }

@@ -20,6 +20,10 @@
  *               hips, rolls) and gentle, low-motion moves lean slow;
  *               quarter-beat footwork leans away from fast (too busy at 140).
  * OVERRIDES hand-corrects the outliers the formula gets wrong.
+ *
+ * The hard tempo limit of a move (how fast it can be danced at all, half
+ * time above it) is speed.ts; the song's character (calm) x level is
+ * calmFactor / busyFactor below.
  */
 
 import { CH } from '../coach/skeleton';
@@ -193,7 +197,11 @@ export const SLOW_BPM = 90;
 export const MID_BPM = 115;
 export const FAST_BPM = 140;
 
-/** Tempo multiplier of a move for a song (geometric blend of its slow / mid / fast weights). */
+/**
+ * Tempo multiplier of a move at a tempo (geometric blend of its slow / mid /
+ * fast weights). Pass the tempo the move is DANCED at: half the song's when
+ * it is performed at half time (generator.ts dancedBpm; speed.ts).
+ */
 export function tempoFactor(m: Move, bpm: number | undefined): number {
   if (!bpm || !Number.isFinite(bpm)) return 1;
   const [s, md, f] = moveWeights(m).tempo;
