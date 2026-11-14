@@ -66,7 +66,7 @@ describe('two tiers: global and genre-exclusive', () => {
     }
   });
 
-  it('has a global library of hundreds of moves and genre groups of 45-100 for the big genres', () => {
+  it('has a global library of hundreds of moves, genre groups of 45+ for the big genres, and at most 100 genre moves open to one style', () => {
     const global = DANCE.filter((m) => !m.genre).length;
     expect(global).toBeGreaterThanOrEqual(650);
     // A group is its set plus the sub-style sets split out of it (metal and punk out of rock ...).
@@ -75,9 +75,22 @@ describe('two tiers: global and genre-exclusive', () => {
       latin: ['latin', 'salsa', 'merengue', 'cumbia', 'bachata', 'chacha', 'flamenco', 'tango', 'mexican', 'brazil', 'reggaeton'],
     };
     for (const [g, sets] of Object.entries(GROUPS)) {
+      // Breadth: a big genre's group has a real vocabulary between its sets (a song uses only 3-4 of them).
       const n = sets.reduce((t, x) => t + GENRE_MOVES[x].length, 0);
       expect(n, g).toBeGreaterThanOrEqual(45);
-      expect(n, g).toBeLessThanOrEqual(100);
+      // The cap is on what ONE style opens, not on the group: past ~100 a song's 3-4 genre picks scatter so
+      // thinly that songs of a style share no identity moves. When each big genre was one set the two were
+      // the same; Latin is now split into eleven dances (Nov 2026: 95 moves in the group, but a Latin song
+      // opens 7-32 of them: tango alone 7, Latin + cumbia 32), and its thin dances (7-10 moves, under
+      // SUB_STANDALONE) are meant to grow, so a group total of 100 would block exactly that. Counted
+      // generously here (the parent plus every set of the group the sub-style opens: Latin 22-39, the
+      // largest elsewhere disco & funk + house 66).
+      expect(GENRE_MOVES[sets[0]].length, g).toBeLessThanOrEqual(100);
+      for (const s of sets.slice(1)) {
+        const open = genreOpenness({ families: {}, themes: [], subs: { [s]: 0.9 } });
+        const seen = new Set<Genre>([sets[0], s, ...sets.filter((x) => open.has(x))]);
+        expect([...seen].reduce((t, x) => t + GENRE_MOVES[x].length, 0), `${g} / ${s}`).toBeLessThanOrEqual(100);
+      }
       // Latin is split by dance (salsa, cumbia, bachata, flamenco ... sets); its parent keeps the basics whose
       // layers the dances share (merengue, cha-cha, mambo) and the percussion moves.
       expect(GENRE_MOVES[sets[0]].length, g).toBeGreaterThanOrEqual(g === 'latin' ? 20 : 35);
