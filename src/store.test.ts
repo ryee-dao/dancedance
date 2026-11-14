@@ -93,3 +93,26 @@ describe('play counts', () => {
     expect(store.playCount('v1')).toBe(0);
   });
 });
+
+describe('genre lookups of played songs', () => {
+  it('notes a played song, keeps its lookup across plays (same artist + title), and drops the least recently played when full', async () => {
+    const { store, data, MAX_GENRE_SONGS } = await freshStore();
+    store.noteGenreSong('AAAAAAAAAAA', { artist: 'Pooh Shiesty', title: 'Back in Blood' }, 1);
+    expect(store.setGenreLookup('AAAAAAAAAAA', { genres: ['trap', 'drill'] })).toBe(true);
+    expect(store.setGenreLookup('BBBBBBBBBBB', { genres: [] })).toBe(false); // not noted
+    store.noteGenreSong('AAAAAAAAAAA', { artist: 'Pooh Shiesty', title: 'Back in Blood' }, 2);
+    expect(store.genreSongs().AAAAAAAAAAA).toMatchObject({ t: 2, lookup: { genres: ['trap', 'drill'] } });
+    // A corrected title is another song: its old answer goes.
+    store.noteGenreSong('AAAAAAAAAAA', { artist: 'Pooh Shiesty', title: 'Back In Blood (feat. Lil Durk)' }, 3);
+    expect(store.genreSongs().AAAAAAAAAAA.lookup).toBeUndefined();
+    for (let k = 0; k < MAX_GENRE_SONGS + 5; k++) store.noteGenreSong(`id${k}`, { artist: 'A', title: `T${k}` }, 10 + k);
+    expect(Object.keys(store.genreSongs())).toHaveLength(MAX_GENRE_SONGS);
+    expect(store.genreSongs().AAAAAAAAAAA).toBeUndefined();
+    expect(JSON.parse(data.get('dd.genreLookups')!)[`id${MAX_GENRE_SONGS + 4}`]).toMatchObject({ artist: 'A' });
+  });
+
+  it('ignores malformed stored entries', async () => {
+    const { store } = await freshStore({ 'dd.genreLookups': JSON.stringify({ X: { artist: 'A' }, Y: { artist: 'A', title: 'B', t: 1, durationSec: -3 } }) });
+    expect(store.genreSongs()).toEqual({ Y: { artist: 'A', title: 'B', t: 1 } });
+  });
+});

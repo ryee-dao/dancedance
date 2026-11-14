@@ -1434,18 +1434,32 @@ export function partnerSpeed(pm: PartnerMove): PartnerSpeed {
 
 /**
  * How a partner move is danced on a song of `bpm`, as speed.ts
- * moveTempoMode: full time within its limit (times the level's share) and
- * the level's coordination load, half time when half the tempo is (and both
- * tracks read at half time: no jump floating), else 'out'. Both players
- * always share the mode.
+ * moveTempoMode: full time within its limit (times the level's share), half
+ * time when half the tempo is (and both tracks read at half time: no jump
+ * floating), else 'out'. Both players always share the mode. The candidate
+ * pools use this; the coordination load is checked on the move picked
+ * (partnerDancedMode).
  */
 export function partnerTempoMode(pm: PartnerMove, bpm: number | undefined, level: SpeedLevel = 'cardio'): TempoMode {
   if (!bpm || !Number.isFinite(bpm) || bpm <= 0) return 'full';
   const lim = partnerSpeed(pm).limit * LEVEL_SPEED[level];
-  // Each player's every piece within the level's coordination load (speed.ts COORD_LOAD) at the tempo danced.
+  if (bpm <= lim + 1e-9) return 'full';
+  if (bpm / 2 <= lim + 1e-9 && readsAtHalf(partnerTrack(pm, 1), bpm) && readsAtHalf(partnerTrack(pm, 2), bpm)) return 'half';
+  return 'out';
+}
+
+/**
+ * How a picked partner move is danced with the level's coordination load
+ * (speed.ts COORD_LOAD, both players' every piece): its tempo mode while that
+ * is within the load, else half time when that is within it, both tracks
+ * read at half time and it still moves (MIN_HALF_BPM), else 'out'.
+ */
+export function partnerDancedMode(pm: PartnerMove, bpm: number | undefined, level: SpeedLevel = 'cardio'): TempoMode {
+  const mode = partnerTempoMode(pm, bpm, level);
+  if (mode === 'out' || !bpm || !Number.isFinite(bpm) || bpm <= 0) return mode;
   const coord = (b: number) => [...pm.p1, ...pm.p2].every((m) => coordinationOk(m, b, level));
-  const fast = bpm > lim + 1e-9;
-  if (!fast && coord(bpm)) return 'full';
-  if (bpm / 2 <= lim + 1e-9 && readsAtHalf(partnerTrack(pm, 1), bpm) && readsAtHalf(partnerTrack(pm, 2), bpm) && coord(bpm / 2) && (fast || bpm / 2 >= MIN_HALF_BPM - 1e-9)) return 'half';
+  if (coord(mode === 'half' ? bpm / 2 : bpm)) return mode;
+  const lim = partnerSpeed(pm).limit * LEVEL_SPEED[level];
+  if (mode === 'full' && bpm / 2 <= lim + 1e-9 && readsAtHalf(partnerTrack(pm, 1), bpm) && readsAtHalf(partnerTrack(pm, 2), bpm) && bpm / 2 >= MIN_HALF_BPM - 1e-9 && coord(bpm / 2)) return 'half';
   return 'out';
 }

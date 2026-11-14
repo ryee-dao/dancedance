@@ -77,9 +77,7 @@ describe('the song\'s character', () => {
       const b = shares(loud, 104, lv, undefined, MANY);
       expect(a.lyrical, lv).toBe(0);
       expect(a.jump, lv).toBeLessThan(0.03);
-      // The coordination load (speed.ts COORD_LOAD) keeps arm-only mimes and holds busier moves back a little:
-      // Easy 1.7-3.5 % before it, 2.2-4.1 % after (three 48-song seed sets, Nov 2026).
-      expect(a.nov, lv).toBeLessThan(0.05);
+      expect(a.nov, lv).toBeLessThan(0.04);
       expect(a.nov, lv).toBeLessThan(0.35 * b.nov);
     }
   });

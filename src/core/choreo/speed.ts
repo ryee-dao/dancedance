@@ -30,10 +30,11 @@
  *
  * COORDINATION: each level also has a most coordination load (COORD_LOAD;
  * coordination.ts: how busy the legs and the arms / torso are AT ONCE, per
- * second at the tempo danced). A move over it at full time is danced at half
- * time when that is within it (and still moves: MIN_HALF_BPM), else it is
- * left out on that song at that level (the generator hands its weight to a
- * simpler form of it when there is one: Choreographer.simplerForms).
+ * second at the tempo danced). It is checked on the move picked
+ * (dancedTempoMode), never on the candidate pools: a pick over it at full
+ * time is danced at half time when that is within it (and still moves:
+ * MIN_HALF_BPM), else the generator replaces that one pick
+ * (Choreographer.recoord).
  */
 
 import { CH, createPose, createSkeleton, J, solveSkeleton, type Pose } from '../coach/skeleton';
@@ -237,26 +238,32 @@ export function coordinationOk(m: Move, bpm: number, level: SpeedLevel): boolean
 
 /**
  * How a move is performed on a song of `bpm` (beats of the beat grid per
- * minute): full time when the tempo is within its limit (times the level's
- * share) and its coordination load there is within the level's
- * (COORD_LOAD), half time when half the tempo is (and the move reads at half
- * time), else 'out' (not used on this song at this level).
+ * minute) by its speed limit: full time when the tempo is within its limit
+ * (times the level's share), half time when half the tempo is and the move
+ * reads at half time, else 'out' (not used on this song at this level). The
+ * candidate pools and weights use this; the coordination load is checked on
+ * the move picked (dancedTempoMode).
  */
 export function moveTempoMode(m: Move, bpm: number | undefined, level: SpeedLevel = 'cardio'): TempoMode {
-  return tempoMode(m, bpm, level, true);
-}
-
-/** moveTempoMode by the speed limit alone (no coordination load): what a move dropped for its coordination would have been. */
-export function speedTempoMode(m: Move, bpm: number | undefined, level: SpeedLevel = 'cardio'): TempoMode {
-  return tempoMode(m, bpm, level, false);
-}
-
-function tempoMode(m: Move, bpm: number | undefined, level: SpeedLevel, coord: boolean): TempoMode {
   if (!bpm || !Number.isFinite(bpm) || bpm <= 0) return 'full';
   const lim = moveSpeed(m).limit * LEVEL_SPEED[level];
-  const fast = bpm > lim + 1e-9;
-  if (!fast && (!coord || coordinationOk(m, bpm, level))) return 'full';
-  // Half time for the coordination alone only while it still moves (MIN_HALF_BPM), not as a crawl.
-  if (bpm / 2 <= lim + 1e-9 && readsAtHalf(m, bpm) && (!coord || (coordinationOk(m, bpm / 2, level) && (fast || bpm / 2 >= MIN_HALF_BPM - 1e-9)))) return 'half';
+  if (bpm <= lim + 1e-9) return 'full';
+  if (bpm / 2 <= lim + 1e-9 && readsAtHalf(m, bpm)) return 'half';
+  return 'out';
+}
+
+/**
+ * How a picked move is danced with the level's coordination load (COORD_LOAD)
+ * on top of its speed limit: as moveTempoMode while that is within the load;
+ * a full-time move over it at half time when its half-time form is within it,
+ * reads at half time and still moves (MIN_HALF_BPM); else 'out' (the pick is
+ * replaced: a simpler form of it, or another move).
+ */
+export function dancedTempoMode(m: Move, bpm: number | undefined, level: SpeedLevel = 'cardio'): TempoMode {
+  const mode = moveTempoMode(m, bpm, level);
+  if (mode === 'out' || !bpm || !Number.isFinite(bpm) || bpm <= 0) return mode;
+  if (coordinationOk(m, mode === 'half' ? bpm / 2 : bpm, level)) return mode;
+  const lim = moveSpeed(m).limit * LEVEL_SPEED[level];
+  if (mode === 'full' && bpm / 2 <= lim + 1e-9 && readsAtHalf(m, bpm) && bpm / 2 >= MIN_HALF_BPM - 1e-9 && coordinationOk(m, bpm / 2, level)) return 'half';
   return 'out';
 }

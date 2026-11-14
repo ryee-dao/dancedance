@@ -5,7 +5,7 @@ import { REF_BPM, coordinationLoad, moveCoordination } from './coordination';
 import { generateDuoRoutine } from './duo';
 import { generateRoutine, mapTempo, type Intensity, type MoveInstance, type Routine } from './generator';
 import { publishedSongs } from './published.testutil';
-import { COORD_LOAD, LEVEL_SPEED, MIN_HALF_BPM, coordinationLimit, moveTempoMode, readsAtHalf, speedLimit } from './speed';
+import { COORD_LOAD, LEVEL_SPEED, MIN_HALF_BPM, coordinationLimit, dancedTempoMode, moveTempoMode, readsAtHalf, speedLimit } from './speed';
 import { songMap } from './testutil';
 
 const LEVELS: Intensity[] = ['chill', 'cardio', 'sweaty'];
@@ -68,13 +68,13 @@ describe('coordination load (from the keyframes)', () => {
         const edge = (COORD_LOAD[lv] * REF_BPM) / c;
         if (edge + 1 >= speedLimit(m) * LEVEL_SPEED[lv]) continue;
         seen++;
-        expect(moveTempoMode(m, edge - 1, lv), `${m.id} ${lv}`).toBe('full');
-        expect(moveTempoMode(m, edge + 1, lv), `${m.id} ${lv}`).toBe((edge + 1) / 2 >= MIN_HALF_BPM && readsAtHalf(m, edge + 1) ? 'half' : 'out');
+        expect(dancedTempoMode(m, edge - 1, lv), `${m.id} ${lv}`).toBe('full');
+        expect(dancedTempoMode(m, edge + 1, lv), `${m.id} ${lv}`).toBe((edge + 1) / 2 >= MIN_HALF_BPM && readsAtHalf(m, edge + 1) ? 'half' : 'out');
       }
     }
     expect(seen).toBeGreaterThanOrEqual(4);
     // The single-focus moves are never held back by it.
-    for (const m of [feet, arms]) for (const lv of LEVELS) expect(moveTempoMode(m, Math.min(150, speedLimit(m) * 0.8), lv), m.id).toBe('full');
+    for (const m of [feet, arms]) for (const lv of LEVELS) expect(dancedTempoMode(m, Math.min(150, speedLimit(m) * 0.8), lv), m.id).toBe('full');
   });
 });
 
@@ -116,5 +116,44 @@ describe('the coordination limit holds on every routine', () => {
     }
     expect(bad.slice(0, 20)).toEqual([]);
     expect(n).toBeGreaterThan(50000);
+  });
+});
+
+describe('the coordination limit fixes only what is over it', () => {
+  const key = (xs: readonly MoveInstance[]) => xs.map((i) => `${i.move.id}${i.mirror ? 'L' : 'R'}@${i.start}+${i.span}${i.half ? 'h' : ''}${i.sig ? 's' : ''}:${i.origin.toFixed(3)}`).join(' ');
+  const sigKey = (r: Routine) => r.signature.map((x) => `${x.move.id}${x.mirror ? 'L' : 'R'}`).join(' ');
+
+  it('leaves every routine with nothing over the limit exactly as it is (published songs, every level, both routine modes, solo and duo)', () => {
+    const changed: string[] = [];
+    let same = 0, over = 0;
+    for (const s of publishedSongs()) {
+      for (const lv of LEVELS) {
+        for (const fresh of [undefined, 3]) {
+          const opts = { style: s.style, ...(fresh ? { fresh } : {}) };
+          const off = generateRoutine(s.map, lv, { ...opts, coordination: false });
+          const duoOff = generateDuoRoutine(s.map, lv, { ...opts, coordination: false });
+          const bpm = off.freeTime && off.bpm ? off.bpm : mapTempo(s.map) * (off.feel ?? 1);
+          // Drawn without the limit: is anything danced over it (the combo too, as it would be danced)?
+          const bad: string[] = [];
+          overLoad('', off, off.instances, bpm, lv, bad);
+          overLoad('', off, duoOff.p1, bpm, lv, bad);
+          overLoad('', off, duoOff.p2, bpm, lv, bad);
+          const sigHalf = off.signature.some((x) => moveTempoMode(x.move, bpm, lv) === 'half');
+          for (const x of off.signature) if (coordinationLoad(x.move, sigHalf ? bpm / 2 : bpm) > COORD_LOAD[lv] + 1e-6) bad.push(x.move.id);
+          if (bad.length) {
+            over++;
+            continue;
+          }
+          same++;
+          const on = generateRoutine(s.map, lv, opts);
+          const duoOn = generateDuoRoutine(s.map, lv, opts);
+          if (key(on.instances) !== key(off.instances) || sigKey(on) !== sigKey(off)) changed.push(`${s.title} ${lv} ${fresh ?? 'same'}`);
+          if (key(duoOn.p1) !== key(duoOff.p1) || key(duoOn.p2) !== key(duoOff.p2)) changed.push(`${s.title} ${lv} ${fresh ?? 'same'} duo`);
+        }
+      }
+    }
+    expect(changed).toEqual([]);
+    expect(same).toBeGreaterThan(300);
+    expect(over).toBeGreaterThan(0);
   });
 });

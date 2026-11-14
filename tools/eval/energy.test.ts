@@ -74,10 +74,7 @@ describe.skipIf(!have)('real music: the song\'s energy over the saved samples (r
     const plays = Array.from({ length: 8 }, (_, f) => appSet(join(DATA, 'run-20261116'), 'r16', { only: 'HUSBAND', ...(f ? { fresh: f } : {}) })[0].levels);
     expect(mean(plays.map((p) => p.sweaty.high))).toBeGreaterThan(0.3);
     expect(mean(plays.map((p) => p.sweaty.jump))).toBeGreaterThan(0.05);
-    // The coordination load (speed.ts COORD_LOAD, Nov 2026) slows Medium's jumping jacks under busy arms at this
-    // song's 116 BPM: 8-play mean 0.18 -> 0.13 (16 plays 0.17 -> 0.15; one play 0.00-0.31), while Medium's high
-    // share over all 77 saved songs rose 0.096 -> 0.110. Still above that mean.
-    expect(mean(plays.map((p) => p.cardio.high))).toBeGreaterThan(0.12);
+    expect(mean(plays.map((p) => p.cardio.high))).toBeGreaterThan(0.15);
     for (const lv of ['cardio', 'sweaty'] as const) expect(song('HUSBAND')[lv].top.filter((t) => /Slow-Jam Sway|Slow Drag/.test(t)), lv).toEqual([]);
   });
 

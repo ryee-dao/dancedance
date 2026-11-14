@@ -20,8 +20,17 @@
  *     200 { ok: true, videoId }
  *     4xx/5xx { ok: false, error, detail? }  codes as /add, plus bad-map (detail = the rule broken)
  *                  and daily-limit (MAP_DAILY_LIMIT contributed maps per 24 h)
- *   GET /health           { ok, repo, passphrase: <required?>, dailyLimit, mapDailyLimit }
+ *   GET /health           { ok, repo, passphrase: <required?>, dailyLimit, mapDailyLimit, version }
  *   GET /health?probe=1   the same plus { apple: 'ok' | 'apple-<status>' | 'apple-timeout' | ... }
+ *   GET /runs             read-only: the latest Beat maps and Deploy site runs on main, for the app's
+ *                         "song adding" health check and progress (GitHub allows a browser without a
+ *                         token only 60 API calls an hour). Each run is reduced to
+ *                         { id, workflow, kind, status, conclusion, createdAt, startedAt, updatedAt, jobs? }
+ *                         and each job to { name, part, status, conclusion, startedAt, completedAt,
+ *                         phase?: 'setup' | 'work', phaseStartedAt?, failedAt?: 'tests' | 'build' |
+ *                         'download' | 'other', signInRejected?: true } (flags worked out in runs.ts).
+ *                         Never run titles, step names, logs, inputs or anything else. Cached for
+ *                         RUNS_CACHE_MS. 200 { ok: true, runs: [...] }; 502 { ok: false, error: github-<status> }
  *
  * Artist, title and length come from Apple's lookup of the track ID when
  * Apple answers (source 'apple'). Only when the lookup itself fails (network
@@ -50,6 +59,10 @@
  * upstream error bodies are never passed through.
  */
 
+import { MAP_RUN_TITLE, runsNeedingJobs, summarizeJobs, summarizeRuns, type RunJob, type RunSummary } from './runs';
+
+export { MAP_RUN_TITLE };
+
 export interface Env {
   GITHUB_TOKEN?: string;
   GITHUB_REPO?: string;
@@ -66,12 +79,16 @@ export interface HandleOptions {
   appleTimeoutMs?: number;
 }
 
+/**
+ * What GET /health reports as `version`. Bump it whenever the relay gains something the app
+ * relies on; the app (RELAY_VERSION in src/platform/pipelineHealth.ts, kept equal by a test)
+ * says "redeploy the relay" while the live one reports less. Relays from before this field = 1.
+ */
+export const RELAY_VERSION = 2;
 export const WORKFLOW_FILE = 'beatmaps.yml';
 export const WORKFLOW_REF = 'main';
 export const DEFAULT_DAILY_LIMIT = 30;
 export const DEFAULT_MAP_DAILY_LIMIT = 60;
-/** The run-name beatmaps.yml gives contributed-map runs (used to count them). */
-export const MAP_RUN_TITLE = 'Contributed beat map';
 export const MAX_BODY_BYTES = 2048;
 export const MAX_QUEUE = 9;
 export const APPLE_TIMEOUT_MS = 4000;
@@ -507,6 +524,56 @@ async function handleMap(req: Request, env: Env, fetchFn: FetchFn, now: Date, co
   return json(200, { ok: true, videoId: checked.map.videoId }, cors);
 }
 
+// ---------------------------------------------------------------------------
+// GET /runs: run status for the app's health check. The app turns GitHub's own
+// answer into the same shape when it asks GitHub directly (src/platform/pipelineHealth.ts).
+
+export const RUNS_CACHE_MS = 60_000;
+
+let runsCache: { repo: string; at: number; runs: RunSummary[] } | null = null;
+/** Finished runs never change: their jobs are kept (a few dozen at most). */
+const doneJobs = new Map<number, RunJob[]>();
+
+/** Tests: forget the cached /runs answer. */
+export function resetRunsCache(): void {
+  runsCache = null;
+  doneJobs.clear();
+}
+
+async function handleRuns(env: Env, fetchFn: FetchFn, now: Date, cors: Record<string, string>, repo: string): Promise<Response> {
+  if (runsCache && runsCache.repo === repo && now.getTime() - runsCache.at < RUNS_CACHE_MS) return json(200, { ok: true, runs: runsCache.runs }, cors);
+  const headers = githubHeaders(env.GITHUB_TOKEN!);
+  let runs: RunSummary[];
+  try {
+    const res = await fetchFn(`${GITHUB_API}/repos/${repo}/actions/runs?branch=${WORKFLOW_REF}&per_page=20&exclude_pull_requests=true`, { headers });
+    if (!res.ok) return fail(502, `github-${res.status}`, cors);
+    runs = summarizeRuns(await res.json());
+  } catch {
+    return fail(502, 'github-unreachable', cors);
+  }
+  for (const id of runsNeedingJobs(runs)) {
+    const run = runs.find((r) => r.id === id)!;
+    const known = doneJobs.get(id);
+    if (known && run.status === 'completed') {
+      run.jobs = known;
+      continue;
+    }
+    try {
+      const res = await fetchFn(`${GITHUB_API}/repos/${repo}/actions/runs/${id}/jobs?per_page=20`, { headers });
+      if (!res.ok) continue; // the run list alone still helps
+      run.jobs = summarizeJobs(await res.json());
+      if (run.status === 'completed') {
+        if (doneJobs.size > 50) doneJobs.clear();
+        doneJobs.set(id, run.jobs);
+      }
+    } catch {
+      /* the run list alone still helps */
+    }
+  }
+  runsCache = { repo, at: now.getTime(), runs };
+  return json(200, { ok: true, runs }, cors);
+}
+
 /** The same workflow inputs the web app's direct-token path sends (an empty length is looked up by the job). */
 export function dispatchBody(song: Song, queue: Song[]): string {
   const inputs: Record<string, string> = {
@@ -550,9 +617,15 @@ export async function handle(
       passphrase: !!env.ADD_PASSPHRASE,
       dailyLimit: limit,
       mapDailyLimit: Math.max(1, Math.floor(Number(env.MAP_DAILY_LIMIT) || DEFAULT_MAP_DAILY_LIMIT)),
+      version: RELAY_VERSION,
     };
     if (url.searchParams.get('probe') === '1') health.apple = await probeApple(fetchFn, timeoutMs);
     return json(200, health, cors);
+  }
+  if (url.pathname === '/runs') {
+    if (req.method !== 'GET') return fail(405, 'bad-request', cors);
+    if (!configured) return fail(500, 'not-configured', cors);
+    return handleRuns(env, fetchFn, now(), cors, repo);
   }
   if (url.pathname !== '/add' && url.pathname !== '/map') return fail(404, 'bad-request', cors);
   if (req.method !== 'POST') return fail(405, 'bad-request', cors);

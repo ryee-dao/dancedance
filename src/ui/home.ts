@@ -105,13 +105,15 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
       status,
       ids(playlist),
       ids(added),
-      pending,
+      // Progress ticks don't relayout the shelves: patchPending updates those cards in place.
+      pending.map((p) => [p.key, p.state, p.state === 'waiting' && p.progress ? '' : p.message]),
       hiddenCount,
       groups.map((g) => [g.id, g.title, ids(g.songs)]),
     ]);
     if (layout === lastLayout) {
       // Same shelves and songs (e.g. the added-songs list arrived unchanged): just refresh the tiles.
       refreshTiles();
+      patchPending(pending);
       return;
     }
     lastLayout = layout;
@@ -217,9 +219,11 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
         ? [btn('add-retry', 'Try again', true), btn('add-dismiss', 'Dismiss')]
         : p.state === 'slow'
           ? [btn('add-retry', 'Send again', true), btn('add-dismiss', 'Stop waiting')]
-          : p.state === 'retrying'
+          : p.state === 'retrying' || p.state === 'site-failed'
             ? [btn('add-dismiss', 'Stop waiting')]
             : [];
+    // While it's on its way and the job's progress is known: a bar, what is happening, and a cautious time left.
+    const prog = p.state === 'waiting' ? p.progress : undefined;
     return h(
       'div',
       { class: 'pending-card', 'data-state': p.state, 'data-key': p.key, role: 'group', 'aria-label': `${p.title} by ${p.artist}: ${p.message}` },
@@ -229,10 +233,45 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
         { class: 'pending-text' },
         h('span', { class: 'pending-title' }, p.title),
         h('span', { class: 'artist' }, p.artist),
-        h('span', { class: 'pending-msg' }, p.state === 'waiting' && h('span', { class: 'spinner', 'aria-hidden': 'true' }), p.message),
+        prog
+          ? [
+              h(
+                'span',
+                { class: 'pending-progress', 'aria-hidden': 'true' },
+                h('span', { class: 'pending-bar' }, h('span', { class: 'pending-bar-fill', style: `width:${prog.percent}%` })),
+                h('span', { class: 'pending-pct' }, `${prog.percent}%`),
+              ),
+              h(
+                'span',
+                { class: 'pending-msg', 'data-overrun': prog.overrun ? 'true' : null },
+                prog.stage !== 'queued' && h('span', { class: 'spinner', 'aria-hidden': 'true' }),
+                prog.label,
+                prog.eta && h('span', { class: 'pending-eta' }, ` · ${prog.eta}`),
+              ),
+            ]
+          : h('span', { class: 'pending-msg' }, p.state === 'waiting' && h('span', { class: 'spinner', 'aria-hidden': 'true' }), p.message),
         buttons.length > 0 && h('span', { class: 'pending-buttons' }, ...buttons),
       ),
     );
+  }
+
+  /** Swap in fresh pending cards (new percentage and time left); a focused card only gets its progress lines replaced. */
+  function patchPending(pending: PendingView[]): void {
+    for (const card of body.querySelectorAll<HTMLElement>('.pending-card')) {
+      const p = pending.find((x) => x.key === card.dataset.key);
+      if (!p) continue;
+      const fresh = pendingCard(p);
+      if (!card.contains(document.activeElement)) {
+        card.replaceWith(fresh);
+        continue;
+      }
+      card.setAttribute('aria-label', fresh.getAttribute('aria-label') ?? '');
+      for (const sel of ['.pending-progress', '.pending-msg']) {
+        const old = card.querySelector(sel);
+        const now = fresh.querySelector(sel);
+        if (old && now) old.replaceWith(now);
+      }
+    }
   }
 
   /** "Try again" / "Send again" on a pending card. */

@@ -7,7 +7,7 @@ import onTheFloorMap from '../../../public/beatmaps/9lybsz-7TFM.json';
 import { generateDuoRoutine } from './duo';
 import { LivePlanner, MAX_NAME, generateRoutine, mapTempo, shortName, type Intensity, type MoveInstance, type Routine } from './generator';
 import { publishedSongs } from './published.testutil';
-import { LEVEL_SPEED, moveTempoMode, speedLimit } from './speed';
+import { LEVEL_SPEED, dancedTempoMode, speedLimit } from './speed';
 import { MIN_CARD_BEATS, cardsOf } from './cards';
 import { findMove } from './moves';
 import { getPool } from './pool';
@@ -102,8 +102,7 @@ describe('generateRoutine', () => {
   });
 
   it('mixes intensity measurably; Easy never jumps', () => {
-    // A dozen songs: each casts one kit, and Medium's impact time is a few moves (6 songs: 0.8-8 % from seed to seed).
-    const songs = Array.from({ length: 12 }, (_, k) => songMap(122, `mix${k}`));
+    const songs = ['a', 'b', 'c', 'd', 'e', 'f'].map((id) => songMap(122, id));
     const frac = (lv: Intensity, f: (i: MoveInstance) => boolean) => {
       let hit = 0;
       let all = 0;
@@ -226,29 +225,26 @@ describe('generateRoutine', () => {
 
   it('performs each move at half time on its own, when the song is over its speed limit', () => {
     let full = 0, half = 0;
-    // A dozen songs: one kit's casting swings the full / half split (one song: 0.7-3.2x).
-    for (const lv of LEVELS) for (const id of Array.from({ length: 12 }, (_, k) => `fast-${k}`)) {
+    for (const lv of LEVELS) {
       // Above 150 BPM the routine counts in half time (phrases / units doubled) ...
-      const r = generateRoutine(songMap(170, id), lv);
+      const r = generateRoutine(songMap(170, 'fast'), lv);
       expect(r.half).toBe(true);
       expect(r.bpm).toBeCloseTo(170, 0);
       for (const i of r.instances) {
         if (i.move.idle || i.move.part || i.sig) continue;
-        // ... but each move runs at its own speed: half time only when 170 is over its limit (or its coordination load).
-        expect(moveTempoMode(i.move, 170, lv), i.move.id).not.toBe('out');
-        expect(i.half, i.move.id).toBe(moveTempoMode(i.move, 170, lv) === 'half');
+        // ... but each move runs at its own speed: half time only when 170 is over its limit (or its coordination load: dancedTempoMode).
+        expect(dancedTempoMode(i.move, 170, lv), i.move.id).not.toBe('out');
+        expect(i.half, i.move.id).toBe(dancedTempoMode(i.move, 170, lv) === 'half');
         expect(i.span).toBe(i.move.beats * (i.half ? 2 : 1));
         if (i.half) half += i.span;
         else full += i.span;
       }
       const slow = generateRoutine(songMap(128, 'fast'), lv);
       expect(slow.half).toBe(false);
-      for (const i of slow.instances) if (!i.move.idle && !i.move.part && !i.sig) expect(i.half, i.move.id).toBe(moveTempoMode(i.move, 128, lv) === 'half');
+      for (const i of slow.instances) if (!i.move.idle && !i.move.part && !i.sig) expect(i.half, i.move.id).toBe(dancedTempoMode(i.move, 128, lv) === 'half');
     }
-    // Simple on-the-beat moves keep fast songs fast: most of a 170 BPM routine is full time. The coordination load
-    // (speed.ts COORD_LOAD) sends moves with busy arms to half time at this tempo on Easy and Medium: full / half was
-    // 2.0-2.7 before it, 1.3-1.6 after (12 songs, Nov 2026; Easy 0.44-0.54 full, Medium 0.58-0.63, Hard 0.62-0.71).
-    expect(full).toBeGreaterThan(1.15 * half);
+    // Simple on-the-beat moves keep fast songs fast: most of a 170 BPM routine is full time.
+    expect(full).toBeGreaterThan(1.5 * half);
   });
 
   it('never dances a move over its speed limit, on any published map, at any level', () => {

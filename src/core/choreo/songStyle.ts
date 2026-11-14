@@ -99,6 +99,12 @@ export interface SongStyle {
    * how its ballad steps.
    */
   songLevel?: { subs?: Partial<Record<SubStyle, number>>; themes: Theme[] };
+  /**
+   * Nothing is known of the song's music: no curated style, no genre name placed, no audio traits (a song whose genre
+   * lookup found nothing yet, danced before its audio was read: "Mixed styles"). Its tone is unknown, so the generator
+   * keeps to the middle (generator.ts toneGate). Absent on the generator's default style.
+   */
+  unknown?: true;
 }
 
 export interface StyleOverride {
@@ -1561,6 +1567,7 @@ export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyl
   if (focus) out.focus = focus;
   if (signature && signature.length) out.signature = [...signature];
   if (Object.keys(subs).length) out.subs = subs;
+  if (source === 'fallback' && !traits && calm === undefined) out.unknown = true;
   if (calm !== undefined) out.calm = Math.round(calm * 1000) / 1000;
   if (ev.name && subs.bass !== undefined) out.subName = ev.name;
   if (ev.label) out.label = ev.label;
@@ -1577,6 +1584,58 @@ export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyl
   const sameSubs = JSON.stringify(songSubs) === JSON.stringify(Object.fromEntries(Object.entries(subs).filter(([k]) => k !== 'lyrical')));
   if (!sameSubs || songThemes.length !== themes.length) out.songLevel = { ...(Object.keys(songSubs).length ? { subs: songSubs } : {}), themes: songThemes };
   return out;
+}
+
+/** What the app knows about a song when it resolves its style, as read from its stores (lists unvalidated). */
+export interface SongSources {
+  videoId?: string;
+  title?: string;
+  artist?: string;
+  /** The single genre tag (iTunes primaryGenreName). */
+  genre?: string;
+  /** The song's genre names, best first; non-strings are dropped. */
+  genres?: unknown;
+  /** Level of each `genres` entry; kept only when it matches the list entry for entry and every level is 'song' / 'album'. */
+  genreLevels?: unknown;
+  /** The artist's usual genres (non-strings dropped); `artistGenre` is used only when this has none. */
+  artistGenres?: unknown;
+  artistGenre?: string;
+  style?: StyleOverride;
+}
+
+/** The parts of a beat map the style reads: tempo, mean section energy, absolute audio traits. */
+export interface StyleMap {
+  bpm: number;
+  sections?: readonly { energy: number }[];
+  traits?: unknown;
+}
+
+/**
+ * A song's style exactly as the app resolves it at play time (ui/coachStage.ts routineInfo): the song's
+ * sources cleaned (levels kept only when they match the list entry for entry; non-string names dropped) and,
+ * once the beat map is known, its tempo, mean section energy and audio traits. One function, so the tools and
+ * the whole-catalogue tests judge the style the app plays.
+ */
+export function songStyleOf(src: SongSources, map: StyleMap | null | undefined): SongStyle {
+  const list = src.genres;
+  const levelList = src.genreLevels;
+  const pairs = Array.isArray(list) ? list.map((g, i) => [g, Array.isArray(levelList) && levelList.length === list.length ? levelList[i] : undefined] as const).filter(([g]) => typeof g === 'string') : [];
+  const genres = pairs.map(([g]) => g as string);
+  const levels = pairs.every(([, l]) => l === 'song' || l === 'album') ? pairs.map(([, l]) => l as string) : undefined;
+  const artistGenres = Array.isArray(src.artistGenres) ? src.artistGenres.filter((g): g is string => typeof g === 'string') : [];
+  const artistGenre = artistGenres.length ? undefined : src.artistGenre;
+  const secs = map?.sections ?? [];
+  const energy = secs.length ? secs.reduce((a, s) => a + s.energy, 0) / secs.length : undefined;
+  return resolveSongStyle(
+    {
+      videoId: src.videoId, title: src.title, artist: src.artist, genre: src.genre,
+      ...(genres.length ? { genres } : {}),
+      ...(genres.length && levels ? { genreLevels: levels } : {}),
+      ...(artistGenres.length ? { artistGenres } : typeof artistGenre === 'string' ? { artistGenre } : {}),
+      ...(src.style ? { style: src.style } : {}),
+    },
+    map ? { bpm: map.bpm, energy, traits: map.traits } : undefined,
+  );
 }
 
 /** The 1–2 strongest families, strongest first (ties in FAMILIES order). */
