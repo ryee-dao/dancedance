@@ -18,19 +18,34 @@
  * rising): a broadband crack scores high, a tonal onset (piano, voice) that
  * raises only its partials scores low. "Hat" is the same for 5 - 10 kHz.
  *
- *  drive     kick prominence per beat (0.55), midrange and high-band rises
- *            (0.25, 0.2), scaled by how much of the onset activity sits on
- *            the 16th grid rather than between it. Dense, distorted mixes
- *            mask their drums and read lower than they sound (see heavy).
+ * Character has two axes (analyser 1.4.0): how rhythmically active the song
+ * is (drive) and how hard it sounds (intensity). A soft song on a steady
+ * programmed beat has drive but little intensity; a sparse trap beat with
+ * harsh 808s and synths has intensity with moderate drive. calm combines
+ * them; a choreographer that needs to tell soft-but-rhythmic from
+ * hard-hitting reads intensity as well.
+ *
+ *  drive     the hardest kick or snare hit of each bar (prominence, mean over
+ *            bars) and the strong onsets per second, half each. A per-beat
+ *            mean would punish sparse patterns (trap kicks) and dense mixes
+ *            that mask every other hit.
+ *  intensity 0.6 x how noise-like (flatness) and full (fill) the 1-5 kHz band
+ *            is in the typical (median) frame: distortion, dense drums, harsh
+ *            synths, shouting are noise-like; a voice, a piano, an acoustic
+ *            guitar are tonal. 0.4 x spectral tilt (2.8-7.3 kHz over
+ *            270 Hz-1.1 kHz): hard productions are bright. Optional in maps.
+ *  calm      1 - ramp(0.55 intensity + 0.45 drive, 0.15 .. 0.65). Not the
+ *            counted tempo: ballads are often counted at double time.
  *  hats      fraction of 16th slots with a hat hit.
  *  fourFloor per bar: the weakest of the four on-beat kicks minus half the
  *            off-beat kick level, when it is not much weaker than the
  *            others; mean over bars (bars without a kick count as 0).
- *  halfFeel  snare per beat of the bar, averaged over 8-bar windows: by how
- *            much the strongest beat beats the other three, discounted when
- *            the kick lands there too (a downbeat accent, not a backbeat);
- *            gated on a high-band crack. Wherever the downbeat landed, one
- *            snare per bar reads as half-time and 2-and-4 does not.
+ *  halfFeel  snare per beat of the bar, averaged over 8-bar windows: the
+ *            strongest beat against the beat opposite it in the bar,
+ *            (S - S') / (S + S'): a backbeat hits 2 and 4 alike, a half-time
+ *            feel only one of them. Discounted when the kick lands on that
+ *            beat too (a downbeat accent), gated on a high-band crack. Being
+ *            a ratio, a dense mix's background cancels.
  *  swing     position of the strongest off-beat peak in the beat-relative
  *            profile of snare + hat activity (0.5 straight, 0.6-0.67 swung),
  *            when that peak is strong enough.
@@ -40,15 +55,22 @@
  *  bass      level below ~100 Hz re the whole spectrum (dB).
  *  heavy     flatness of the 1-5 kHz band in its quieter frames (25th
  *            percentile: sustained noise, not just cymbal hits) x how filled
- *            that band stays: distorted guitars, a wall of sound.
+ *            that band stays, gated on the top octave (7.3-11 kHz, median
+ *            frame) falling 3-5.5 dB or more below the presence band: a
+ *            guitar speaker cabinet rolls off there, supersaw synths and
+ *            bright pop masters do not.
  *  minor     Krumhansl-Kessler key profiles on the mean chroma: best minor
  *            minus best major correlation (weak: relative keys share notes).
- *  calm      1 - (drive 0.45, strong onsets per second 0.25, heavy 0.2,
- *            hats 0.1). Not the counted tempo: ballads are often counted at
- *            double time, so slowness shows as sparse onsets instead.
+ *  halfTempo / doubleTempo  how plausible stepping at half / twice the
+ *            map's bpm is (optional in maps). The octave of a tempo often
+ *            cannot be decided from onsets alone (8th-note hats under a
+ *            backbeat look like a beat at twice the tempo): halfTempo is the
+ *            larger of halfFeel and tempo.ts octaveDoubt's `slower`;
+ *            doubleTempo is its `faster`, on the rise envelope.
  *
- * A song without a usable grid gets 0 for fourFloor, halfFeel, swing and
- * syncop; hats and drive then use a 120 BPM pseudo-grid.
+ * A song without a usable grid gets 0 for fourFloor, halfFeel, swing,
+ * syncop, halfTempo and doubleTempo; hats and drive then use a 120 BPM
+ * pseudo-grid.
  *
  * Pure TypeScript: no DOM, Web Audio or Node APIs. Deterministic.
  */
@@ -72,9 +94,12 @@ import { octaveDoubt } from './tempo';
 
 /** Absolute per-song descriptors, each 0..1 (stored with 2 decimals). */
 export interface SongTraits {
-  /** 1 = very calm (slow, sparse hits, little percussion, soft); 0 = driving. */
+  /**
+   * 1 = very calm (sparse, soft: a ballad, ambient); about 0.4-0.6 = soft but on a steady
+   * beat; 0 = energetic (hard-hitting, or busy and punchy). Combines drive and intensity.
+   */
   calm: number;
-  /** Drum / percussive strength. */
+  /** Rhythmic, percussive activity: how hard the hardest hit of each bar is, and how many strong onsets there are. */
   drive: number;
   /** A steady kick on every beat (house, disco, EDM). */
   fourFloor: number;
@@ -88,7 +113,7 @@ export interface SongTraits {
   swing: number;
   /** Syncopation (dembow, afrobeats). */
   syncop: number;
-  /** Distortion / wall of sound (metal, hard rock). */
+  /** Distortion: a noise-like, full midrange with a guitar cabinet's top-octave roll-off (metal, hard rock). */
   heavy: number;
   /** Minor-mode likelihood (a weak estimate: relative major / minor keys share their notes). */
   minor: number;
@@ -197,7 +222,6 @@ export interface TraitStats {
   /** Octave doubt of the grid's tempo on the rise envelope (tempo.ts octaveDoubt; onset.ts riseEnvelope). */
   octSlower: number;
   octFaster: number;
-  halfProf?: number[];
   /** Best minor-key minus best major-key profile correlation. */
   modeDiff: number;
 }
@@ -413,7 +437,6 @@ export function traitStats(f: Features, grid: TraitGrid): TraitStats {
   // beats every other beat, discounted when it is also where the kick lands (that is a
   // downbeat accent: the "1" with its kick and chord change, not a backbeat).
   const halfW: number[] = [];
-  const halfProf = new Float64Array(8);
   for (let w = 0; w + 4 <= bars.length; w += 8) {
     const seg = bars.slice(w, w + 8);
     const avg = [0, 1, 2, 3, 4, 5, 6, 7].map((q) => mean(seg.map((b) => b[q])));
@@ -426,7 +449,6 @@ export function traitStats(f: Features, grid: TraitGrid): TraitStats {
     const contrast = S[top] + opp > 1e-6 ? (S[top] - opp) / (S[top] + opp) : 0;
     const kMax = Math.max(...Kq);
     halfW.push(contrast * (kMax > 1e-6 ? 1 - Kq[top] / kMax : 1));
-    for (let q = 0; q < 8; q++) halfProf[q] += avg[q];
   }
 
   // Swing: beat-relative profile of snare + hat activity (48 bins per beat).
@@ -540,7 +562,6 @@ export function traitStats(f: Features, grid: TraitGrid): TraitStats {
     octSlower: oct.slower,
     octFaster: oct.faster,
     kickBar: mean(kickBars),
-    halfProf: Array.from(halfProf, (v) => Math.round((100 * v) / Math.max(1, halfW.length)) / 100),
     snareBar: mean(snareBars),
     modeDiff: keyModeDiff(chroma),
   };

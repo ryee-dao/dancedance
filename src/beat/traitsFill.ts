@@ -1,6 +1,7 @@
 /**
  * On-device fill-in of song traits (analyser 1.3.0) for maps made before
- * them: a cloud map from an older run, or one cached on this device.
+ * them (or before their 1.4.0 re-calibration): a cloud map from an older
+ * run, or one cached on this device.
  *
  * Wherever the app has the song's audio (Android TV's downloaded audio, a
  * dropped file) and the map it resolved is complete but has no `traits`,
@@ -28,9 +29,14 @@ export interface TraitsJob {
 
 export type TraitsRunner = (audio: DecodedAudio, grid: TraitGrid) => TraitsJob;
 
-/** A complete map that still lacks traits (partial maps are replaced by a full analysis anyway). */
+/**
+ * A complete map that still lacks traits, or carries traits from before
+ * analyser 1.4.0 (they have no `intensity`; 1.4.0 re-calibrated calm, drive,
+ * halfFeel and heavy), so they are recomputed on the map's own grid.
+ * Partial maps are replaced by a full analysis anyway.
+ */
 export function needsTraits(map: BeatMap | null | undefined): map is BeatMap {
-  return !!map && !map.partial && !map.traits && map.duration > 0;
+  return !!map && !map.partial && (!map.traits || map.traits.intensity === undefined) && map.duration > 0;
 }
 
 export function gridOf(map: BeatMap): TraitGrid {

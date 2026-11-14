@@ -11,6 +11,17 @@
  *   npx tsx tools/eval/report.ts results.json [--detail]  (markdown table + counts)
  * (`--stage eval` is the same as `score`.)
  *
+ * Audio readings alone (tempo, beat grid, character traits) against researched
+ * audio targets (common.ts AudioTarget, an `audio` field of expectations.json or
+ * a separate audio-targets.json):
+ *   npx tsx tools/eval/audio.ts --targets T.json --maps W/maps
+ *   npx tsx tools/eval/stats.ts --audio <dir> --out W/stats.json   (record trait
+ *     statistics while the audio is at hand; tools/eval/realmusic.test.ts re-maps
+ *     them on every test run, so no audio is committed)
+ * Sets with targets and recorded stats: data/run-20261113 (tuning),
+ * data/heldout-20261114 (held out, seed 20261114, researched before analysis),
+ * data/famous14 (the songs the traits were first calibrated on).
+ *
  * Re-run the 2026-11-13 judgement offline (maps, video picks, lookups and
  * verdicts are saved; nothing is downloaded or looked up):
  *   D=tools/eval/data/run-20261113

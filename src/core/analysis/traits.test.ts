@@ -94,6 +94,28 @@ describe('song traits: calm piano vs dense distorted rock at the same tempo', ()
   });
 });
 
+describe('song traits: two axes, how rhythmic and how hard', () => {
+  // The same steady beat under a soft pad, and under distorted guitars: a soft
+  // song on a programmed beat is not a banger (Donna Lewis read calm 0.05 in 1.3.0).
+  const drums = [K(0), K(2), S(1, 0.7), S(3, 0.7), ...every(8, 0.5, (a) => H(a, 0.4))];
+  const soft = mix({ bpm: 104, bars: 24, drums, pad: { ...PAD, level: 0.08 }, sub: SUB }).t;
+  const hard = mix({ bpm: 104, bars: 24, drums, guitar: { roots: [40, 40, 36, 38] }, sub: SUB }).t;
+
+  it('both are rhythmic; only the guitars sound hard', () => {
+    // The guitars still mask part of the drums' prominence (drive is lower under them), but both drive.
+    expect(soft.drive).toBeGreaterThan(0.4);
+    expect(hard.drive).toBeGreaterThan(0.3);
+    expect(soft.intensity!).toBeLessThan(0.35);
+    expect(hard.intensity!).toBeGreaterThan(0.6);
+  });
+
+  it('the soft one is in between: calmer than the hard one, not as calm as a ballad', () => {
+    expect(soft.calm).toBeGreaterThan(hard.calm + 0.25);
+    expect(soft.calm).toBeLessThan(0.85);
+    expect(hard.calm).toBeLessThan(0.3);
+  });
+});
+
 describe('song traits: four-on-the-floor vs a half-time backbeat', () => {
   const four = mix({
     bpm: 128,
