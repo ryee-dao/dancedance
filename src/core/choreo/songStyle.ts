@@ -76,6 +76,8 @@ export interface SongStyle {
   bpm?: number;
   /** The scene a song-level genre name says (K-pop, J-pop ...): it leads the dancing. */
   scene?: string;
+  /** The calm the genre names alone hint (a calm genre needs no " · Ballad"). */
+  nameCalm?: number;
 }
 
 export interface StyleOverride {
@@ -365,7 +367,7 @@ const LEXICON: readonly Lex[] = [
   { re: word('dubstep|riddim|brostep|tearout'), fam: { aerobic: 0.8, hiphop: 0.2 }, sub: { bass: 1 }, name: 'Dubstep', label: 'Dubstep', bpm: 140 },
   { re: word('drum and bass|drum n bass|drum bass|dnb|d and b|jungle|liquid funk|liquid dnb|neurofunk|jump up|techstep|ragga jungle'), fam: { aerobic: 0.9, hiphop: 0.1 }, sub: { bass: 1 }, name: 'Drum & bass', label: 'Drum & bass', bpm: 172 },
   { re: word('future bass|bass music|bass house|trap edm|edm trap|midtempo bass'), fam: { aerobic: 0.7, hiphop: 0.3 }, sub: { bass: 0.8, edm: 0.3 }, bpm: 145 },
-  { re: word('uk garage|2 step|speed garage|garage house|bassline|uk funky'), fam: { aerobic: 0.5, disco: 0.3, hiphop: 0.3 }, sub: { house: 0.6 }, bpm: 132 },
+  { re: word('uk garage|2 step|speed garage|garage house|bassline|uk funky|garage(?! rock| punk)'), fam: { aerobic: 0.5, disco: 0.3, hiphop: 0.3 }, sub: { house: 0.6 }, bpm: 132 },
   { re: word('grime'), fam: { hiphop: 0.9, aerobic: 0.2 }, sub: { drill: 0.3 }, label: 'Grime', bpm: 140 },
   { re: word('jersey club|baltimore club|footwork|juke|chicago footwork|ghetto house|ghettotech'), fam: { hiphop: 0.6, aerobic: 0.5 }, sub: { bass: 0.3 }, bpm: 140 },
   { re: word('big room house|big room|electro house|progressive house|festival|complextro|melbourne bounce'), fam: { aerobic: 0.8, pop: 0.3 }, sub: { edm: 1 }, bpm: 128 },
@@ -377,10 +379,10 @@ const LEXICON: readonly Lex[] = [
   { re: word('dance pop|(?<!belly |folk |line |square )dance'), fam: { pop: 0.5, aerobic: 0.5, disco: 0.3 }, label: 'Dance', bpm: 122 },
   { re: word('dark ambient|ambient|drone|space music|new age|meditation|healing|relaxation|sleep|nature sounds|soundscape|field recording|sound art|musique concrete'), fam: STILL, calm: 0.85, soft: 0.9, still: true, bpm: 70 },
   { re: word('downtempo|chillwave|chillout|chill out|lo fi hip hop|lo fi|lofi|trip hop|vaporwave'), fam: { pop: 0.6, hiphop: 0.2 }, calm: 0.75, soft: 0.7, bpm: 85 },
-  { re: word('chiptune|8 bit|bitpop|video game music|vgm|game music'), fam: { aerobic: 0.5, pop: 0.5 }, conf: 0.6, bpm: 130 },
+  { re: word('chiptune|8 bit|bitpop|video game music|video games?|vgm|game music'), fam: { aerobic: 0.5, pop: 0.5 }, conf: 0.6, bpm: 130 },
   { re: word('electronica|electronic|electro(?! swing)|idm|glitch|breakbeat|breaks|big beat|indietronica'), fam: { aerobic: 0.6, pop: 0.4, disco: 0.15 }, label: 'Electronic', bpm: 125 },
   // --- Disco, soul, R&B, funk.
-  { re: word('post disco|boogie'), fam: { disco: 0.8, funk: 0.6 }, bpm: 115 },
+  { re: word('post disco|boogie(?! woogie)'), fam: { disco: 0.8, funk: 0.6 }, bpm: 115 },
   { re: word('nu disco|italo disco|euro disco|disco'), fam: { disco: 1, funk: 0.3 }, label: 'Disco', bpm: 118 },
   { re: word('new jack swing'), fam: { hiphop: 0.6, funk: 0.6, pop: 0.3 }, sub: { rnb: 0.7 }, bpm: 105 },
   { re: word('quiet storm|slow jam'), fam: { funk: 0.5, pop: 0.5, hiphop: 0.3 }, sub: { rnb: 0.8 }, calm: 0.68, soft: 0.7, bpm: 70 },
@@ -428,11 +430,11 @@ const LEXICON: readonly Lex[] = [
   { re: word('indian classical|carnatic|carnatic classical|hindustani|hindustani classical|ghazals?|bhajan|devotional and spiritual|devotional|kirtan'), fam: STILL, calm: 0.7, still: true, bpm: 75 },
   { re: word('bollywood|filmi|indian pop|indipop|indian|hindi|desi|tollywood|kollywood|tamil|telugu|malayalam|kannada|regional indian'), fam: { pop: 0.7, latin: 0.3, disco: 0.2 }, themes: ['bollywood'], bpm: 110 },
   { re: word('qawwali|sufi'), fam: { pop: 0.6, latin: 0.2 }, themes: ['bollywood'], calm: 0.5, bpm: 100 },
-  { re: word('arabic pop|arabic|arab|middle eastern|middle east|khaleeji|levant|maghreb|raqs|belly dance|bellydance|arabesque|mahraganat|shaabi|chaabi|rai|dabke|mizrahi|turkish pop|turkish'), fam: { pop: 0.7, latin: 0.3 }, themes: ['bellydance'], bpm: 105 },
-  { re: word('dangdut|koplo|joget'), fam: { pop: 0.6, latin: 0.4 }, focus: HIPS, label: 'Dangdut', bpm: 120 },
+  { re: word('arabic pop|arabic|arab|middle eastern|middle east|khaleeji|levant|maghreb|raqs|belly dance|bellydance|arabesque|mahraganat|shaabi|chaabi|rai|mizrahi|turkish pop|turkish'), fam: { pop: 0.7, latin: 0.3 }, themes: ['bellydance'], bpm: 105 },
+  { re: word('dangdut|koplo|joget'), fam: { pop: 0.7, latin: 0.3 }, focus: HIPS, label: 'Dangdut', bpm: 120 },
   { re: word('hawaiian|hapa haole|hula|polynesian|hawaii'), fam: { pop: 0.7, latin: 0.2 }, themes: ['hula'], label: 'Hawaiian', bpm: 95 },
   { re: word('capoeira'), fam: { latin: 0.8 }, themes: ['capoeira'], label: 'Capoeira', bpm: 110 },
-  { re: word('celtic|irish folk|polka|klezmer|balkan|folk dance|traditional folk|volksmusik|german folk|turbo folk|chalga|manele|rebetiko|laiko|sirtaki|folklore|folk|world folk'), fam: { pop: 0.6, party: 0.2, rock: 0.2 }, themes: ['folk'], label: 'Folk', bpm: 115 },
+  { re: word('celtic|irish folk|polka|klezmer|balkan|folk dance|traditional folk|volksmusik|german folk|turbo folk|chalga|manele|rebetiko|laiko|sirtaki|dabke|horon|halay|folklore|folk|world folk'), fam: { pop: 0.6, party: 0.2, rock: 0.2 }, themes: ['folk'], label: 'Folk', bpm: 115 },
   { re: word('fado|chanson|cabaret|canzone|variete|ye ye'), fam: { pop: 0.9, latin: 0.1 }, calm: 0.55, bpm: 100 },
   // --- Latin umbrella (after its dances).
   { re: word('alternativo and rock latino|rock en espanol|latin rock|rock latino'), fam: { rock: 0.7, latin: 0.5 }, label: 'Latin rock', bpm: 120 },
@@ -990,6 +992,7 @@ export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyl
   if (calm !== undefined) out.calm = Math.round(calm * 1000) / 1000;
   if (ev.name && subs.bass !== undefined) out.subName = ev.name;
   if (ev.label) out.label = ev.label;
+  if (ev.calm !== null) out.nameCalm = Math.round(ev.calm * 1000) / 1000;
   if (ev.labelSpecific) out.labelSpecific = true;
   if (still) out.still = true;
   if (soft !== undefined) out.soft = Math.round(soft * 1000) / 1000;
@@ -1061,6 +1064,8 @@ export function styleLabel(s: SongStyle): string {
   if (s.calm !== undefined && s.calm >= BALLAD_CALM) {
     const head = s.label ?? tradition ?? (s.source === 'override' || s.source === 'genre' ? (top.length ? MUSIC_LABEL[top[0]] : null) : null);
     if (!head) return 'Ballad';
+    // A calm genre (smooth jazz, downtempo, bossa nova) is calm by its name: no suffix for what the name says.
+    if (s.label && (s.nameCalm ?? 0) >= BALLAD_CALM - 0.05) return head;
     return /ballad|lullab/i.test(head) ? head : `${head} · Ballad`;
   }
   const sub = labelSub(s);

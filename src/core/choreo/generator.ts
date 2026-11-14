@@ -1837,7 +1837,7 @@ export class Choreographer {
  * share layers in the variation pool and so live together in the Latin set;
  * this is how a merengue still gets merengue first.
  */
-export const NAMED_DANCE = 4;
+export const NAMED_DANCE = 8;
 
 /** The song's leading Latin dance: the strongest Latin-dance sub-style at / above SUB_OPEN (genres.ts LATIN_DANCES), or null. */
 export function danceOf(style: SongStyle): SubStyle | null {
@@ -1861,8 +1861,8 @@ export function danceOf(style: SongStyle): SubStyle | null {
  * a hip-hop anthem counted at 150 BPM 63 %).
  */
 export const JUMP_CAP: Readonly<Record<Intensity, number>> = { chill: 0, cardio: 0.14, sweaty: 0.3 };
-/** The combo may jump only where the song's jump budget is at least this (its jumps come back in every chorus). */
-const SIG_JUMP_CAP = 0.2;
+/** The combo may jump (one of its two blocks) only where the song's jump budget is at least this (its jumps come back in every chorus). */
+const SIG_JUMP_CAP = 0.25;
 
 /**
  * The jump budget of a song at a level: JUMP_CAP x its character x its felt
@@ -2183,7 +2183,8 @@ function pickSignature(
   const nods = (style.signature ?? []).map((id) => DANCE_MOVES.find((m) => m.id === id)).filter((m): m is Move => !!m && fitsAny(m));
   const a = nods[0] ?? pickWeighted(rng, pool, pool.map(weight));
   if (!a) return [];
-  const rest = pool.filter((m) => m !== a && together(a, m));
+  // At most one of its two blocks jumps (it comes back in every chorus: the jump budget counts it).
+  const rest = pool.filter((m) => m !== a && together(a, m) && !(a.jump && m.jump));
   const nb = nods[1] && nods[1] !== a && together(a, nods[1]) ? nods[1] : null;
   const b = nb ?? pickWeighted(rng, rest, rest.map((m) => weight(m) * (1 - 0.7 * partsOverlap(a, m)) * (mode(m) === mode(a) ? 1 : 0.3))) ?? rest[0] ?? a;
   const steps: SigStep[] = [];
