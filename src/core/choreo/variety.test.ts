@@ -30,6 +30,20 @@ const OPENS: [readonly string[], Genre[], Genre[]][] = [
   [['Schlager'], ['schlager'], ['latin', 'discofunk']],
   [['Partyschlager'], ['schlager'], []],
   [['Oktoberfest'], ['schlager'], []],
+  // Round three: synth-pop / new wave and indie (new sets).
+  [['synth-pop'], ['synthpop'], ['rock', 'indie']],
+  [['new wave', 'synth-pop', 'pop rock'], ['synthpop'], []],
+  [['new romantic'], ['synthpop'], []],
+  [['synthwave'], ['synthpop'], []],
+  [['indie pop'], ['indie'], ['synthpop']],
+  [['indie rock'], ['indie', 'rock'], []],
+  [['shoegaze'], ['indie'], ['rock']],
+  [['dream pop'], ['indie'], []],
+  [['jangle pop'], ['indie'], []],
+  [['twee pop'], ['indie'], []],
+  [['bedroom pop'], ['indie'], []],
+  [['Indie'], ['indie'], []],
+  [['britpop'], ['indie'], []],
   // Grown sets, and names that opened nothing before although their set exists.
   [['bachata'], ['bachata'], ['salsa']],
   [['tango'], ['tango'], ['latin']],
@@ -80,9 +94,13 @@ const UNCHANGED: [readonly string[], Genre[]][] = [
   [['brega funk'], ['brazil']],
   [['house'], ['discofunk', 'house']],
   [['Arabic'], ['bellydance']],
+  // Modern electropop alone stays pop (the synth-pop floor needs other evidence); "Alternative" stays rock.
+  [['electropop'], []],
+  [['Alternative'], ['rock']],
+  [['alternative rock'], ['rock']],
 ];
 
-const ADDED: readonly Genre[] = ['gospel', 'dangdut', 'schlager'];
+const ADDED: readonly Genre[] = ['gospel', 'dangdut', 'schlager', 'synthpop', 'indie'];
 
 describe('genre survey sets', () => {
   it.each(OPENS)('%j opens its set', (genres, want, not) => {
@@ -121,6 +139,13 @@ describe('genre survey sets', () => {
     expect(gospel.filter((m) => m.level === 'low' && !m.jump).length).toBeGreaterThanOrEqual(3);
     expect(gospel.filter((m) => m.level === 'mid').length).toBeGreaterThanOrEqual(3);
     expect(gospel.filter((m) => m.level === 'high').length).toBeGreaterThanOrEqual(1);
+    // Synth-pop and indie (round three): at least 6 Easy-eligible moves each, and moves at every level.
+    for (const g of ['synthpop', 'indie'] as const) {
+      const ms = MOVES.filter((m) => m.genre === g && m.base === m.id);
+      expect(ms.filter((m) => m.difficulty === 1 && m.level !== 'high' && !m.jump).length, g).toBeGreaterThanOrEqual(6);
+      expect(ms.some((m) => m.level === 'mid'), g).toBe(true);
+      expect(ms.some((m) => m.level === 'high'), g).toBe(true);
+    }
     // The grown sets: each has an Easy move.
     for (const g of ['bachata', 'tango', 'mexican', 'cumbia', 'flamenco', 'bellydance', 'country'] as const) {
       expect(MOVES.some((m) => m.genre === g && m.level === 'low' && !m.jump), g).toBe(true);

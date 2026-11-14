@@ -15,6 +15,7 @@ readable from the front, and distinct**. Quality beats quantity: do not pad.
 | `families/afro.ts`, `retro.ts`, `world.ts` | traditions: afrobeats / dancehall / soca, swing / country / folk, Bollywood / hula / belly dance ... |
 | `families/named.ts` | named variations: recombinations promoted to first-class moves with their own names |
 | `families/gospel.ts`, `country2.ts`, `latin2.ts`, `mexican.ts`, `flamenco.ts`, `world2.ts`, `world3.ts`, `club.ts` | the genre survey's additions (Nov 2026): gospel; more country; bachata, tango, salsa shines; regional Mexican and cumbia; flamenco; belly dance; dangdut and Schlager; house farmer, amapiano groove (ids in `genreSets/variety.ts`) |
+| `families/synthpop.ts`, `indie.ts` | round three (Nov 2026): the synth-pop / new wave floor and the indie gig / indie-disco floor (ids in `genreSets/variety.ts`) |
 | `families/basicsLatin.ts`, `basicsIbero.ts`, `basicsRetro.ts`, `basicsIsland.ts`, `basicsFolk.ts`, `basicsClub.ts` | the simple basics (Nov 2026): difficulty-1, low-impact steps as each style is taught to beginners, so every genre set has at least 6 Easy-eligible moves (capoeira 4); sources in each file's header, ids in `genreSets/basics.ts` |
 
 ## Two tiers: global and genre-exclusive
@@ -26,7 +27,7 @@ afro, Caribbean, South Asian, folk, belly dance, hula, capoeira, and the
 sub-style sets metal, punk, trap, drill, R&B, house, EDM, bass music,
 reggaeton, Brazilian, amapiano, lyrical, the Latin dances salsa,
 merengue, cumbia, bachata, cha-cha, flamenco, tango, regional Mexican, and
-gospel, dangdut and Schlager (see "Genre sets" below; the sets added or grown in the genre survey,
+gospel, dangdut, Schlager, synth-pop and indie (see "Genre sets" below; the sets added or grown in the genre survey,
 `tools/eval/data/genre-dance-survey.md`, list their ids in
 `genreSets/variety.ts`). A genre-exclusive move is only
 used on songs whose style opens that genre (`songGenres`: the style's
@@ -205,6 +206,8 @@ borrow needs a `NEIGHBOURS` entry with the dance reason next to it.
 | `gospel` | choir step and clap, choir two-step, raised-hand praise, lifted hands, point to heaven, handkerchief wave, tambourine, bow and rise, the praise-break shout and shout hops, step-team stomps | gospel (traditional, urban contemporary, southern), worship, CCM, contemporary Christian, the iTunes "Christian & Gospel" tag; "Christian rock / metal / hip hop" read as their second word | none; borrows R&B, soul / funk grooves, lyrical (calm) | `genreSets/variety.ts` |
 | `dangdut` | joget sway (soft hand rolls, pointing fingers), goyang gergaji (the saw), dribble shake, broken hip hits (patah-patah) | dangdut, koplo, joget; Thai luk thung / mor lam at 0.6 | none; borrows belly dance, Bollywood | `genreSets/variety.ts` |
 | `schlager` | schunkeln (arm-in-arm sway), the stein toast, bird-dance beak snaps and wing flaps (figures, never the routine) | Schlager, party Schlager, Oktoberfest, apres-ski, Stimmungsmusik, Discofox | none; borrows folk (the polka), country | `genreSets/variety.ts` |
+| `synthpop` | the new wave side step with the arms swinging across, robot ticks, New Romantic poses, keytar, shoulder pops, the stiff bounce, finger-snap glide, kick shuffle, mannequin hits, skip & swing, the romantic arm sweep, pogo point, the post-punk flail stomp | synth-pop, technopop (0.95), new wave, New Romantic, new pop (0.9), synthwave / retrowave (0.8), post-punk (0.4); electropop 0.45 (only beside other evidence) | none; borrows disco & funk, indie | `genreSets/variety.ts` |
+| `indie` | hands-in-pockets nod, shoegaze sway, the indie head shake (side to side, not a headbang), loose arm swing, twee handclap, tambourine, fringe sweep, the gig two-step with the fist, baggy (Madchester) shuffle, jangle strum, festival arms, the arms-round front-row jump, the indie-disco stomp | indie (1.0), indie pop, twee, jangle pop, bedroom pop (0.95), dream pop, shoegaze, indie rock, Britpop, Madchester (0.9), post-punk revival, dance-punk, indie disco (0.85), indie folk (0.7), post-punk, chamber / baroque pop (0.6); an "Alternative" tag refined by the artist's indie rock / shoegaze | none (rock stays open by the families on indie rock); borrows rock, synth-pop, lyrical (calm) | `genreSets/variety.ts` |
 
 Belly dance (the tradition set every Arabic, Turkish, raï, shaabi,
 khaleeji and mizrahi name opens) grew in the genre survey from 3 to 10:
