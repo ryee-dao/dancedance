@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-14T22:14:43.881Z",
+  "generatedAt": "2026-11-14T22:35:11.130Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -55,6 +55,7 @@
     "XZe_pV2rXuk",
     "YgCYsJicgEU",
     "_6pz0ef_YH0",
+    "_JGGLJMpVks",
     "_Vj092UgKwQ",
     "_dK2tDK9grQ",
     "aAizT0NOWkM",
@@ -64,6 +65,7 @@
     "b3bkpyNiv8Y",
     "bOq67Poe95w",
     "bSwzZoLCoZ0",
+    "d-JBBNg8YKs",
     "dWErisOfeyE",
     "egpE0ysQ21Q",
     "fH_OnJk6QqU",
@@ -108,7 +110,7 @@
   ],
   "songs": {
     "-7XnDlYY9qw": {
-      "bpm": 158.8,
+      "bpm": 159,
       "duration": 236,
       "genre": "Hip-Hop/Rap",
       "genres": [
@@ -321,7 +323,7 @@
       ]
     },
     "4AqjqOqNrjw": {
-      "bpm": 168,
+      "bpm": 84,
       "duration": 187,
       "genre": "Alternative",
       "genres": [
@@ -436,15 +438,15 @@
         "pop rock",
         "indie pop",
         "funk-pop",
-        "soft rock",
         "pop",
-        "psychedelic pop"
+        "rock",
+        "soft rock"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "album",
+        "song",
         "song",
         "album"
       ],
@@ -537,7 +539,7 @@
       ]
     },
     "8xG7mH8i-WE": {
-      "bpm": 160,
+      "bpm": 80,
       "duration": 218,
       "genre": "Pop",
       "genres": [
@@ -564,7 +566,7 @@
       ]
     },
     "9lybsz-7TFM": {
-      "bpm": 130.6,
+      "bpm": 130.3,
       "duration": 285,
       "genre": "Pop",
       "genres": [
@@ -961,7 +963,7 @@
       ]
     },
     "JDHoc9qzC5I": {
-      "bpm": 120.8,
+      "bpm": 122.5,
       "duration": 216,
       "genre": "Rock",
       "genres": [
@@ -1076,14 +1078,12 @@
         "K-pop",
         "pop",
         "disco",
-        "electronic",
-        "hip hop"
+        "electronic"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "album",
         "album"
       ],
       "artistGenres": [
@@ -1094,7 +1094,7 @@
       ]
     },
     "NU61CbO9u6o": {
-      "bpm": 134.9,
+      "bpm": 135,
       "duration": 163,
       "genre": "Hard Rock",
       "genres": [
@@ -1202,7 +1202,7 @@
       ]
     },
     "Pmv8aQKO6k0": {
-      "bpm": 130.6,
+      "bpm": 130.7,
       "duration": 340,
       "genre": "Alternative",
       "genres": [
@@ -1229,7 +1229,7 @@
       ]
     },
     "RwTwd5tAq1U": {
-      "bpm": 100.2,
+      "bpm": 100,
       "duration": 197,
       "genre": "Alternative",
       "genres": [
@@ -1310,7 +1310,7 @@
       ]
     },
     "UOQlKBlobRY": {
-      "bpm": 90,
+      "bpm": 90.1,
       "duration": 325,
       "genre": "Alternative",
       "genres": [
@@ -1523,6 +1523,31 @@
         "symphonic metal"
       ]
     },
+    "_JGGLJMpVks": {
+      "bpm": 140,
+      "duration": 281,
+      "genre": "Alternative",
+      "genres": [
+        "indie folk",
+        "singer-songwriter",
+        "folk",
+        "alternative",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "electropop",
+        "alt-pop",
+        "indie pop",
+        "dark pop"
+      ]
+    },
     "_Vj092UgKwQ": {
       "bpm": 103.6,
       "duration": 283,
@@ -1587,7 +1612,7 @@
         "alt-pop",
         "pop",
         "funk",
-        "synth-pop"
+        "disco"
       ],
       "genreLevels": [
         "song",
@@ -1595,7 +1620,7 @@
         "album",
         "song",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "pop rock",
@@ -1766,6 +1791,33 @@
         "alternative metal"
       ]
     },
+    "d-JBBNg8YKs": {
+      "bpm": 155,
+      "duration": 314,
+      "genre": "Hip-Hop/Rap",
+      "genres": [
+        "trap",
+        "progressive rap",
+        "pop rap",
+        "hip hop",
+        "psychedelic rap",
+        "psychedelic"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "song",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "trap",
+        "southern hip hop",
+        "pop rap",
+        "alternative hip hop"
+      ]
+    },
     "dWErisOfeyE": {
       "bpm": 100,
       "duration": 224,
@@ -1794,7 +1846,7 @@
       ]
     },
     "egpE0ysQ21Q": {
-      "bpm": 105.1,
+      "bpm": 105.5,
       "duration": 335,
       "genre": "Alternative",
       "genres": [
@@ -1981,7 +2033,7 @@
       ]
     },
     "hyzGXmPQzEg": {
-      "bpm": 75,
+      "bpm": 150,
       "duration": 215,
       "genre": "Alternative",
       "genres": [
@@ -2098,7 +2150,7 @@
         "bubblegum pop",
         "pop rock",
         "pop",
-        "dream pop"
+        "industrial pop"
       ],
       "genreLevels": [
         "song",
@@ -2106,7 +2158,7 @@
         "song",
         "album",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "pop rock",
@@ -2303,7 +2355,7 @@
       ]
     },
     "niR2qJ3mGEE": {
-      "bpm": 194,
+      "bpm": 97,
       "duration": 175,
       "genre": "Alternative",
       "genres": [
@@ -2438,7 +2490,7 @@
       ]
     },
     "qJ_Tw0w3lLA": {
-      "bpm": 184,
+      "bpm": 92,
       "duration": 302,
       "genre": "Alternative",
       "genres": [
@@ -2519,7 +2571,7 @@
       ]
     },
     "sKtl7-_6AjE": {
-      "bpm": 95.1,
+      "bpm": 95,
       "duration": 156,
       "genre": "Hard Rock",
       "genres": [
@@ -2627,7 +2679,7 @@
       ]
     },
     "vXlyuCzZc4E": {
-      "bpm": 92.4,
+      "bpm": 92.2,
       "duration": 190,
       "genres": [
         "alternative metal",

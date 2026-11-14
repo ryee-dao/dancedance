@@ -251,9 +251,11 @@ describe('generateRoutine', () => {
     const bad: string[] = [];
     let n = 0, halfN = 0;
     for (const s of publishedSongs()) {
-      const bpm = mapTempo(s.map);
       for (const lv of LEVELS) {
         const r = generateRoutine(s.map, lv, { style: s.style });
+        // The tempo the routine is danced at: the counted one, or half / twice it (tempo feel; TV by Billie Eilish
+        // is counted at 140 and danced at 70).
+        const bpm = mapTempo(s.map) * (r.feel ?? 1);
         for (const i of r.instances) {
           if (i.move.idle) continue;
           n++;

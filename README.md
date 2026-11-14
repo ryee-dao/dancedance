@@ -278,7 +278,7 @@ The relay's GitHub token is **not** stored in GitHub; it lives in the Cloudflare
 
 | Workflow | Runs when | What it does |
 | --- | --- | --- |
-| **Deploy site** (`deploy.yml`) | Every push to `main`, by hand, or after **Beat maps** commits | Type-checks, tests, builds and publishes to GitHub Pages. |
+| **Deploy site** (`deploy.yml`) | Every push to `main`, by hand, or after **Beat maps** commits | Type-checks, tests, builds and publishes to GitHub Pages. A change of song data only (beat maps, song lists) skips the type-check and tests. |
 | **Beat maps** (`beatmaps.yml`) | Every hour (at :23), by hand, from the relay | Makes beat maps for songs without one, adds songs by search, publishes shared maps ("Contributed beat map" runs), then redeploys. |
 | **Android TV app** (`android.yml`) | A pushed `v*` tag, or by hand | Builds `dancedance.apk` and publishes a release. |
 | **Helper app** (`helper.yml`) | A pushed `helper-v*` tag, or by hand | Tests and builds the four helper downloads and updates the `helper` release. |

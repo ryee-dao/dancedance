@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-14T22:14:43.881Z",
+  "updatedAt": "2026-11-14T22:35:11.130Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -578,7 +578,7 @@
         "pop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:05:25.293Z",
+      "at": "2026-11-14T22:35:11.129Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -634,6 +634,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:35:11.129Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -801,7 +806,7 @@
         "pop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:05:25.293Z",
+      "at": "2026-11-14T22:35:11.130Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -860,6 +865,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:35:11.130Z"
         },
         "musicbrainz-album": {
           "status": "none",
@@ -1988,7 +1998,7 @@
         "dark pop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:03:30.358Z",
+      "at": "2026-11-14T22:27:05.505Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -2047,6 +2057,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "at": "2026-11-14T22:27:05.505Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -2219,6 +2234,232 @@
         "itunes-artist": {
           "status": "found",
           "at": "2026-11-14T06:40:12.131Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "artist/1065981054 (Billie Eilish)"
+        }
+      }
+    },
+    "billie eilish - tv": {
+      "artist": "Billie Eilish",
+      "title": "TV",
+      "videoIds": [
+        "_JGGLJMpVks"
+      ],
+      "genres": [
+        "indie folk",
+        "singer-songwriter",
+        "folk",
+        "alternative",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "electropop",
+        "alt-pop",
+        "indie pop",
+        "dark pop"
+      ],
+      "complete": true,
+      "at": "2026-11-14T22:27:05.496Z",
+      "sources": {
+        "wikipedia": {
+          "status": "none",
+          "at": "2026-11-14T22:26:58.769Z",
+          "reason": "no article about this song (Guitar Songs: not a song article (album: EP); Television: not a song article (no infobox))",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "none",
+          "at": "2026-11-14T22:26:59.915Z",
+          "reason": "the item has no genre",
+          "ref": "Q113233217,Q115786780",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T22:27:01.353Z",
+          "genres": [
+            "contemporary folk",
+            "indie folk",
+            "singer-songwriter"
+          ],
+          "counts": [
+            1,
+            1,
+            1
+          ],
+          "ref": "recording/59bc7111-4973-4335-9d60-1773ebcda7bb",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "none",
+          "at": "2026-11-14T22:26:57.518Z",
+          "reason": "the track has no genre",
+          "ref": "track/36682075"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T22:26:57.299Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "at": "2026-11-14T22:26:57.299Z",
+          "reason": "the title is not a genre name"
+        },
+        "musicbrainz-album": {
+          "status": "found",
+          "at": "2026-11-14T22:27:02.664Z",
+          "genres": [
+            "contemporary folk",
+            "singer-songwriter",
+            "indie folk",
+            "pop",
+            "calm"
+          ],
+          "counts": [
+            3,
+            3,
+            2,
+            2,
+            1
+          ],
+          "ref": "release-group/9e29849f-8da8-4e3c-8287-9d86dda6fbf3 (Guitar Songs; release of the matched recording)",
+          "links": {
+            "mbReleaseGroup": "9e29849f-8da8-4e3c-8287-9d86dda6fbf3",
+            "album": "Guitar Songs",
+            "wikidata": "Q113176130"
+          },
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "none",
+          "at": "2026-11-14T22:27:02.965Z",
+          "reason": "the album article lists no genre",
+          "ref": "Guitar Songs",
+          "links": {
+            "wikidata": "Q113176130"
+          }
+        },
+        "wikidata-album": {
+          "status": "none",
+          "at": "2026-11-14T22:27:02.965Z",
+          "reason": "the album item has no genre",
+          "ref": "Q113176130"
+        },
+        "discogs-album": {
+          "status": "none",
+          "at": "2026-11-14T22:27:02.665Z",
+          "reason": "no Discogs master linked from the MusicBrainz album"
+        },
+        "itunes-album": {
+          "status": "none",
+          "at": "2026-11-14T22:27:00.713Z",
+          "reason": "the release is the song's single",
+          "ref": "Guitar Songs - Single",
+          "links": {
+            "album": "Guitar Songs - Single"
+          }
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "at": "2026-11-14T22:27:04.151Z",
+          "genres": [
+            "electropop",
+            "alternative pop",
+            "dark pop",
+            "pop",
+            "alternative r&b",
+            "art pop",
+            "pity pop",
+            "alt-pop",
+            "bedroom pop",
+            "contemporary r&b",
+            "indie pop",
+            "2010s",
+            "2020s",
+            "singer-songwriter",
+            "alternative",
+            "electronic",
+            "electronica",
+            "female vocals",
+            "gen z",
+            "pop rock",
+            "pop soul",
+            "queer"
+          ],
+          "counts": [
+            12,
+            11,
+            9,
+            9,
+            5,
+            4,
+            4,
+            3,
+            3,
+            3,
+            3,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "artist/f4abc0b5-3f7a-4eff-8f78-ac078dbce533 (Billie Eilish; credited on the song)",
+          "links": {
+            "mbArtist": "f4abc0b5-3f7a-4eff-8f78-ac078dbce533",
+            "wikidata": "Q29564107"
+          }
+        },
+        "wikipedia-artist": {
+          "status": "none",
+          "at": "2026-11-14T22:27:04.631Z",
+          "reason": "the artist article lists no genre",
+          "ref": "Billie Eilish",
+          "links": {
+            "wikidata": "Q29564107"
+          }
+        },
+        "wikidata-artist": {
+          "status": "found",
+          "at": "2026-11-14T22:27:05.496Z",
+          "genres": [
+            "electropop",
+            "indie pop",
+            "alternative pop"
+          ],
+          "ref": "Q29564107"
+        },
+        "theaudiodb-artist": {
+          "status": "found",
+          "at": "2026-11-14T22:26:59.773Z",
+          "genres": [
+            "Pop",
+            "Rock/Pop"
+          ],
+          "ref": "artist/152448"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "at": "2026-11-14T22:27:00.713Z",
           "genres": [
             "Alternative"
           ],
@@ -3101,7 +3342,7 @@
         "hip hop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:05:17.144Z",
+      "at": "2026-11-14T22:35:11.128Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -3154,6 +3395,11 @@
             "K-Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:35:11.128Z"
         },
         "musicbrainz-album": {
           "status": "none",
@@ -3276,14 +3522,12 @@
         "K-pop",
         "pop",
         "disco",
-        "electronic",
-        "hip hop"
+        "electronic"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "album",
         "album"
       ],
       "artistGenres": [
@@ -3293,7 +3537,7 @@
         "hip hop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:04:35.468Z",
+      "at": "2026-11-14T22:35:11.127Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -3349,6 +3593,11 @@
             "K-Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:35:11.127Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -5813,8 +6062,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:14:43.874Z"
+          "at": "2026-11-14T22:14:43.874Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -7457,6 +7706,7 @@
       "sources": {
         "wikipedia": {
           "status": "found",
+          "at": "2026-11-14T22:11:46.063Z",
           "genres": [
             "Alternative rock"
           ],
@@ -7465,22 +7715,22 @@
             "albumArticle": "Fallen (Evanescence album)",
             "artistArticle": "Evanescence"
           },
-          "at": "2026-11-14T22:11:46.063Z",
           "v": 3
         },
         "wikidata": {
           "status": "found",
+          "at": "2026-11-14T22:11:48.259Z",
           "genres": [
             "alternative metal",
             "soft rock",
             "gothic rock"
           ],
           "ref": "Q1981958",
-          "at": "2026-11-14T22:11:48.259Z",
           "v": 2
         },
         "musicbrainz": {
           "status": "found",
+          "at": "2026-11-14T22:11:54.504Z",
           "genres": [
             "pop/rock",
             "ballad",
@@ -7502,41 +7752,41 @@
             1
           ],
           "ref": "release-group/34028517-fedf-3b6b-a104-45a3d96e35ae",
-          "at": "2026-11-14T22:11:54.504Z",
           "v": 2
         },
         "theaudiodb": {
           "status": "found",
+          "at": "2026-11-14T22:11:46.165Z",
           "genres": [
             "Rock"
           ],
           "moods": [
             "Troubled"
           ],
-          "ref": "track/33152319",
-          "at": "2026-11-14T22:11:46.165Z"
+          "ref": "track/33152319"
         },
         "itunes": {
           "status": "found",
+          "at": "2026-11-14T22:11:45.859Z",
           "genres": [
             "Hard Rock"
           ],
-          "ref": "stored",
-          "at": "2026-11-14T22:11:45.859Z"
+          "ref": "stored"
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:11:45.859Z"
+          "at": "2026-11-14T22:11:45.859Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "none",
-          "reason": "the recordings are on no album or EP",
           "at": "2026-11-14T22:11:54.504Z",
+          "reason": "the recordings are on no album or EP",
           "v": 2
         },
         "wikipedia-album": {
           "status": "found",
+          "at": "2026-11-14T22:11:54.592Z",
           "genres": [
             "Nu metal",
             "alternative metal",
@@ -7545,35 +7795,35 @@
           "ref": "Fallen (Evanescence album)",
           "links": {
             "wikidata": "Q155612"
-          },
-          "at": "2026-11-14T22:11:54.592Z"
+          }
         },
         "wikidata-album": {
           "status": "found",
+          "at": "2026-11-14T22:11:55.744Z",
           "genres": [
             "nu metal"
           ],
-          "ref": "Q155612",
-          "at": "2026-11-14T22:11:55.744Z"
+          "ref": "Q155612"
         },
         "discogs-album": {
           "status": "none",
-          "reason": "no Discogs master linked from the MusicBrainz album",
-          "at": "2026-11-14T22:11:54.504Z"
+          "at": "2026-11-14T22:11:54.504Z",
+          "reason": "no Discogs master linked from the MusicBrainz album"
         },
         "itunes-album": {
           "status": "found",
+          "at": "2026-11-14T22:11:49.165Z",
           "genres": [
             "Hard Rock"
           ],
           "ref": "collection/1440665838 (Fallen)",
           "links": {
             "album": "Fallen"
-          },
-          "at": "2026-11-14T22:11:49.165Z"
+          }
         },
         "musicbrainz-artist": {
           "status": "found",
+          "at": "2026-11-14T22:11:56.135Z",
           "genres": [
             "alternative metal",
             "metal",
@@ -7606,11 +7856,11 @@
           "links": {
             "mbArtist": "f4a31f0a-51dd-4fa7-986d-3095c40c5ed9",
             "wikidata": "Q1777698"
-          },
-          "at": "2026-11-14T22:11:56.135Z"
+          }
         },
         "wikipedia-artist": {
           "status": "found",
+          "at": "2026-11-14T22:11:56.897Z",
           "genres": [
             "Alternative metal",
             "gothic metal",
@@ -7623,11 +7873,11 @@
           "ref": "Evanescence",
           "links": {
             "wikidata": "Q1777698"
-          },
-          "at": "2026-11-14T22:11:56.897Z"
+          }
         },
         "wikidata-artist": {
           "status": "found",
+          "at": "2026-11-14T22:11:57.906Z",
           "genres": [
             "alternative metal",
             "alternative rock",
@@ -7636,25 +7886,24 @@
             "industrial rock",
             "symphonic metal"
           ],
-          "ref": "Q1777698",
-          "at": "2026-11-14T22:11:57.906Z"
+          "ref": "Q1777698"
         },
         "theaudiodb-artist": {
           "status": "found",
+          "at": "2026-11-14T22:11:48.394Z",
           "genres": [
             "Rock",
             "Rock/Pop"
           ],
-          "ref": "artist/111766",
-          "at": "2026-11-14T22:11:48.394Z"
+          "ref": "artist/111766"
         },
         "itunes-artist": {
           "status": "found",
+          "at": "2026-11-14T22:11:49.165Z",
           "genres": [
             "Hard Rock"
           ],
-          "ref": "artist/42102393 (Evanescence)",
-          "at": "2026-11-14T22:11:49.165Z"
+          "ref": "artist/42102393 (Evanescence)"
         }
       }
     },
@@ -7943,7 +8192,7 @@
         "happy"
       ],
       "complete": true,
-      "at": "2026-11-14T07:59:48.336Z",
+      "at": "2026-11-14T22:22:46.794Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -8000,6 +8249,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "at": "2026-11-14T22:22:46.794Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -8173,15 +8427,15 @@
         "pop rock",
         "indie pop",
         "funk-pop",
-        "soft rock",
         "pop",
-        "psychedelic pop"
+        "rock",
+        "soft rock"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "album",
+        "song",
         "song",
         "album"
       ],
@@ -8195,7 +8449,7 @@
         "happy"
       ],
       "complete": true,
-      "at": "2026-11-14T07:59:56.477Z",
+      "at": "2026-11-14T22:22:46.796Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -8252,6 +8506,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "at": "2026-11-14T22:22:46.796Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -13450,8 +13709,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:14:43.879Z"
+          "at": "2026-11-14T22:14:43.879Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -13711,8 +13970,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:14:43.880Z"
+          "at": "2026-11-14T22:14:43.880Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -13881,7 +14140,7 @@
         "pop rap"
       ],
       "complete": true,
-      "at": "2026-11-14T07:59:03.571Z",
+      "at": "2026-11-14T22:22:46.791Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -13943,6 +14202,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "at": "2026-11-14T22:22:46.791Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "none",
@@ -15635,7 +15899,7 @@
         "alt-pop",
         "pop",
         "funk",
-        "synth-pop"
+        "disco"
       ],
       "genreLevels": [
         "song",
@@ -15643,7 +15907,7 @@
         "album",
         "song",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "pop rock",
@@ -15655,7 +15919,7 @@
         "confrontational"
       ],
       "complete": true,
-      "at": "2026-11-14T08:01:01.634Z",
+      "at": "2026-11-14T22:22:46.798Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -15711,6 +15975,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "at": "2026-11-14T22:22:46.798Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -15893,7 +16162,7 @@
         "pop rock"
       ],
       "complete": true,
-      "at": "2026-11-14T08:02:08.744Z",
+      "at": "2026-11-14T22:27:05.503Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -15975,6 +16244,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "at": "2026-11-14T22:27:05.503Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -20332,7 +20606,7 @@
         "pop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:02:00.612Z",
+      "at": "2026-11-14T22:27:05.501Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -20410,6 +20684,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "at": "2026-11-14T22:27:05.501Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -20588,7 +20867,7 @@
         "country pop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:00:37.209Z",
+      "at": "2026-11-14T22:22:46.797Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -20658,6 +20937,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "at": "2026-11-14T22:22:46.797Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -21840,7 +22124,7 @@
         "bubblegum pop",
         "pop rock",
         "pop",
-        "dream pop"
+        "industrial pop"
       ],
       "genreLevels": [
         "song",
@@ -21848,7 +22132,7 @@
         "song",
         "album",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "pop rock",
@@ -21860,7 +22144,7 @@
         "energetic"
       ],
       "complete": true,
-      "at": "2026-11-14T08:03:46.650Z",
+      "at": "2026-11-14T22:27:05.506Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -21924,6 +22208,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "at": "2026-11-14T22:27:05.506Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -22124,7 +22413,7 @@
         "needy"
       ],
       "complete": true,
-      "at": "2026-11-14T08:04:19.192Z",
+      "at": "2026-11-14T22:35:11.126Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -22190,6 +22479,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:35:11.126Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -22383,7 +22677,7 @@
         "australian hip hop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:02:49.619Z",
+      "at": "2026-11-14T22:27:05.504Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -22446,6 +22740,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "at": "2026-11-14T22:27:05.504Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -22677,8 +22976,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:14:43.876Z"
+          "at": "2026-11-14T22:14:43.876Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -22973,8 +23272,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:14:43.878Z"
+          "at": "2026-11-14T22:14:43.878Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -23164,6 +23463,249 @@
             "R&B/Soul"
           ],
           "ref": "artist/479756766 (The Weeknd)"
+        }
+      }
+    },
+    "travis scott - sicko mode": {
+      "artist": "Travis Scott",
+      "title": "SICKO MODE",
+      "videoIds": [
+        "d-JBBNg8YKs"
+      ],
+      "genres": [
+        "trap",
+        "progressive rap",
+        "pop rap",
+        "hip hop",
+        "psychedelic rap",
+        "psychedelic"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "song",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "trap",
+        "southern hip hop",
+        "pop rap",
+        "alternative hip hop"
+      ],
+      "moods": [
+        "boisterous"
+      ],
+      "complete": true,
+      "at": "2026-11-14T22:35:11.120Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "genres": [
+            "Progressive rap",
+            "trap"
+          ],
+          "ref": "Sicko Mode",
+          "links": {
+            "albumArticle": "Astroworld (album)",
+            "artistArticle": "Travis Scott"
+          },
+          "at": "2026-11-14T22:34:44.414Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "found",
+          "genres": [
+            "progressive rap",
+            "trap music"
+          ],
+          "ref": "Q56145698",
+          "at": "2026-11-14T22:34:46.837Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "trap"
+          ],
+          "counts": [
+            1
+          ],
+          "ref": "release-group/bd415c44-8810-4044-b616-18e3c244b346",
+          "at": "2026-11-14T22:35:00.327Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "found",
+          "genres": [
+            "Trap"
+          ],
+          "moods": [
+            "Boisterous"
+          ],
+          "ref": "track/35039146",
+          "at": "2026-11-14T22:34:44.612Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Hip-Hop/Rap"
+          ],
+          "ref": "stored",
+          "at": "2026-11-14T22:34:44.344Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:34:44.344Z"
+        },
+        "musicbrainz-album": {
+          "status": "found",
+          "genres": [
+            "hip hop",
+            "pop rap",
+            "trap",
+            "alternative r&b",
+            "cloud rap",
+            "jahrescharts 2024",
+            "southern hip hop"
+          ],
+          "counts": [
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "release-group/c0704c7d-dc5b-43cd-b372-8056a3bf7bb2 (ASTROWORLD; release of the matched recording)",
+          "links": {
+            "mbReleaseGroup": "c0704c7d-dc5b-43cd-b372-8056a3bf7bb2",
+            "album": "ASTROWORLD",
+            "discogsMaster": "1435589",
+            "wikidata": "Q55934491"
+          },
+          "at": "2026-11-14T22:35:07.840Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "found",
+          "genres": [
+            "Hip-hop",
+            "psychedelic rap"
+          ],
+          "ref": "Astroworld (album)",
+          "links": {
+            "wikidata": "Q55934491"
+          },
+          "at": "2026-11-14T22:35:07.986Z"
+        },
+        "wikidata-album": {
+          "status": "found",
+          "genres": [
+            "hip-hop",
+            "psychedelic rap"
+          ],
+          "ref": "Q55934491",
+          "at": "2026-11-14T22:35:08.964Z"
+        },
+        "discogs-album": {
+          "status": "found",
+          "genres": [
+            "Trap",
+            "Pop Rap",
+            "Psychedelic",
+            "Hip Hop"
+          ],
+          "ref": "master/1435589 (Astroworld)",
+          "at": "2026-11-14T22:35:08.040Z"
+        },
+        "itunes-album": {
+          "status": "found",
+          "genres": [
+            "Hip-Hop/Rap"
+          ],
+          "ref": "collection/1421658111 (ASTROWORLD)",
+          "links": {
+            "album": "ASTROWORLD"
+          },
+          "at": "2026-11-14T22:34:47.668Z"
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "genres": [
+            "hip hop",
+            "trap",
+            "rap",
+            "southern hip hop",
+            "english",
+            "experimental hip hop",
+            "pop rap"
+          ],
+          "counts": [
+            7,
+            6,
+            2,
+            2,
+            1,
+            1,
+            1
+          ],
+          "ref": "artist/e4a51f17-a57b-47b1-b37b-f552d0f8e9e6 (Travis Scott; credited on the song)",
+          "links": {
+            "mbArtist": "e4a51f17-a57b-47b1-b37b-f552d0f8e9e6",
+            "wikidata": "Q13605596"
+          },
+          "at": "2026-11-14T22:35:09.428Z"
+        },
+        "wikipedia-artist": {
+          "status": "none",
+          "reason": "the artist article lists no genre",
+          "ref": "Travis Scott",
+          "links": {
+            "wikidata": "Q13605596"
+          },
+          "at": "2026-11-14T22:35:10.096Z"
+        },
+        "wikidata-artist": {
+          "status": "found",
+          "genres": [
+            "hip-hop",
+            "trap music",
+            "pop rap",
+            "psychedelic rap",
+            "rock music",
+            "Southern hip-hop",
+            "contemporary R&B",
+            "psychedelic music",
+            "pop rock",
+            "alternative rock",
+            "alternative hip-hop",
+            "alternative R&B",
+            "psychedelic rock",
+            "psychedelic hip-hop"
+          ],
+          "ref": "Q13605596",
+          "at": "2026-11-14T22:35:11.120Z"
+        },
+        "theaudiodb-artist": {
+          "status": "found",
+          "genres": [
+            "Trap",
+            "Urban/R&B"
+          ],
+          "ref": "artist/144041",
+          "at": "2026-11-14T22:34:46.813Z"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "genres": [
+            "Hip-Hop/Rap"
+          ],
+          "ref": "artist/549236696 (Travis Scott)",
+          "at": "2026-11-14T22:34:47.668Z"
         }
       }
     },
