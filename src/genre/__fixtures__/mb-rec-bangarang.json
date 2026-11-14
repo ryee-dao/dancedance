@@ -1,0 +1,381 @@
+{
+ "url": "https://musicbrainz.org/ws/2/recording?query=recording%3A%22Bangarang%22+AND+artist%3A%22Skrillex%22&fmt=json&limit=50",
+ "body": {
+  "count": 13,
+  "recordings": [
+   {
+    "id": "75307752-c4bd-4777-b538-a26dffccc0f1",
+    "score": 100,
+    "title": "Bangarang",
+    "length": 257000,
+    "video": null,
+    "artist-credit": [
+     {
+      "name": "Skrillex",
+      "joinphrase": "",
+      "artist": {
+       "name": "Skrillex"
+      }
+     }
+    ],
+    "tags": [
+     {
+      "count": 1,
+      "name": "brostep"
+     }
+    ]
+   },
+   {
+    "id": "b7ca8808-71c6-4a81-a72f-8e9688a5640b",
+    "score": 100,
+    "title": "Bangarang",
+    "video": true,
+    "artist-credit": [
+     {
+      "name": "Skrillex",
+      "joinphrase": "",
+      "artist": {
+       "name": "Skrillex"
+      }
+     }
+    ]
+   },
+   {
+    "id": "5a7c08f8-06a0-4f82-9718-952400b9a5ab",
+    "score": 92,
+    "title": "Bangarang (REMIX)",
+    "length": 294873,
+    "video": null,
+    "artist-credit": [
+     {
+      "name": "Skrillex",
+      "joinphrase": "",
+      "artist": {
+       "name": "Skrillex"
+      }
+     }
+    ]
+   },
+   {
+    "id": "a341f3a8-f7e5-4f42-942c-b12a7d332524",
+    "score": 87,
+    "title": "Bangarang",
+    "length": 218000,
+    "disambiguation": "iTunes music video",
+    "video": true,
+    "artist-credit": [
+     {
+      "name": "Skrillex",
+      "joinphrase": " feat. ",
+      "artist": {
+       "name": "Skrillex"
+      }
+     },
+     {
+      "name": "Sirah",
+      "joinphrase": "",
+      "artist": {
+       "name": "Sirah"
+      }
+     }
+    ]
+   },
+   {
+    "id": "b40ebb08-36b3-4a84-8cbf-1e5a786f135d",
+    "score": 87,
+    "title": "Bangarang",
+    "length": 207413,
+    "video": null,
+    "artist-credit": [
+     {
+      "name": "Skrillex",
+      "joinphrase": " feat. ",
+      "artist": {
+       "name": "Skrillex"
+      }
+     },
+     {
+      "name": "Sirah",
+      "joinphrase": "",
+      "artist": {
+       "name": "Sirah"
+      }
+     }
+    ]
+   },
+   {
+    "id": "cafb93e2-c3d0-4d32-afe3-4c960ba8c4e3",
+    "score": 87,
+    "title": "Bangarang",
+    "length": 215000,
+    "disambiguation": "part of “100% Clubland EDM Bangers” DJ‐mix",
+    "video": null,
+    "artist-credit": [
+     {
+      "name": "Skrillex",
+      "joinphrase": " feat ",
+      "artist": {
+       "name": "Skrillex"
+      }
+     },
+     {
+      "name": "Sirah",
+      "joinphrase": "",
+      "artist": {
+       "name": "Sirah"
+      }
+     }
+    ]
+   },
+   {
+    "id": "a35e773d-3b77-43a2-b58b-f023cb9b6c30",
+    "score": 87,
+    "title": "Bangarang",
+    "length": 215000,
+    "video": null,
+    "artist-credit": [
+     {
+      "name": "Skrillex",
+      "joinphrase": " feat. ",
+      "artist": {
+       "name": "Skrillex"
+      }
+     },
+     {
+      "name": "Sirah",
+      "joinphrase": "",
+      "artist": {
+       "name": "Sirah"
+      }
+     }
+    ],
+    "tags": [
+     {
+      "count": 2,
+      "name": "trance"
+     },
+     {
+      "count": 5,
+      "name": "electronic"
+     },
+     {
+      "count": 7,
+      "name": "dubstep"
+     },
+     {
+      "count": 1,
+      "name": "rap"
+     },
+     {
+      "count": 2,
+      "name": "dance"
+     },
+     {
+      "count": 3,
+      "name": "house"
+     },
+     {
+      "count": 2,
+      "name": "electro"
+     },
+     {
+      "count": 1,
+      "name": "hip hop"
+     },
+     {
+      "count": 1,
+      "name": "indie rock"
+     },
+     {
+      "count": 1,
+      "name": "bass"
+     },
+     {
+      "count": 1,
+      "name": "indie"
+     },
+     {
+      "count": 1,
+      "name": "sexy"
+     },
+     {
+      "count": 1,
+      "name": "indie pop"
+     },
+     {
+      "count": 1,
+      "name": "electro house"
+     },
+     {
+      "count": 1,
+      "name": "chill"
+     },
+     {
+      "count": 1,
+      "name": "edm"
+     },
+     {
+      "count": 1,
+      "name": "smooth"
+     },
+     {
+      "count": 1,
+      "name": "catchy"
+     },
+     {
+      "count": 1,
+      "name": "brostep"
+     },
+     {
+      "count": 1,
+      "name": "moombahton"
+     },
+     {
+      "count": 3,
+      "name": "moombahcore"
+     },
+     {
+      "count": 1,
+      "name": "complextro"
+     }
+    ]
+   },
+   {
+    "id": "637694cf-a580-4c11-ba42-140459406ff1",
+    "score": 86,
+    "title": "Bangarang (Phrva flip)",
+    "length": 207428,
+    "video": null,
+    "artist-credit": [
+     {
+      "name": "Skrillex",
+      "joinphrase": "",
+      "artist": {
+       "name": "Skrillex"
+      }
+     }
+    ]
+   },
+   {
+    "id": "76425daf-8617-4b86-bb3c-78252e0a8573",
+    "score": 81,
+    "title": "Bangarang (John Cena mashup)",
+    "video": null,
+    "artist-credit": [
+     {
+      "name": "Skrillex",
+      "joinphrase": "",
+      "artist": {
+       "name": "Skrillex"
+      }
+     }
+    ]
+   },
+   {
+    "id": "10136a26-c6bf-4c39-8d4f-bd5c28eb537b",
+    "score": 69,
+    "title": "Reptile's Stronger Bangarang",
+    "length": 229963,
+    "video": null,
+    "artist-credit": [
+     {
+      "name": "Skrillex",
+      "joinphrase": " feat. ",
+      "artist": {
+       "name": "Skrillex"
+      }
+     },
+     {
+      "name": "Daft Punk",
+      "joinphrase": "",
+      "artist": {
+       "name": "Daft Punk"
+      }
+     }
+    ]
+   },
+   {
+    "id": "7ee55c76-1e66-40c2-a6e8-689663416661",
+    "score": 68,
+    "title": "Bangarang (Kredo bootleg remix)",
+    "length": 300000,
+    "video": null,
+    "artist-credit": [
+     {
+      "name": "Skrillex",
+      "joinphrase": " feat. ",
+      "artist": {
+       "name": "Skrillex"
+      }
+     },
+     {
+      "name": "Sirah",
+      "joinphrase": "",
+      "artist": {
+       "name": "Sirah"
+      }
+     }
+    ]
+   },
+   {
+    "id": "6ca9cd16-e54b-44f7-87e0-3eedae9f2064",
+    "score": 59,
+    "title": "Bangarang (RetroVision Flip) w/RetroVision Shake It",
+    "length": 126000,
+    "video": null,
+    "artist-credit": [
+     {
+      "name": "Skrillex",
+      "joinphrase": " ft. ",
+      "artist": {
+       "name": "Skrillex"
+      }
+     },
+     {
+      "name": "Sirah",
+      "joinphrase": "",
+      "artist": {
+       "name": "Sirah"
+      }
+     }
+    ]
+   },
+   {
+    "id": "a98cf297-b7bb-41a7-9d08-24a64a65914a",
+    "score": 33,
+    "title": "We Will Breathe in the Name of Bangarang (DJs From Mars Radiocut Bootleg)",
+    "video": null,
+    "artist-credit": [
+     {
+      "name": "Queen",
+      "joinphrase": " vs. ",
+      "artist": {
+       "name": "Queen"
+      }
+     },
+     {
+      "name": "Rage Against the Machine",
+      "joinphrase": " vs. ",
+      "artist": {
+       "name": "Rage Against the Machine"
+      }
+     },
+     {
+      "name": "The Prodigy",
+      "joinphrase": " vs. ",
+      "artist": {
+       "name": "The Prodigy"
+      }
+     },
+     {
+      "name": "Skrillex",
+      "joinphrase": "",
+      "artist": {
+       "name": "Skrillex"
+      }
+     }
+    ]
+   }
+  ]
+ }
+}

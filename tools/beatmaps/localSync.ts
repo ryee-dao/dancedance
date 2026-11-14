@@ -24,7 +24,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const DATA_FILE_RE = /^public\/(?:beatmaps\/[A-Za-z0-9_-]+|playlist|songs|songs-status)\.json$/;
+export const DATA_FILE_RE = /^public\/(?:beatmaps\/[A-Za-z0-9_-]+|playlist|songs|songs-status|genres)\.json$/;
 
 export interface SyncArgs {
   push: boolean;

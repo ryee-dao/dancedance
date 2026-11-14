@@ -2,18 +2,20 @@
  * Known tempos for song tiles ("124 BPM" badges): from beat maps cached on
  * this device (remembered in the store when cached), else from the cloud
  * index `<base>beatmaps/index.json`, whose optional `songs` field is
- * `{ [videoId]: { bpm, duration, genre? } }`. The index is fetched once per app open.
+ * `{ [videoId]: { bpm, duration, genre?, genres? } }`. The index is fetched once per app open.
  *
  * `bpmEvents` fires 'change' when either source learns something new.
  */
 import { store } from '../store';
-import { absoluteBase, type FetchLike } from './cloud';
+import { absoluteBase, cleanGenreList, type FetchLike } from './cloud';
 
 export interface IndexSong {
   bpm: number;
   duration: number;
   /** iTunes primary genre (songs added by search), when known. */
   genre?: string;
+  /** Multi-source genres of the song (src/genre), best first, when looked up. */
+  genres?: string[];
 }
 
 export const bpmEvents = new EventTarget();
@@ -37,10 +39,12 @@ export function parseIndexSongs(text: string): Record<string, IndexSong> {
     const duration = (v as { duration?: unknown } | null)?.duration;
     if (typeof bpm !== 'number' || !Number.isFinite(bpm) || bpm <= 0 || bpm > 1000) continue;
     const genre = (v as { genre?: unknown }).genre;
+    const genres = cleanGenreList((v as { genres?: unknown }).genres);
     out[id] = {
       bpm,
       duration: typeof duration === 'number' && Number.isFinite(duration) ? duration : 0,
       ...(typeof genre === 'string' && genre.trim() ? { genre: genre.trim().slice(0, 60) } : {}),
+      ...(genres ? { genres } : {}),
     };
   }
   return out;
@@ -93,6 +97,11 @@ export function knownBpm(videoId: string): number | null {
 /** The cloud index's genre for a song (songs added by search), when known. */
 export function cloudGenre(videoId: string): string | undefined {
   return cloudSongs[videoId]?.genre;
+}
+
+/** The cloud index's multi-source genres for a song (catalog and starter songs), when known. */
+export function cloudGenres(videoId: string): string[] | undefined {
+  return cloudSongs[videoId]?.genres;
 }
 
 /** Called by the beat-map cache after storing a map. */

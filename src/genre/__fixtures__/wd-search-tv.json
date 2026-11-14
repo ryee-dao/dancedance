@@ -1,0 +1,1344 @@
+{
+ "url": "https://www.wikidata.org/w/api.php?format=json&origin=*&action=wbsearchentities&language=en&uselang=en&type=item&limit=50&search=TV",
+ "body": {
+  "searchinfo": {
+   "search": "TV"
+  },
+  "search": [
+   {
+    "id": "Q289",
+    "title": "Q289",
+    "pageid": 467,
+    "concepturi": "http://www.wikidata.org/entity/Q289",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q289",
+    "display": {
+     "label": {
+      "value": "television",
+      "language": "en"
+     },
+     "description": {
+      "value": "telecommunication medium for transmitting and receiving moving images",
+      "language": "en"
+     }
+    },
+    "label": "television",
+    "description": "telecommunication medium for transmitting and receiving moving images",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV"
+    },
+    "aliases": [
+     "TV"
+    ]
+   },
+   {
+    "id": "Q672",
+    "title": "Q672",
+    "pageid": 970,
+    "concepturi": "http://www.wikidata.org/entity/Q672",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q672",
+    "display": {
+     "label": {
+      "value": "Tuvalu",
+      "language": "en"
+     },
+     "description": {
+      "value": "country in Oceania",
+      "language": "en"
+     }
+    },
+    "label": "Tuvalu",
+    "description": "country in Oceania",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "tv"
+    },
+    "aliases": [
+     "tv"
+    ]
+   },
+   {
+    "id": "Q18175583",
+    "title": "Q18175583",
+    "pageid": 19705135,
+    "concepturi": "http://www.wikidata.org/entity/Q18175583",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q18175583",
+    "display": {
+     "label": {
+      "value": "Lockheed T-33A Shooting Star",
+      "language": "en"
+     },
+     "description": {
+      "value": "military trainer aircraft model by Lockheed",
+      "language": "en"
+     }
+    },
+    "label": "Lockheed T-33A Shooting Star",
+    "description": "military trainer aircraft model by Lockheed",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV"
+    },
+    "aliases": [
+     "TV"
+    ]
+   },
+   {
+    "id": "Q3587",
+    "title": "Q3587",
+    "pageid": 4488,
+    "concepturi": "http://www.wikidata.org/entity/Q3587",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q3587",
+    "display": {
+     "label": {
+      "value": "TV Globo",
+      "language": "en"
+     },
+     "description": {
+      "value": "Brazilian commercial television network",
+      "language": "en"
+     }
+    },
+    "label": "TV Globo",
+    "description": "Brazilian commercial television network",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TV Globo"
+    }
+   },
+   {
+    "id": "Q5398426",
+    "title": "Q5398426",
+    "pageid": 5162722,
+    "concepturi": "http://www.wikidata.org/entity/Q5398426",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q5398426",
+    "display": {
+     "label": {
+      "value": "television series",
+      "language": "en"
+     },
+     "description": {
+      "value": "connected set of television program episodes under the same title",
+      "language": "en"
+     }
+    },
+    "label": "television series",
+    "description": "connected set of television program episodes under the same title",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV series"
+    },
+    "aliases": [
+     "TV series"
+    ]
+   },
+   {
+    "id": "Q90597",
+    "title": "Q90597",
+    "pageid": 92799,
+    "concepturi": "http://www.wikidata.org/entity/Q90597",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q90597",
+    "display": {
+     "label": {
+      "value": "Tvedestrand Municipality",
+      "language": "en"
+     },
+     "description": {
+      "value": "municipality in Agder, Norway",
+      "language": "en"
+     }
+    },
+    "label": "Tvedestrand Municipality",
+    "description": "municipality in Agder, Norway",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "Tvedestrand Municipality"
+    }
+   },
+   {
+    "id": "Q15416",
+    "title": "Q15416",
+    "pageid": 17749,
+    "concepturi": "http://www.wikidata.org/entity/Q15416",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q15416",
+    "display": {
+     "label": {
+      "value": "television program",
+      "language": "en"
+     },
+     "description": {
+      "value": "segment of audiovisual content intended for broadcast and streaming on television",
+      "language": "en"
+     }
+    },
+    "label": "television program",
+    "description": "segment of audiovisual content intended for broadcast and streaming on television",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV program"
+    },
+    "aliases": [
+     "TV program"
+    ]
+   },
+   {
+    "id": "Q21191270",
+    "title": "Q21191270",
+    "pageid": 23238320,
+    "concepturi": "http://www.wikidata.org/entity/Q21191270",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q21191270",
+    "display": {
+     "label": {
+      "value": "television series episode",
+      "language": "en"
+     },
+     "description": {
+      "value": "single installment of a television series",
+      "language": "en"
+     }
+    },
+    "label": "television series episode",
+    "description": "single installment of a television series",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV episode"
+    },
+    "aliases": [
+     "TV episode"
+    ]
+   },
+   {
+    "id": "Q113233217",
+    "title": "Q113233217",
+    "pageid": 108034599,
+    "concepturi": "http://www.wikidata.org/entity/Q113233217",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q113233217",
+    "display": {
+     "label": {
+      "value": "TV",
+      "language": "en"
+     },
+     "description": {
+      "value": "2022 song by Billie Eilish",
+      "language": "en"
+     }
+    },
+    "label": "TV",
+    "description": "2022 song by Billie Eilish",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TV"
+    }
+   },
+   {
+    "id": "Q1195543",
+    "title": "Q1195543",
+    "pageid": 1139290,
+    "concepturi": "http://www.wikidata.org/entity/Q1195543",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q1195543",
+    "display": {
+     "label": {
+      "value": "TVB",
+      "language": "en"
+     },
+     "description": {
+      "value": "television broadcasting company based in Hong Kong",
+      "language": "en"
+     }
+    },
+    "label": "TVB",
+    "description": "television broadcasting company based in Hong Kong",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TVB"
+    }
+   },
+   {
+    "id": "Q115786780",
+    "title": "Q115786780",
+    "pageid": 110334264,
+    "concepturi": "http://www.wikidata.org/entity/Q115786780",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q115786780",
+    "display": {
+     "label": {
+      "value": "TV",
+      "language": "en"
+     },
+     "description": {
+      "value": "vocal track by Billie Eilish; 2022 studio recording",
+      "language": "en"
+     }
+    },
+    "label": "TV",
+    "description": "vocal track by Billie Eilish; 2022 studio recording",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TV"
+    }
+   },
+   {
+    "id": "Q935960",
+    "title": "Q935960",
+    "pageid": 886206,
+    "concepturi": "http://www.wikidata.org/entity/Q935960",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q935960",
+    "display": {
+     "label": {
+      "value": "TV3",
+      "language": "en"
+     },
+     "description": {
+      "value": "primary television channel of Catalan public broadcaster Televisió de Catalunya",
+      "language": "en"
+     }
+    },
+    "label": "TV3",
+    "description": "primary television channel of Catalan public broadcaster Televisió de Catalunya",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TV3"
+    }
+   },
+   {
+    "id": "Q10798782",
+    "title": "Q10798782",
+    "pageid": 12112581,
+    "concepturi": "http://www.wikidata.org/entity/Q10798782",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q10798782",
+    "display": {
+     "label": {
+      "value": "television actor",
+      "language": "en"
+     },
+     "description": {
+      "value": "actor who performs on television",
+      "language": "en"
+     }
+    },
+    "label": "television actor",
+    "description": "actor who performs on television",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV actor"
+    },
+    "aliases": [
+     "TV actor"
+    ]
+   },
+   {
+    "id": "Q506240",
+    "title": "Q506240",
+    "pageid": 475995,
+    "concepturi": "http://www.wikidata.org/entity/Q506240",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q506240",
+    "display": {
+     "label": {
+      "value": "television film",
+      "language": "en"
+     },
+     "description": {
+      "value": "film format that is broadcast and distributed specifically for television networks.",
+      "language": "en"
+     }
+    },
+    "label": "television film",
+    "description": "film format that is broadcast and distributed specifically for television networks.",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV film"
+    },
+    "aliases": [
+     "TV film"
+    ]
+   },
+   {
+    "id": "Q947873",
+    "title": "Q947873",
+    "pageid": 897939,
+    "concepturi": "http://www.wikidata.org/entity/Q947873",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q947873",
+    "display": {
+     "label": {
+      "value": "television presenter",
+      "language": "en"
+     },
+     "description": {
+      "value": "person who introduces or hosts television programs",
+      "language": "en"
+     }
+    },
+    "label": "television presenter",
+    "description": "person who introduces or hosts television programs",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV host"
+    },
+    "aliases": [
+     "TV host"
+    ]
+   },
+   {
+    "id": "Q544560",
+    "title": "Q544560",
+    "pageid": 512975,
+    "concepturi": "http://www.wikidata.org/entity/Q544560",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q544560",
+    "display": {
+     "label": {
+      "value": "Televisión Española",
+      "language": "en"
+     },
+     "description": {
+      "value": "Spanish national state-owned public-service television broadcaster",
+      "language": "en"
+     }
+    },
+    "label": "Televisión Española",
+    "description": "Spanish national state-owned public-service television broadcaster",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TVE"
+    },
+    "aliases": [
+     "TVE"
+    ]
+   },
+   {
+    "id": "Q8075",
+    "title": "Q8075",
+    "pageid": 9355,
+    "concepturi": "http://www.wikidata.org/entity/Q8075",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q8075",
+    "display": {
+     "label": {
+      "value": "television set",
+      "language": "en"
+     },
+     "description": {
+      "value": "device that combines a tuner, display, and speakers for the purpose of viewing television",
+      "language": "en"
+     }
+    },
+    "label": "television set",
+    "description": "device that combines a tuner, display, and speakers for the purpose of viewing television",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV set"
+    },
+    "aliases": [
+     "TV set"
+    ]
+   },
+   {
+    "id": "Q3464665",
+    "title": "Q3464665",
+    "pageid": 3300251,
+    "concepturi": "http://www.wikidata.org/entity/Q3464665",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q3464665",
+    "display": {
+     "label": {
+      "value": "television series season",
+      "language": "en"
+     },
+     "description": {
+      "value": "set of episodes produced for a television series",
+      "language": "en"
+     }
+    },
+    "label": "television series season",
+    "description": "set of episodes produced for a television series",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV season"
+    },
+    "aliases": [
+     "TV season"
+    ]
+   },
+   {
+    "id": "Q1466723",
+    "title": "Q1466723",
+    "pageid": 1404792,
+    "concepturi": "http://www.wikidata.org/entity/Q1466723",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q1466723",
+    "display": {
+     "label": {
+      "value": "TV4",
+      "language": "en"
+     },
+     "description": {
+      "value": "Swedish television channel",
+      "language": "en"
+     }
+    },
+    "label": "TV4",
+    "description": "Swedish television channel",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TV4"
+    }
+   },
+   {
+    "id": "Q578109",
+    "title": "Q578109",
+    "pageid": 543754,
+    "concepturi": "http://www.wikidata.org/entity/Q578109",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q578109",
+    "display": {
+     "label": {
+      "value": "television producer",
+      "language": "en"
+     },
+     "description": {
+      "value": "occupation within video production for TV",
+      "language": "en"
+     }
+    },
+    "label": "television producer",
+    "description": "occupation within video production for TV",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV producer"
+    },
+    "aliases": [
+     "TV producer"
+    ]
+   },
+   {
+    "id": "Q1853722",
+    "title": "Q1853722",
+    "pageid": 1784227,
+    "concepturi": "http://www.wikidata.org/entity/Q1853722",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q1853722",
+    "display": {
+     "label": {
+      "value": "TV 2 Direkte",
+      "language": "en"
+     },
+     "description": {
+      "value": "television station in Norway",
+      "language": "en"
+     }
+    },
+    "label": "TV 2 Direkte",
+    "description": "television station in Norway",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TV 2 Direkte"
+    }
+   },
+   {
+    "id": "Q1616075",
+    "title": "Q1616075",
+    "pageid": 1550729,
+    "concepturi": "http://www.wikidata.org/entity/Q1616075",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q1616075",
+    "display": {
+     "label": {
+      "value": "television station",
+      "language": "en"
+     },
+     "description": {
+      "value": "organization that transmits content on television",
+      "language": "en"
+     }
+    },
+    "label": "television station",
+    "description": "organization that transmits content on television",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV station"
+    },
+    "aliases": [
+     "TV station"
+    ]
+   },
+   {
+    "id": "Q10706741",
+    "title": "Q10706741",
+    "pageid": 11981865,
+    "concepturi": "http://www.wikidata.org/entity/Q10706741",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q10706741",
+    "display": {
+     "label": {
+      "value": "TV",
+      "language": "en"
+     },
+     "description": {
+      "value": "Swedish website",
+      "language": "en"
+     }
+    },
+    "label": "TV",
+    "description": "Swedish website",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TV"
+    }
+   },
+   {
+    "id": "Q2001305",
+    "title": "Q2001305",
+    "pageid": 1929769,
+    "concepturi": "http://www.wikidata.org/entity/Q2001305",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q2001305",
+    "display": {
+     "label": {
+      "value": "television channel",
+      "language": "en"
+     },
+     "description": {
+      "value": "terrestrial frequency or virtual number over which a television station or television network is distributed",
+      "language": "en"
+     }
+    },
+    "label": "television channel",
+    "description": "terrestrial frequency or virtual number over which a television station or television network is distributed",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV channel"
+    },
+    "aliases": [
+     "TV channel"
+    ]
+   },
+   {
+    "id": "Q182415",
+    "title": "Q182415",
+    "pageid": 181512,
+    "concepturi": "http://www.wikidata.org/entity/Q182415",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q182415",
+    "display": {
+     "label": {
+      "value": "reality television",
+      "language": "en"
+     },
+     "description": {
+      "value": "genre of television programming that documents unscripted situations and actual occurrences",
+      "language": "en"
+     }
+    },
+    "label": "reality television",
+    "description": "genre of television programming that documents unscripted situations and actual occurrences",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV reality program"
+    },
+    "aliases": [
+     "TV reality program"
+    ]
+   },
+   {
+    "id": "Q1366112",
+    "title": "Q1366112",
+    "pageid": 1305618,
+    "concepturi": "http://www.wikidata.org/entity/Q1366112",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q1366112",
+    "display": {
+     "label": {
+      "value": "drama television series",
+      "language": "en"
+     },
+     "description": {
+      "value": "television series genre",
+      "language": "en"
+     }
+    },
+    "label": "drama television series",
+    "description": "television series genre",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV drama series"
+    },
+    "aliases": [
+     "TV drama series"
+    ]
+   },
+   {
+    "id": "Q2301650",
+    "title": "Q2301650",
+    "pageid": 2223368,
+    "concepturi": "http://www.wikidata.org/entity/Q2301650",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q2301650",
+    "display": {
+     "label": {
+      "value": "TVP1",
+      "language": "en"
+     },
+     "description": {
+      "value": "Polish public television channel operated since 1952",
+      "language": "en"
+     }
+    },
+    "label": "TVP1",
+    "description": "Polish public television channel operated since 1952",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TVP1"
+    }
+   },
+   {
+    "id": "Q15773317",
+    "title": "Q15773317",
+    "pageid": 17405435,
+    "concepturi": "http://www.wikidata.org/entity/Q15773317",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q15773317",
+    "display": {
+     "label": {
+      "value": "television character",
+      "language": "en"
+     },
+     "description": {
+      "value": "fictional character who appears in a television series",
+      "language": "en"
+     }
+    },
+    "label": "television character",
+    "description": "fictional character who appears in a television series",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV character"
+    },
+    "aliases": [
+     "TV character"
+    ]
+   },
+   {
+    "id": "Q476608",
+    "title": "Q476608",
+    "pageid": 449255,
+    "concepturi": "http://www.wikidata.org/entity/Q476608",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q476608",
+    "display": {
+     "label": {
+      "value": "TVN",
+      "language": "en"
+     },
+     "description": {
+      "value": "Polish commercial television network",
+      "language": "en"
+     }
+    },
+    "label": "TVN",
+    "description": "Polish commercial television network",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TVN"
+    }
+   },
+   {
+    "id": "Q960061",
+    "title": "Q960061",
+    "pageid": 909872,
+    "concepturi": "http://www.wikidata.org/entity/Q960061",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q960061",
+    "display": {
+     "label": {
+      "value": "Radiotelevizija Slovenija",
+      "language": "en"
+     },
+     "description": {
+      "value": "national public broadcaster of Slovenia",
+      "language": "en"
+     }
+    },
+    "label": "Radiotelevizija Slovenija",
+    "description": "national public broadcaster of Slovenia",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV Ljubljana"
+    },
+    "aliases": [
+     "TV Ljubljana"
+    ]
+   },
+   {
+    "id": "Q2059704",
+    "title": "Q2059704",
+    "pageid": 1987067,
+    "concepturi": "http://www.wikidata.org/entity/Q2059704",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q2059704",
+    "display": {
+     "label": {
+      "value": "television director",
+      "language": "en"
+     },
+     "description": {
+      "value": "person who directs television programs",
+      "language": "en"
+     }
+    },
+    "label": "television director",
+    "description": "person who directs television programs",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV director"
+    },
+    "aliases": [
+     "TV director"
+    ]
+   },
+   {
+    "id": "Q286969",
+    "title": "Q286969",
+    "pageid": 277416,
+    "concepturi": "http://www.wikidata.org/entity/Q286969",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q286969",
+    "display": {
+     "label": {
+      "value": "TVP2",
+      "language": "en"
+     },
+     "description": {
+      "value": "Polish public television channel operated since 1970",
+      "language": "en"
+     }
+    },
+    "label": "TVP2",
+    "description": "Polish public television channel operated since 1970",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TVP2"
+    }
+   },
+   {
+    "id": "Q1188923",
+    "title": "Q1188923",
+    "pageid": 1133615,
+    "concepturi": "http://www.wikidata.org/entity/Q1188923",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q1188923",
+    "display": {
+     "label": {
+      "value": "TVA",
+      "language": "en"
+     },
+     "description": {
+      "value": "privately–owned French language television network in Canada",
+      "language": "en"
+     }
+    },
+    "label": "TVA",
+    "description": "privately–owned French language television network in Canada",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TVA"
+    }
+   },
+   {
+    "id": "Q1259759",
+    "title": "Q1259759",
+    "pageid": 1200592,
+    "concepturi": "http://www.wikidata.org/entity/Q1259759",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q1259759",
+    "display": {
+     "label": {
+      "value": "miniseries",
+      "language": "en"
+     },
+     "description": {
+      "value": "TV shows or series that have a predetermined number of episodes",
+      "language": "en"
+     }
+    },
+    "label": "miniseries",
+    "description": "TV shows or series that have a predetermined number of episodes",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV miniseries"
+    },
+    "aliases": [
+     "TV miniseries"
+    ]
+   },
+   {
+    "id": "Q1426484",
+    "title": "Q1426484",
+    "pageid": 1365055,
+    "concepturi": "http://www.wikidata.org/entity/Q1426484",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q1426484",
+    "display": {
+     "label": {
+      "value": "NPO 2",
+      "language": "mul"
+     },
+     "description": {
+      "value": "television channel in the Netherlands",
+      "language": "en"
+     }
+    },
+    "label": "NPO 2",
+    "description": "television channel in the Netherlands",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV2 (Netherlands)"
+    },
+    "aliases": [
+     "TV2 (Netherlands)"
+    ]
+   },
+   {
+    "id": "Q1814720",
+    "title": "Q1814720",
+    "pageid": 1745797,
+    "concepturi": "http://www.wikidata.org/entity/Q1814720",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q1814720",
+    "display": {
+     "label": {
+      "value": "Televisión de Galicia",
+      "language": "en"
+     },
+     "description": {
+      "value": "Galician television channel",
+      "language": "en"
+     }
+    },
+    "label": "Televisión de Galicia",
+    "description": "Galician television channel",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TVG"
+    },
+    "aliases": [
+     "TVG"
+    ]
+   },
+   {
+    "id": "Q15616250",
+    "title": "Q15616250",
+    "pageid": 17254779,
+    "concepturi": "http://www.wikidata.org/entity/Q15616250",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q15616250",
+    "display": {
+     "label": {
+      "value": "TheTVDB",
+      "language": "en"
+     },
+     "description": {
+      "value": "wiki-like site for TV series",
+      "language": "en"
+     }
+    },
+    "label": "TheTVDB",
+    "description": "wiki-like site for TV series",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TVDB"
+    },
+    "aliases": [
+     "TVDB"
+    ]
+   },
+   {
+    "id": "Q2292",
+    "title": "Q2292",
+    "pageid": 3234,
+    "concepturi": "http://www.wikidata.org/entity/Q2292",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q2292",
+    "display": {
+     "label": {
+      "value": "Tver Oblast",
+      "language": "en"
+     },
+     "description": {
+      "value": "federal subject of Russia",
+      "language": "en"
+     }
+    },
+    "label": "Tver Oblast",
+    "description": "federal subject of Russia",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "Tver Oblast"
+    }
+   },
+   {
+    "id": "Q270389",
+    "title": "Q270389",
+    "pageid": 261755,
+    "concepturi": "http://www.wikidata.org/entity/Q270389",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q270389",
+    "display": {
+     "label": {
+      "value": "news presenter",
+      "language": "en"
+     },
+     "description": {
+      "value": "person who presents news during a news program",
+      "language": "en"
+     }
+    },
+    "label": "news presenter",
+    "description": "person who presents news during a news program",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "tv anchor"
+    },
+    "aliases": [
+     "tv anchor"
+    ]
+   },
+   {
+    "id": "Q2537428",
+    "title": "Q2537428",
+    "pageid": 2448860,
+    "concepturi": "http://www.wikidata.org/entity/Q2537428",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q2537428",
+    "display": {
+     "label": {
+      "value": "TV Tropes",
+      "language": "mul"
+     },
+     "description": {
+      "value": "online wiki listing and analyzing conventions (tropes) found in fictional works",
+      "language": "en"
+     }
+    },
+    "label": "TV Tropes",
+    "description": "online wiki listing and analyzing conventions (tropes) found in fictional works",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV Tropes Wiki"
+    },
+    "aliases": [
+     "TV Tropes Wiki"
+    ]
+   },
+   {
+    "id": "Q2288",
+    "title": "Q2288",
+    "pageid": 3230,
+    "concepturi": "http://www.wikidata.org/entity/Q2288",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q2288",
+    "display": {
+     "label": {
+      "value": "Tver",
+      "language": "en"
+     },
+     "description": {
+      "value": "town and administrative center of Tver region in western Russia",
+      "language": "en"
+     }
+    },
+    "label": "Tver",
+    "description": "town and administrative center of Tver region in western Russia",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "Tver"
+    }
+   },
+   {
+    "id": "Q15746494",
+    "title": "Q15746494",
+    "pageid": 17379780,
+    "concepturi": "http://www.wikidata.org/entity/Q15746494",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q15746494",
+    "display": {
+     "label": {
+      "value": "IEEE Transactions on Visualization and Computer Graphics",
+      "language": "en"
+     },
+     "description": {
+      "value": "scientific journal",
+      "language": "en"
+     }
+    },
+    "label": "IEEE Transactions on Visualization and Computer Graphics",
+    "description": "scientific journal",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TVCG"
+    },
+    "aliases": [
+     "TVCG"
+    ]
+   },
+   {
+    "id": "Q58725",
+    "title": "Q58725",
+    "pageid": 61539,
+    "concepturi": "http://www.wikidata.org/entity/Q58725",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q58725",
+    "display": {
+     "label": {
+      "value": "Lockheed T-33 Shooting Star",
+      "language": "en"
+     },
+     "description": {
+      "value": "military trainer aircraft family by Lockheed",
+      "language": "en"
+     }
+    },
+    "label": "Lockheed T-33 Shooting Star",
+    "description": "military trainer aircraft family by Lockheed",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV"
+    },
+    "aliases": [
+     "TV"
+    ]
+   },
+   {
+    "id": "Q3500487",
+    "title": "Q3500487",
+    "pageid": 3333379,
+    "concepturi": "http://www.wikidata.org/entity/Q3500487",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q3500487",
+    "display": {
+     "label": {
+      "value": "TV4 AB",
+      "language": "en"
+     },
+     "description": {
+      "value": "Swedish media company",
+      "language": "en"
+     }
+    },
+    "label": "TV4 AB",
+    "description": "Swedish media company",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TV4 AB"
+    }
+   },
+   {
+    "id": "Q62237804",
+    "title": "Q62237804",
+    "pageid": 62059762,
+    "concepturi": "http://www.wikidata.org/entity/Q62237804",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q62237804",
+    "display": {
+     "label": {
+      "value": "TvY486_bin",
+      "language": "en"
+     }
+    },
+    "label": "TvY486_bin",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TvY486_bin"
+    }
+   },
+   {
+    "id": "Q400566",
+    "title": "Q400566",
+    "pageid": 380067,
+    "concepturi": "http://www.wikidata.org/entity/Q400566",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q400566",
+    "display": {
+     "label": {
+      "value": "TV5 Network, Inc.",
+      "language": "en"
+     },
+     "description": {
+      "value": "media company in the Philippines",
+      "language": "en"
+     }
+    },
+    "label": "TV5 Network, Inc.",
+    "description": "media company in the Philippines",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TV5 Network, Inc."
+    }
+   },
+   {
+    "id": "Q1324062",
+    "title": "Q1324062",
+    "pageid": 1263814,
+    "concepturi": "http://www.wikidata.org/entity/Q1324062",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q1324062",
+    "display": {
+     "label": {
+      "value": "TV Aichi",
+      "language": "en"
+     },
+     "description": {
+      "value": "Japanese television station",
+      "language": "en"
+     }
+    },
+    "label": "TV Aichi",
+    "description": "Japanese television station",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TV Aichi"
+    }
+   },
+   {
+    "id": "Q4015057",
+    "title": "Q4015057",
+    "pageid": 3827796,
+    "concepturi": "http://www.wikidata.org/entity/Q4015057",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q4015057",
+    "display": {
+     "label": {
+      "value": "TV5",
+      "language": "en"
+     },
+     "description": {
+      "value": "commercial television network in the Philippines",
+      "language": "en"
+     }
+    },
+    "label": "TV5",
+    "description": "commercial television network in the Philippines",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TV5"
+    }
+   },
+   {
+    "id": "Q7603925",
+    "title": "Q7603925",
+    "pageid": 7523070,
+    "concepturi": "http://www.wikidata.org/entity/Q7603925",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q7603925",
+    "display": {
+     "label": {
+      "value": "documentary television program",
+      "language": "en"
+     },
+     "description": {
+      "value": "genre of television program",
+      "language": "en"
+     }
+    },
+    "label": "documentary television program",
+    "description": "genre of television program",
+    "match": {
+     "type": "alias",
+     "language": "en",
+     "text": "TV documentary"
+    },
+    "aliases": [
+     "TV documentary"
+    ]
+   },
+   {
+    "id": "Q18565493",
+    "title": "Q18565493",
+    "pageid": 20098854,
+    "concepturi": "http://www.wikidata.org/entity/Q18565493",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q18565493",
+    "display": {
+     "label": {
+      "value": "TV Slovenija 1",
+      "language": "en"
+     },
+     "description": {
+      "value": "television channel",
+      "language": "en"
+     }
+    },
+    "label": "TV Slovenija 1",
+    "description": "television channel",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "TV Slovenija 1"
+    }
+   }
+  ],
+  "search-continue": 50,
+  "success": 1
+ }
+}

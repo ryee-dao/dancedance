@@ -67,6 +67,66 @@ class AddedSongsStoreTest {
         assertTrue(JSONArray(f.readText()).getJSONObject(1).has("genreTriedAt"))
     }
 
+    // --- multi-source genres (bridge v7) ---------------------------------------------------------
+
+    private val lookup = """{"genres":["hip hop","trap","drill"],"sources":{"wikipedia":{"status":"found","at":"2026-11-14T00:00:00Z",""" +
+        """"genres":["Hip hop","drill","trap"],"ref":"Back in Blood"},"theaudiodb":{"status":"none","at":"2026-11-14T00:00:00Z",""" +
+        """"reason":"no track"}},"complete":true,"at":"2026-11-14T00:00:00Z"}"""
+
+    @Test fun oldEntriesHaveNoGenresAndSendNone() = withFile { f ->
+        f.writeText(oldFormat)
+        val songs = AddedSongsStore(f).list()
+        assertEquals(listOf(emptyList<String>(), emptyList()), songs.map { it.genres })
+        val json = AddedSongsStore(f).toJson().getJSONObject(0)
+        assertFalse(json.has("genres"))
+        assertFalse(json.has("genreLookup"))
+    }
+
+    @Test fun genresRoundTripAndReachThePage() = withFile { f ->
+        f.writeText(oldFormat)
+        val store = AddedSongsStore(f)
+        assertTrue(store.updateGenres("AAAAAAAAAAA", lookup))
+        val reread = AddedSongsStore(f)
+        val s = reread.list()[0]
+        assertEquals(listOf("hip hop", "trap", "drill"), s.genres)
+        val page = reread.toJson().getJSONObject(0)
+        assertEquals("trap", page.getJSONArray("genres").getString(1))
+        assertEquals("Back in Blood", page.getJSONObject("genreLookup").getJSONObject("sources").getJSONObject("wikipedia").getString("ref"))
+        // The other song is untouched.
+        assertTrue(reread.list()[1].genres.isEmpty())
+        // A later empty lookup (all sources failed) replaces it: the page retries those itself.
+        assertTrue(store.updateGenres("AAAAAAAAAAA", """{"genres":[],"sources":{},"complete":false,"at":"x"}"""))
+        assertTrue(AddedSongsStore(f).list()[0].genres.isEmpty())
+        assertFalse(AddedSongsStore(f).toJson().getJSONObject(0).has("genres"))
+        assertTrue(AddedSongsStore(f).toJson().getJSONObject(0).has("genreLookup"))
+    }
+
+    @Test fun badGenreInputIsRefusedOrCleaned() = withFile { f ->
+        f.writeText(oldFormat)
+        val store = AddedSongsStore(f)
+        assertFalse(store.updateGenres("CCCCCCCCCCC", lookup)) // no such song
+        assertFalse(store.updateGenres("AAAAAAAAAAA", "not json"))
+        assertFalse(store.updateGenres("AAAAAAAAAAA", "{\"genres\":[\"" + "x".repeat(AddedSongsStore.MAX_LOOKUP_CHARS) + "\"]}"))
+        val long = "y".repeat(61)
+        assertTrue(store.updateGenres("AAAAAAAAAAA", """{"genres":[" pop ",42,"pop","","\u0001x","$long","rock","a","b","c","d","e","f","g"]}"""))
+        assertEquals(listOf("pop", "rock", "a", "b", "c", "d", "e", "f"), AddedSongsStore(f).list()[0].genres)
+        // A hand-edited file with bad genre fields still loads.
+        f.writeText(oldFormat.replaceFirst("\"tier\":\"lyric\"", "\"tier\":\"lyric\",\"genres\":\"pop\",\"genreLookup\":3"))
+        val s = AddedSongsStore(f).list()[0]
+        assertTrue(s.genres.isEmpty())
+        assertEquals("", s.genreLookup)
+    }
+
+    @Test fun theItunesBackfillKeepsMultiSourceGenres() = withFile { f ->
+        f.writeText(oldFormat)
+        val store = AddedSongsStore(f)
+        assertTrue(store.updateGenres("AAAAAAAAAAA", lookup))
+        assertTrue(store.updateGenre("AAAAAAAAAAA", "Hip-Hop/Rap", "2026-11-13T00:00:00Z"))
+        val s = AddedSongsStore(f).list()[0]
+        assertEquals("Hip-Hop/Rap", s.genre)
+        assertEquals(listOf("hip hop", "trap", "drill"), s.genres)
+    }
+
     // --- backfill -----------------------------------------------------------------------------
 
     private val hits = SongPicker.parseItunes(ItunesFixtures.backInBlood)

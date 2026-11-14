@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.2.0",
-  "generatedAt": "2026-11-14T03:24:29.998Z",
+  "generatedAt": "2026-11-14T04:44:21.250Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -109,510 +109,1277 @@
     "-7XnDlYY9qw": {
       "bpm": 158.8,
       "duration": 236,
-      "genre": "Hip-Hop/Rap"
+      "genre": "Hip-Hop/Rap",
+      "genres": [
+        "hip hop",
+        "pop",
+        "neo soul",
+        "alternative hip hop",
+        "electro",
+        "funk"
+      ]
     },
     "-qZxMY7FZf8": {
       "bpm": 110,
       "duration": 188,
-      "genre": "Hard Rock"
+      "genre": "Hard Rock",
+      "genres": [
+        "nu metal",
+        "alternative rock",
+        "emo",
+        "pop rock",
+        "metal",
+        "rock"
+      ]
     },
     "-sVB91NTa4A": {
       "bpm": 100.6,
       "duration": 234,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "europop",
+        "pop",
+        "Euro disco",
+        "synth-pop",
+        "disco",
+        "electronic"
+      ]
     },
     "0Bl8dDFsAQU": {
       "bpm": 120,
       "duration": 198,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "teen pop",
+        "dance-pop",
+        "bubblegum pop",
+        "nu-disco",
+        "Euro disco"
+      ]
     },
     "0Ui-QzihJGo": {
       "bpm": 113,
       "duration": 236,
-      "genre": "Soundtrack"
+      "genre": "Soundtrack",
+      "genres": [
+        "pop",
+        "disco-pop",
+        "dance-pop",
+        "pop soul",
+        "teen pop",
+        "funk"
+      ]
     },
     "1j_XvebOg4c": {
       "bpm": 103,
       "duration": 208,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "electro-disco",
+        "nu-disco",
+        "pop",
+        "funk-pop",
+        "indie pop",
+        "dance-pop"
+      ]
     },
     "4-TbQnONe_w": {
       "bpm": 134.3,
       "duration": 194,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "pop",
+        "dance-pop",
+        "electropop",
+        "trap",
+        "pop trap",
+        "electronic"
+      ]
     },
     "47NhAUUnIjs": {
       "bpm": 108,
-      "duration": 225
+      "duration": 225,
+      "genres": [
+        "pop",
+        "dance-pop",
+        "europop",
+        "pop rap",
+        "teen pop"
+      ]
     },
     "4AqjqOqNrjw": {
       "bpm": 168,
       "duration": 187,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "electropop",
+        "pop rock",
+        "rock",
+        "alternative rock",
+        "alternative",
+        "synth-pop"
+      ]
     },
     "4ZI8AC4AR5A": {
       "bpm": 162,
       "duration": 214,
-      "genre": "Hard Rock"
+      "genre": "Hard Rock",
+      "genres": [
+        "nu metal",
+        "rap metal",
+        "rap rock",
+        "metal",
+        "hard rock",
+        "alternative metal"
+      ]
     },
     "53tgVlXBZVg": {
       "bpm": 94.9,
       "duration": 255,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "breakbeat",
+        "electronic rock",
+        "rap rock",
+        "trip hop",
+        "hip hop",
+        "alternative rock"
+      ]
     },
     "5y_KJAg8bHI": {
       "bpm": 124.1,
       "duration": 251,
-      "genre": "House"
+      "genre": "House",
+      "genres": [
+        "electronic",
+        "progressive house",
+        "house",
+        "folktronica",
+        "EDM",
+        "folk pop"
+      ]
     },
     "7-x3uD5z1bQ": {
       "bpm": 95.2,
       "duration": 174,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "pop rock",
+        "funk-pop",
+        "indie pop",
+        "rock"
+      ]
     },
     "7CTJcHjkq0E": {
       "bpm": 117.2,
       "duration": 294,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "dance-pop",
+        "funk",
+        "post-disco",
+        "R&B",
+        "dance"
+      ]
     },
     "7Ya2U8XN_Zw": {
       "bpm": 115,
       "duration": 271,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "funk",
+        "soul",
+        "disco-pop",
+        "boogie",
+        "pop rock"
+      ]
     },
     "8YMkAW9TxDM": {
       "bpm": 126,
       "duration": 245,
-      "genre": "Dance"
+      "genre": "Dance",
+      "genres": [
+        "house",
+        "dance",
+        "pop",
+        "electronic",
+        "electro",
+        "R&B"
+      ]
     },
     "8xG7mH8i-WE": {
       "bpm": 160,
       "duration": 218,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "dance-pop",
+        "pop"
+      ]
     },
     "9lybsz-7TFM": {
       "bpm": 130.6,
       "duration": 285,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "dance-pop",
+        "house",
+        "dance",
+        "Latin pop",
+        "techno"
+      ]
     },
     "AMNNqQpU-i4": {
       "bpm": 120,
       "duration": 190,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "alternative",
+        "indie pop",
+        "pop",
+        "alternative rock",
+        "synth-pop",
+        "pop rock"
+      ]
     },
     "BerNfXSuvJ0": {
       "bpm": 100,
       "duration": 199,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "dancehall pop",
+        "tropical house",
+        "R&B",
+        "pop",
+        "moombahton",
+        "dance-pop"
+      ]
     },
     "D8j5Fm94_CE": {
       "bpm": 104,
       "duration": 176,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "synth-pop",
+        "nu-disco",
+        "bubblegum pop",
+        "electropop",
+        "funk"
+      ]
     },
     "DlSsIKn3HTU": {
       "bpm": 126.4,
       "duration": 215,
-      "genre": "R&B/Soul"
+      "genre": "R&B/Soul",
+      "genres": [
+        "disco",
+        "funk",
+        "R&B",
+        "pop soul"
+      ]
     },
     "EQzXwcZS-FU": {
       "bpm": 130,
       "duration": 205,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "dance-pop",
+        "electronic",
+        "pop",
+        "folktronica",
+        "EDM",
+        "hip hop"
+      ]
     },
     "FHo-g6DCTv4": {
       "bpm": 99.3,
       "duration": 240,
-      "genre": "Soundtrack"
+      "genre": "Soundtrack",
+      "genres": [
+        "pop",
+        "R&B",
+        "hip hop",
+        "dance-pop",
+        "pop rap",
+        "electronic"
+      ]
     },
     "GT1lysg-Kw4": {
       "bpm": 120,
       "duration": 195,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "new wave",
+        "dance-pop",
+        "pop rap",
+        "funk",
+        "hip hop"
+      ]
     },
     "GcHHjq8pXec": {
       "bpm": 96.9,
       "duration": 330,
-      "genre": "Rock"
+      "genre": "Rock",
+      "genres": [
+        "alternative rock",
+        "rock",
+        "pop rock"
+      ]
     },
     "GchEVSx9XEA": {
       "bpm": 128,
       "duration": 217,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "electro house",
+        "EDM",
+        "pop",
+        "house",
+        "electronic",
+        "dubstep"
+      ]
     },
     "GhH4rTap48M": {
       "bpm": 120,
       "duration": 235,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop rock",
+        "pop",
+        "funk-pop",
+        "disco",
+        "soul"
+      ]
     },
     "HbzZPpWr4MI": {
       "bpm": 90,
       "duration": 225,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "synth-pop",
+        "dancehall",
+        "tropical house",
+        "electropop",
+        "dance-pop"
+      ]
     },
     "HhwTF97OyX8": {
       "bpm": 79,
       "duration": 173,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "hip hop",
+        "trap",
+        "pop rap",
+        "alternative hip hop",
+        "neo soul"
+      ]
     },
     "IgCHFfDFivc": {
       "bpm": 120,
       "duration": 207,
-      "genre": "Hard Rock"
+      "genre": "Hard Rock",
+      "genres": [
+        "alternative rock",
+        "hard rock",
+        "metal",
+        "nu metal",
+        "rock",
+        "alternative metal"
+      ]
     },
     "IhP3J0j9JmY": {
       "bpm": 125,
       "duration": 203,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "pop rock",
+        "rock",
+        "alternative rock",
+        "indie rock",
+        "alternative"
+      ]
     },
     "JDHoc9qzC5I": {
       "bpm": 120.8,
       "duration": 216,
-      "genre": "Rock"
+      "genre": "Rock",
+      "genres": [
+        "alternative rock",
+        "funk rock",
+        "rock",
+        "rap rock",
+        "hard rock",
+        "alternative"
+      ]
     },
     "JTBoLANhyVA": {
       "bpm": 81.5,
       "duration": 232,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "dance-pop",
+        "bubblegum pop",
+        "synth-pop",
+        "pop rock",
+        "electronic"
+      ]
     },
     "LhZ5GXCZtEw": {
       "bpm": 107,
       "duration": 226,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "electro",
+        "funk",
+        "disco",
+        "R&B",
+        "dance"
+      ]
     },
     "Mr_uHJPUlO8": {
       "bpm": 183.3,
       "duration": 273,
-      "genre": "Rock"
+      "genre": "Rock",
+      "genres": [
+        "funk rock",
+        "rock",
+        "alternative rock",
+        "hard rock",
+        "rap rock",
+        "funk metal"
+      ]
     },
     "Mzk6KkyxXC8": {
       "bpm": 114,
       "duration": 198,
-      "genre": "K-Pop"
+      "genre": "K-Pop",
+      "genres": [
+        "pop",
+        "K-pop",
+        "disco",
+        "dance-pop",
+        "synth funk"
+      ]
     },
     "NU61CbO9u6o": {
       "bpm": 134.9,
       "duration": 163,
-      "genre": "Hard Rock"
+      "genre": "Hard Rock",
+      "genres": [
+        "nu metal",
+        "alternative rock",
+        "alternative metal",
+        "rap rock",
+        "pop rock",
+        "metal"
+      ]
     },
     "NaQ083rNUwc": {
       "bpm": 169.3,
       "duration": 228,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "synth-pop",
+        "new wave",
+        "pop",
+        "electronic",
+        "electropop",
+        "dance"
+      ]
     },
     "OjX4Fpb7LX8": {
       "bpm": 128,
       "duration": 201,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "dance-pop",
+        "electropop",
+        "disco",
+        "pop",
+        "electronic",
+        "house"
+      ]
     },
     "PdKKoOiEgqY": {
       "bpm": 79.1,
       "duration": 163,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "psychedelic pop",
+        "funk",
+        "alternative",
+        "alternative rock",
+        "funk rock",
+        "pop soul"
+      ]
     },
     "Pmv8aQKO6k0": {
       "bpm": 130.6,
       "duration": 340,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "alternative rock",
+        "alternative",
+        "indietronica",
+        "indie pop",
+        "rock",
+        "electronic"
+      ]
     },
     "RwTwd5tAq1U": {
       "bpm": 100.2,
       "duration": 197,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "alternative rock",
+        "nu metal",
+        "electronic rock",
+        "alternative",
+        "rock",
+        "metal"
+      ]
     },
     "SRdlnO9gMIY": {
       "bpm": 147,
       "duration": 194,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "synth-pop",
+        "dance-pop",
+        "pop",
+        "power pop",
+        "indie pop",
+        "dance"
+      ]
     },
     "TIUwLfpufs0": {
       "bpm": 183.4,
       "duration": 271,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "alternative rock",
+        "alternative",
+        "funk rock",
+        "rock",
+        "rap rock",
+        "pop rock"
+      ]
     },
     "UOQlKBlobRY": {
       "bpm": 90,
       "duration": 325,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "alternative hip hop",
+        "trip hop",
+        "rap rock",
+        "electropop",
+        "alternative rock",
+        "alternative"
+      ]
     },
     "UfM-nM762ec": {
       "bpm": 119,
       "duration": 219,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "indie pop",
+        "R&B",
+        "disco-pop",
+        "dance",
+        "dance-pop"
+      ]
     },
     "V1Z586zoeeE": {
       "bpm": 174,
       "duration": 166,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "synth-pop",
+        "new wave",
+        "pop"
+      ]
     },
     "WzsYtW8zyXU": {
       "bpm": 143.7,
       "duration": 232,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop rock",
+        "pop",
+        "reggae rock",
+        "new wave",
+        "pub rock",
+        "reggae pop"
+      ]
     },
     "XQG89cwhmJU": {
       "bpm": 80,
       "duration": 232,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "soul",
+        "neo soul",
+        "hip hop",
+        "pop"
+      ]
     },
     "XZe_pV2rXuk": {
       "bpm": 85,
       "duration": 203,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "alternative rock",
+        "alternative hip hop",
+        "alternative",
+        "rap rock",
+        "rock",
+        "hip hop"
+      ]
     },
     "YgCYsJicgEU": {
       "bpm": 117,
       "duration": 186,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "nu-disco",
+        "neo-psychedelia",
+        "electronic",
+        "psychedelic pop",
+        "post-disco"
+      ]
     },
     "_Vj092UgKwQ": {
       "bpm": 103.6,
       "duration": 283,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "disco",
+        "pop"
+      ]
     },
     "_dK2tDK9grQ": {
       "bpm": 96,
       "duration": 235,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "dance-pop",
+        "tropical house",
+        "dancehall",
+        "short film",
+        "musical film"
+      ]
     },
     "aAizT0NOWkM": {
       "bpm": 117.9,
       "duration": 199,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "pop rock",
+        "country pop",
+        "disco",
+        "funk"
+      ]
     },
     "aF18NehJxos": {
       "bpm": 106,
       "duration": 208,
-      "genre": "Rock"
+      "genre": "Rock",
+      "genres": [
+        "alternative rock",
+        "rock",
+        "funk rock",
+        "dance-rock",
+        "hard rock",
+        "post-grunge"
+      ]
     },
     "aeZnkEMIxBM": {
       "bpm": 124.2,
       "duration": 259,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "alternative rock",
+        "alternative",
+        "rock",
+        "pop rock",
+        "house",
+        "pop"
+      ]
     },
     "ahvkAPbPGKw": {
       "bpm": 127,
       "duration": 240,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "alternative rock",
+        "electronic rock",
+        "hard rock",
+        "progressive rock",
+        "rock",
+        "indietronica"
+      ]
     },
     "b3bkpyNiv8Y": {
       "bpm": 124,
       "duration": 226,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "dance-pop",
+        "pop",
+        "synth-pop",
+        "electronic",
+        "dance-rock",
+        "house"
+      ]
     },
     "bOq67Poe95w": {
       "bpm": 110,
       "duration": 167,
-      "genre": "K-Pop"
+      "genre": "K-Pop",
+      "genres": [
+        "K-pop",
+        "dance-pop",
+        "pop",
+        "EDM",
+        "electronic",
+        "disco"
+      ]
     },
     "bSwzZoLCoZ0": {
       "bpm": 140,
       "duration": 164,
-      "genre": "Hard Rock"
+      "genre": "Hard Rock",
+      "genres": [
+        "rap rock",
+        "rock",
+        "alternative metal",
+        "hard rock",
+        "alternative rock",
+        "metal"
+      ]
     },
     "dWErisOfeyE": {
       "bpm": 100,
       "duration": 224,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "Latin pop",
+        "reggaeton",
+        "salsa",
+        "latin",
+        "pop",
+        "cumbia"
+      ]
     },
     "egpE0ysQ21Q": {
       "bpm": 105.1,
       "duration": 335,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "alternative rock",
+        "pop rock",
+        "stadium rock",
+        "alternative",
+        "rock",
+        "pop"
+      ]
     },
     "fH_OnJk6QqU": {
       "bpm": 164,
       "duration": 192,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "pop rock",
+        "pop",
+        "rock",
+        "alternative rock",
+        "alternative"
+      ]
     },
     "fw-QRyQcFH8": {
       "bpm": 110,
       "duration": 175,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "dance-pop",
+        "pop rap",
+        "Britpop",
+        "pop rock",
+        "synth-pop"
+      ]
     },
     "g9j5UzxEhEM": {
       "bpm": 105,
       "duration": 216,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "nu metal",
+        "rap rock",
+        "alternative rock",
+        "metal",
+        "alternative metal",
+        "hard rock"
+      ]
     },
     "gx7GyiDZQms": {
       "bpm": 116,
       "duration": 370,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "funk",
+        "pop",
+        "disco",
+        "deep house",
+        "electro",
+        "electronic"
+      ]
     },
     "hCLkVrp_4CE": {
       "bpm": 110,
       "duration": 178,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "synth-pop",
+        "indie pop",
+        "disco",
+        "dance-pop"
+      ]
     },
     "hn6lonvIRsI": {
       "bpm": 130,
       "duration": 162,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "power pop",
+        "pop"
+      ]
     },
     "hyzGXmPQzEg": {
       "bpm": 75,
       "duration": 215,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "reggae",
+        "alternative",
+        "alternative hip hop",
+        "alternative rock",
+        "dub",
+        "electropop"
+      ]
     },
     "iFaKc8Bvk4Y": {
       "bpm": 122,
       "duration": 221,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "dance-pop",
+        "pop rock",
+        "disco",
+        "dance-rock",
+        "nu-disco",
+        "alt-pop"
+      ]
     },
     "iSF26HsmeRI": {
       "bpm": 132,
       "duration": 217,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "K-pop",
+        "dance-pop",
+        "pop",
+        "pop rap",
+        "EDM",
+        "hip house"
+      ]
     },
     "i_SsnRdgitA": {
       "bpm": 148.6,
       "duration": 170,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "pop punk",
+        "pop rock",
+        "indie rock",
+        "electropop",
+        "K-pop"
+      ]
     },
     "ic8j13piAhQ": {
       "bpm": 85,
       "duration": 179,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "electropop",
+        "synth-pop",
+        "pop",
+        "bubblegum pop",
+        "industrial pop"
+      ]
     },
     "id2-K3daNRQ": {
       "bpm": 118.8,
       "duration": 291,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "dance-pop",
+        "pop",
+        "R&B",
+        "electronic"
+      ]
     },
     "j5n5YzMm5LY": {
       "bpm": 109,
       "duration": 192,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "disco",
+        "funk",
+        "nu-disco",
+        "alternative hip hop",
+        "pop"
+      ]
     },
     "jRr5EasAq84": {
       "bpm": 120.6,
       "duration": 235,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "new wave",
+        "bubblegum pop",
+        "dance-pop",
+        "synth-pop",
+        "pop rock"
+      ]
     },
     "jgh8owCuX78": {
       "bpm": 113,
       "duration": 227,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "dance-pop",
+        "pop",
+        "indie pop",
+        "disco-funk",
+        "electronic"
+      ]
     },
     "jz7C2W4m26U": {
       "bpm": 116,
       "duration": 176,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "disco",
+        "funk",
+        "synth-pop",
+        "soul"
+      ]
     },
     "mgT0N3tMP74": {
       "bpm": 122,
       "duration": 257,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "folk rock",
+        "pop",
+        "pop rock",
+        "folk pop",
+        "alternative rock"
+      ]
     },
     "mwL1cohnHNE": {
       "bpm": 180,
       "duration": 224,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "power pop",
+        "rock"
+      ]
     },
     "niR2qJ3mGEE": {
       "bpm": 194,
       "duration": 175,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "synth-pop",
+        "pop rock",
+        "alternative rock",
+        "new wave",
+        "indie rock",
+        "pop"
+      ]
     },
     "nx3-XCtnEqU": {
       "bpm": 128,
       "duration": 200,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "alternative rock",
+        "power pop",
+        "new wave",
+        "pop rock",
+        "alternative",
+        "synth-rock"
+      ]
     },
     "o6Tf-xcVB_o": {
       "bpm": 168.2,
       "duration": 179,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop punk",
+        "pop rock",
+        "pop",
+        "grunge",
+        "emo",
+        "alternative rock"
+      ]
     },
     "o6ytLPKscrU": {
       "bpm": 171,
       "duration": 204,
-      "genre": "R&B/Soul"
+      "genre": "R&B/Soul",
+      "genres": [
+        "electropop",
+        "synthwave",
+        "synth-pop",
+        "R&B",
+        "deep house",
+        "electronic"
+      ]
     },
     "pd1_SxHh2vo": {
       "bpm": 85.4,
       "duration": 142,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop rap",
+        "pop rock",
+        "synth-pop",
+        "pop",
+        "electropop",
+        "new wave"
+      ]
     },
     "qJ_Tw0w3lLA": {
       "bpm": 184,
       "duration": 302,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "funk rock",
+        "alternative rock",
+        "funk",
+        "rock",
+        "alternative"
+      ]
     },
     "qX0cPZT3Lzg": {
       "bpm": 115.3,
       "duration": 164,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "indie pop",
+        "indie folk",
+        "folk",
+        "pop rock",
+        "alternative rock",
+        "Americana"
+      ]
     },
     "s8ZXJ5QUYvQ": {
       "bpm": 129.2,
       "duration": 236,
-      "genre": "Hard Rock"
+      "genre": "Hard Rock",
+      "genres": [
+        "nu metal",
+        "rap rock",
+        "alternative rock",
+        "rock",
+        "hard rock",
+        "alternative metal"
+      ]
     },
     "sKtl7-_6AjE": {
       "bpm": 95.1,
       "duration": 156,
-      "genre": "Hard Rock"
+      "genre": "Hard Rock",
+      "genres": [
+        "nu metal",
+        "hard rock",
+        "rap rock",
+        "rap metal",
+        "metal",
+        "rock"
+      ]
     },
     "sLqdRmwY6vc": {
       "bpm": 119.4,
       "duration": 208,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "R&B",
+        "pop",
+        "electropop",
+        "dance-pop",
+        "pop rap",
+        "electronic"
+      ]
     },
     "t19wM1gn1Wo": {
       "bpm": 118,
       "duration": 269,
-      "genre": "Soundtrack"
+      "genre": "Soundtrack",
+      "genres": [
+        "alternative rock",
+        "electronic rock",
+        "alternative metal",
+        "rock",
+        "hard rock",
+        "industrial rock"
+      ]
     },
     "u6lihZAcy4s": {
       "bpm": 118,
       "duration": 217,
-      "genre": "R&B/Soul"
+      "genre": "R&B/Soul",
+      "genres": [
+        "synth-pop",
+        "R&B",
+        "alternative R&B",
+        "pop",
+        "synth-rock",
+        "dance-pop"
+      ]
     },
     "vXlyuCzZc4E": {
       "bpm": 92.4,
-      "duration": 190
+      "duration": 190,
+      "genres": [
+        "alternative rock",
+        "alternative metal",
+        "hard rock",
+        "rock"
+      ]
     },
     "w4Xfg_MRH10": {
       "bpm": 96.1,
       "duration": 280,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "alternative rock",
+        "funk rock",
+        "rock",
+        "alternative",
+        "pop rock",
+        "stadium rock"
+      ]
     },
     "w5i-cwLH7s0": {
       "bpm": 130,
       "duration": 234,
-      "genre": "Alternative"
+      "genre": "Alternative",
+      "genres": [
+        "alternative hip hop",
+        "rap rock",
+        "industrial hip hop",
+        "hip hop",
+        "rock",
+        "alternative"
+      ]
     },
     "xjiYBGs0TUA": {
       "bpm": 124,
       "duration": 186,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "disco",
+        "nu-disco",
+        "pop",
+        "indie pop",
+        "electronic"
+      ]
     },
     "yvvamodXZbw": {
       "bpm": 122,
       "duration": 203,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "pop rock",
+        "dance-rock",
+        "rock",
+        "electronic"
+      ]
     },
     "zIh5AHxh-Ok": {
       "bpm": 129.8,
       "duration": 264,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "electro house",
+        "pop",
+        "pop rap",
+        "hip house",
+        "dance-pop",
+        "electro"
+      ]
     },
     "zLxXqEZ5OoA": {
       "bpm": 146,
       "duration": 258,
-      "genre": "Hip-Hop/Rap"
+      "genre": "Hip-Hop/Rap",
+      "genres": [
+        "hip hop",
+        "pop rap",
+        "experimental pop",
+        "worldbeat"
+      ]
     },
     "zd-h01o7LtI": {
       "bpm": 133,
       "duration": 187,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "electropop",
+        "dance-pop",
+        "synth-pop"
+      ]
     },
     "zgEKLhvCCVA": {
       "bpm": 110,
       "duration": 233,
-      "genre": "Hard Rock"
+      "genre": "Hard Rock",
+      "genres": [
+        "alternative rock",
+        "hard rock",
+        "rap rock",
+        "electropop",
+        "electronic rock",
+        "nu metal"
+      ]
     }
   }
 }

@@ -1,0 +1,204 @@
+{
+ "url": "https://www.wikidata.org/w/api.php?format=json&origin=*&action=wbsearchentities&language=en&uselang=en&type=item&limit=50&search=My+Immortal",
+ "body": {
+  "searchinfo": {
+   "search": "My Immortal"
+  },
+  "search": [
+   {
+    "id": "Q21501482",
+    "title": "Q21501482",
+    "pageid": 23546339,
+    "concepturi": "http://www.wikidata.org/entity/Q21501482",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q21501482",
+    "display": {
+     "label": {
+      "value": "My Immortal",
+      "language": "en"
+     },
+     "description": {
+      "value": "Harry Potter fan fiction of disputed authorship",
+      "language": "en"
+     }
+    },
+    "label": "My Immortal",
+    "description": "Harry Potter fan fiction of disputed authorship",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "My Immortal"
+    }
+   },
+   {
+    "id": "Q1981958",
+    "title": "Q1981958",
+    "pageid": 1910727,
+    "concepturi": "http://www.wikidata.org/entity/Q1981958",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q1981958",
+    "display": {
+     "label": {
+      "value": "My Immortal",
+      "language": "en"
+     },
+     "description": {
+      "value": "2003 song by Evanescence",
+      "language": "en"
+     }
+    },
+    "label": "My Immortal",
+    "description": "2003 song by Evanescence",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "My Immortal"
+    }
+   },
+   {
+    "id": "Q15735273",
+    "title": "Q15735273",
+    "pageid": 17368952,
+    "concepturi": "http://www.wikidata.org/entity/Q15735273",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q15735273",
+    "display": {
+     "label": {
+      "value": "My Immortal",
+      "language": "en"
+     },
+     "description": {
+      "value": "2013 song by Lindsey Stirling",
+      "language": "en"
+     }
+    },
+    "label": "My Immortal",
+    "description": "2013 song by Lindsey Stirling",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "My Immortal"
+    }
+   },
+   {
+    "id": "Q139916285",
+    "title": "Q139916285",
+    "pageid": 133366609,
+    "concepturi": "http://www.wikidata.org/entity/Q139916285",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q139916285",
+    "display": {
+     "label": {
+      "value": "My Immortal Ukraine",
+      "language": "en"
+     },
+     "description": {
+      "value": "Ukrainian coin series",
+      "language": "en"
+     }
+    },
+    "label": "My Immortal Ukraine",
+    "description": "Ukrainian coin series",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "My Immortal Ukraine"
+    }
+   },
+   {
+    "id": "Q141346532",
+    "title": "Q141346532",
+    "pageid": 134878330,
+    "concepturi": "http://www.wikidata.org/entity/Q141346532",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q141346532",
+    "display": {
+     "label": {
+      "value": "(My) Immortal: The Web Series",
+      "language": "mul"
+     }
+    },
+    "label": "(My) Immortal: The Web Series",
+    "match": {
+     "type": "alias",
+     "language": "mul",
+     "text": "My Immortal: The Web Series"
+    },
+    "aliases": [
+     "My Immortal: The Web Series"
+    ]
+   },
+   {
+    "id": "Q141342243",
+    "title": "Q141342243",
+    "pageid": 134874195,
+    "concepturi": "http://www.wikidata.org/entity/Q141342243",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q141342243",
+    "display": {
+     "label": {
+      "value": "My Immortal: The Movie",
+      "language": "mul"
+     }
+    },
+    "label": "My Immortal: The Movie",
+    "match": {
+     "type": "label",
+     "language": "mul",
+     "text": "My Immortal: The Movie"
+    }
+   },
+   {
+    "id": "Q86112537",
+    "title": "Q86112537",
+    "pageid": 85376625,
+    "concepturi": "http://www.wikidata.org/entity/Q86112537",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q86112537",
+    "display": {
+     "label": {
+      "value": "My immortal Holmes",
+      "language": "en"
+     },
+     "description": {
+      "value": "scientific article published on January 28, 2015",
+      "language": "en"
+     }
+    },
+    "label": "My immortal Holmes",
+    "description": "scientific article published on January 28, 2015",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "My immortal Holmes"
+    }
+   },
+   {
+    "id": "Q121586220",
+    "title": "Q121586220",
+    "pageid": 115992599,
+    "concepturi": "http://www.wikidata.org/entity/Q121586220",
+    "repository": "wikidata",
+    "url": "//www.wikidata.org/wiki/Q121586220",
+    "display": {
+     "label": {
+      "value": "My Immortal",
+      "language": "en"
+     },
+     "description": {
+      "value": "Wikimedia disambiguation page",
+      "language": "en"
+     }
+    },
+    "label": "My Immortal",
+    "description": "Wikimedia disambiguation page",
+    "match": {
+     "type": "label",
+     "language": "en",
+     "text": "My Immortal"
+    }
+   }
+  ],
+  "success": 1
+ }
+}

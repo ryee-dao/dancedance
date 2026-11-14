@@ -108,6 +108,10 @@ class AddedSongsStore(private val file: File) {
         val genre: String = "",
         /** Storage only: when a [GenreBackfill] lookup last found no genre (ISO), so it isn't asked every start. */
         val genreTriedAt: String = "",
+        /** Multi-source genres (the page's src/genre lookup, bridge v7), best first; empty until looked up. */
+        val genres: List<String> = emptyList(),
+        /** That lookup as JSON text (what each source said; the page's cache for later lookups); "" until looked up. */
+        val genreLookup: String = "",
     ) {
         /** What the page gets (getAddedSongs / addedSongsChanged). */
         fun toJson(): JSONObject = JSONObject()
@@ -115,6 +119,8 @@ class AddedSongsStore(private val file: File) {
             .put("durationSec", durationSec).put("videoTitle", videoTitle).put("channel", channel).put("tier", tier)
             .apply { if (tier == SongPicker.Tier.MUSIC_VIDEO.label) put("note", "music-video") }
             .apply { if (genre.isNotEmpty()) put("genre", genre) }
+            .apply { if (genres.isNotEmpty()) put("genres", JSONArray(genres)) }
+            .apply { lookupJson(genreLookup)?.let { put("genreLookup", it) } }
 
         fun toStoredJson(): JSONObject = toJson().apply { if (genreTriedAt.isNotEmpty()) put("genreTriedAt", genreTriedAt) }
     }
@@ -133,7 +139,8 @@ class AddedSongsStore(private val file: File) {
                 // Entries saved before the genre was kept have no "genre": they load with "".
                 Song(id, o.optString("title"), o.optString("artist"), o.optString("addedAt"), o.optInt("durationSec"),
                     o.optString("videoTitle"), o.optString("channel"), o.optString("tier"),
-                    SongPicker.cleanGenre(o.opt("genre")), o.optString("genreTriedAt"))
+                    SongPicker.cleanGenre(o.opt("genre")), o.optString("genreTriedAt"),
+                    cleanGenres(o.optJSONArray("genres")), o.optJSONObject("genreLookup")?.toString().orEmpty())
             }
         } catch (e: Exception) {
             emptyList()
@@ -153,6 +160,22 @@ class AddedSongsStore(private val file: File) {
         if (s.genre.isNotEmpty()) return false
         val clean = genre?.let { SongPicker.cleanGenre(it) }.orEmpty()
         val updated = if (clean.isNotEmpty()) s.copy(genre = clean, genreTriedAt = "") else s.copy(genreTriedAt = triedAt)
+        save(before.map { if (it.videoId == videoId) updated else it })
+        return true
+    }
+
+    /**
+     * Bridge v7: the page's multi-source genre lookup for one song (JSON object with a `genres`
+     * array, see src/genre/types.ts GenreLookup). Replaces any earlier lookup, including an empty
+     * one (the page retries those later). Returns false if the song is gone or the JSON unusable.
+     */
+    @Synchronized
+    fun updateGenres(videoId: String, lookupJson: String): Boolean {
+        if (lookupJson.length > MAX_LOOKUP_CHARS) return false
+        val o = lookupJson(lookupJson) ?: return false
+        val before = list()
+        val s = before.firstOrNull { it.videoId == videoId } ?: return false
+        val updated = s.copy(genres = cleanGenres(o.optJSONArray("genres")), genreLookup = o.toString())
         save(before.map { if (it.videoId == videoId) updated else it })
         return true
     }
@@ -188,6 +211,26 @@ class AddedSongsStore(private val file: File) {
 
     companion object {
         fun now(): String = Instant.now().toString()
+
+        /** A stored lookup is small (a few KB); anything far bigger is refused. */
+        const val MAX_LOOKUP_CHARS = 64 * 1024
+        const val MAX_GENRES = 8
+
+        /** Strings only, trimmed, 1..60 characters, no control characters, no duplicates, at most [MAX_GENRES]. */
+        fun cleanGenres(arr: JSONArray?): List<String> {
+            if (arr == null) return emptyList()
+            val out = LinkedHashSet<String>()
+            for (i in 0 until arr.length()) {
+                val g = arr.opt(i) as? String ?: continue
+                val t = g.replace(Regex("\\s+"), " ").trim()
+                if (t.isNotEmpty() && t.length <= 60 && t.none { it.code < 0x20 }) out += t
+                if (out.size >= MAX_GENRES) break
+            }
+            return out.toList()
+        }
+
+        fun lookupJson(text: String): JSONObject? =
+            if (text.isEmpty()) null else runCatching { JSONObject(text) }.getOrNull()
     }
 }
 

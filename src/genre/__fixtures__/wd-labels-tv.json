@@ -1,0 +1,19 @@
+{
+ "url": "https://www.wikidata.org/w/api.php?format=json&origin=*&action=wbgetentities&ids=Q29564107&props=labels&languages=en&languagefallback=1",
+ "body": {
+  "entities": {
+   "Q29564107": {
+    "type": "item",
+    "id": "Q29564107",
+    "labels": {
+     "en": {
+      "value": "Billie Eilish",
+      "language": "mul",
+      "for-language": "en"
+     }
+    }
+   }
+  },
+  "success": 1
+ }
+}

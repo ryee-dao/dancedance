@@ -1,0 +1,36 @@
+{
+ "url": "https://en.wikipedia.org/w/api.php?format=json&formatversion=2&origin=*&action=query&redirects=1&prop=pageprops%7Crevisions&ppprop=disambiguation&rvprop=content&rvslots=main&rvsection=0&titles=Bring+Me+to+Life+%28Evanescence+song%29%7CBring+Me+to+Life+%28song%29%7CBring+Me+to+Life",
+ "body": {
+  "batchcomplete": true,
+  "query": {
+   "redirects": [
+    {
+     "from": "Bring Me to Life (Evanescence song)",
+     "to": "Bring Me to Life"
+    },
+    {
+     "from": "Bring Me to Life (song)",
+     "to": "Bring Me to Life"
+    }
+   ],
+   "pages": [
+    {
+     "pageid": 1162444,
+     "ns": 0,
+     "title": "Bring Me to Life",
+     "revisions": [
+      {
+       "slots": {
+        "main": {
+         "contentmodel": "wikitext",
+         "contentformat": "text/x-wiki",
+         "content": "{{Short description|2003 song by Evanescence}}\n{{Other uses}}\n{{Redirect|Wake Me Up Inside|other songs with the \"Wake Me Up\" theme|Wake Me Up (disambiguation){{!}}Wake Me Up}}\n{{Use American English|date=February 2022}}\n{{Use mdy dates|date=September 2023}}\n{{Infobox song\n| name          = Bring Me to Life\n| cover         = Evanescence - Bring Me to Life.png\n| border        = yes\n| type          = single\n| written       =\n| artist        = [[Evanescence]] \n| album         = [[Fallen (Evanescence album)|Fallen]]\n| B-side        = \"Farther Away\" <!--other B-sides in secondary markets and later releases don't go in infobox: [[Template:Infobox_song#B-side]]-->\n| released      = {{start date|2003|01|13}} <!--Do NOT change it back to April 7, 2003. That date is for the CD format. The song was released on January 13, 2003, first.-->\n| studio        = [[Ocean Productions|Ocean]] ([[Burbank, California]])\n| genre         = <!--All genres are sourced in the body of the article.-->\n* [[Nu metal]]\n* [[rap rock]]\n* {{nowrap|[[alternative rock]]}}\n* [[gothic metal]]\n| length        = 3:56\n| label         = [[Wind-up Records|Wind-up]]\n| writer        = \n* [[Amy Lee]]\n* [[Ben Moody]]\n* {{nowrap|[[David Hodges]]}}\n| producer      = [[Dave Fortman]]\n| chronology    = [[Evanescence]]\n| year          = 2003\n| next_title    = [[Going Under (Evanescence song)|Going Under]]\n| next_year     = 2003\n| misc          = {{External music video|{{YouTube|3YxaaGgTQYM|\"Bring Me to Life\"}}}}\n}}\n\"'''Bring Me to Life'''\" is the debut single by American [[rock music|rock]] band [[Evanescence]] from their debut studio album, ''[[Fallen (Evanescence album)|Fallen]]'' (2003). It was released by [[Wind-up Records|Wind-up]] as the album's lead single on January 13, 2003, following its inclusion in [[Daredevil: The Album|the soundtrack]] of the film ''[[Daredevil (film)|Daredevil]]''. The song was written by [[Amy Lee]] at age 19 about having been desensitized in an abusive relationship and realizing things she had been missing in life. Guitarist [[Ben Moody]] and [[David Hodges]] share songwriting credits on the song, which includes guest vocals from Paul McCoy of the band [[12 Stones]]. Produced by [[Dave Fortman]], \"Bring Me to Life\" is primarily a [[nu metal]] and [[rap rock]] song.<!--this is sourced in the article--> The male vocals were forced by the label against Lee's wishes to market the song in the musical landscape of the time.\n\nThe song received a generally positive reception, with critics praising Lee's vocals and melody. One of Evanescence's most commercially successful songs, \"Bring Me to Life\" charted at number one in Australia, Chile, Colombia, Italy, Scotland, and the rest of the United Kingdom while receiving multi-platinum certifications in Australia, Italy, New Zealand, the United Kingdom, and the United States. It won the [[Grammy Award for Best Hard Rock Performance]] and was also nominated for [[Grammy Award for Best Rock Song|Best Rock Song]]. Directed by [[Philipp Stölzl]], the music video shows Lee singing and climbing on a skyscraper while having nightmares in her room. The song was reworked and rerecorded on Evanescence's [[orchestral]]-[[electronic music|electronic]] fourth studio album, ''[[Synthesis (Evanescence album)|Synthesis]]'' (2017)."
+        }
+       }
+      }
+     ]
+    }
+   ]
+  }
+ }
+}
