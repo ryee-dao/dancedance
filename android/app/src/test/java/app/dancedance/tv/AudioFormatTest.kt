@@ -13,11 +13,14 @@ class AudioFormatTest {
         c(0, 139, "m4a", 48), c(1, 140, "m4a", 129), c(2, 249, "webm", 53), c(3, 250, "webm", 69), c(4, 251, "webm", 135),
     )
 
-    @Test fun prefersOpusByDefault() {
-        assertEquals(251, AudioPick.choose(typical, AudioPick.DEFAULT_ORDER)?.itag)
+    @Test fun prefersTheMediumOpusStreamByDefault() {
+        // Default target 60 kbps: the ~70 kbps Opus stream, not the ~135 kbps one (half the bytes).
+        assertEquals(60, AudioPick.DEFAULT_TARGET_KBPS)
+        assertEquals(250, AudioPick.choose(typical, AudioPick.DEFAULT_ORDER)?.itag)
     }
 
     @Test fun m4aWhenThePageAsksForIt() {
+        // 139 (48 kbps HE-AAC) is below the target: M4A stays on 140, the stream Mp4Priming was measured on.
         assertEquals(140, AudioPick.choose(typical, listOf("m4a", "webm"))?.itag)
     }
 
@@ -25,17 +28,40 @@ class AudioFormatTest {
         val noOpus = typical.filter { it.ext == "m4a" }
         assertEquals(140, AudioPick.choose(noOpus, listOf("webm", "m4a"))?.itag)
         val noAac = typical.filter { it.ext == "webm" }
-        assertEquals(251, AudioPick.choose(noAac, listOf("m4a"))?.itag)
+        assertEquals(250, AudioPick.choose(noAac, listOf("m4a"))?.itag)
         assertNull(AudioPick.choose(emptyList(), AudioPick.DEFAULT_ORDER))
+    }
+
+    @Test fun targetBitratePolicy() {
+        fun pick(list: List<AudioPick.Candidate>, kbps: Int) = AudioPick.choose(list, AudioPick.DEFAULT_ORDER, targetBps = kbps * 1000)?.itag
+        // Lowest at or above the target (exactly at it counts).
+        assertEquals(250, pick(typical, 69))
+        assertEquals(249, pick(typical, 50))
+        assertEquals(251, pick(typical, 100))
+        // Nothing at or above: the closest below, i.e. the highest available ("999" = old behaviour).
+        assertEquals(251, pick(typical, 999))
+        val onlyLow = listOf(c(0, 249, "webm", 53), c(1, 139, "m4a", 48))
+        assertEquals(249, pick(onlyLow, 60))
+        // Only the preferred format is considered while it has any stream: no jump to m4a for a closer bitrate.
+        assertEquals(249, pick(onlyLow + c(2, 140, "m4a", 129), 60))
+        // Unknown bitrate (0) loses to any known one.
+        assertEquals(250, pick(listOf(c(0, 600, "webm", 0), c(1, 250, "webm", 69)), 60))
     }
 
     @Test fun refreshKeepsTheSameItag() {
         assertEquals(140, AudioPick.choose(typical, AudioPick.DEFAULT_ORDER, preferItag = 140)?.itag)
+        // A download that started on the high stream (before a target change) keeps it mid-download.
+        assertEquals(251, AudioPick.choose(typical, AudioPick.DEFAULT_ORDER, preferItag = 251)?.itag)
+        // The itag vanished from the fresh answer: the normal pick (the caller checks the extension).
+        assertEquals(250, AudioPick.choose(typical, AudioPick.DEFAULT_ORDER, preferItag = 171)?.itag)
     }
 
     @Test fun originalTrackFirst() {
         val dubbed = listOf(c(0, 251, "webm", 160, original = false), c(1, 250, "webm", 70, original = true))
         assertEquals(250, AudioPick.choose(dubbed, AudioPick.DEFAULT_ORDER)?.itag)
+        // The target applies within the original-language streams, never picking a dubbed one.
+        val mixed = listOf(c(0, 249, "webm", 50), c(1, 250, "webm", 70, original = false), c(2, 251, "webm", 135))
+        assertEquals(251, AudioPick.choose(mixed, AudioPick.DEFAULT_ORDER)?.itag)
     }
 
     @Test fun parseOrder() {

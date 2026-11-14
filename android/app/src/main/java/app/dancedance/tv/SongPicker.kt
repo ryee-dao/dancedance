@@ -23,7 +23,8 @@ import kotlin.math.roundToInt
  * translations and other artists' songs are rejected unless the request itself asks for them.
  */
 object SongPicker {
-    data class Request(val artist: String, val title: String, val durationSec: Int)
+    /** [genre]: the iTunes primary genre of the tapped song, carried to the added song ("" = unknown). Not used for ranking. */
+    data class Request(val artist: String, val title: String, val durationSec: Int, val genre: String = "")
 
     /** One search result, reduced to what the ranking uses. */
     data class Entry(
@@ -325,13 +326,23 @@ object SongPicker {
         val durationSec: Int,
         /** HTTPS artwork URL (300x300) or "". */
         val artworkUrl: String,
+        /** iTunes `primaryGenreName` ("Pop", "Hip-Hop/Rap", ...), cleaned by [cleanGenre]; "" when absent. */
+        val genre: String = "",
     ) {
         val key: String get() = "${normalizeName(artist)} - ${normalizeName(title)}"
     }
 
+    /** Same as cleanGenre() in tools/beatmaps/itunes.ts: spaces collapsed, at most 60 characters, else "". */
+    fun cleanGenre(g: Any?): String {
+        if (g !is String) return ""
+        val t = g.replace(Regex("\\s+"), " ").trim()
+        return if (t.isNotEmpty() && t.length <= 60 && !Regex("[\\u0000-\\u001f]").containsMatchIn(t)) t else ""
+    }
+
     /**
      * Same as parseItunesResults() in src/ui/songSearch.ts: songs 20 s .. 15 min, one per
-     * artist + title within 2 s (album vs deluxe), first (most relevant) kept.
+     * artist + title within 2 s (album vs deluxe), first (most relevant) kept. A kept hit without
+     * a genre takes the first one its duplicates have (like the cloud job's pickOfficialLength).
      */
     fun parseItunes(results: List<Map<String, Any?>>): List<SongHit> {
         val out = ArrayList<SongHit>()
@@ -351,10 +362,27 @@ object SongPicker {
                 durationSec = sec,
                 artworkUrl = (r["artworkUrl100"] as? String)?.takeIf { it.startsWith("https://") }
                     ?.replace(Regex("/\\d+x\\d+bb\\."), "/300x300bb.") ?: "",
+                genre = cleanGenre(r["primaryGenreName"]),
             )
-            if (out.any { it.key == hit.key && abs(it.durationSec - sec) <= 2 }) continue
+            val dup = out.indexOfFirst { it.key == hit.key && abs(it.durationSec - sec) <= 2 }
+            if (dup >= 0) {
+                if (out[dup].genre.isEmpty() && hit.genre.isNotEmpty()) out[dup] = out[dup].copy(genre = hit.genre)
+                continue
+            }
             out += hit
         }
         return out
+    }
+
+    /**
+     * Backfill: the genre of a saved song from iTunes search [hits] for "artist title". Only hits
+     * with the same artist + title (normalised) and a genre count; the one whose length is
+     * closest to the saved [durationSec] wins (the first, i.e. most relevant, on a tie). Null if none.
+     */
+    fun genreFor(artist: String, title: String, durationSec: Int, hits: List<SongHit>): String? {
+        val key = "${normalizeName(artist)} - ${normalizeName(title)}"
+        return hits.filter { it.key == key && it.genre.isNotEmpty() }
+            .minByOrNull { if (durationSec > 0) abs(it.durationSec - durationSec) else 0 }
+            ?.genre
     }
 }

@@ -142,7 +142,7 @@ class LinkController(private val app: DanceApp) {
             val dur = param(session, "d").toIntOrNull()
             if (artist.isEmpty() || title.isEmpty() || dur == null || dur !in 20..900) return html(home())
             val art = param(session, "art", 400).takeIf { it.startsWith("https://") } ?: ""
-            val req = SongPicker.Request(artist, title, dur)
+            val req = SongPicker.Request(artist, title, dur, SongPicker.cleanGenre(param(session, "g", 60)))
             val result = try {
                 runBlocking { withTimeout(45_000) { app.songSearch.findVideos(req) } }
             } catch (t: Throwable) {
@@ -165,10 +165,12 @@ class LinkController(private val app: DanceApp) {
             val song = AddedSongsStore.Song(
                 videoId = id, title = title, artist = artist, addedAt = AddedSongsStore.now(), durationSec = dur,
                 videoTitle = param(session, "vt", 300), channel = param(session, "ch", 200), tier = param(session, "tier", 20),
+                genre = SongPicker.cleanGenre(param(session, "g", 60)),
             )
             val isNew = app.addedSongs.add(song)
-            Log.i(TAG, "Added song $id: $artist - $title (${song.tier}, ${song.channel})")
+            Log.i(TAG, "Added song $id: $artist - $title (${song.tier}, ${song.channel}, genre ${song.genre.ifEmpty { "unknown" }})")
             app.onAddedSongsChanged?.invoke(song, null)
+            if (song.genre.isEmpty()) app.genreBackfill.start(app.scope, delayMs = 0)
             return html(LinkPage.added("/$token", song, isNew))
         }
 
@@ -374,7 +376,8 @@ $list"""
 
     fun searchResults(base: String, query: String, hits: List<SongPicker.SongHit>, error: String?): String {
         val items = hits.joinToString("\n") { h ->
-            val href = "$base/pick?a=${q(h.artist)}&t=${q(h.title)}&d=${h.durationSec}&art=${q(h.artworkUrl)}"
+            val href = "$base/pick?a=${q(h.artist)}&t=${q(h.title)}&d=${h.durationSec}&art=${q(h.artworkUrl)}" +
+                (if (h.genre.isNotEmpty()) "&g=${q(h.genre)}" else "")
             """<a class="hit row" href="${esc(href)}">${if (h.artworkUrl.isNotEmpty()) "<img src=\"${esc(h.artworkUrl)}\" alt=\"\">" else "<img alt=\"\">"}
 <div><div class="t">${esc(h.title)}</div><div class="s">${esc(h.artist)}</div><div class="s">${esc(listOf(h.album, h.year).filter { it.isNotBlank() }.joinToString(" · "))} · ${mmss(h.durationSec.toLong())}</div></div></a>"""
         }
@@ -401,7 +404,7 @@ ${backHome(base)}"""
 <input type="hidden" name="v" value="${esc(r.entry.id)}"><input type="hidden" name="a" value="${esc(req.artist)}">
 <input type="hidden" name="t" value="${esc(req.title)}"><input type="hidden" name="d" value="${req.durationSec}">
 <input type="hidden" name="vt" value="${esc(r.entry.title)}"><input type="hidden" name="ch" value="${esc(r.entry.channel)}">
-<input type="hidden" name="tier" value="${r.tier.label}">
+<input type="hidden" name="tier" value="${r.tier.label}"><input type="hidden" name="g" value="${esc(req.genre)}">
 <button type="submit">${esc(label)}</button></form>"""
 
     private fun videoLine(req: SongPicker.Request, r: SongPicker.Ranked): String {

@@ -90,10 +90,16 @@ class YouTube(private val http: OkHttpClient) {
     }
 
     /**
-     * The best audio-only progressive stream in the first of [formats] ("webm" / "m4a") this video
-     * offers; original-language track preferred over dubbed/descriptive ones. See [AudioPick].
+     * The audio-only progressive stream to download: in the first of [formats] ("webm" / "m4a")
+     * this video offers, the one closest above [targetBps]; original-language track preferred over
+     * dubbed/descriptive ones. See [AudioPick.choose].
      */
-    fun audio(videoId: String, preferItag: Int? = null, formats: List<String> = AudioPick.DEFAULT_ORDER): AudioSource {
+    fun audio(
+        videoId: String,
+        preferItag: Int? = null,
+        formats: List<String> = AudioPick.DEFAULT_ORDER,
+        targetBps: Int = AudioPick.DEFAULT_TARGET_KBPS * 1000,
+    ): AudioSource {
         val info = StreamInfo.getInfo(ServiceList.YouTube, "https://www.youtube.com/watch?v=$videoId")
         val streams = info.audioStreams.filter {
             it.deliveryMethod == DeliveryMethod.PROGRESSIVE_HTTP && it.isUrl && !it.content.isNullOrBlank()
@@ -104,7 +110,7 @@ class YouTube(private val http: OkHttpClient) {
             val ext = AudioPick.extFor(s.format) ?: return@mapIndexedNotNull null
             AudioPick.Candidate(i, s.itag, ext, rate(s), s.audioTrackType == null || s.audioTrackType == AudioTrackType.ORIGINAL)
         }
-        val chosen = AudioPick.choose(candidates, formats, preferItag) ?: throw NoAudioException()
+        val chosen = AudioPick.choose(candidates, formats, preferItag, targetBps) ?: throw NoAudioException()
         val pick = streams[chosen.index]
         return AudioSource(
             url = pick.content,
@@ -125,10 +131,21 @@ class YouTube(private val http: OkHttpClient) {
  * with 1600 samples (36.3 ms) of encoder priming that Chromium neither trims in decodeAudioData nor
  * in `<audio>` (measured on WebView 113); see [Mp4Priming]. M4A stays as the fallback for WebViews
  * that can't play Opus and for videos without an Opus stream.
+ *
+ * Bitrate: songs are downloaded whole into a size-capped cache, so the pick aims at a target
+ * bitrate instead of the highest one. YouTube's Opus streams are typically itag 249 (~50 kbps),
+ * 250 (~70 kbps) and 251 (~130-160 kbps); with the default 60 kbps target that is 250, about half
+ * the bytes of 251 at a quality that is plenty for a projector's speakers. The bitrate does not
+ * change timing: Opus pre-skip is the same, so cloud maps (made from 251) still line up. M4A has
+ * 140 (~128 kbps AAC-LC) and sometimes 139 (~48 kbps HE-AAC); with a 60 kbps target M4A stays on
+ * 140, the stream [Mp4Priming] was measured on. The target is a build setting
+ * (`dancedance.audioTargetKbps`); a very high value (e.g. 999) restores "highest bitrate".
  */
 object AudioPick {
     val DEFAULT_ORDER = listOf("webm", "m4a")
     val KNOWN = setOf("webm", "m4a")
+    /** Default for the build setting `dancedance.audioTargetKbps` (BuildConfig.AUDIO_TARGET_KBPS). */
+    const val DEFAULT_TARGET_KBPS = 60
 
     data class Candidate(val index: Int, val itag: Int, val ext: String, val bitrate: Int, val original: Boolean)
 
@@ -141,15 +158,25 @@ object AudioPick {
     fun mimeFor(ext: String) = if (ext == "webm") "audio/webm" else "audio/mp4"
 
     /**
-     * [preferItag] (a URL refresh mid-download must keep the same bytes) wins; otherwise the
-     * highest bitrate in the first format of [order] that has one, original-language tracks first.
+     * [preferItag] (a URL refresh mid-download must keep the same bytes) wins. Otherwise, in the
+     * first format of [order] that has a stream (original-language tracks first): the
+     * lowest-bitrate stream at or above [targetBps], or, if every stream is below it, the
+     * highest one below it (the closest).
      */
-    fun choose(all: List<Candidate>, order: List<String>, preferItag: Int? = null): Candidate? {
+    fun choose(
+        all: List<Candidate>,
+        order: List<String>,
+        preferItag: Int? = null,
+        targetBps: Int = DEFAULT_TARGET_KBPS * 1000,
+    ): Candidate? {
         val pool = all.filter { it.original }.ifEmpty { all }
         pool.firstOrNull { preferItag != null && it.itag == preferItag }?.let { return it }
         val formats = (order.filter { it in KNOWN } + DEFAULT_ORDER).distinct()
         for (ext in formats) {
-            pool.filter { it.ext == ext }.maxByOrNull { it.bitrate }?.let { return it }
+            val inFormat = pool.filter { it.ext == ext }
+            if (inFormat.isEmpty()) continue
+            return inFormat.filter { it.bitrate >= targetBps }.minByOrNull { it.bitrate }
+                ?: inFormat.maxBy { it.bitrate }
         }
         return null
     }
