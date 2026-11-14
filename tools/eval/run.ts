@@ -3,10 +3,21 @@
  * Song-style evaluation runner: real songs through the real pipeline.
  *
  *   npx tsx tools/eval/run.ts --stage find    --sample S --work W
+ *   npx tsx tools/eval/run.ts --stage genres  --sample S --work W   (optional: src/genre lookup)
  *   npx tsx tools/eval/run.ts --stage analyse --sample S --work W
- *   npx tsx tools/eval/run.ts --stage eval    --sample S --work W --out results.json
- *                             [--expect expectations.json] [--verdicts verdicts.json] [--genres genres.json]
- *   npx tsx tools/eval/report.ts results.json            (markdown table + counts)
+ *   npx tsx tools/eval/run.ts --stage score   --sample S --work W --out results.json
+ *                             [--expect expectations.json] [--verdicts verdicts.json]
+ *                             [--genres genres.json] [--verdicts-b verdicts-b.json]
+ *   npx tsx tools/eval/report.ts results.json [--detail]  (markdown table + counts)
+ * (`--stage eval` is the same as `score`.)
+ *
+ * Re-run the 2026-11-13 judgement offline (maps, video picks, lookups and
+ * verdicts are saved; nothing is downloaded or looked up):
+ *   D=tools/eval/data/run-20261113
+ *   npx tsx tools/eval/run.ts --stage score --sample $D/sample.json --work $D --out /tmp/results.json \
+ *     --expect $D/expectations.json --verdicts $D/verdicts.json --genres $D/genres.json --verdicts-b $D/verdicts-b.json
+ * To compare another genre source, write its lists as {trackId: [names]} and
+ * pass that file as --genres (pass B); verdicts must then be redone by a judge.
  *
  * Stages (each resumable; finished songs are skipped):
  *   find     the YouTube video for each song, chosen as the cloud job does
@@ -38,7 +49,9 @@ import { resolveSongStyle, styleLabel } from '../../src/core/choreo/songStyle';
 import { traitsOf } from '../../src/core/choreo/songTraits';
 import { parseSearch, rankCandidates, searchQueries, type SearchEntry } from '../beatmaps/pick';
 import { decodeWithFfmpeg, downloadAudio, PCM_RATE, searchVideos } from '../beatmaps/youtube';
-import { arg, sleep, type Expectation, type LevelSummary, type ResultsFile, type SampleFile, type SongResult, type Verdict, type VideoPick } from './common';
+import { lookupGenres, type GenreLookup } from '../../src/genre';
+import { genreHttp } from '../beatmaps/genreClient';
+import { arg, sleep, type Expectation, type LevelSummary, type ResultsFile, type SampleFile, type SongResult, type StyleSummary, type Verdict, type VideoPick } from './common';
 
 const stage = arg('stage', 'eval')!;
 const samplePath = arg('sample');
@@ -119,6 +132,31 @@ function topComments(id: string): string[] {
   }
 }
 
+/**
+ * The multi-source genre lookup (src/genre) for every song, one at a time
+ * (PoliteHttp paces per host and backs off). Full answers -> W/genre-lookups.json;
+ * the combined lists -> W/genres.json (the --genres input of eval).
+ */
+async function genres() {
+  const lookupsPath = join(work!, 'genre-lookups.json');
+  const lookups = readJson<Record<string, GenreLookup>>(lookupsPath, {});
+  const http = genreHttp((l) => console.error(`  http: ${l}`));
+  for (const s of sample.songs) {
+    const prev = lookups[s.key];
+    if (prev?.complete) continue;
+    console.error(`genres ${s.artist} - ${s.title}`);
+    const l = await lookupGenres(
+      { artist: s.artist, title: s.title, durationSec: s.durationSec, ...(s.genre ? { itunesGenre: s.genre } : {}) },
+      { http, previous: prev ?? null, log: (x) => console.error(x) },
+    );
+    lookups[s.key] = l;
+    console.error(`  => ${l.genres.join(', ') || '-'}${l.complete ? '' : ' [some sources failed]'}`);
+    writeFileSync(lookupsPath, `${JSON.stringify(lookups, null, 2)}\n`);
+    writeFileSync(join(work!, 'genres.json'), `${JSON.stringify(Object.fromEntries(Object.entries(lookups).map(([k, v]) => [k, v.genres])), null, 2)}\n`);
+  }
+  console.error(`requests sent: ${JSON.stringify(Object.fromEntries(http.sent))}`);
+}
+
 async function analyse() {
   const videos = readJson<Record<string, VideoPick>>(videosPath, {});
   for (const s of sample.songs) {
@@ -188,6 +226,8 @@ function evaluate() {
   const verdicts = readJson<Record<string, Verdict>>(arg('verdicts'), {});
   const genresFile = arg('genres');
   const genres = readJson<Record<string, string[]>>(genresFile, {});
+  const lookups = readJson<Record<string, GenreLookup>>(join(work!, 'genre-lookups.json'), {});
+  const verdictsB = readJson<Record<string, Verdict>>(arg('verdicts-b'), {});
   const results: SongResult[] = [];
   for (const s of sample.songs) {
     const v = videos[s.key];
@@ -203,20 +243,14 @@ function evaluate() {
       continue;
     }
     const map = JSON.parse(readFileSync(mapPath, 'utf8')) as BeatMap;
-    const list = genres[s.key];
     const secs = map.sections ?? [];
     const energy = secs.length ? secs.reduce((a, x) => a + x.energy, 0) / secs.length : undefined;
-    const style = resolveSongStyle(
-      { videoId: map.videoId, title: s.title, artist: s.artist, genre: s.genre, ...(list?.length ? { genres: list } : {}) },
-      { bpm: map.bpm, energy, traits: traitsOf(map) },
-    );
-    const openness = Object.fromEntries([...genreOpenness(style)].map(([g, w]) => [g, r3(w)]));
-    results.push({
-      ...base,
-      bpm: map.bpm,
-      traits: (map.traits ?? {}) as Record<string, number>,
-      ...(list?.length ? { genres: list } : {}),
-      style: {
+    const pass = (list?: string[]) => {
+      const style = resolveSongStyle(
+        { videoId: map.videoId, title: s.title, artist: s.artist, genre: s.genre, ...(list?.length ? { genres: list } : {}) },
+        { bpm: map.bpm, energy, traits: traitsOf(map) },
+      );
+      const summary: StyleSummary = {
         label: styleLabel(style),
         source: style.source,
         ...(style.calm !== undefined ? { calm: style.calm } : {}),
@@ -225,18 +259,27 @@ function evaluate() {
         themes: style.themes,
         ...(style.subName ? { subName: style.subName } : {}),
         open: [...styleGenres(style)],
-        openness,
-      },
-      halfCount: isHalfTime(map.bpm),
-      levels: LEVELS.map((l) => summarise(map, style, l)),
-    });
+        openness: Object.fromEntries([...genreOpenness(style)].map(([g, w]) => [g, r3(w)])),
+      };
+      return { style: summary, levels: LEVELS.map((l) => summarise(map, style, l)) };
+    };
+    const a = pass();
+    const row: SongResult = { ...base, bpm: map.bpm, traits: (map.traits ?? {}) as Record<string, number>, ...a, halfCount: isHalfTime(map.bpm) };
+    if (genresFile) {
+      const list = genres[s.key] ?? [];
+      const said = Object.fromEntries(
+        Object.entries(lookups[s.key]?.sources ?? {}).map(([id, o]) => [id, o ? (o.status === 'found' ? `found: ${o.genres.join(', ')}${o.ref ? ` (${o.ref})` : ''}` : `${o.status}: ${o.reason}`) : '?']),
+      );
+      row.b = { genres: list, said, ...(list.length ? pass(list) : {}), ...(verdictsB[s.key] ? { verdict: verdictsB[s.key] } : {}) };
+    }
+    results.push(row);
   }
   const file: ResultsFile = { createdAt: new Date().toISOString(), analyzerVersion: ANALYZER_VERSION, sample: resolve(samplePath!), ...(genresFile ? { genresFile: resolve(genresFile) } : {}), results };
   writeFileSync(out, `${JSON.stringify(file, null, 2)}\n`);
   console.error(`${results.filter((r) => r.status === 'ok').length}/${results.length} songs evaluated -> ${out}`);
 }
 
-const stages: Record<string, () => unknown> = { find, analyse, eval: evaluate };
+const stages: Record<string, () => unknown> = { find, genres, analyse, eval: evaluate, score: evaluate };
 if (!stages[stage]) {
   console.error(`unknown stage ${stage}`);
   process.exit(1);

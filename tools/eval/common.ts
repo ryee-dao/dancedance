@@ -113,6 +113,28 @@ export interface VideoPick {
   comments?: string[];
 }
 
+export interface StyleSummary {
+  label: string;
+  source: string;
+  calm?: number;
+  families: Record<string, number>;
+  subs?: Record<string, number>;
+  themes: string[];
+  subName?: string;
+  open: string[];
+  openness: Record<string, number>;
+}
+
+/** Pass B: the same song with the looked-up genre list (SongInfo.genres). */
+export interface PassB {
+  genres: string[];
+  /** What each source said ("found: [...]", "none: reason", "failed: reason"). */
+  said: Record<string, string>;
+  style?: StyleSummary;
+  levels?: LevelSummary[];
+  verdict?: Verdict;
+}
+
 export interface SongResult {
   song: SampledSong;
   status: 'ok' | 'not-found' | 'fetch-failed' | 'analysis-failed';
@@ -120,21 +142,12 @@ export interface SongResult {
   video?: VideoPick;
   bpm?: number;
   traits?: Record<string, number>;
-  /** Genre list passed as SongInfo.genres (from genres.json), if any. */
-  genres?: string[];
-  style?: {
-    label: string;
-    source: string;
-    calm?: number;
-    families: Record<string, number>;
-    subs?: Record<string, number>;
-    themes: string[];
-    subName?: string;
-    open: string[];
-    openness: Record<string, number>;
-  };
+  /** Pass A: iTunes genre tag + traits + bpm. */
+  style?: StyleSummary;
   halfCount?: boolean;
   levels?: LevelSummary[];
+  /** Pass B, when a genres file was given. */
+  b?: PassB;
   expectation?: Expectation;
   verdict?: Verdict;
 }
