@@ -94,6 +94,8 @@ export interface DuoOpts {
   bpm?: number;
   /** The map's downbeats (beat indices): partner and complement tiles start on them. Without them, on regular bars only. */
   downbeats?: readonly number[];
+  /** The tone gate (generator.ts toneGate; default on). */
+  toneGate?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -286,6 +288,16 @@ export class DuoChoreographer {
 
   constructor(private o: DuoOpts) {
     this.rng = mulberry32(hashString(`${o.seedKey}|duo|${o.intensity}`));
+    this.toneRng = mulberry32(hashString(`${o.seedKey}|duo-tone|${o.intensity}`));
+  }
+
+  /** The gate's own random stream (its re-picks only: the main stream draws as without the gate). */
+  private toneRng: () => number;
+
+  /** Whether a move fits the song's tone gate (generator.ts toneGate): not too loud; `main`: not below its floor. */
+  private toneOk(m: Move, main: boolean): boolean {
+    const g = this.gate;
+    return !g || toneFits(m, { ceiling: g.ceiling, calm: 1, ...(main && g.floor ? { floor: g.floor } : {}) }, main);
   }
 
   build(r: Routine): DuoRoutine {
@@ -299,7 +311,7 @@ export class DuoChoreographer {
       const all = genreOpenness(this.o.style);
       for (const g of this.open) this.openness.set(g, all.get(g) ?? 1);
       this.calm = this.o.style.calm;
-      this.gate = toneGate(this.o.style, this.bpm);
+      if (this.o.toneGate !== false) this.gate = toneGate(this.o.style, this.bpm);
     } else {
       // No style given: the genres the single routine uses (its signature nod aside).
       const open = new Set<Genre>();
@@ -472,7 +484,7 @@ export class DuoChoreographer {
 
   /** Whether a partner move suits this song at all: its style, the song's calm, its tempo. */
   private suits(pm: PartnerMove): boolean {
-    return suitsSong(pm, this.open, this.calm, this.gate) && this.modeOf(pm) !== 'out';
+    return suitsSong(pm, this.open, this.calm) && this.modeOf(pm) !== 'out';
   }
 
   /** Whether a partner move may fill this unit: level, song, exact fit, flow, and the genre share. */
@@ -544,6 +556,22 @@ export class DuoChoreographer {
       }
       r -= weights[i];
     }
+    // The tone gate: a partner move with a half too loud for the song is re-picked from the gate's own stream.
+    const fits = (pm: PartnerMove) => [...pm.p1, ...pm.p2].every((m) => this.toneOk(m, false));
+    if (!fits(pick)) {
+      const w = weights.map((x, i) => (fits(pool[i]) ? x : 0));
+      const tot = w.reduce((a, b) => a + b, 0);
+      if (tot <= 0) return undefined;
+      let r2 = this.toneRng() * tot;
+      pick = pool[pool.length - 1];
+      for (let i = 0; i < pool.length; i++) {
+        if (r2 < w[i]) {
+          pick = pool[i];
+          break;
+        }
+        r2 -= w[i];
+      }
+    }
     this.recentPartners.push(pick);
     if (this.recentPartners.length > 4) this.recentPartners.shift();
     return pick;
@@ -566,14 +594,16 @@ export class DuoChoreographer {
     const all = MOVES.filter(
       (c) =>
         !c.idle && !c.cooldown && c !== m && c.base !== m.base && c.beats === m.beats && c.travel === 0 && !c.fastTurn && difficultyOk(c.difficulty, it) && !(c.jump && it === 'chill') &&
-        !(c.jump && calm !== undefined && calm >= CALM_GENTLE) && c.level === m.level && (!this.open || genreFits(c, this.open)) && (genreOk || !c.genre) && mode(c) !== 'out' &&
-        (!this.gate || toneFits(c, this.gate)),
+        !(c.jump && calm !== undefined && calm >= CALM_GENTLE) && c.level === m.level && (!this.open || genreFits(c, this.open)) && (genreOk || !c.genre) && mode(c) !== 'out',
     );
     const want: TempoMode = mainHalf ? 'half' : 'full';
     const same = all.filter((c) => mode(c) === want);
     const pool = same.length ? same : all;
     let best: Move | undefined;
     let bestS = -Infinity;
+    // The best one that fits the song's tone too (the gate: when the best one doesn't, it is P2's move instead).
+    let bestFit: Move | undefined;
+    let bestFitS = -Infinity;
     for (const c of pool) {
       // Different body parts / focus, a shared style family, plus a little seeded spice.
       let s = 1 - partsOverlap(m, c);
@@ -587,7 +617,12 @@ export class DuoChoreographer {
         bestS = s;
         best = c;
       }
+      if (s > bestFitS && this.toneOk(c, true)) {
+        bestFitS = s;
+        bestFit = c;
+      }
     }
+    if (best && !this.toneOk(best, true)) best = bestFit;
     this.complements.set(key, best ?? null);
     return best;
   }
@@ -796,7 +831,7 @@ export function generateDuoRoutine(map: BeatMap, intensity: Intensity, opts: Par
   // The downbeats of the grid the routine is danced on: the map's, a tempo feel's own (half / twice the counted
   // tempo: other beat indices), none on a free-time grid (regular bars).
   const downbeats = r.times === undefined || r.times === map.beats ? map.downbeats : r.feel && r.feel !== 1 ? feelMap(map, r.feel).downbeats : undefined;
-  return duoFromRoutine(r, { seedKey: `${map.videoId}${salt ? `|${salt}` : ''}`, intensity, style: opts.style, ...(downbeats ? { downbeats } : {}) });
+  return duoFromRoutine(r, { seedKey: `${map.videoId}${salt ? `|${salt}` : ''}`, intensity, style: opts.style, ...(downbeats ? { downbeats } : {}), ...(opts.toneGate === false ? { toneGate: false } : {}) });
 }
 
 /** P2's mirror-unison instance for a P1 instance (live / idle plans). */

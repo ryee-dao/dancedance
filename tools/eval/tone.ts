@@ -32,9 +32,11 @@
  * Pass --compare before.json to count the routines that changed (by tone class);
  * --strip to resolve every song as if its genre lookup had failed (no tag, no
  * lists, no artist genres; a starter song's curated style stays, as in the app);
- * --strip-traits to drop the map's audio traits too (the "Mixed styles" path).
+ * --strip-traits to drop the map's audio traits too (the "Mixed styles" path); --no-gate to draw the routines
+ * without the tone gate; --identity: see identity() below.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
+import { generateDuoRoutine } from '../../src/core/choreo/duo';
 import { calmTone, calmToned, generateRoutine, songEnergy, styleGenres, toneGate, ENERGY_MID, type Intensity, type MoveInstance, type Routine } from '../../src/core/choreo/generator';
 import { BALLAD_CALM } from '../../src/core/choreo/songStyle';
 import { moveAggression } from '../../src/core/choreo/weights';
@@ -93,7 +95,7 @@ async function run() {
     const truth = noTraits ? passStyle({ ...p, map: p0.map }) : style;
     const open = [...styleGenres(style)];
     for (const level of LEVELS) {
-      const r = generateRoutine(p.map, level, { style });
+      const r = generateRoutine(p.map, level, { style, ...(process.argv.includes('--no-gate') ? { toneGate: false } : {}) });
       const e = songEnergy(truth, r.bpm);
       const cls: ToneClass = truth.intensity === undefined ? 'unknown' : (truth.calm ?? 0) >= BALLAD_CALM || e < CALM_ENERGY ? 'calm' : e >= ENERGY_MID ? 'loud' : 'mid';
       const d = danced(r);
@@ -152,4 +154,43 @@ async function run() {
   }
 }
 
-if (process.argv[1]?.endsWith('tone.ts')) void run();
+/**
+ * --identity: every pass, level and routine mode ('same', 'fresh' play 3), solo and duo, drawn without the gate and
+ * with it: a routine the gate has nothing to replace in must come out identical; the others are listed with the moves
+ * they lose.
+ */
+async function identity() {
+  const key = (xs: readonly MoveInstance[]) => xs.map((i) => `${i.move.id}${i.mirror ? 'L' : 'R'}@${i.start}+${i.span}${i.half ? 'h' : ''}`).join(' ');
+  let same = 0, broken = 0, gated = 0;
+  const lines: string[] = [];
+  for (const p of await songPasses(arg('set', 'all')!)) {
+    const style = passStyle(p);
+    for (const level of LEVELS) {
+      for (const fresh of [undefined, 3]) {
+        const off = generateRoutine(p.map, level, { style, fresh, toneGate: false });
+        const on = generateRoutine(p.map, level, { style, fresh });
+        const dOff = generateDuoRoutine(p.map, level, { style, fresh, toneGate: false });
+        const dOn = generateDuoRoutine(p.map, level, { style, fresh });
+        const gate = toneGate(style, off.bpm);
+        const bad = (m: MoveInstance['move'], inMain: boolean) => !m.idle && ((gate.ceiling < 1 && moveAggression(m) > gate.ceiling + 1e-9) || (inMain && !!gate.floor && moveAggression(m) < gate.floor - 1e-9));
+        const mainSet = new Set(main(off));
+        const lost = new Set<string>();
+        for (const i of off.instances) if (bad(i.move, mainSet.has(i))) lost.add(`${i.move.id} ${moveAggression(i.move).toFixed(2)}`);
+        for (const x of off.signature) if (bad(x.move, true)) lost.add(`${x.move.id} ${moveAggression(x.move).toFixed(2)} (combo)`);
+        for (const i of [...dOff.p1, ...dOff.p2]) if (!i.move.idle && gate.ceiling < 1 && moveAggression(i.move) > gate.ceiling + 1e-9) lost.add(`${i.move.id} ${moveAggression(i.move).toFixed(2)} (duo)`);
+        const differs = key(on.instances) !== key(off.instances) || key(dOn.p1) !== key(dOff.p1) || key(dOn.p2) !== key(dOff.p2);
+        if (!lost.size) {
+          if (differs) broken++;
+          else same++;
+          continue;
+        }
+        gated++;
+        lines.push(`${p.set} ${p.name} ${level}${fresh ? ' fresh' : ''} [ceiling ${gate.ceiling.toFixed(2)}${gate.floor ? ` floor ${gate.floor}` : ''}]: loses ${[...lost].join(', ')}`);
+      }
+    }
+  }
+  console.log(`routines with nothing to replace: ${same + broken} (identical ${same}, changed ${broken}); with moves the gate replaces: ${gated}`);
+  for (const l of lines) console.log(`  ${l}`);
+}
+
+if (process.argv[1]?.endsWith('tone.ts')) void (process.argv.includes('--identity') ? identity() : run());

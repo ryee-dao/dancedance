@@ -14,7 +14,8 @@ import { moveAggression } from './weights';
  * audio its tone, and no picked move breaks the tone, whatever set it came from, in both directions (nothing too
  * loud anywhere; no calm-toned move in the main sections of a song with no calm tone). Over every published song
  * (styles as the app resolves them) and a synthetic sweep of every genre set forced open under quiet, mid and loud
- * audio, every level.
+ * audio, every level. And the gate fixes only what is broken: a routine with nothing for it to replace is exactly the
+ * routine drawn without it (it re-picks only failing picks, from its own random stream).
  */
 
 const LEVELS: Intensity[] = ['chill', 'cardio', 'sweaty'];
@@ -139,5 +140,45 @@ describe('the tone gate', () => {
     expect(bad).toEqual([]);
     expect(opened).toBeGreaterThan(GENRES.length * 2);
     expect(quietGenre).toBeGreaterThan(GENRES.length);
+  });
+
+  /** The gate's own reading of a routine drawn without it: the moves it would replace (too loud; in the main sections, too soft). */
+  function needsGate(r: Routine, style: SongStyle): string[] {
+    const gate = toneGate(style, r.bpm);
+    const loud = (m: (typeof MOVES)[number]) => gate.ceiling < 1 && moveAggression(m) > gate.ceiling + 1e-9;
+    const soft = (m: (typeof MOVES)[number]) => !!gate.floor && moveAggression(m) < gate.floor - 1e-9;
+    const out = new Set<string>();
+    for (const i of danced(r.instances)) if (loud(i.move)) out.add(i.move.id);
+    for (const i of main(r.instances)) if (soft(i.move)) out.add(i.move.id);
+    for (const x of r.signature) if (loud(x.move) || soft(x.move)) out.add(x.move.id);
+    return [...out];
+  }
+  const key = (xs: readonly MoveInstance[]) => xs.map((i) => `${i.move.id}${i.mirror ? 'L' : 'R'}@${i.start}+${i.span}${i.half ? 'h' : ''}${i.sig ? 's' : ''}:${i.origin.toFixed(3)}`).join(' ');
+
+  it('leaves every routine that fits the song\'s tone exactly as it is (published songs, every level, both routine modes, solo and duo)', () => {
+    const changed: string[] = [];
+    let same = 0, gated = 0;
+    for (const s of publishedSongs()) {
+      for (const lv of LEVELS) {
+        for (const fresh of [undefined, 3]) {
+          const off = generateRoutine(s.map, lv, { style: s.style, fresh, toneGate: false });
+          const on = generateRoutine(s.map, lv, { style: s.style, fresh });
+          const duoOff = generateDuoRoutine(s.map, lv, { style: s.style, fresh, toneGate: false });
+          const duoOn = generateDuoRoutine(s.map, lv, { style: s.style, fresh });
+          const lose = needsGate(off, s.style);
+          const duoLose = [...duoOff.p1, ...duoOff.p2].some((i) => !i.move.idle && !toneFits(i.move, { ...toneGate(s.style, off.bpm), calm: 1 }, false));
+          if (lose.length || duoLose) {
+            gated++;
+            continue;
+          }
+          same++;
+          if (key(on.instances) !== key(off.instances) || key(on.signature.map((x, k) => ({ ...off.instances[0], move: x.move, start: k, span: 0, mirror: x.mirror }))) !== key(off.signature.map((x, k) => ({ ...off.instances[0], move: x.move, start: k, span: 0, mirror: x.mirror })))) changed.push(`${s.title} ${lv} ${fresh ?? 'same'}`);
+          if (key(duoOn.p1) !== key(duoOff.p1) || key(duoOn.p2) !== key(duoOff.p2)) changed.push(`${s.title} ${lv} ${fresh ?? 'same'} duo`);
+        }
+      }
+    }
+    expect(changed).toEqual([]);
+    expect(same).toBeGreaterThan(500);
+    expect(gated).toBeGreaterThan(0);
   });
 });
