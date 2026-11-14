@@ -269,6 +269,21 @@ export class AddedSongs extends EventTarget {
     return this.published.find((s) => s.videoId === videoId && !this.hidden.has(s.videoId)) ?? null;
   }
 
+  /**
+   * The added-song entry whose genres a song is danced by: the shown entry when it has genres, else any copy of the
+   * same song that does (hidden on this device, or the TV's own copy that mergeLocal folded into a cloud entry the
+   * cloud's lookup found nothing for: same video, or same artist + title). Null when no copy has genres.
+   */
+  genreEntry(videoId: string): AddedSong | null {
+    const has = (s: AddedSong | undefined | null): boolean => !!s?.genres?.length;
+    const shown = this.find(videoId);
+    if (shown && has(shown)) return shown;
+    const any = this.published.find((s) => s.videoId === videoId);
+    if (any && has(any)) return any;
+    const key = any ? songKey(any.artist, any.title) : null;
+    return this.local.find((s) => has(s) && (s.videoId === videoId || (key !== null && songKey(s.artist, s.title) === key))) ?? null;
+  }
+
   /** Whether this song is already published or on its way (by request key). */
   stateOf(key: string): 'added' | 'pending' | null {
     if (this.published.some((s) => songKey(s.artist, s.title) === key && !this.hidden.has(s.videoId))) return 'added';

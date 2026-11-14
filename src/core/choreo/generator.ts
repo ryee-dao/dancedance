@@ -189,6 +189,8 @@ export interface RoutineOpts {
   borrow?: boolean;
   /** The song's energy 0..1 (default: songEnergy of the style at the tempo the song is danced at). */
   energy?: number;
+  /** The tone gate (toneGate; default on). Off: the routine as drawn without it (tests and measurements). */
+  toneGate?: boolean;
 }
 
 /** Share of picks that may be variations, per level. */
@@ -906,6 +908,11 @@ const FLOW_NEIGHBOURS = 3;
 /** Candidates below this share of the best weight skip the flow score (it can only lower them). */
 const FLOW_PRUNE = 3e-4;
 
+/** Whether a phrase is of the main sections (not the warm-up, the intro, the outro or the cool-down): the gate's floor applies. */
+function mainOf(o: { warmup?: boolean; cooldown?: boolean; section: SectionType }): boolean {
+  return !o.warmup && !o.cooldown && o.section !== 'intro' && o.section !== 'outro';
+}
+
 export class Choreographer {
   readonly signature: SigStep[];
   readonly half: boolean;
@@ -936,6 +943,10 @@ export class Choreographer {
   private ornaments: { get(base: string): readonly Move[] } | null;
   /** Genre-exclusive moves of genres the song doesn't open (never used). */
   private outside = new Set<Move>();
+  /** The song's tone gate (toneGate): no move that fails it is danced, whatever set it comes from (retone). */
+  readonly gate: ToneGate;
+  /** The random stream of the gate's re-picks only (retone): the main stream draws exactly as without the gate. */
+  private toneRng: () => number;
   /** Variations in the pool, by base move id. */
   private varsByBase = new Map<string, Move[]>();
   /** In-place 1- and 2-beat moves (a map with no whole bar at all). */
@@ -1001,6 +1012,7 @@ export class Choreographer {
     const fresh = opts.fresh !== undefined && opts.fresh > 0 ? `|play${opts.fresh}` : '';
     this.rng = mulberry32(hashString(`${seedKey}|${intensity}|${sk}${fresh}`));
     this.planRng = mulberry32(hashString(`${seedKey}|plan|${intensity}|${sk}${fresh}`));
+    this.toneRng = mulberry32(hashString(`${seedKey}|tone|${intensity}|${sk}${fresh}`));
     const useVars = opts.variations !== false;
     const { moves, isVar } = dancePool(useVars);
     this.pool = moves;
@@ -1013,6 +1025,7 @@ export class Choreographer {
     this.tone = calmTone(this.style, open);
     this.energy = opts.energy !== undefined && Number.isFinite(opts.energy) ? Math.min(1, Math.max(0, opts.energy)) : songEnergy(this.style, bpm);
     this.highCap = highCap(this.style, intensity, bpm, this.energy);
+    this.gate = opts.toneGate === false ? { ceiling: 1, calm: this.tone } : toneGate(this.style, bpm, this.energy);
     const none = new Map<Genre, number>();
     // Static weight: style x tempo (the tier is the kit's choice), the variations scaled to their share.
     this.base = new Float64Array(moves.length);
@@ -1080,7 +1093,7 @@ export class Choreographer {
     const genreK = genreScale(this.style, open, intensity, bpm);
     this.dance = danceOf(this.style);
     this.jumpCap = jumpCap(this.style, intensity, bpm, this.energy);
-    this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}|${sk}`)), intensity, this.style, open, bpm, genreK, this.jumpCap >= SIG_JUMP_CAP, this.tone, this.energy);
+    this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}|${sk}`)), intensity, this.style, open, bpm, genreK, this.jumpCap >= SIG_JUMP_CAP, this.tone, this.energy, this.gate, mulberry32(hashString(`${seedKey}|sig-tone|${intensity}|${sk}`)));
     this.comboName = comboName(this.signature);
     this.sigMult = this.signature.some((x) => this.mode(x.move) === 'half') ? 2 : 1;
   }
@@ -1090,6 +1103,26 @@ export class Choreographer {
     let x = this.modes.get(m);
     if (!x) this.modes.set(m, (x = moveTempoMode(m, this.bpm, this.intensity)));
     return x;
+  }
+
+  /** Whether a move fits the song's tone here: never too loud; in the main sections (`main`) not below the gate's floor. */
+  private fitsTone(m: Move, main: boolean): boolean {
+    if (m.idle) return true;
+    const a = moveAggression(m);
+    if (this.gate.ceiling < 1 && a > this.gate.ceiling + 1e-9) return false;
+    return !(main && this.gate.floor && a < this.gate.floor - 1e-9);
+  }
+
+  /**
+   * The tone gate at a pick: `m` (drawn as without the gate) when it fits the song's tone (fitsTone), else one of
+   * `list` that fits, by `weights`, drawn from the gate's own stream (toneRng), or null when none fits. Nothing is
+   * drawn from the main stream here, so a routine none of whose picks fails the gate is exactly the routine without
+   * it; one that has such a pick changes from it on.
+   */
+  private retone<T extends Move>(m: T | null, list: readonly T[], weights: ArrayLike<number> | null, main: boolean): T | null {
+    if (!m || this.fitsTone(m, main)) return m;
+    const w = list.map((x, i) => (this.fitsTone(x, main) ? (weights ? weights[i] : 1) : 0));
+    return pickWeighted(this.toneRng, list, w);
   }
 
   /** Song beats per move beat of a move here (2 at half time). */
@@ -1674,9 +1707,9 @@ export class Choreographer {
     // ... and the high-intensity budget (highCap) likewise; a genre slot may overrun it rather than go global.
     const highOk = this.highRoom(groupBeats);
     // Easy keeps to simple moves (EASY_HARD_CAP; a genre slot a little more, its set's simple moves first, else it goes
-    // global); a thin set (one that borrows) keeps what it has, as its plan counts on (borrowPlan).
+    // global); a thin set (one that borrows) keeps what it has, as its plan counts on (borrowPlan), up to EASY_HARD_CAP_THIN.
     const hardOk = (cap: number) => this.intensity !== 'chill' || this.hardBeats + groupBeats <= cap * this.plannedBeats + 1e-9;
-    const hardFree = hardOk(EASY_HARD_CAP), hardGenre = hardOk(EASY_HARD_CAP_GENRE);
+    const hardFree = hardOk(EASY_HARD_CAP), hardGenre = hardOk(EASY_HARD_CAP_GENRE), hardThin = hardOk(EASY_HARD_CAP_THIN);
     // Calm-toned moves: a minor choice in the warm-up of a song without the calm for them, the main choice on a calm
     // one; in the main sections only as far as the song is calm (calmTone).
     const toneK = calm ? WARM_TONE + (WARM_TONE_CALM - WARM_TONE) * this.tone : this.tone;
@@ -1693,7 +1726,7 @@ export class Choreographer {
         if (this.kit.has(m)) continue;
         if (m.jump && !jumpsOk) continue;
         if (budget && m.level === 'high' && !highOk) continue;
-        if (m.difficulty > 1 && !(genre ? hardGenre || this.borrows.has(genre) : hardFree)) continue;
+        if (m.difficulty > 1 && !(genre ? hardGenre || (this.borrows.has(genre) && hardThin) : hardFree)) continue;
         x *= lw[m.level] * this.levelF[i];
         if (x <= 0) continue;
         if (dance && namedSets(m).includes(dance)) x *= NAMED_DANCE;
@@ -1754,7 +1787,8 @@ export class Choreographer {
           if (dance && namedSets(pool[i]).includes(dance)) w[i] *= NAMED_DANCE ** (1 - GENRE_FLAT);
         }
       }
-      return pickWeighted(this.rng, pool, w);
+      // The tone gate (retone): a pick too loud for the song (or, in the main sections, below its floor) is re-picked.
+      return this.retone(pickWeighted(this.rng, pool, w), pool, w, !calm);
     };
     const lent = s.genre && s.borrow ? this.borrows.get(s.genre)?.w : undefined;
     let m = lent ? pick(s.genre, lent) : null;
@@ -1815,7 +1849,8 @@ export class Choreographer {
   private intensified(m: Move, o: PhraseOpts): Move | null {
     const list = this.variants(m, o).filter((v) => moveVigour(v) >= moveVigour(m) - 0.02 && (!v.jump || m.jump));
     if (!list.length) return this.variantOf(m, o);
-    return pickWeighted(this.rng, list, list.map((v) => 0.2 + moveVigour(v)));
+    const w = list.map((v) => 0.2 + moveVigour(v));
+    return this.retone(pickWeighted(this.rng, list, w), list, w, mainOf(o));
   }
 
   /** Variations of `m` allowed here, of the same tier, suiting the level at least half as well as `m`. */
@@ -1835,7 +1870,7 @@ export class Choreographer {
   /** One variation of `m` (evenly), or null. */
   private variantOf(m: Move, o: PhraseOpts): Move | null {
     const ok = this.variants(m, o);
-    return ok.length ? ok[Math.floor(this.rng() * ok.length)] : null;
+    return ok.length ? this.retone(ok[Math.floor(this.rng() * ok.length)], ok, null, mainOf(o)) : null;
   }
 
   /** Bars cut into units of `unitBars` (a short tail joins the last unit). */
@@ -1952,7 +1987,8 @@ export class Choreographer {
   filler(out: MoveInstance[], start: number, end: number, section: SectionType): void {
     let b = start;
     const w = this.gapMoves.map((m, i) => (m.level === 'low' ? this.gapW[i] : 0));
-    const g = pickWeighted(this.rng, this.gapMoves, w);
+    const main = section !== 'intro' && section !== 'outro';
+    const g = this.retone(pickWeighted(this.rng, this.gapMoves, w), this.gapMoves, w, main);
     if (g) {
       const mult = this.multOf(g);
       for (const i of tileMove(g, start, end, mult, [], { half: mult === 2, section, sig: false, phrase: -1, fill: true })) out.push(i);
@@ -1994,13 +2030,18 @@ export class Choreographer {
       if (prevPose) w *= Math.exp(-FLOW_W * transitionCost(prevPose, keysOf(m, false)[0].pose));
       return w;
     });
-    const picked = pickWeighted(this.rng, pool, weights);
+    const main = mainOf(o);
+    const drawn = pickWeighted(this.rng, pool, weights);
+    const picked = drawn ? this.retone(drawn, pool, weights, main) : null;
     if (picked) {
       if (o.cooldown) this.kit.add(picked);
       return picked;
     }
     const fallback = pool.filter((m) => m !== prev && m !== avoid && !this.outside.has(m) && this.mode(m) !== 'out' && (o.cooldown || levelFactor(m, this.intensity) > 0));
-    return fallback.length ? fallback[Math.floor(this.rng() * fallback.length)] : IDLE_MOVE;
+    if (!fallback.length) return IDLE_MOVE;
+    // The gate refused every weighted move: a fitting one of the rest, from the gate's own stream.
+    if (drawn) return pickWeighted(this.toneRng, fallback, fallback.map((m) => (this.fitsTone(m, main) ? 1 : 0))) ?? IDLE_MOVE;
+    return this.retone(fallback[Math.floor(this.rng() * fallback.length)], fallback, null, main) ?? IDLE_MOVE;
   }
 
   /** An ornamented version of `m` of one of the given types, or null. */
@@ -2010,7 +2051,8 @@ export class Choreographer {
     const list = (this.ornaments?.get(m.id) ?? []).filter(
       (v) => types.includes(v.id.slice(v.id.lastIndexOf('~') + 1)) && levelFactor(v, this.intensity) >= min && levelFactor(v, this.intensity) > 0 && this.mode(v) !== 'out' && this.multOf(v) === this.multOf(m),
     );
-    return list.length ? list[Math.floor(this.rng() * list.length)] : null;
+    // A flourish that breaks the song's tone is a fitting one, or none.
+    return list.length ? this.retone(list[Math.floor(this.rng() * list.length)], list, null, true) : null;
   }
 
   /**
@@ -2201,6 +2243,92 @@ export function noveltyTone(m: Move, open: ReadonlySet<Genre>): number {
   for (const g of open) if (NOVELTY_SETS.has(g)) return 1;
   return NOVELTY_GENRE;
 }
+// ---------------------------------------------------------------------------
+// The tone gate
+//
+// Genre decides the FLAVOUR of a routine (which sets open, what they lend);
+// the song's AUDIO decides its TONE, and the tone is a gate no genre result
+// overrides, in both directions, from what the moves measure (not their
+// names, sets or ids):
+//   - too loud: a move whose aggression (weights.ts moveAggression: its
+//     level, how sharp rather than flowing it is, jumps / stomps / kicks /
+//     punches / impact) is above the song's ceiling (toneGate: from the
+//     floor TONE_FLOOR on a quiet song, by its energy at the danced tempo
+//     and its calm, to no limit on an ordinary one) is never danced:
+//     not from a set, not lent, not in the combo, not as a variation;
+//   - too gentle: a calm-toned move (calmToned) stays out of the main
+//     sections and the combo of a song with no calm tone (calmTone 0).
+// A set left with too few moves that fit borrows or goes global (borrowPlan
+// counts only its fitting moves), never to a move that doesn't fit. Without
+// audio intensity (an older map) the genre names carry the tone (their calm
+// and softness hints) and nothing is too loud; with neither (no genre found,
+// no audio read: "Mixed styles") the tone is unknown, and the routine keeps
+// to the middle: nothing above TONE_NEUTRAL, and in the main sections
+// nothing below TONE_SOFT (the waves, flowing arms and sways that read as
+// a ballad's). The gate is only as good as the audio readings: a slow,
+// heavy song read as quiet loses its loud moves.
+
+/** Aggression ceiling of the quietest songs: the ballad set's own moves (lyrical: at most 0.50) all fit under it. */
+export const TONE_FLOOR = 0.55;
+/** Song energy (songEnergy, at the danced tempo) over which the ceiling rises from TONE_FLOOR to no limit ... */
+export const TONE_ENERGY: readonly [number, number] = [0.12, 0.35];
+/** ... and calm over which it comes back down to TONE_FLOOR (a ballad is quiet whatever its tempo). */
+export const TONE_CALM: readonly [number, number] = [0.65, 0.85];
+/**
+ * How far a quiet reading is trusted: fully from calm TONE_TRUST_CALM[1] (not at all below [0]), or with a drive below
+ * TONE_TRUST_DRIVE[0] (not at all from [1]); the more trusted of the two. Measured on the evaluation sets' consensus
+ * descriptions (Nov 2026): songs called mid-tempo or upbeat gated 15 -> 9 of 54 (below 0.8: 12 -> 4), songs called calm
+ * still gated 17 of 19.
+ */
+export const TONE_TRUST_CALM: readonly [number, number] = [0.45, 0.65];
+export const TONE_TRUST_DRIVE: readonly [number, number] = [0.55, 0.8];
+/** A ceiling from this up is none: it would only take the odd all-out move (a jumping high five) from an ordinary song. */
+export const TONE_OPEN = 0.9;
+/** A song of unknown tone (no genre, no audio): the most aggression a move may have (no jumps, stomps, kicklines) ... */
+export const TONE_NEUTRAL = 0.6;
+/** ... and the least a main-section move may have (aggression below it: a low, very smooth move with no accents). */
+export const TONE_SOFT = 0.08;
+
+/**
+ * A song's tone gate: the most aggression a move may have here (1 = no limit), the least a move of the main sections
+ * may have (0 = no limit), and its calm tone (calmTone).
+ */
+export interface ToneGate {
+  ceiling: number;
+  calm: number;
+  floor?: number;
+}
+
+/**
+ * The tone gate of a song: from its audio (energy at the danced tempo `bpm`, calm); without audio intensity no
+ * ceiling, unless nothing at all is known of the song (no genre either: the neutral middle, TONE_NEUTRAL / TONE_SOFT).
+ */
+export function toneGate(style: SongStyle, bpm?: number, energy = songEnergy(style, bpm)): ToneGate {
+  const calm = calmTone(style);
+  if (style.intensity === undefined || !Number.isFinite(style.intensity)) {
+    return style.unknown ? { ceiling: TONE_NEUTRAL, calm, floor: TONE_SOFT } : { ceiling: 1, calm };
+  }
+  const calmR = style.calm ?? 0;
+  let loud = Math.min(ramp(energy, TONE_ENERGY[0], TONE_ENERGY[1]), 1 - ramp(calmR, TONE_CALM[0], TONE_CALM[1]));
+  // A quiet reading is trusted as far as the song also reads calm, or its rhythm slack: a low intensity on a driving,
+  // uncalm beat is a lively song the analysis reads low (a sparse mix, a tempo counted at half), not a quiet one.
+  const trust = Math.max(ramp(calmR, TONE_TRUST_CALM[0], TONE_TRUST_CALM[1]), 1 - ramp(style.drive ?? 0.5, TONE_TRUST_DRIVE[0], TONE_TRUST_DRIVE[1]));
+  loud = Math.max(loud, 1 - trust);
+  const ceiling = TONE_FLOOR + (1 - TONE_FLOOR) * loud;
+  return { ceiling: ceiling >= TONE_OPEN ? 1 : ceiling, calm };
+}
+
+/**
+ * Whether a move fits a song's tone gate: not too loud (anywhere), and in the main sections (`main`) not too soft
+ * (the gate's floor) and not a calm-toned move on a song with no calm tone. The idle groove always fits.
+ */
+export function toneFits(m: Move, gate: ToneGate, main = true): boolean {
+  if (m.idle) return true;
+  if (gate.ceiling < 1 && moveAggression(m) > gate.ceiling + 1e-9) return false;
+  if (main && gate.floor && moveAggression(m) < gate.floor - 1e-9) return false;
+  return !(main && gate.calm <= 0 && calmToned(m));
+}
+
 /** Pick factor of a calm-toned move in the warm-up / intro of a song with no calm tone (3 x less than a gentle dance move), up to WARM_TONE_CALM on a calm song. */
 const WARM_TONE = 0.3;
 const WARM_TONE_CALM = 2.5;
@@ -2305,6 +2433,12 @@ export const HIGH_CAP: Readonly<Record<Intensity, readonly [number, number, numb
  */
 export const EASY_HARD_CAP = 0.08;
 export const EASY_HARD_CAP_GENRE = 0.14;
+/**
+ * ... and how far a thin set (one that borrows) may take it keeping what it has: before, it had no ceiling, and with
+ * the app's styles (genre lists and audio traits open more sets: On The Floor opens Latin, house and EDM) Easy came to
+ * 18 % in harder moves.
+ */
+export const EASY_HARD_CAP_THIN = 2 * EASY_HARD_CAP;
 
 /** Share of a slot that may lie past the high budget when it is cast (generator highRoom). */
 const HIGH_OVER = 0.5;
@@ -2764,12 +2898,22 @@ function staticWeight(m: Move, style: SongStyle, bpm: number | undefined, genreK
 function pickSignature(
   rng: () => number, intensity: Intensity, style: SongStyle = BALANCED_POP, open: ReadonlySet<Genre> = styleGenres(style),
   bpm?: number, genreK: ReadonlyMap<Genre, number> = new Map(), jumps = true, tone = calmTone(style, open), energy = songEnergy(style, bpm),
+  gate: ToneGate = toneGate(style, bpm, energy), toneRng: () => number = mulberry32(1),
 ): SigStep[] {
   const mode = (m: Move) => moveTempoMode(m, bpm, intensity);
   const fitsAny = (m: Move) => m.beats <= 4 && levelFactor(m, intensity) > 0 && !(m.travel !== 0 && m.beats === 4) && mode(m) !== 'out';
   // A curated nod keeps its jumps (it is the song's own move); picked combos jump only where the song's jump budget is ample.
   // The combo opens every chorus: a calm-toned move only on a song with the calm for it (calmTone).
   const fits = (m: Move) => fitsAny(m) && (jumps || !m.jump) && (tone > 0 || !calmToned(m));
+  // The tone gate, as at every pick (Choreographer.retone): a move of the combo that breaks the song's tone (too loud;
+  // below the floor: the combo is danced in the main sections), a curated nod too, is re-picked from the gate's own
+  // stream, so a combo that fits is the one drawn without the gate.
+  const toneOk = (m: Move) => {
+    const x = moveAggression(m);
+    return !(gate.ceiling < 1 && x > gate.ceiling + 1e-9) && !(gate.floor && x < gate.floor - 1e-9);
+  };
+  const retone = (m: Move | null, list: readonly Move[], w: (m: Move) => number): Move | null =>
+    !m || toneOk(m) ? m : pickWeighted(toneRng, list, list.map((x) => (toneOk(x) ? w(x) : 0)));
   const pool = DANCE_MOVES.filter((m) => fits(m) && genreFits(m, open) && (m.level !== 'low' || intensity === 'chill'));
   const lean = energyLean({ low: 1, mid: 1, high: 1 }, energy);
   const weight = (m: Move) =>
@@ -2777,12 +2921,13 @@ function pickSignature(
   // The combo is danced at one speed: half time when either move needs it, so a full-time move in it must read at half time.
   const together = (a: Move, b: Move) => mode(a) === mode(b) || (mode(a) === 'full' ? readsAtHalf(a, bpm ?? 0) : readsAtHalf(b, bpm ?? 0));
   const nods = (style.signature ?? []).map((id) => DANCE_MOVES.find((m) => m.id === id)).filter((m): m is Move => !!m && fitsAny(m));
-  const a = nods[0] ?? pickWeighted(rng, pool, pool.map(weight));
+  const a = retone(nods[0] ?? pickWeighted(rng, pool, pool.map(weight)), pool, weight);
   if (!a) return [];
   // At most one of its two blocks jumps (it comes back in every chorus: the jump budget counts it).
   const rest = pool.filter((m) => m !== a && together(a, m) && !(a.jump && m.jump));
   const nb = nods[1] && nods[1] !== a && together(a, nods[1]) ? nods[1] : null;
-  const b = nb ?? pickWeighted(rng, rest, rest.map((m) => weight(m) * (1 - 0.7 * partsOverlap(a, m)) * (mode(m) === mode(a) ? 1 : 0.3))) ?? rest[0] ?? a;
+  const wb = (m: Move) => weight(m) * (1 - 0.7 * partsOverlap(a, m)) * (mode(m) === mode(a) ? 1 : 0.3);
+  const b = retone(nb ?? pickWeighted(rng, rest, rest.map(wb)) ?? rest[0] ?? a, rest, wb) ?? a;
   const steps: SigStep[] = [];
   for (const m of [a, b]) {
     const reps = 4 / m.beats;

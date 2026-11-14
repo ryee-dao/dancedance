@@ -119,6 +119,19 @@ describe('AddedSongs.remove on Android TV', () => {
     expect(p.list()).toEqual([]);
   });
 
+  it('dances a song by the genres of any copy that has them (the TV\'s own lookup when the cloud\'s found none; a hidden entry)', async () => {
+    const own = { ...s('DDDDDDDDDDD', 'DUA LIPA', 'levitating', '2026-11-04T10:00:00Z'), genres: ['disco', 'dance-pop'] };
+    tv([own]);
+    const m = await model();
+    // The cloud entry (no genres) is shown; the device copy that mergeLocal folded into it has the genres.
+    expect(m.find('BBBBBBBBBBB')?.genres).toBeUndefined();
+    expect(m.genreEntry('BBBBBBBBBBB')?.genres).toEqual(['disco', 'dance-pop']);
+    expect(m.genreEntry('AAAAAAAAAAA')).toBeNull();
+    m.hide('BBBBBBBBBBB');
+    expect(m.genreEntry('BBBBBBBBBBB')?.genres).toEqual(['disco', 'dance-pop']);
+    m.unhideAll();
+  });
+
   it('falls back to hiding when the device refuses', async () => {
     tv([s('CCCCCCCCCCC', 'ABBA', 'Dancing Queen', '2026-11-02T10:00:00Z')], true);
     const m = await model();

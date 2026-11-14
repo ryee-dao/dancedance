@@ -25,6 +25,7 @@ import { BeatPulseStage } from './beatStage';
 import { formatTime, h, type Nav, type Screen } from './dom';
 import { isOkKey, popScope, pushScope, type Scope } from './focusNav';
 import { library } from './library';
+import { notePlayedForGenres } from './genreLookups';
 import { liveGraphics } from './graphics';
 import { toast } from './toast';
 
@@ -726,7 +727,11 @@ export function createPlay(
     if (playing && overlayKind === 'gesture') setOverlay('none', null);
     if (!markedPlayed && playing && phase === 'playing' && t > 0.3) {
       markedPlayed = true;
-      if (item.kind === 'youtube') library.markPlayed(item.videoId);
+      if (item.kind === 'youtube') {
+        library.markPlayed(item.videoId);
+        // No genres anywhere for it (a linked playlist's song): look them up in the background for its next play.
+        notePlayedForGenres(item.videoId);
+      }
     }
 
     // HUD: text only when the second changes; progress bar every frame.
