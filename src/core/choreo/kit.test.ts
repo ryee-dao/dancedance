@@ -192,7 +192,7 @@ describe('choreographic structure', () => {
   });
 
   it('a rock song carries its verses and hook with global moves; the rock moves are accents', () => {
-    const style = resolveSongStyle({ videoId: 'rock-kit', title: 'Numb', artist: 'Linkin Park' });
+    const style = resolveSongStyle({ videoId: 'rock-kit', title: 'Numb', artist: 'Linkin Park', genre: 'Alternative', genres: ['Alternative rock', 'nu metal'] });
     expect(styleGenres(style).has('rock')).toBe(true);
     for (const lv of ['cardio', 'sweaty'] as const) {
       for (const id of ['r1', 'r2', 'r3', 'r4']) {

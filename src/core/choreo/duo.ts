@@ -37,6 +37,7 @@ import { IDLE_MOVE, MOVES, type Move } from './moves';
 import { PARTNER_MOVES, partnerCard, partnerOf, type PartnerMove } from './duoMoves';
 import { partOf, renamed, rootOffset, tileMove as cardTile } from './cards';
 import { CH } from '../coach/skeleton';
+import { moveTempoMode } from './speed';
 import { WALK_SPEED, smoothSteps } from './flow';
 
 export type DuoKind = 'unison' | 'chase' | 'mirror' | 'complement' | 'call' | 'canon' | 'split' | 'partner' | 'trade';
@@ -181,6 +182,8 @@ export class DuoChoreographer {
   /** P2's name for the split combo (its blocks the other way round). */
   private splitName = '';
   private open: ReadonlySet<Genre> | null = null;
+  /** The routine's tempo (each move's own half time, speed.ts), when known. */
+  private bpm: number | undefined;
 
   constructor(private o: DuoOpts) {
     this.rng = mulberry32(hashString(`${o.seedKey}|duo|${o.intensity}`));
@@ -188,6 +191,7 @@ export class DuoChoreographer {
 
   build(r: Routine): DuoRoutine {
     const half = r.half;
+    this.bpm = r.bpm;
     const h = r.signature.length >> 1;
     this.splitName = comboName([...r.signature.slice(h), ...r.signature.slice(0, h)]);
     if (this.o.style) this.open = styleGenres(this.o.style);
@@ -268,7 +272,9 @@ export class DuoChoreographer {
     const main = u.ins.find((i) => !i.move.idle)?.move;
     const travels = !!main && main.travel !== 0 && !u.sig;
     const unison = () => ({ p1: u.ins.map((i) => copy(i)), p2: u.ins.map((i) => copy(i)), kind: (travels ? 'chase' : 'unison') as DuoKind });
-    const mult = half ? 2 : 1;
+    // The main move keeps the speed the single routine danced it at (moves are half time each on their own).
+    const mainHalf = (main && u.ins.find((i) => i.move === main)?.half) ?? half;
+    const mult = mainHalf ? 2 : 1;
     switch (kind) {
       case 'unison':
       case 'chase':
@@ -280,8 +286,9 @@ export class DuoChoreographer {
       case 'complement': {
         if (!main || main.travel !== 0) return this.make(u, 'mirror', undefined, half, prev1, prev2);
         const b = this.complementOf(main);
-        if (!b) return this.make(u, 'mirror', undefined, half, prev1, prev2);
-        return { p1: u.ins.map((i) => copy(i)), p2: tileOne(b, u.start, u.end, half, u.section, u.phrase, true), kind };
+        const bMode = b && this.bpm ? moveTempoMode(b, this.bpm, this.o.intensity) : null;
+        if (!b || bMode === 'out') return this.make(u, 'mirror', undefined, half, prev1, prev2);
+        return { p1: u.ins.map((i) => copy(i)), p2: tileOne(b, u.start, u.end, bMode ? bMode === 'half' : half, u.section, u.phrase, true), kind };
       }
       case 'call': {
         if (!main) return unison();
@@ -291,8 +298,8 @@ export class DuoChoreographer {
         if (span > halfLen || main.travel !== 0) return this.make(u, 'canon', undefined, half, prev1, prev2);
         const mid = u.start + halfLen;
         return {
-          p1: [...tileOne(main, u.start, mid, half, u.section, u.phrase, false), ...idle(mid, u.end - mid, u.section, u.phrase, false, main.name)],
-          p2: [...idle(u.start, halfLen, u.section, u.phrase, false, main.name), ...tileOne(main, mid, u.end, half, u.section, u.phrase, true)],
+          p1: [...tileOne(main, u.start, mid, mainHalf, u.section, u.phrase, false), ...idle(mid, u.end - mid, u.section, u.phrase, false, main.name)],
+          p2: [...idle(u.start, halfLen, u.section, u.phrase, false, main.name), ...tileOne(main, mid, u.end, mainHalf, u.section, u.phrase, true)],
           kind,
         };
       }

@@ -1,5 +1,5 @@
 /**
- * The two tiers of the move library. Pure TypeScript (no DOM).
+ * The two tiers of the move library, and the genre sets. Pure TypeScript (no DOM).
  *
  *   GLOBAL moves (every move not listed below) read fine on any music: the
  *   aerobic, pop, party and groove steps, and style steps that don't need
@@ -13,20 +13,57 @@
  *   there they are the kit's accents, 20-40 % of the danced time
  *   (generator.ts GENRE_MIN / GENRE_MAX).
  *
+ * Genre groups and sub-styles. The broad groups (rock, hip-hop, Latin, afro,
+ * disco & funk ...) open from the song's family weights and themes; their
+ * SUB-STYLES (metal, punk, trap, drill, R&B, house, EDM, bass music,
+ * reggaeton, Brazilian, amapiano, and the mood set lyrical) open from the
+ * song style's sub-style scores (songStyle.ts: genre words, audio traits,
+ * tempo). A sub-style either adds to its group (a metal song dances rock and
+ * metal) or replaces it (reggaeton never opens the salsa steps of Latin).
+ * A sub-style set with fewer than MIN_GENRE_SET moves degrades gracefully:
+ * its parent opens too, so the song still gets that group's vocabulary.
+ *
+ * Character: the song's calm (the audio `calm` trait) closes the showpiece
+ * sets as it rises (no headbangs on a ballad: rock closes above ~0.65,
+ * metal and punk sooner, hula hardly ever), and opens `lyrical`.
+ *
+ * Move ids come from RAW below plus the id lists in genreSets/*.ts (files
+ * move authors fill in without touching this one).
+ *
  * Variations and ornaments of a move share its tier; a recombined variation
- * takes the genre of a layer that belongs to one (variations.ts).
+ * takes the genre of a layer that belongs to one (variations.ts). That is why
+ * a layered move only moves set together with every move sharing its
+ * genre-specific layer patterns (headbangs share the power stance with air
+ * guitar, so they stay in rock; metal gets the full-body ones).
  * Signature nods (songStyle.ts SONG_SIGNATURES) are separate: they open the
  * chorus of their own song, whatever tier their moves are in.
  */
 
 import { FAMILIES, type Family, type Theme } from './families';
+import { moves as electronicSets } from './genreSets/electronic';
+import { moves as moodSets } from './genreSets/mood';
+import { moves as urbanSets } from './genreSets/urban';
 
 export type Genre =
   | 'rock' | 'hiphop' | 'latin' | 'discofunk' | 'kpop'
   | 'country' | 'swing' | 'afro' | 'caribbean' | 'southasian'
-  | 'folk' | 'bellydance' | 'hula' | 'capoeira';
+  | 'folk' | 'bellydance' | 'hula' | 'capoeira'
+  // Sub-styles (songStyle.ts scores them) and the mood set.
+  | 'metal' | 'punk' | 'trap' | 'drill' | 'rnb' | 'house' | 'edm' | 'bass'
+  | 'reggaeton' | 'brazil' | 'amapiano' | 'lyrical';
 
-export const GENRES: readonly Genre[] = ['rock', 'hiphop', 'latin', 'discofunk', 'kpop', 'country', 'swing', 'afro', 'caribbean', 'southasian', 'folk', 'bellydance', 'hula', 'capoeira'];
+export const GENRES: readonly Genre[] = [
+  'rock', 'hiphop', 'latin', 'discofunk', 'kpop', 'country', 'swing', 'afro', 'caribbean', 'southasian', 'folk', 'bellydance', 'hula', 'capoeira',
+  'metal', 'punk', 'trap', 'drill', 'rnb', 'house', 'edm', 'bass', 'reggaeton', 'brazil', 'amapiano', 'lyrical',
+];
+
+/** The sub-style genres: opened by a song style's sub-style scores (SongStyle.subs), not by families or themes. */
+export type SubStyle = 'metal' | 'punk' | 'trap' | 'drill' | 'rnb' | 'house' | 'edm' | 'bass' | 'reggaeton' | 'brazil' | 'amapiano' | 'lyrical';
+export const SUB_STYLES: readonly SubStyle[] = ['metal', 'punk', 'trap', 'drill', 'rnb', 'house', 'edm', 'bass', 'reggaeton', 'brazil', 'amapiano', 'lyrical'];
+
+export function isSubStyle(v: unknown): v is SubStyle {
+  return typeof v === 'string' && (SUB_STYLES as readonly string[]).includes(v);
+}
 
 export const GENRE_LABEL: Readonly<Record<Genre, string>> = {
   rock: 'Rock',
@@ -36,25 +73,86 @@ export const GENRE_LABEL: Readonly<Record<Genre, string>> = {
   kpop: 'K-pop',
   country: 'Country',
   swing: 'Swing & rock-and-roll',
-  afro: 'Afrobeats & amapiano',
+  afro: 'Afrobeats',
   caribbean: 'Dancehall, reggae & soca',
   southasian: 'Bollywood, bhangra & garba',
   folk: 'Folk',
   bellydance: 'Belly dance',
   hula: 'Hula & Polynesian',
   capoeira: 'Capoeira',
+  metal: 'Metal',
+  punk: 'Punk',
+  trap: 'Trap',
+  drill: 'Drill',
+  rnb: 'R&B',
+  house: 'House',
+  edm: 'EDM',
+  bass: 'Bass music',
+  reggaeton: 'Reggaeton',
+  brazil: 'Brazilian',
+  amapiano: 'Amapiano',
+  lyrical: 'Lyrical',
 };
 
 export function isGenre(v: unknown): v is Genre {
   return typeof v === 'string' && (GENRES as readonly string[]).includes(v);
 }
 
-/** Genres a song theme opens (themes come from the artist table, genre metadata and title words). */
+/** How a sub-style relates to its group. */
+export interface SubInfo {
+  /** The group set it falls back to (opened too when its own set is small); null = global moves only. */
+  parent: Genre | null;
+  /** Opens its parent as well (a metal song dances rock and metal). */
+  withParent: boolean;
+  /** Closes its parent once its own set is big enough (reggaeton is not salsa). */
+  replaces: Genre | null;
+}
+
+export const SUB_INFO: Readonly<Record<SubStyle, SubInfo>> = {
+  metal: { parent: 'rock', withParent: true, replaces: null },
+  punk: { parent: 'rock', withParent: true, replaces: null },
+  trap: { parent: 'hiphop', withParent: true, replaces: null },
+  drill: { parent: 'hiphop', withParent: true, replaces: null },
+  // R&B falls back to nothing extra: its family mix (funk / hip-hop / pop) opens what it leads.
+  rnb: { parent: null, withParent: false, replaces: null },
+  house: { parent: 'discofunk', withParent: false, replaces: null },
+  edm: { parent: null, withParent: false, replaces: null },
+  bass: { parent: null, withParent: false, replaces: null },
+  // Reggaeton grew out of dancehall: its fallback is the Caribbean set, and it never opens Latin's salsa / merengue.
+  reggaeton: { parent: 'caribbean', withParent: false, replaces: 'latin' },
+  brazil: { parent: 'latin', withParent: false, replaces: 'latin' },
+  amapiano: { parent: 'afro', withParent: false, replaces: null },
+  lyrical: { parent: null, withParent: false, replaces: null },
+};
+
+/**
+ * Calm tolerance of each set: its openness falls from 1 at calm <= tol to 0
+ * at calm >= tol + 0.3 (closed below CALM_CLOSED, i.e. above about tol +
+ * 0.21). Showpiece sets (headbangs, pogo, krump, drops) close first; gentle
+ * traditions last: rock closes above calm ~0.66, metal and punk above ~0.56.
+ */
+export const CALM_TOLERANCE: Readonly<Record<Genre, number>> = {
+  rock: 0.45, metal: 0.35, punk: 0.35, hiphop: 0.55, trap: 0.5, drill: 0.45, rnb: 0.8,
+  house: 0.55, edm: 0.45, bass: 0.45, discofunk: 0.55, kpop: 0.6, latin: 0.65, reggaeton: 0.55, brazil: 0.55,
+  country: 0.6, swing: 0.65, afro: 0.6, amapiano: 0.65, caribbean: 0.65, southasian: 0.65, folk: 0.6,
+  bellydance: 0.75, hula: 0.9, capoeira: 0.45, lyrical: 2,
+};
+/** Openness below which the calm closes a set. */
+export const CALM_CLOSED = 0.3;
+
+/** How open a set stays at a song's calm (1 = fully, 0 = closed); calm unknown = 1. */
+export function calmGate(g: Genre, calm: number | undefined): number {
+  if (calm === undefined || !Number.isFinite(calm)) return 1;
+  const tol = CALM_TOLERANCE[g];
+  return Math.min(1, Math.max(0, (tol + 0.3 - calm) / 0.3));
+}
+
+/** Genres a song theme opens (themes come from curated styles, genre words and title words). */
 export const THEME_GENRES: Readonly<Partial<Record<Theme, Genre>>> = {
   country: 'country',
   swing: 'swing',
   afro: 'afro',
-  amapiano: 'afro',
+  amapiano: 'amapiano',
   dancehall: 'caribbean',
   reggae: 'caribbean',
   soca: 'caribbean',
@@ -79,9 +177,13 @@ export const FAMILY_GENRE: Readonly<Partial<Record<Family, Genre>>> = {
 
 /** A family genre opens when its family weighs at least this share of the song's strongest family ... */
 export const FAMILY_OPEN_SHARE = 0.65;
+/** A sub-style opens at this score (SongStyle.subs, 0..1) ... */
+export const SUB_OPEN = 0.5;
+/** ... and a sub-style set with fewer moves than this also opens its parent. */
+export const MIN_GENRE_SET = 6;
 /**
- * Themes whose genre / artist styles use the latin family as a stand-in for
- * hip-led grooves: they never open the Latin set (no salsa on afrobeats).
+ * Themes whose genre styles use the latin family as a stand-in for hip-led
+ * grooves: they never open the Latin set (no salsa on afrobeats).
  */
 const LATIN_PROXY_THEMES: readonly Theme[] = ['afro', 'amapiano', 'dancehall', 'reggae', 'soca'];
 
@@ -89,59 +191,97 @@ const LATIN_PROXY_THEMES: readonly Theme[] = ['afro', 'amapiano', 'dancehall', '
 export interface GenreSource {
   families: Partial<Record<Family, number>>;
   themes: readonly Theme[];
+  /** Sub-style scores 0..1 (songStyle.ts). */
+  subs?: Partial<Record<SubStyle, number>>;
+  /** The song's calm 0..1 (undefined = unknown: nothing closes). */
+  calm?: number;
 }
 
 /**
- * Genres a song's style opens: the genre of each of its style themes, plus
- * each family genre whose family weighs at least FAMILY_OPEN_SHARE of the
- * strongest family (only the strongest family itself when a theme already
- * names a tradition, so a country song isn't also "rock").
+ * How strongly a song's style opens each genre (0..1; absent = closed):
+ *   - the genre of each style theme (fully);
+ *   - each family genre whose family weighs at least FAMILY_OPEN_SHARE of
+ *     the strongest family (only the strongest one itself when a theme
+ *     already names a tradition, so a country song isn't also "rock"), by
+ *     its share;
+ *   - each sub-style scoring at least SUB_OPEN, by its score; with its
+ *     parent when it adds to it or when its own set is small, closing the
+ *     set it replaces;
+ *   - then the calm closes what it closes (calmGate).
  */
-export function songGenres(style: GenreSource): ReadonlySet<Genre> {
-  const out = new Set<Genre>();
+export function genreOpenness(style: GenreSource): Map<Genre, number> {
+  const out = new Map<Genre, number>();
+  const open = (g: Genre, w: number) => out.set(g, Math.max(out.get(g) ?? 0, w));
   for (const t of style.themes) {
     const g = THEME_GENRES[t];
-    if (g) out.add(g);
+    if (g) open(g, 1);
   }
   const themed = out.size > 0;
   let max = 0;
   for (const f of FAMILIES) max = Math.max(max, style.families[f] ?? 0);
-  if (max <= 0) return out;
-  const fw = new Map<Genre, number>();
-  for (const f of FAMILIES) {
-    const g = FAMILY_GENRE[f];
-    if (g) fw.set(g, Math.max(fw.get(g) ?? 0, style.families[f] ?? 0));
-  }
   const proxy = style.themes.some((t) => LATIN_PROXY_THEMES.includes(t));
-  for (const [g, w] of fw) {
-    if (w <= 0) continue;
-    if (g === 'latin' && proxy) continue;
-    if (themed ? w >= max - 1e-9 : w >= FAMILY_OPEN_SHARE * max - 1e-9) out.add(g);
+  if (max > 0) {
+    const fw = new Map<Genre, number>();
+    for (const f of FAMILIES) {
+      const g = FAMILY_GENRE[f];
+      if (g) fw.set(g, Math.max(fw.get(g) ?? 0, style.families[f] ?? 0));
+    }
+    for (const [g, w] of fw) {
+      if (w <= 0) continue;
+      if (g === 'latin' && proxy) continue;
+      if (themed ? w >= max - 1e-9 : w >= FAMILY_OPEN_SHARE * max - 1e-9) open(g, w / max);
+    }
+  }
+  for (const s of SUB_STYLES) {
+    const v = style.subs?.[s];
+    if (typeof v === 'number' && v >= SUB_OPEN) open(s, Math.min(1, v));
+  }
+  // Sub-styles (however they opened): their parents, and the sets they replace.
+  const closes = new Set<Genre>();
+  for (const s of SUB_STYLES) {
+    const w = out.get(s);
+    if (w === undefined) continue;
+    const info = SUB_INFO[s];
+    const small = GENRE_MOVES[s].length < MIN_GENRE_SET;
+    if (info.parent && (info.withParent || small)) open(info.parent, w);
+    // A replacing sub-style never opens the set it replaces (unless that is the fallback it needs).
+    if (info.replaces && !(small && info.parent === info.replaces)) closes.add(info.replaces);
+  }
+  for (const g of closes) if (!style.themes.some((t) => THEME_GENRES[t] === g)) out.delete(g);
+  for (const [g, w] of out) {
+    const k = w * calmGate(g, style.calm);
+    if (k < CALM_CLOSED * w || k <= 0) out.delete(g);
+    else out.set(g, k);
   }
   return out;
 }
 
+/** The genres a song's style opens (genreOpenness). */
+export function songGenres(style: GenreSource): ReadonlySet<Genre> {
+  return new Set(genreOpenness(style).keys());
+}
+
 // ---------------------------------------------------------------------------
-// The genre sets (move ids). Everything else is global.
+// The genre sets (move ids). Everything else is global. genreSets/*.ts add to them.
 
 const RAW: Readonly<Record<Genre, string>> = {
   rock: `
-    headbang headbang-arms-up low-headbang side-headbang hair-swing headbang-fist
-    pogo pogo-fist side-pogo mosh-two-step circle-pit shoulder-barge
-    air-guitar power-lunge guitar-neck-raise windmill power-windmill strum-kick guitar-spin guitar-solo duck-walk rock-star-jump chug-squat
+    headbang headbang-arms-up side-headbang headbang-fist
+    pogo pogo-fist shoulder-barge
+    air-guitar power-lunge guitar-neck-raise windmill power-windmill strum-kick guitar-spin guitar-solo duck-walk rock-star-jump
     air-bass air-drums tom-roll cymbal-crash
-    mic-grab mic-stand-tilt monitor-foot ska-skank
+    mic-grab mic-stand-tilt monitor-foot
     // named: recombinations promoted in families/named.ts
     heel-toe-bass-slap jump-around-v-pump knee-lift-fist-bang swaying-drummer slow-sway-fist-bang march-bass-slap
     march-v-pump march-windmill pogo-beat-clap pogo-arena-wave pogo-drums pogo-fist-bang pogo-windmill
     barge-v-pump stomp-kick-bass-slap stomp-kick-windmill snap-kick-v-pump step-touch-windmill
     sumo-squat-bass-slap sumo-squat-v-pump`,
   hiphop: `
-    dougie milly-rock cat-daddy the-whip nae-nae the-shoot harlem-shake stanky-leg tootsie-roll the-woah
+    dougie milly-rock cat-daddy harlem-shake stanky-leg tootsie-roll
     jersey-club-kick jerkin bankhead-bounce swag-surf walk-it-out lean-and-snap brush-off steve-martin
     krump-stomp krump-arm-swing krump-chest-pop toprock-step-out indian-step
-    cabbage-patch the-reebok bart-simpson hammer-dance roger-rabbit kick-step skeeter-rabbit butterfly-knees loose-legs tut-box
-    the-wop the-smurf smurf-two-step shmoney bernie lean-back griddy jet-griddy toprock-cross-step toprock-kick-step humpty-hop
+    cabbage-patch the-reebok bart-simpson hammer-dance roger-rabbit kick-step skeeter-rabbit butterfly-knees tut-box
+    the-wop the-smurf smurf-two-step bernie lean-back toprock-cross-step toprock-kick-step humpty-hop
     // named: recombinations promoted in families/named.ts
     booty-shake-dougie-arms jump-around-dougie-arms jump-around-bankhead-arms side-out-bankhead-arms
     swag-walk-cabbage-patch swag-walk-bankhead-arms`,
@@ -151,18 +291,17 @@ const RAW: Readonly<Record<Genre, string>> = {
     cha-cha cha-cha-chasse cha-cha-spot-turn cucaracha
     cumbia-step cumbia-machete cumbia-sau cumbia-candle
     bachata-side bachata-basic
-    samba-basic samba-whisk bota-fogo samba-reggae-drum samba-no-pe frevo-hop
+    samba-basic samba-whisk bota-fogo samba-reggae-drum samba-no-pe
     flamenco-arms flamenco-palmas flamenco-turn paso-doble-cape tango-walk
     folklorico-skirt hat-dance-heels huayno-skip maraca-shake
     // named: recombinations promoted in families/named.ts
-    bota-fogo-drum-hits box-step-mambo-arms box-step-maracas cha-cha-chasse-cha-cha-arm cha-cha-chasse-fan
+    box-step-mambo-arms box-step-maracas cha-cha-chasse-cha-cha-arm cha-cha-chasse-fan
     cha-cha-chasse-flow cha-cha-chasse-shimmy conga-maracas cucaracha-snake-arms merengue-side-cha-cha-arm
-    merengue-side-fan merengue-side-mambo-arms samba-whisk-carnival-arms samba-whisk-shimmy side-salsa-flow
-    step-touch-maracas`,
+    merengue-side-fan merengue-side-mambo-arms side-salsa-flow
+    step-touch-maracas bota-fogo-drum-hits samba-whisk-carnival-arms samba-whisk-shimmy`,
   discofunk: `
     disco-point double-disco-point kick-point fever-pose disco-vine disco-dip disco-spin bump-point hip-swing-point
     hustle-tap hustle-basic hustle-turn hitch-turn roll-the-dice roller-glide roller-crossover roller-swizzle
-    vogue-arms vogue-pose box-frame
     hitchhike the-monkey the-jerk the-pony the-watusi mashed-potato the-freddie philly-dog batusi the-fly
     funky-chicken camel-walk good-foot popcorn jb-slide which-a-way boogaloo four-corners bump-slide funky-guitar
     the-lock lock-drop scoobot uncle-sam-point wrist-twirl muscle-man give-yourself-five
@@ -198,7 +337,6 @@ const RAW: Readonly<Record<Genre, string>> = {
     the-twist-hand-jive triple-shorty-arms`,
   afro: `
     shaku-shaku gwara-gwara shoki azonto-twist soapy zanku afro-groove legwork-cross
-    pouncing-cat vosho
     indlamu-stomp gumboot-slap spray-money ndombolo kuduro-stomp lamban-swing harvest-scoop kuku-step sabar-knee`,
   caribbean: `
     willie-bounce bogle signal-di-plane thunder-clap tek-weh-yuhself gully-creepa log-on pon-di-river wacky-dip
@@ -221,12 +359,40 @@ const RAW: Readonly<Record<Genre, string>> = {
   bellydance: `egyptian-walk hip-drop-kick snake-arm-shimmy`,
   hula: `kaholo-wave hela-point uwehe tamau-hips poi-swing slap-dance`,
   capoeira: `ginga esquiva-dodge`,
+  // Sub-styles: the existing moves that clearly belong (full-body moves, or layered ones whose
+  // genre layers no other set uses); move authors add the rest in genreSets/*.ts.
+  metal: `chug-squat hair-swing low-headbang`,
+  punk: `side-pogo ska-skank mosh-two-step circle-pit`,
+  trap: `the-whip the-shoot the-woah griddy jet-griddy nae-nae`,
+  drill: `shmoney`,
+  rnb: ``,
+  house: `vogue-arms vogue-pose box-frame loose-legs`,
+  edm: ``,
+  bass: ``,
+  reggaeton: ``,
+  // The layered samba steps stay in Latin: their arm / foot layers recombine with salsa and cha-cha
+  // layers in the variation pool (pool.json), and a variation never mixes two sets.
+  brazil: `frevo-hop`,
+  amapiano: `vosho pouncing-cat`,
+  lyrical: ``,
 };
+
+/** genreSets/*.ts: id lists by genre, added after RAW's. */
+const EXTRA: readonly Partial<Record<string, string>>[] = [electronicSets, urbanSets, moodSets];
+
+const idsOf = (s: string | undefined): string[] => (s ?? '').replace(/\/\/[^\n]*/g, ' ').split(/\s+/).filter(Boolean);
 
 /** Move ids of each genre set (named variations included; see families/named.ts). */
 export const GENRE_MOVES: Readonly<Record<Genre, readonly string[]>> = Object.fromEntries(
-  GENRES.map((g) => [g, RAW[g].replace(/\/\/[^\n]*/g, " ").split(/\s+/).filter(Boolean)]),
+  GENRES.map((g) => {
+    const ids = idsOf(RAW[g]);
+    for (const x of EXTRA) for (const id of idsOf(x[g])) if (!ids.includes(id)) ids.push(id);
+    return [g, ids];
+  }),
 ) as unknown as Record<Genre, readonly string[]>;
+
+/** Keys in genreSets/*.ts that name no genre (the tier test requires none). */
+export const GENRE_SET_UNKNOWN: string[] = EXTRA.flatMap((x) => Object.keys(x).filter((k) => !isGenre(k)));
 
 const BY_ID = new Map<string, Genre>();
 /** Ids listed in more than one genre set (the tier test requires none). */

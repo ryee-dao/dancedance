@@ -18,17 +18,83 @@ readable from the front, and distinct**. Quality beats quantity: do not pad.
 ## Two tiers: global and genre-exclusive
 
 Every move is either GLOBAL (used on any song, where the level allows) or
-exclusive to one GENRE set, listed by id in `genres.ts` (`GENRE_MOVES`):
-rock, hip-hop, Latin, disco & funk, K-pop, country, swing, afro, Caribbean,
-South Asian, folk, belly dance, hula, capoeira. A genre-exclusive move is only
+exclusive to one GENRE set, listed by id in `genres.ts` (`GENRE_MOVES`) and
+`genreSets/*.ts`: rock, hip-hop, Latin, disco & funk, K-pop, country, swing,
+afro, Caribbean, South Asian, folk, belly dance, hula, capoeira, and the
+sub-style sets metal, punk, trap, drill, R&B, house, EDM, bass music,
+reggaeton, Brazilian, amapiano, lyrical (see "Genre sets" below). A genre-exclusive move is only
 used on songs whose style opens that genre (`songGenres`: the style's
-tradition themes, and its leading families). When you add a move that only
+tradition themes, its leading families, its sub-style scores, gated by the
+song's calm). When you add a move that only
 makes sense with its music (a headbang, a salsa step, a line-dance step, a
 K-pop point move), add its id to its genre set; otherwise it is global.
 Variations share their move's tier; a recombination takes the genre of a
 layer that belongs to one, and two genres are never mixed. A layer pattern
 used by any global move counts as global, so don't give a global move the
 arms of a genre move (that leaks the genre into every song's variations).
+
+## Genre sets: groups and sub-styles
+
+A song's style comes from the song (`songStyle.ts`): its genre names (the
+song's own list, e.g. a Wikipedia infobox, then the iTunes tag as a
+tie-breaker), its absolute audio traits from the beat map (`songTraits.ts`:
+calm, drive, four-on-the-floor, half-time feel, sub-bass, hats, swing,
+syncopation, heaviness), tempo and title words; never the artist's name.
+The broad groups (rock, hip-hop, Latin, disco & funk, K-pop, the
+traditions) open from the song's family weights and themes; the sub-styles
+below open from the style's sub-style scores (genre words + traits,
+`SUB_OPEN` 0.5). Each sub-style either ADDS to its group (a metal song
+dances rock and metal) or REPLACES it (reggaeton never gets salsa). A set
+with fewer than `MIN_GENRE_SET` (6) moves falls back: its parent opens too.
+The song's calm closes showpiece sets (no headbangs on a ballad;
+`CALM_TOLERANCE` in `genres.ts`) and opens `lyrical`.
+
+| Set | Real dance vocabulary | Opened by | Parent / fallback | Ids go in |
+| --- | --- | --- | --- | --- |
+| `metal` | headbanging (incl. hair windmill), horns, chug squats, wall-of-death crouch, slow heavy sway with fist | metal names (nu / heavy / death / gothic metal, metalcore ...), "hard rock" partly; heavy + driving audio on a rock song | adds to rock | `genreSets/mood.ts` |
+| `punk` | pogo, ska skank, hardcore two-step, circle-pit running, slam dancing | punk / hardcore / pop punk / ska / emo names; fast (150+), driving, rough rock | adds to rock | `genreSets/mood.ts` |
+| `trap` | the whip, nae nae, shoot, woah, griddy; quick poses on hi-hat rolls, bounce on the half-time snare | trap, crunk, snap, rage, cloud rap names; half-time feel + hat rolls / heavy 808 | adds to hip-hop | `genreSets/urban.ts` |
+| `drill` | drill bounce, arm swings, shoulder rocks, shmoney, woo walk | drill (UK / NY / Chicago ...), grime partly; half-time feel + syncopated hats and sliding bass | adds to hip-hop | `genreSets/urban.ts` |
+| `rnb` | body rolls, smooth two-steps, shoulder / hip isolations, slow grind grooves | R&B, neo soul, new jack swing, quiet storm; a swung, unhurried groove | none: the family mix opens what it leads | `genreSets/urban.ts` |
+| `house` | jacking, lofting, heel-toe footwork, skate / train / farmer, loose legs, voguing hands and frames | house names (deep / tech / Chicago / French, nu-disco, UK garage); four-on-the-floor at ~115-127 BPM | disco & funk (when small) | `genreSets/electronic.ts` |
+| `edm` | fist pumping, shuffle (cutting shapes), the jump on the drop, hands-up builds | EDM, big room, electro / progressive house, trance, techno, hardstyle; four-on-the-floor at 124+ | none (global aerobic moves) | `genreSets/electronic.ts` |
+| `bass` | DnB skank, rail / wobble bounce, liquid and popping hits, phonk drift arms | dubstep, drum and bass, phonk, future bass; heavy sub-bass with half-time feel, or dense hats at ~170 | none | `genreSets/electronic.ts` |
+| `reggaeton` | perreo, dembow step, reggaeton bounce, hip rolls | reggaeton, dembow, urbano, Latin trap; dembow syncopation around 88-100 BPM | dancehall (caribbean); replaces Latin | `genreSets/urban.ts` |
+| `brazil` | samba no pé, axé, frevo, passinho / quadradinho (funk carioca), forró | samba, axé, baile funk, sertanejo, forró, MPB, bossa nova | Latin (when small); replaces Latin once big enough | `genreSets/mood.ts` |
+| `amapiano` | vosho, pouncing cat, tshwala bam, slow knee bounces on the log drum | amapiano, gqom, kwaito, South African house; log-drum bass at ~108-116 BPM | afro (when small) | `genreSets/mood.ts` |
+| `lyrical` | reaches, arm sweeps, port de bras, slow turns, arcing lunges, balances, contractions / releases, body waves | a calm song (`calm` trait ~0.55+), ballads, soft / piano rock, ambient, singer-songwriter, any family | none (smooth global moves) | `genreSets/mood.ts` |
+
+Country is one set: its moves are line-dance / hoedown steps, which serve
+country-pop at tempo as well; a country ballad closes it by its calm (and
+waltz steps live in `swing`). A two-step is a travelling partner dance that
+doesn't read as a solo front-facing move beyond a step-touch.
+
+The files in `genreSets/` are plain id lists with no imports; `genres.ts`
+merges them after its own `RAW` lists. Two constraints when moving or adding
+ids:
+- a move is in at most one set (the tier test checks);
+- a recombined variation takes the genre of its layer patterns, and two
+  sets never mix (`variations.ts`). A LAYERED move may only change set
+  together with every move sharing its genre-specific foot / arm patterns
+  (the layered headbangs share the power stance with air guitar, so they
+  stay in rock; the layered samba steps recombine with salsa layers in
+  `pool.json`, so they stay in Latin). Full-body moves move freely. Moving
+  layered moves means regenerating `pool.json` (`npx tsx tools/moves/pool.ts`).
+
+## Tempo: every move's speed limit
+
+`speed.ts` derives a speed limit (BPM) for every move from its keyframes:
+how far each joint travels between keys against how fast that joint can move
+(hands fastest, the pelvis slowest; a leg lifted while the other carries the
+body, or a pelvis that drops or rises, is slower), whole-body turn speed, and
+the shortest gap between keys. On a song above a move's limit the move is
+danced at half time on its own; if even that is too fast, or a jump would
+hang in the air too long at half time, it is not used. Big leg raises,
+kicks, high jumps and busy footwork get low limits; bounces, pumps and
+step-touches high ones. A new move needs nothing extra. If it looks right
+at 120 BPM but its limit (`moveSpeed` in `speed.ts`) comes out well below
+that, it is doing more per beat than it should. The tempo weights
+(`weights.ts`) apply at the tempo the move is actually danced at.
 
 Each file exports `patterns: PatternSet` and `moves: MoveDef[]`.
 `families/index.ts` collects every file (never edit it): it registers all
