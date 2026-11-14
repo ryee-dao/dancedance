@@ -39,6 +39,13 @@ val updateReleaseUrl: String? = setting("dancedance.updateReleaseUrl", "DANCEDAN
 // Audio cache cap (MB). 300 by default; a small value is handy for testing eviction.
 val audioCacheMb = setting("dancedance.audioCacheMb", "DANCEDANCE_AUDIO_CACHE_MB")?.toInt() ?: 300
 
+// Audio stream bitrate to aim for (kbps): the lowest stream at or above it in the preferred
+// format, else the closest below (AudioPick.choose). 60 picks YouTube's ~70 kbps Opus stream
+// (itag 250), about half the bytes of the ~130-160 kbps one; 999 restores "highest bitrate".
+val audioTargetKbps = (setting("dancedance.audioTargetKbps", "DANCEDANCE_AUDIO_TARGET_KBPS")?.toInt() ?: 60).also {
+    require(it in 1..10_000) { "dancedance.audioTargetKbps must be 1..10000, got: $it" }
+}
+
 val appVersionName = setting("dancedance.versionName", "DANCEDANCE_VERSION_NAME") ?: "0.1.0-dev"
 val appVersionCode = setting("dancedance.versionCode", "DANCEDANCE_VERSION_CODE")?.toInt() ?: 1
 
@@ -62,6 +69,7 @@ android {
         buildConfigField("String", "PAGES_BASE_URL", javaString(pagesBaseUrl))
         buildConfigField("String", "GITHUB_REPO", javaString(githubRepo))
         buildConfigField("int", "AUDIO_CACHE_MB", audioCacheMb.toString())
+        buildConfigField("int", "AUDIO_TARGET_KBPS", audioTargetKbps.toString())
         buildConfigField("String", "UPDATE_RELEASE_URL", "null")
     }
 

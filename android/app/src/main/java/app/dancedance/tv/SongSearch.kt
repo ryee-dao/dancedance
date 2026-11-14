@@ -1,9 +1,12 @@
 package app.dancedance.tv
 
 import android.util.Log
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
@@ -32,11 +35,11 @@ class SongSearch(private val http: OkHttpClient) {
         private const val PER_QUERY = 10
     }
 
-    fun itunes(term: String): List<SongPicker.SongHit> {
+    fun itunes(term: String, limit: Int = 10): List<SongPicker.SongHit> {
         val url = "https://itunes.apple.com/search".toHttpUrl().newBuilder()
             .addQueryParameter("term", term.trim())
             .addQueryParameter("entity", "song")
-            .addQueryParameter("limit", "10")
+            .addQueryParameter("limit", limit.toString())
             .build()
         http.newCall(Request.Builder().url(url).build()).execute().use { r ->
             if (r.code == 403 || r.code == 429 || r.code == 503) {
@@ -101,11 +104,19 @@ class AddedSongsStore(private val file: File) {
         val videoTitle: String,
         val channel: String,
         val tier: String,
+        /** iTunes primary genre of the picked track ("" = unknown; songs saved before it was kept). */
+        val genre: String = "",
+        /** Storage only: when a [GenreBackfill] lookup last found no genre (ISO), so it isn't asked every start. */
+        val genreTriedAt: String = "",
     ) {
+        /** What the page gets (getAddedSongs / addedSongsChanged). */
         fun toJson(): JSONObject = JSONObject()
             .put("videoId", videoId).put("title", title).put("artist", artist).put("addedAt", addedAt)
             .put("durationSec", durationSec).put("videoTitle", videoTitle).put("channel", channel).put("tier", tier)
             .apply { if (tier == SongPicker.Tier.MUSIC_VIDEO.label) put("note", "music-video") }
+            .apply { if (genre.isNotEmpty()) put("genre", genre) }
+
+        fun toStoredJson(): JSONObject = toJson().apply { if (genreTriedAt.isNotEmpty()) put("genreTriedAt", genreTriedAt) }
     }
 
     private var cache: List<Song>? = null
@@ -119,14 +130,31 @@ class AddedSongsStore(private val file: File) {
                 val o = arr.optJSONObject(i) ?: return@mapNotNull null
                 val id = o.optString("videoId")
                 if (!Regex("^[A-Za-z0-9_-]{11}$").matches(id)) return@mapNotNull null
+                // Entries saved before the genre was kept have no "genre": they load with "".
                 Song(id, o.optString("title"), o.optString("artist"), o.optString("addedAt"), o.optInt("durationSec"),
-                    o.optString("videoTitle"), o.optString("channel"), o.optString("tier"))
+                    o.optString("videoTitle"), o.optString("channel"), o.optString("tier"),
+                    SongPicker.cleanGenre(o.opt("genre")), o.optString("genreTriedAt"))
             }
         } catch (e: Exception) {
             emptyList()
         }
         cache = songs
         return songs
+    }
+
+    /**
+     * Backfill result for one song: [genre] found, or null for "looked, none found" (remembered
+     * as [triedAt]). No-op if the song is gone or already has a genre. Returns true if saved.
+     */
+    @Synchronized
+    fun updateGenre(videoId: String, genre: String?, triedAt: String): Boolean {
+        val before = list()
+        val s = before.firstOrNull { it.videoId == videoId } ?: return false
+        if (s.genre.isNotEmpty()) return false
+        val clean = genre?.let { SongPicker.cleanGenre(it) }.orEmpty()
+        val updated = if (clean.isNotEmpty()) s.copy(genre = clean, genreTriedAt = "") else s.copy(genreTriedAt = triedAt)
+        save(before.map { if (it.videoId == videoId) updated else it })
+        return true
     }
 
     /** Adds (or moves to the newest position). Returns false if it was already there. */
@@ -150,7 +178,7 @@ class AddedSongsStore(private val file: File) {
 
     private fun save(songs: List<Song>) {
         val tmp = File(file.parentFile, file.name + ".tmp")
-        tmp.writeText(JSONArray().apply { songs.forEach { put(it.toJson()) } }.toString())
+        tmp.writeText(JSONArray().apply { songs.forEach { put(it.toStoredJson()) } }.toString())
         if (!tmp.renameTo(file)) {
             file.writeText(tmp.readText())
             tmp.delete()
@@ -160,5 +188,91 @@ class AddedSongsStore(private val file: File) {
 
     companion object {
         fun now(): String = Instant.now().toString()
+    }
+}
+
+/**
+ * Fills in the genre of added songs saved without one (before the TV kept it, or iTunes gave none
+ * for the tapped hit): one iTunes search per song for "artist title" (only that text is sent, as
+ * in the phone's own search), matched by [SongPicker.genreFor], saved, and the page told through
+ * [onChanged]. Runs in the background a few seconds after app start (and after an add without a
+ * genre), [PARALLEL] songs at a time, at most [MAX_PER_RUN] per run. Failures are logged and
+ * retried on a later run; a song for which iTunes answered but had no match isn't asked again for
+ * [RETRY_MISS_MS]. Never touches audio, so it can't hold up playback.
+ */
+class GenreBackfill(
+    private val store: AddedSongsStore,
+    private val search: (term: String) -> List<SongPicker.SongHit>,
+    private val onChanged: () -> Unit,
+    private val now: () -> Instant = Instant::now,
+) {
+    companion object {
+        private const val TAG = "DanceDance"
+        const val PARALLEL = 2
+        const val MAX_PER_RUN = 20
+        const val ITUNES_LIMIT = 25
+        const val RETRY_MISS_MS = 30L * 24 * 3600 * 1000
+        /** Consecutive failed lookups after which a run gives up (offline, rate-limited). */
+        const val MAX_FAILURES = 3
+    }
+
+    private val running = java.util.concurrent.atomic.AtomicBoolean(false)
+
+    /** Start a run in [scope] unless one is going. */
+    fun start(scope: kotlinx.coroutines.CoroutineScope, delayMs: Long = 5_000) {
+        if (!running.compareAndSet(false, true)) return
+        scope.launch {
+            try {
+                delay(delayMs)
+                run()
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (t: Throwable) {
+                Log.w(TAG, "Genre backfill failed", t)
+            } finally {
+                running.set(false)
+            }
+        }
+    }
+
+    /** Songs that need a lookup now. */
+    fun due(): List<AddedSongsStore.Song> {
+        val t = now()
+        return store.list().filter { s ->
+            s.genre.isEmpty() && s.artist.isNotBlank() && s.title.isNotBlank() &&
+                (runCatching { Instant.parse(s.genreTriedAt) }.getOrNull()?.let { t.toEpochMilli() - it.toEpochMilli() >= RETRY_MISS_MS } ?: true)
+        }.take(MAX_PER_RUN)
+    }
+
+    /** One pass; returns how many songs got a genre. */
+    suspend fun run(): Int {
+        val todo = due()
+        if (todo.isEmpty()) return 0
+        var found = 0
+        var failuresInARow = 0
+        for (batch in todo.chunked(PARALLEL)) {
+            if (failuresInARow >= MAX_FAILURES) break
+            val results = coroutineScope {
+                batch.map { s ->
+                    async(Dispatchers.IO) {
+                        s to runCatching { runInterruptible { search("${s.artist} ${s.title}") } }
+                    }
+                }.awaitAll()
+            }
+            for ((s, r) in results) {
+                val hits = r.getOrElse { e ->
+                    if (e is kotlinx.coroutines.CancellationException) throw e
+                    failuresInARow++
+                    Log.w(TAG, "Genre backfill: lookup for ${s.videoId} failed (${e.message})")
+                    null
+                } ?: continue
+                failuresInARow = 0
+                val genre = SongPicker.genreFor(s.artist, s.title, s.durationSec, hits)
+                if (store.updateGenre(s.videoId, genre, now().toString()) && genre != null) found++
+                Log.i(TAG, "Genre backfill: ${s.videoId} ${s.artist} - ${s.title}: ${genre ?: "no match"}")
+            }
+        }
+        if (found > 0) onChanged()
+        return found
     }
 }

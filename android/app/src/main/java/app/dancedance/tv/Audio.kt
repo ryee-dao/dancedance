@@ -29,12 +29,130 @@ import kotlin.coroutines.resumeWithException
 
 private const val TAG = "DanceDance"
 
-/** Downloaded songs, app-private, evicted least-recently-used beyond [capBytes]. */
+/**
+ * Downloaded songs, app-private, evicted least-recently-used beyond [capBytes].
+ *
+ * Every finished download is recorded in a small index next to the files ([INDEX_NAME]: the
+ * stream chosen and the file's exact size). A song file without a matching record is "old":
+ * downloaded by an app version that took the highest-bitrate stream (about twice the bytes), or
+ * by a version that ran after this one was downgraded. [sweepOld] deletes those at app start so
+ * the space is freed at once; each such song downloads again, at the new size, the next time it
+ * is prepared (before playback starts).
+ */
 class AudioCache(val dir: File, val capBytes: Long) {
+    /** What a cached file was downloaded as. [bytes] must equal the file's length for the record to count. */
+    data class Stream(val itag: Int, val kbps: Int, val bytes: Long)
+
+    /** Result of the last [sweepOld] that removed anything (kept across launches in the index). */
+    data class Sweep(val filesRemoved: Int, val bytesFreed: Long, val atMs: Long)
+
+    private val indexFile = dir.resolve(INDEX_NAME)
+    private val streams = HashMap<String, Stream>()
+
+    @Volatile var lastSweep: Sweep? = null
+        private set
+
     init {
         dir.mkdirs()
-        // Leftovers from a download that was killed mid-way.
-        dir.listFiles { f -> f.name.endsWith(".part") }?.forEach { it.delete() }
+        // Leftovers from a download that was killed mid-way (and from an index write that was).
+        dir.listFiles { f -> f.name.endsWith(".part") || f.name == "$INDEX_NAME.tmp" }?.forEach { it.delete() }
+        loadIndex()
+    }
+
+    private fun loadIndex() {
+        val text = runCatching { indexFile.takeIf { it.isFile }?.readText() }.getOrNull() ?: return
+        try {
+            val o = org.json.JSONObject(text)
+            o.optJSONObject("files")?.let { files ->
+                for (name in files.keys()) {
+                    val s = files.optJSONObject(name) ?: continue
+                    if (NAME_RE.matches(name)) streams[name] = Stream(s.optInt("itag"), s.optInt("kbps"), s.optLong("bytes", -1))
+                }
+            }
+            o.optJSONObject("lastSweep")?.let { s ->
+                lastSweep = Sweep(s.optInt("filesRemoved"), s.optLong("bytesFreed"), s.optLong("at"))
+            }
+        } catch (e: Exception) {
+            // Unreadable index: every file counts as old and is downloaded again (safe, just slower).
+            Log.w(TAG, "Audio cache: index unreadable (${e.message}); treating cached files as old")
+            streams.clear()
+        }
+    }
+
+    /** Written to a temporary file and renamed over the index, so a kill mid-write leaves the old index. */
+    private fun saveIndex() {
+        try {
+            val files = org.json.JSONObject()
+            for ((name, s) in streams) {
+                files.put(name, org.json.JSONObject().put("itag", s.itag).put("kbps", s.kbps).put("bytes", s.bytes))
+            }
+            val o = org.json.JSONObject().put("version", 1).put("files", files)
+            lastSweep?.let { o.put("lastSweep", org.json.JSONObject().put("filesRemoved", it.filesRemoved).put("bytesFreed", it.bytesFreed).put("at", it.atMs)) }
+            val tmp = dir.resolve("$INDEX_NAME.tmp")
+            tmp.writeText(o.toString())
+            if (!tmp.renameTo(indexFile)) {
+                indexFile.writeText(tmp.readText())
+                tmp.delete()
+            }
+        } catch (e: Exception) {
+            // The file just downloaded then counts as old and is fetched again next time; nothing breaks.
+            Log.w(TAG, "Audio cache: couldn't save the index (${e.message})")
+        }
+    }
+
+    /** Remember what [f] (a finished download, already at its final name) was downloaded as. */
+    @Synchronized
+    fun record(f: File, itag: Int, bitrateBps: Int) {
+        streams[f.name] = Stream(itag, bitrateBps / 1000, f.length())
+        saveIndex()
+    }
+
+    /** The record of [f], if it has one that matches the file on disk. */
+    @Synchronized
+    fun streamOf(f: File): Stream? = streams[f.name]?.takeIf { it.bytes == f.length() && f.isFile }
+
+    /** Downloaded by this app version's rules (see the class comment). */
+    fun isCurrent(f: File): Boolean = streamOf(f) != null
+
+    @Synchronized
+    fun isInUse(f: File): Boolean = f.name in inUse
+
+    /** Delete a cached file and its record. */
+    @Synchronized
+    fun delete(f: File): Boolean {
+        val gone = f.delete() || !f.exists()
+        if (streams.remove(f.name) != null) saveIndex()
+        inUse.remove(f.name)
+        return gone
+    }
+
+    /**
+     * App start: delete every song file without a matching record ("old", see the class comment)
+     * and drop records whose file is gone. Never touches a file in use, a download's .part file or
+     * the index. Stateless, so it is idempotent: a run killed half-way simply finishes on the next
+     * launch, and once everything is current it removes nothing.
+     */
+    @Synchronized
+    fun sweepOld(now: Long = System.currentTimeMillis()): Sweep {
+        var removed = 0
+        var freed = 0L
+        for (f in files()) {
+            if (f.name in inUse || isCurrent(f)) continue
+            val len = f.length()
+            if (f.delete()) {
+                removed++
+                freed += len
+                streams.remove(f.name)
+                Log.i(TAG, "Audio cache: removed old download ${f.name} (${len / 1024} KB)")
+            }
+        }
+        val present = files().map { it.name }.toSet()
+        val stale = streams.keys.filter { it !in present }
+        stale.forEach { streams.remove(it) }
+        val result = Sweep(removed, freed, now)
+        if (removed > 0) lastSweep = result
+        if (removed > 0 || stale.isNotEmpty()) saveIndex()
+        return result
     }
 
     /** The cached file of the first of [formats] ("webm" / "m4a") present. The extension is the format. */
@@ -82,9 +200,11 @@ class AudioCache(val dir: File, val capBytes: Long) {
             if (f.name.substringBeforeLast('.') == videoId && f.delete()) {
                 n++
                 inUse.remove(f.name)
+                streams.remove(f.name)
                 Log.w(TAG, "Audio cache: dropped ${f.name}")
             }
         }
+        if (n > 0) saveIndex()
         return n
     }
 
@@ -93,19 +213,24 @@ class AudioCache(val dir: File, val capBytes: Long) {
     fun evict(keep: Set<File>) {
         var total = totalBytes()
         if (total <= capBytes) return
+        var forgot = false
         for (f in files().sortedBy { it.lastModified() }) {
             if (total <= capBytes) break
             if (f in keep || f.name in inUse) continue
             val len = f.length()
             if (f.delete()) {
                 total -= len
+                forgot = streams.remove(f.name) != null || forgot
                 Log.i(TAG, "Audio cache: evicted ${f.name} (${len / 1024} KB), now ${total / 1024} KB")
             }
         }
+        if (forgot) saveIndex()
     }
 
     companion object {
         val NAME_RE = Regex("^[A-Za-z0-9_-]{11}\\.(m4a|webm)$")
+        /** The stream index (not a song: never matches [NAME_RE], so never served, counted or evicted). */
+        const val INDEX_NAME = "streams.json"
         /** Songs prepared most recently that eviction leaves alone. */
         const val IN_USE_KEEP = 3
     }
@@ -136,9 +261,24 @@ class AudioRepository(
     private val youtube: YouTube,
     private val http: OkHttpClient,
     private val scope: CoroutineScope,
+    /** Stream bitrate to aim for (see [AudioPick.choose]); BuildConfig.AUDIO_TARGET_KBPS in the app. */
+    private val targetBps: Int = AudioPick.DEFAULT_TARGET_KBPS * 1000,
 ) {
     private val jobs = HashMap<String, Deferred<PreparedAudio>>()
     private val slots = Semaphore(2)
+
+    /**
+     * App start: remove old (pre-index, highest-bitrate) downloads before anything is prepared, so
+     * no file the page is using can be among them. [prepare] waits for it (milliseconds).
+     */
+    private val swept: Deferred<AudioCache.Sweep?> = scope.async {
+        runCatching { cache.sweepOld() }
+            .onSuccess { s ->
+                if (s.filesRemoved > 0) Log.i(TAG, "Audio cache: removed ${s.filesRemoved} old downloads, freed ${s.bytesFreed / 1024} KB")
+            }
+            .onFailure { Log.w(TAG, "Audio cache: sweep failed", it) }
+            .getOrNull()
+    }
 
     @Volatile var lastDownload: String? = null
         private set
@@ -150,11 +290,13 @@ class AudioRepository(
     @Volatile var formats: List<String> = AudioPick.DEFAULT_ORDER
 
     suspend fun prepare(videoId: String, progress: (AudioProgress) -> Unit): PreparedAudio {
+        swept.await()
         val order = formats
         // Only the preferred format counts as a hit, so a format switch re-downloads instead of
         // serving the old file (which the LRU then evicts). A damaged copy (an older version's
-        // download, a half-written file) is deleted and downloaded again.
-        validCached(videoId, order.take(1))?.let { return cached(videoId, it) }
+        // download, a half-written file) is deleted and downloaded again. So is an old download
+        // without an index record (the start-up sweep normally removed those already).
+        validCached(videoId, order.take(1), currentOnly = true)?.let { return cached(videoId, it) }
         val job = synchronized(jobs) {
             jobs[videoId]?.takeIf { it.isActive } ?: scope.async { slots.withPermit { download(videoId, order, progress) } }
                 .also { d ->
@@ -174,15 +316,23 @@ class AudioRepository(
         }
     }
 
-    /** The first cached file of [formats] that passes [AudioCheck]; damaged ones are deleted. */
-    private fun validCached(videoId: String, formats: List<String>): File? {
+    /**
+     * The first cached file of [formats] that passes [AudioCheck]; damaged ones are deleted.
+     * [currentOnly]: skip old downloads (no index record), unless the page is using that file
+     * right now (a download must never be renamed over a file that is playing).
+     */
+    private fun validCached(videoId: String, formats: List<String>, currentOnly: Boolean = false): File? {
         for (ext in formats) {
             val f = cache.find(videoId, listOf(ext)) ?: continue
+            if (currentOnly && !cache.isCurrent(f) && !cache.isInUse(f)) {
+                Log.i(TAG, "Audio $videoId: cached ${f.name} is an old download; downloading it again")
+                continue
+            }
             when (val r = AudioCheck.check(f)) {
                 is AudioCheck.Result.Ok -> return f
                 is AudioCheck.Result.Bad -> {
                     Log.w(TAG, "Audio $videoId: cached ${f.name} is damaged (${r.reason}); downloading it again")
-                    f.delete()
+                    cache.delete(f)
                 }
             }
         }
@@ -234,7 +384,7 @@ class AudioRepository(
         var source = resolve(videoId, null, order)
         Log.i(TAG, "Audio $videoId: itag ${source.itag} ${source.ext} ${source.bitrate / 1000} kbps, ${source.contentLength} bytes")
         // The preferred format isn't offered for this video and we already have the one that is.
-        validCached(videoId, listOf(source.ext))?.let { return cached(videoId, it) }
+        validCached(videoId, listOf(source.ext), currentOnly = true)?.let { return cached(videoId, it) }
         val part = cache.partFile(videoId, source.ext)
         var received = 0L
         var total = source.contentLength
@@ -284,12 +434,15 @@ class AudioRepository(
             if (check is AudioCheck.Result.Bad) throw DamagedDownload("downloaded file is damaged (${check.reason})")
             val dest = cache.finalFile(videoId, source.ext)
             if (!part.renameTo(dest)) throw BridgeException("storage", "Couldn't save the song on the projector (storage full?).")
+            // After the rename: a kill in between leaves an unrecorded file, which the next sweep
+            // removes (re-downloaded later), never a record pointing at the wrong bytes.
+            cache.record(dest, source.itag, source.bitrate)
             cache.touch(dest)
             cache.markInUse(dest)
             cache.evict(keep = setOf(dest))
             val ms = SystemClock.elapsedRealtime() - started
-            lastDownload = "$videoId: ${received / 1024} KB in ${ms} ms"
-            Log.i(TAG, "Audio $videoId: downloaded ${received / 1024} KB in $ms ms")
+            lastDownload = "$videoId: ${received / 1024} KB in ${ms} ms (itag ${source.itag}, ${source.bitrate / 1000} kbps)"
+            Log.i(TAG, "Audio $videoId: downloaded ${received / 1024} KB in $ms ms (itag ${source.itag}, ${source.bitrate / 1000} kbps)")
             return PreparedAudio(videoId, dest, source.mimeType, source.durationSec, fromCache = false, downloadMs = ms, primingSec = Mp4Priming.primingSec(dest))
         } catch (t: Throwable) {
             part.delete()
@@ -322,7 +475,7 @@ class AudioRepository(
                 if ((e.code == 403 || e.code == 410) && refreshes < 2) {
                     refreshes++
                     Log.w(TAG, "Audio $videoId: HTTP ${e.code}, refreshing the stream URL")
-                    val fresh = resolve(videoId, source.itag)
+                    val fresh = resolve(videoId, source.itag) // same itag wins over the bitrate target
                     if (fresh.ext != source.ext) throw Errors.classify(e)
                     source = fresh
                     continue
@@ -355,7 +508,7 @@ class AudioRepository(
     }
 
     private suspend fun resolve(videoId: String, preferItag: Int?, order: List<String> = formats): YouTube.AudioSource = try {
-        runInterruptible { youtube.audio(videoId, preferItag, order) }
+        runInterruptible { youtube.audio(videoId, preferItag, order, targetBps) }
     } catch (e: CancellationException) {
         throw e
     } catch (t: Throwable) {

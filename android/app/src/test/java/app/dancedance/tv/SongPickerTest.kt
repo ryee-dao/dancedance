@@ -218,5 +218,45 @@ class SongPickerTest {
         assertEquals(listOf("Take On Me" to 225, "Take On Me (Live)" to 300), hits.map { it.title to it.durationSec })
         assertEquals("https://is1-ssl.mzstatic.com/x/300x300bb.jpg", hits[0].artworkUrl)
         assertEquals("1985", hits[0].year)
+        assertEquals("", hits[0].genre) // no primaryGenreName in these results
+    }
+
+    // --- genre ------------------------------------------------------------------------------
+
+    @Test fun itunesGenreIsKept() {
+        val hits = SongPicker.parseItunes(ItunesFixtures.backInBlood)
+        assertEquals(
+            listOf(132 to "Hip-Hop/Rap", 152 to "Rap", 241 to "Rock"),
+            hits.map { it.durationSec to it.genre },
+        )
+        // A kept hit without a genre borrows its duplicate's (album vs single), like the cloud job.
+        val borrowed = SongPicker.parseItunes(listOf(ItunesFixtures.backInBlood[1], ItunesFixtures.backInBlood[0]))
+        assertEquals(listOf(133 to "Hip-Hop/Rap"), borrowed.map { it.durationSec to it.genre })
+    }
+
+    @Test fun genreCleaning() {
+        assertEquals("Latin Pop", SongPicker.cleanGenre(" Latin \n Pop "))
+        assertEquals("", SongPicker.cleanGenre(7))
+        assertEquals("", SongPicker.cleanGenre(null))
+        assertEquals("", SongPicker.cleanGenre("   "))
+        assertEquals("", SongPicker.cleanGenre("x".repeat(61)))
+        assertEquals("", SongPicker.cleanGenre("Pop\u0007"))
+    }
+
+    @Test fun backfillMatchesArtistTitleAndClosestLength() {
+        val hits = SongPicker.parseItunes(ItunesFixtures.backInBlood)
+        assertEquals("Hip-Hop/Rap", SongPicker.genreFor("Pooh Shiesty", "Back in Blood (feat. Lil Durk)", 132, hits))
+        assertEquals("Rap", SongPicker.genreFor("Pooh Shiesty", "Back in Blood (feat. Lil Durk)", 150, hits))
+        // Normalised names (case, punctuation) still match; unknown length takes the most relevant.
+        assertEquals("Hip-Hop/Rap", SongPicker.genreFor("POOH SHIESTY", "Back In Blood (Feat. Lil Durk)", 0, hits))
+        // Another artist's song of the same name, or nothing matching: no genre rather than a wrong one.
+        assertEquals(null, SongPicker.genreFor("Pooh Shiesty", "Back in Blood", 132, hits))
+        assertEquals(null, SongPicker.genreFor("Lil Durk", "Back in Blood (feat. Lil Durk)", 132, hits))
+        assertEquals(null, SongPicker.genreFor("a-ha", "Take On Me", 225, emptyList()))
+    }
+
+    @Test fun genreRidesAlongButDoesNotChangeTheRanking() {
+        val req = Request("a-ha", "Take On Me", 225)
+        assertEquals(ids(req, takeOnMe), ids(req.copy(genre = "Pop"), takeOnMe))
     }
 }

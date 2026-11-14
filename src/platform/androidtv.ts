@@ -135,6 +135,10 @@ export interface NativeDiagnostics {
   cacheBytes: number;
   cacheFiles: number;
   cacheCapBytes: number;
+  /** Audio stream bitrate the TV aims for (kbps). Older apps: absent. */
+  audioTargetKbps?: number;
+  /** The last start-up sweep that removed old highest-bitrate downloads (at: epoch ms). Older apps: absent. */
+  cacheSweep?: { filesRemoved: number; bytesFreed: number; at: number } | null;
   lastDownload: string | null;
   pagesBaseUrl: string | null;
   cloudRepo: string | null;
@@ -162,7 +166,11 @@ export interface NativeGraphicsInfo {
 }
 
 /** `title` is YouTube's raw title and `artist` the uploader; cleaned up on this side. */
-/** A song added from the phone page: the web's AddedSong plus the chosen video's details. */
+/**
+ * A song added from the phone page: the web's AddedSong plus the chosen video's details.
+ * `genre` (AddedSong) is the iTunes primary genre of the picked track, when known; the TV
+ * looks it up in the background for songs saved before it kept one.
+ */
 export interface TvAddedSong extends AddedSong {
   /** The YouTube video's own title and channel. */
   videoTitle: string;

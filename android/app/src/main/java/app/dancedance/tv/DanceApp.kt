@@ -29,6 +29,8 @@ class DanceApp : Application() {
         private set
     lateinit var addedSongs: AddedSongsStore
         private set
+    lateinit var genreBackfill: GenreBackfill
+        private set
     lateinit var updates: Updates
         private set
 
@@ -51,11 +53,19 @@ class DanceApp : Application() {
         playlists = Playlists(youtube)
         songSearch = SongSearch(http)
         addedSongs = AddedSongsStore(filesDir.resolve("added-songs.json"))
+        // Genres for songs saved before the TV kept them; the page hears about it as addedSongsChanged.
+        genreBackfill = GenreBackfill(
+            addedSongs,
+            search = { term -> songSearch.itunes(term, GenreBackfill.ITUNES_LIMIT) },
+            onChanged = { onAddedSongsChanged?.invoke(null, null) },
+        )
+        genreBackfill.start(scope)
         audio = AudioRepository(
             AudioCache(cacheDir.resolve("audio"), BuildConfig.AUDIO_CACHE_MB * 1024L * 1024L),
             youtube,
             http,
             scope,
+            targetBps = BuildConfig.AUDIO_TARGET_KBPS * 1000,
         )
         cloud = CloudTrigger(http, prefs)
         link = LinkController(this)

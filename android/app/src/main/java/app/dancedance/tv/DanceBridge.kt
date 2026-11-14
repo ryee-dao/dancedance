@@ -126,6 +126,11 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
             .put("cacheBytes", cache.totalBytes())
             .put("cacheFiles", cache.files().size)
             .put("cacheCapBytes", cache.capBytes)
+            .put("audioTargetKbps", BuildConfig.AUDIO_TARGET_KBPS)
+            // The last start-up sweep that removed old (highest-bitrate) downloads, if any.
+            .put("cacheSweep", cache.lastSweep?.let {
+                JSONObject().put("filesRemoved", it.filesRemoved).put("bytesFreed", it.bytesFreed).put("at", it.atMs)
+            } ?: JSONObject.NULL)
             .put("lastDownload", app.audio.lastDownload ?: JSONObject.NULL)
             .put("pagesBaseUrl", BuildConfig.PAGES_BASE_URL ?: JSONObject.NULL)
             .put("cloudRepo", BuildConfig.GITHUB_REPO ?: JSONObject.NULL)
@@ -135,7 +140,7 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
             .toString()
     }
 
-    /** JSON array of added songs, oldest first: {videoId, title, artist, addedAt, durationSec, note?, videoTitle, channel, tier}. */
+    /** JSON array of added songs, oldest first: {videoId, title, artist, addedAt, durationSec, note?, genre?, videoTitle, channel, tier}. */
     @JavascriptInterface
     fun getAddedSongs(): String = app.addedSongs.toJson().toString()
 
