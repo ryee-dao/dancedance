@@ -1,10 +1,10 @@
 {
- "catalogueHash": "a4d48db9",
+ "catalogueHash": "dfc267d1",
  "threshold": 0.085,
  "stats": {
-  "baseMoves": 1259,
+  "baseMoves": 1281,
   "candidates": 8890,
-  "counted": 1308,
+  "counted": 1304,
   "ornaments": 2479,
   "byType": {
    "alt": {
@@ -22,8 +22,8 @@
    "half": {
     "candidates": 355,
     "invalid": 0,
-    "notUnique": 109,
-    "accepted": 246
+    "notUnique": 110,
+    "accepted": 245
    },
    "low": {
     "candidates": 517,
@@ -34,8 +34,8 @@
    "combo": {
     "candidates": 5101,
     "invalid": 38,
-    "notUnique": 4260,
-    "accepted": 803
+    "notUnique": 4263,
+    "accepted": 800
    },
    "hips": {
     "candidates": 409,
@@ -753,7 +753,6 @@
   ["dhamaal~combo~dhamaal+hairFlip", "dhamaal", "combo", "dhamaal", "hairFlip"],
   ["dhamaal~combo~dhamaal+kitePull", "dhamaal", "combo", "dhamaal", "kitePull"],
   ["dhamaal~combo~dhamaal+latinCrossUp", "dhamaal", "combo", "dhamaal", "latinCrossUp"],
-  ["dhamaal~combo~dhamaal+lightBulb", "dhamaal", "combo", "dhamaal", "lightBulb"],
   ["dhamaal~combo~dhamaal+lotus", "dhamaal", "combo", "dhamaal", "lotus"],
   ["dhamaal~combo~dhamaal+matka", "dhamaal", "combo", "dhamaal", "matka"],
   ["dhamaal~combo~dhamaal+namasteOpen", "dhamaal", "combo", "dhamaal", "namasteOpen"],
@@ -1349,7 +1348,6 @@
   ["jazz-walk-overhead-cross~spin", "jazz-walk-overhead-cross", "spin"],
   ["jazz-walk-point~clap4", "jazz-walk-point", "clap4"],
   ["jazz-walk-point~diag", "jazz-walk-point", "diag"],
-  ["jazz-walk-point~half", "jazz-walk-point", "half"],
   ["jazz-walk-point~hit4", "jazz-walk-point", "hit4"],
   ["jazz-walk-point~spin", "jazz-walk-point", "spin"],
   ["jazz-walk-port-de-bras~clap4", "jazz-walk-port-de-bras", "clap4"],
@@ -1980,7 +1978,6 @@
   ["lunge-reach~combo~sideLunge+popHeart", "lunge-reach", "combo", "sideLunge", "popHeart"],
   ["lunge-reach~combo~sideLunge+popShortyArms", "lunge-reach", "combo", "sideLunge", "popShortyArms"],
   ["lunge-reach~combo~sideLunge+rkDrums", "lunge-reach", "combo", "sideLunge", "rkDrums"],
-  ["lunge-reach~combo~sideLunge+rkFistBang", "lunge-reach", "combo", "sideLunge", "rkFistBang"],
   ["lunge-reach~combo~sideLunge+rkLighter", "lunge-reach", "combo", "sideLunge", "rkLighter"],
   ["lunge-reach~combo~sideLunge+rkSlapBass", "lunge-reach", "combo", "sideLunge", "rkSlapBass"],
   ["lunge-reach~combo~sideLunge+robot", "lunge-reach", "combo", "sideLunge", "robot"],
@@ -3444,7 +3441,6 @@
   ["sumo-squat~diag", "sumo-squat", "diag"],
   ["sumo-squat~spin", "sumo-squat", "spin"],
   ["suzy-q~clap4", "suzy-q", "clap4"],
-  ["suzy-q~combo~salsaSuzyQ+latinSnake", "suzy-q", "combo", "salsaSuzyQ", "latinSnake"],
   ["suzy-q~diag", "suzy-q", "diag"],
   ["suzy-q~double", "suzy-q", "double"],
   ["suzy-q~hit4", "suzy-q", "hit4"],

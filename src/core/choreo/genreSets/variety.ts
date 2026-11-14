@@ -32,4 +32,10 @@ export const moves: Partial<Record<string, string>> = {
   // The thin Latin-dance sets (families/latin2.ts).
   bachata: `bachata-turn bachata-body-wave bachata-hair-comb dominican-cross-step bachata-double-tap`,
   tango: `tango-ocho tango-boleo tango-cruzada tango-lunge tango-caricia tango-molinete`,
+  // Regional Mexican and cumbia (families/mexican.ts), flamenco (families/flamenco.ts).
+  mexican: `zapateado campanas puntas remate caballito quebradita-hop`,
+  cumbia: `cumbia-side-basic cumbia-kick-back cumbia-circle cumbia-hat-sway pollera-wave cumbia-turn`,
+  flamenco: `flamenco-braceo flamenco-marcaje flamenco-llamada`,
+  // Arabic, Turkish and North African pop (families/world2.ts).
+  bellydance: `hip-lifts hip-slides maya hip-shimmy khaleeji-hair-toss khaleeji-step saidi-cane-hop`,
 };

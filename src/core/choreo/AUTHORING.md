@@ -168,15 +168,22 @@ borrow needs a `NEIGHBOURS` entry with the dance reason next to it.
 | `amapiano` | vosho, pouncing cat, tshwala bam, slow knee bounces on the log drum | amapiano, gqom, kwaito, South African house; log-drum bass at ~108-116 BPM | borrows afro (parent; usually open by the theme) | `genreSets/mood.ts` |
 | `lyrical` | reaches, arm sweeps, port de bras, slow turns, arcing lunges, balances, contractions / releases, body waves | a calm song (`calm` ~0.74+ with analyser 1.4.0, and not intense), ballads, ambient, classical; any family | none (smooth global moves) | `genreSets/mood.ts` |
 | `salsa` | salsa basic, back basic, side salsa, right turn, New Yorker | salsa, mambo, timba, son cubano | Latin lends (mambo, cha-cha); cumbia | `genres.ts` RAW |
-| `bachata` | bachata side and forward basics (+ their own variations) | bachata | opens Latin while this small | `genres.ts` RAW |
-| `cumbia` | cumbia step, machete, sau, candle | cumbia, vallenato, champeta | opens Latin while small; regional Mexican | `genres.ts` RAW |
-| `flamenco` | flamenco arms, palmas, turn, paso doble cape | flamenco, rumba flamenca, paso doble, sevillanas | closes Latin; borrows tango | `genres.ts` RAW |
-| `tango` | tango walk | tango, nuevo tango, electrotango | closes Latin; borrows flamenco, lyrical (calm) | `genres.ts` RAW |
-| `mexican` | folklórico skirt, hat dance heels | regional Mexican, banda, norteño, mariachi, corridos, Tejano | closes Latin; borrows cumbia, folk (polka), country | `genres.ts` RAW |
+| `bachata` | bachata side and forward basics (+ their own variations), the turn, body wave, hair comb, Dominican cross step, double tap | bachata | Latin lends (opened it outright while below 6 moves) | `genres.ts` RAW, `genreSets/variety.ts` |
+| `cumbia` | cumbia step, machete, sau, candle, side basic, kick & back, circle basic, turn, hat sway, pollera wave | cumbia, vallenato, champeta, technocumbia, cuarteto | Latin lends (opened it outright while below 6 moves); regional Mexican | `genres.ts` RAW, `genreSets/variety.ts` |
+| `flamenco` | flamenco arms, palmas, turn, paso doble cape, braceo, marcaje, llamada | flamenco, rumba flamenca, paso doble, sevillanas | closes Latin; borrows tango | `genres.ts` RAW, `genreSets/variety.ts` |
+| `tango` | tango walk, forward ochos, boleo, cruzada, lunge (corté), caricia, molinete, in a solo embrace | tango, nuevo tango, electrotango | closes Latin; borrows flamenco, lyrical (calm) | `genres.ts` RAW, `genreSets/variety.ts` |
+| `mexican` | folklórico skirt, hat dance heels, zapateado, huapango campanas, puntas, remate, the banda caballito, quebradita hop | regional Mexican, banda, norteño, mariachi, corridos, Tejano, quebradita, tecnobanda | closes Latin; borrows cumbia, folk (polka), country | `genres.ts` RAW, `genreSets/variety.ts` |
 | `merengue`, `chacha` | (their steps are Latin's) | merengue; cha-cha, danzón, rumba, ballroom | open Latin; NAMED_DANCE favours their moves | - |
 | `gospel` | choir step and clap, choir two-step, raised-hand praise, lifted hands, point to heaven, handkerchief wave, tambourine, bow and rise, the praise-break shout and shout hops, step-team stomps | gospel (traditional, urban contemporary, southern), worship, CCM, contemporary Christian, the iTunes "Christian & Gospel" tag; "Christian rock / metal / hip hop" read as their second word | none; borrows R&B, soul / funk grooves, lyrical (calm) | `genreSets/variety.ts` |
 
-Country is one set: its moves are line-dance / hoedown steps, which serve
+Belly dance (the tradition set every Arabic, Turkish, raï, shaabi,
+khaleeji and mizrahi name opens) grew in the genre survey from 3 to 10:
+hip lifts, hip slides, the maya, the hip shimmy, the khaleeji hair toss
+and drop step, the saidi cane hop (`families/world2.ts`).
+
+Country is one set: its moves are line-dance / hoedown steps (grown in the
+genre survey with heel splits, the rolling vine, slappin' leather and the
+zydeco rubboard scratch, `families/country2.ts`), which serve
 country-pop at tempo as well; a country ballad closes it by its calm (and
 waltz steps live in `swing`). A two-step is a travelling partner dance that
 doesn't read as a solo front-facing move beyond a step-touch.
