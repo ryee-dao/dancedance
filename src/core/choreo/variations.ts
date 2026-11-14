@@ -87,6 +87,37 @@ export function layerGenre(kind: 'foot' | 'arms', id: string): Genre | null {
   return patternGenre.get(`${kind}:${id}`) ?? null;
 }
 
+/** Genre sets with a catalogue move on each footwork. */
+let footSets: Map<string, Set<Genre>> | null = null;
+
+/** Whether a move of genre set `g` dances footwork `id` (the footwork is native to the set). */
+function footNative(id: string, g: Genre): boolean {
+  if (!footSets) {
+    footSets = new Map();
+    for (const m of MOVES) {
+      if (!m.layered || m.cooldown || m.idle || !m.foot || !m.arms || !m.genre) continue;
+      if (!footSets.has(m.foot)) footSets.set(m.foot, new Set());
+      footSets.get(m.foot)!.add(m.genre);
+    }
+  }
+  return footSets.get(id)?.has(g) ?? false;
+}
+
+/** A foot this high (pose y) is a kick or a high knee. */
+const KICK_LIFT = 0.15;
+
+/**
+ * Footwork with a strong tone of its own: jumps, stomps (impact) and kicks.
+ * Under a genre set's arms it makes a move of that set only where the set's
+ * own moves dance it (footNative): a rock snap kick or an aerobics jog under
+ * samba arms is not samba. Plain bases (step touch, march, sway, box step ...)
+ * pair with any set's arms.
+ */
+function tonedFoot(p: Pattern): boolean {
+  if (p.jump || p.impact) return true;
+  return p.keys.some(([, s]) => Math.max(s.rf?.[1] ?? 0, s.lf?.[1] ?? 0) >= KICK_LIFT);
+}
+
 /** Genre of a recombination (the genre of a layer that has one); undefined = global, null = two different genres. */
 function comboGenre(foot: string, arms: string): Genre | undefined | null {
   const f = layerGenre('foot', foot), a = layerGenre('arms', arms);
@@ -205,7 +236,11 @@ export function variationCandidates(): VariationSpec[] {
       const neutral = NEUTRAL_FEET.has(fId);
       if (!neutral && ![...fi.families].some((f) => ai.families.has(f))) continue;
       // Never mix two genre sets (salsa feet under bhangra arms).
-      if (comboGenre(fId, aId) === null) continue;
+      const genre = comboGenre(fId, aId);
+      if (genre === null) continue;
+      // A genre from the arms alone: strongly toned footwork joins that set only where its own moves dance it
+      // (the families pooled over every move on a footwork let a kick pair with samba arms through one latin move).
+      if (genre && !layerGenre('foot', fId) && !neutral && tonedFoot(fp) && !footNative(fId, genre)) continue;
       const base = neutral ? ai.canon : fi.canon;
       out.push({ id: `${base.id}~combo~${fId}+${aId}`, base: base.id, type: 'combo', foot: fId, arms: aId });
     }

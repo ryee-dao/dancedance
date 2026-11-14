@@ -13,6 +13,7 @@ import { resolveSongStyle, type SongInfo, type SongStyle } from './songStyle';
 import { songMap } from './testutil';
 import { layerGenre } from './variations';
 import { moveWeights } from './weights';
+import { FOOT } from './catalog';
 
 const LEVELS: Intensity[] = ['chill', 'cardio', 'sweaty'];
 const DANCE = MOVES.filter((m) => !m.idle && !m.cooldown);
@@ -64,6 +65,23 @@ describe('two tiers: global and genre-exclusive', () => {
       expect(f && a && f !== a, v.id).toBeFalsy();
       expect(v.genre, v.id).toBe(f ?? a ?? undefined);
     }
+  });
+
+  it('a kick, jump or stomp joins a genre set\'s arms only where that set\'s own moves dance it (no snap kick in samba)', () => {
+    const native = new Map<string, Set<string>>();
+    for (const m of DANCE) if (m.genre && m.layered && m.foot) native.set(m.foot, (native.get(m.foot) ?? new Set()).add(m.genre));
+    const leaks: string[] = [];
+    let toned = 0;
+    for (const v of getPool().variations) {
+      if (!v.id.includes('~combo~') || !v.genre || layerGenre('foot', v.foot!)) continue;
+      const p = FOOT[v.foot!];
+      if (!(p.jump || p.impact || p.keys.some(([, s]) => Math.max(s.rf?.[1] ?? 0, s.lf?.[1] ?? 0) >= 0.15))) continue;
+      toned++;
+      if (!native.get(v.foot!)?.has(v.genre)) leaks.push(`${v.genre}: ${v.id}`);
+    }
+    expect(leaks).toEqual([]);
+    // Kicks and stomps a set does dance still recombine with its arms.
+    expect(toned).toBeGreaterThan(10);
   });
 
   it('has a global library of hundreds of moves, genre groups of 45+ for the big genres, and at most 100 genre moves open to one style', () => {

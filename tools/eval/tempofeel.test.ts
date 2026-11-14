@@ -4,8 +4,11 @@
  * the free time of a beatless map, without audio: every saved sample with a
  * researched stepping tempo (expectations / audio targets `danceBpm`, `altBpm`).
  *
- *   run-20261115 and its round1-rescore   the saved analyser 1.4.0 maps, styled as the app
- *                                          does (the looked-up genres, levels, artist genres)
+ *   run-20261115 and its round1-rescore,  the saved analyser 1.4.0 maps, styled as the app
+ *   fast-20261114                          does (the looked-up genres, levels, artist genres);
+ *                                          fast-20261114: 28 well-known genuinely fast songs
+ *                                          (pop, hip-hop, rock, rock and roll, ska, northern
+ *                                          soul, K-pop, merengue) and controls, hand-picked
  *   run-20261113, heldout-20261114,        the recorded 1.4.0 trait statistics (stats.json)
  *   famous14                               on an even grid at the recorded tempo; heldout is
  *                                          styled from its iTunes tag only, famous14 from the
@@ -19,7 +22,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { BeatMap } from '../../src/core/analysis';
 import { traitsFromStats } from '../../src/core/analysis/traits';
-import { danceFeel, feelAudio, generateRoutine, STEADY_TIME_BPM, tempoCandidates } from '../../src/core/choreo/generator';
+import { calmToned, danceFeel, feelAudio, generateRoutine, STEADY_TIME_BPM, tempoCandidates } from '../../src/core/choreo/generator';
 import { resolveSongStyle, type SongStyle } from '../../src/core/choreo/songStyle';
 import { traitsOf } from '../../src/core/choreo/songTraits';
 import type { GenreLookup } from '../../src/genre';
@@ -96,6 +99,7 @@ function load(): Case[] {
   for (const [set, dir, expect, targets] of [
     ['r2', 'run-20261115', 'run-20261115/expectations.json', ''],
     ['r1', 'run-20261115/round1-rescore', 'run-20261113/expectations.json', 'run-20261113/audio-targets.json'],
+    ['fast', 'fast-20261114', 'fast-20261114/audio-targets.json', ''],
   ] as const) {
     const songs = read<{ songs: SampledSong[] }>(join(DATA, dir, 'sample.json'), { songs: [] }).songs;
     const lookups = read<Record<string, GenreLookup>>(join(DATA, dir, 'genre-lookups.json'), {});
@@ -163,6 +167,21 @@ describe.skipIf(!existsSync(join(DATA, 'run-20261115', 'maps')))('real music: th
     expect(fixed.length).toBeGreaterThanOrEqual(dbl.length - 1);
   });
 
+  it('genuinely fast songs (pop, hip-hop, rock, rock and roll, ska, northern soul, K-pop) counted fast keep their count', () => {
+    // data/fast-20261114: 28 well-known fast songs and a few controls, researched before the tempo feel was retuned.
+    const fast = graded.filter((g) => g.set === 'fast' && g.counted && g.target!.danceBpm![0] >= 140);
+    expect(fast.length).toBeGreaterThanOrEqual(12);
+    expect(fast.filter((g) => !g.ok).map(label)).toEqual([]);
+  });
+
+  it('a fast song counted at half steps at its tempo when the analysis offers the double strongly', () => {
+    const half = graded.filter((g) => within(g.map.bpm * 2, g.target!.danceBpm) && !within(g.map.bpm, g.target!.danceBpm) && !within(g.map.bpm, g.target!.altBpm));
+    const strong = half.filter((g) => (tempoCandidates(g.map).double ?? 0) >= 0.75);
+    console.log(`[tempofeel] half counts stepped at the tempo ${half.filter((g) => g.feel === 2).length}/${half.length}; not: ${half.filter((g) => g.feel !== 2).map(label).join('; ')}`);
+    expect(strong.length).toBeGreaterThanOrEqual(4);
+    expect(strong.filter((g) => g.feel !== 2).map(label)).toEqual([]);
+  });
+
   it('most songs are danced in their researched range', () => {
     const ok = graded.filter((g) => g.ok).length;
     console.log(`[tempofeel] in range ${ok}/${graded.length}`);
@@ -179,6 +198,10 @@ describe.skipIf(!existsSync(join(DATA, 'run-20261115', 'maps')))('real music: th
         expect(r.freeTime, c.key).toBe(true);
         expect(r.bpm!, c.key).toBeGreaterThanOrEqual(STEADY_TIME_BPM[0]);
         expect(r.instances.filter((i) => i.move.genre === 'lyrical'), c.key).toEqual([]);
+        // ... and its own character: no calm-toned flow (tai chi, yoga, ballet arms) outside the warm-up and the outro.
+        const first = Math.min(...r.instances.filter((i) => i.phrase >= 0).map((i) => i.phrase));
+        const main = r.instances.filter((i) => !i.move.idle && !i.move.cooldown && i.section !== 'intro' && i.section !== 'outro' && i.phrase !== first);
+        expect(main.filter((i) => calmToned(i.move)).map((i) => i.move.name), `${c.key} ${lv}`).toEqual([]);
       }
     }
     // The calm beatless ones (jazz ballads, a recitative, a slow piano ballad) keep the slow flow.

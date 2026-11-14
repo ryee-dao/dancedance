@@ -197,6 +197,29 @@ describe('tempo feel', () => {
     }
   });
 
+  it('a busy rhythm is energetic whatever the timbre: Hey Ya! keeps its 159', () => {
+    const heyya = resolveSongStyle({ genres: ['funk', 'neo soul', 'alternative hip hop', 'electro', 'pop soul', 'soul'] }, { bpm: 159, traits: { calm: 0.02, intensity: 0.43, drive: 0.9 } });
+    expect(danceFeel(heyya, 159, { half: 0.16, halfBackbeat: 0 }, { intensity: 0.43, drive: 0.9 })).toBe(1);
+    // The same sound on a sparse rhythm (the soft double counts read drive 0.67-0.75) is halved.
+    expect(danceFeel(heyya, 159, { half: 0.16, halfBackbeat: 0 }, { intensity: 0.43, drive: 0.7 })).toBe(0.5);
+  });
+
+  it('a strong double candidate on an energetic song doubles a half count; never on a calm or soft one', () => {
+    // Shake It Off counted at 80 (doubleTempo 1, intensity 0.84), Footloose at 87, Happy at 80 (0.81).
+    const pop = resolveSongStyle({ genres: ['dance-pop', 'synth-pop', 'pop'] }, { bpm: 80, traits: { calm: 0, intensity: 0.84, drive: 0.89 } });
+    expect(danceFeel(pop, 80, { double: 1 }, { intensity: 0.84, drive: 0.89 })).toBe(2);
+    expect(danceFeel(pop, 80, { double: 0.81 }, { intensity: 0.69, drive: 1 })).toBe(2);
+    expect(danceFeel(pop, 80, { double: 0.4 }, { intensity: 0.84, drive: 0.89 })).toBe(1);
+    // A counted metal song at 98 with a fair double candidate stays (its genre steps there).
+    const metal = resolveSongStyle({ genres: ['nu metal', 'alternative metal'] }, { bpm: 98, traits: { calm: 0, intensity: 0.77, drive: 0.68 } });
+    expect(danceFeel(metal, 98, { double: 0.61 }, { intensity: 0.77, drive: 0.68 })).toBe(1);
+    // A piano ballad's busy accompaniment (My Immortal: doubleTempo 0.84) is not its step, nor a soft song's.
+    const ballad = resolveSongStyle({ genres: ['gothic rock', 'piano rock'] }, { bpm: 75, traits: { calm: 1, intensity: 0.06, drive: 0.16 } });
+    expect(danceFeel(ballad, 75, { double: 0.84 }, { intensity: 0.06, drive: 0.16 })).toBe(1);
+    const soft = resolveSongStyle({ genres: ['mandopop'] }, { bpm: 80, traits: { calm: 0.44, intensity: 0.22, drive: 0.69 } });
+    expect(danceFeel(soft, 80, { double: 0.53 }, { intensity: 0.22, drive: 0.69 })).toBe(1);
+  });
+
   it('dances the whole song on the felt grid and says so', () => {
     const map: BeatMap = { ...songMap(150, 'feel'), traits: { calm: 0, halfTempo: 1, halfFeel: 1 } as BeatMap['traits'] };
     const r = generateRoutine(map, 'cardio', { style: hiphop });

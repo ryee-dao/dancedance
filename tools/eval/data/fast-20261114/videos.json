@@ -1,0 +1,322 @@
+{
+  "heyya": {
+    "status": "ok",
+    "id": "RqIRp4QE-1k",
+    "title": "OutKast - Hey Ya! (Lyrics)",
+    "channel": "7clouds",
+    "tier": "lyric",
+    "seconds": 236,
+    "views": 23066238,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "takeonme": {
+    "status": "ok",
+    "id": "irljBY9J5ig",
+    "title": "a-Ha - Take On Me [lyrics]",
+    "channel": "Lyricosaurus",
+    "tier": "lyric",
+    "seconds": 230,
+    "views": 11980745,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "footloose": {
+    "status": "ok",
+    "id": "FDMHZFJnk2s",
+    "title": "Kenny Loggins - Footloose (Lyrics)",
+    "channel": "Unique Sound",
+    "tier": "lyric",
+    "seconds": 228,
+    "views": 37573418,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "shakeitoff": {
+    "status": "ok",
+    "id": "8xG7mH8i-WE",
+    "title": "Shake It Off - Taylor Swift (Lyrics) 🎵",
+    "channel": "Pillow",
+    "tier": "lyric",
+    "seconds": 218,
+    "views": 55357204,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "happy": {
+    "status": "ok",
+    "id": "jv-pYB0Qw9A",
+    "title": "Pharrell Williams - Happy (Lyrics)",
+    "channel": "AnimeOracle",
+    "tier": "lyric",
+    "seconds": 238,
+    "views": 8138602,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "maniac": {
+    "status": "ok",
+    "id": "bqA0fhm3BY0",
+    "title": "Michael Sembello - Maniac (Lyrics)",
+    "channel": "Audioandlyrics",
+    "tier": "lyric",
+    "seconds": 246,
+    "views": 4226035,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "wakemeup": {
+    "status": "ok",
+    "id": "JTBoLANhyVA",
+    "title": "Wham! - Wake Me Up Before You Go-Go (Official Lyric Video)",
+    "channel": "WHAM!",
+    "tier": "official",
+    "seconds": 232,
+    "views": 143012,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "stillstanding": {
+    "status": "ok",
+    "id": "MDPLNNYVvOA",
+    "title": "Elton John - I'm Still Standing (Official Lyric Video)",
+    "channel": "Elton John",
+    "tier": "official",
+    "seconds": 183,
+    "views": 2867783,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "brightside": {
+    "status": "ok",
+    "id": "SrkeWsQZNyU",
+    "title": "The Killers - Mr Brightside (LYRICS)",
+    "channel": "gdfgdfgdfg",
+    "tier": "lyric",
+    "seconds": 225,
+    "views": 30601672,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "dontstopmenow": {
+    "status": "ok",
+    "id": "MHi9mKq0slA",
+    "title": "Queen - Don't Stop Me Now (Official Lyric Video)",
+    "channel": "Queen Official",
+    "tier": "official",
+    "seconds": 211,
+    "views": 7629581,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "runawaybaby": {
+    "status": "ok",
+    "id": "HIgvP7B3Hg8",
+    "title": "Bruno Mars - Runaway Baby (Official Lyric Video)",
+    "channel": "Bruno Mars",
+    "tier": "official",
+    "seconds": 148,
+    "views": 52322750,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "pumpit": {
+    "status": "ok",
+    "id": "aGj-tt1FeHQ",
+    "title": "Black Eyed Peas - Pump It (Lyrics)",
+    "channel": "Blissful Mind",
+    "tier": "lyric",
+    "seconds": 214,
+    "views": 35162938,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "onestepbeyond": {
+    "status": "ok",
+    "id": "dv_kJCMN4EU",
+    "title": "Madness - One Step Beyond (Official Audio)",
+    "channel": "Madness",
+    "tier": "official",
+    "seconds": 138,
+    "views": 837834,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "monkeyman": {
+    "status": "ok",
+    "id": "k8N3vRfpN4k",
+    "title": "The Maytals - Monkey Man (With Lyrics)",
+    "channel": "Allan Taipalus",
+    "tier": "relaxed-plain-lyric",
+    "seconds": 227,
+    "views": 1031,
+    "strictPick": false,
+    "fallbackSearch": true
+  },
+  "taintedlove": {
+    "status": "ok",
+    "id": "9obvlVPJBEg",
+    "title": "Tainted Love",
+    "channel": "Gloria Jones - Topic",
+    "tier": "topic",
+    "seconds": 132,
+    "views": 960069,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "doiloveyou": {
+    "status": "ok",
+    "id": "RijdLIGomTs",
+    "title": "Do I Love You (Indeed I Do)",
+    "channel": "Frank Wilson - Topic",
+    "tier": "topic",
+    "seconds": 153,
+    "views": 467426,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "rockthistown": {
+    "status": "ok",
+    "id": "46935NAqjhQ",
+    "title": "Stray Cats Rock This Town Lyrics",
+    "channel": "thevideoman9",
+    "tier": "lyric",
+    "seconds": 204,
+    "views": 2112269,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "rockaroundtheclock": {
+    "status": "ok",
+    "id": "O21xFX7QBpE",
+    "title": "Bill Haley - Rock Around the Clock lyrics",
+    "channel": "sademetsävelho",
+    "tier": "lyric",
+    "seconds": 131,
+    "views": 5198129,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "greatballs": {
+    "status": "ok",
+    "id": "0VJ1NuAbEBI",
+    "title": "Great Balls Of Fire",
+    "channel": "JerryLeeLewisTV",
+    "tier": "topic",
+    "seconds": 154,
+    "views": 39018944,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "johnnybgoode": {
+    "status": "ok",
+    "id": "9qTdxotGHtY",
+    "title": "Chuck Berry - Johnny B. Goode | Lyrics",
+    "channel": "TRVPE [Music Lyrics]",
+    "tier": "lyric",
+    "seconds": 161,
+    "views": 752787,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "supershy": {
+    "status": "ok",
+    "id": "NgEaOJ7lRWY",
+    "title": "NewJeans 'Super Shy' Lyrics (뉴진스 Super Shy 가사) (Color Coded Lyrics)",
+    "channel": "Jaeguchi",
+    "tier": "lyric",
+    "seconds": 155,
+    "views": 24836073,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "asifitsyourlast": {
+    "status": "ok",
+    "id": "OYiH3t5tZgo",
+    "title": "BLACKPINK - AS IF IT'S YOUR LAST (마지막처럼) [HAN|ROM|ENG Color Coded Lyrics]",
+    "channel": "krystalized",
+    "tier": "lyric",
+    "seconds": 214,
+    "views": 50223261,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "suavemente": {
+    "status": "ok",
+    "id": "YuIVPaPC0Qw",
+    "title": "Suavemente - Elvis Crespo Lyrics English and Spanish (Translation)",
+    "channel": "Lirica - Language Learning with Music",
+    "tier": "lyric",
+    "seconds": 269,
+    "views": 1444258,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "bilirrubina": {
+    "status": "ok",
+    "id": "xq5AgB8cWN8",
+    "title": "Juan Luis Guerra 4.40 - La Bilirrubina (Lyric Video)",
+    "channel": "Karen Records",
+    "tier": "lyric",
+    "seconds": 247,
+    "views": 4744588,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "differentology": {
+    "status": "ok",
+    "id": "4IkHsu01Pbw",
+    "title": "Differentology",
+    "channel": "Bunji Garlin - Topic",
+    "tier": "topic",
+    "seconds": 264,
+    "views": 403242,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "kalemba": {
+    "status": "not-found",
+    "message": "20 search results (3 searches), none matches the song and its length"
+  },
+  "dejavu": {
+    "status": "not-found",
+    "message": "23 search results (3 searches), none matches the song and its length"
+  },
+  "sk8erboi": {
+    "status": "ok",
+    "id": "YHymfdlGaVU",
+    "title": "Avril Lavigne - Sk8er Boi (Official Lyric Video)",
+    "channel": "Avril Lavigne",
+    "tier": "official",
+    "seconds": 205,
+    "views": 3665049,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "ohhappyday": {
+    "status": "not-found",
+    "message": "17 search results (3 searches), none matches the song and its length"
+  },
+  "wantyouback": {
+    "status": "ok",
+    "id": "iiGY7zX7VqQ",
+    "title": "Jackson 5 - I Want You Back (Lyric Video)",
+    "channel": "Classic Motown",
+    "tier": "lyric",
+    "seconds": 180,
+    "views": 7724077,
+    "strictPick": true,
+    "fallbackSearch": false
+  },
+  "loseyourself": {
+    "status": "ok",
+    "id": "tR1ECf4sEpw",
+    "title": "Eminem - Lose Yourself (Lyrics)",
+    "channel": "7clouds",
+    "tier": "lyric",
+    "seconds": 321,
+    "views": 131064186,
+    "strictPick": true,
+    "fallbackSearch": false
+  }
+}

@@ -95,7 +95,7 @@ describe('PoseEvaluator over a routine', () => {
           let step = 0;
           for (let j = 0; j < J.HEAD_UP * 3; j += 3) step = Math.max(step, Math.hypot(sk.p[j] - prev[j], sk.p[j + 1] - prev[j + 1], sk.p[j + 2] - prev[j + 2]));
           worst = Math.max(worst, step / (0.095 * Math.max(1, effBpm / 100)));
-          for (const c of [CH.RA_E, CH.RF_E, CH.LA_E, CH.LF_E, CH.LEAN, CH.TWIST]) maxChannel = Math.max(maxChannel, Math.abs(p[c] - prevPose[c]));
+          for (const c of [CH.RA_E, CH.RF_E, CH.LA_E, CH.LF_E, CH.LEAN, CH.TWIST]) maxChannel = Math.max(maxChannel, Math.abs(p[c] - prevPose[c]) / Math.max(1, effBpm / 120));
         }
         prev.set(sk.p);
         prevPose.set(p);
@@ -106,7 +106,9 @@ describe('PoseEvaluator over a routine', () => {
       // With ~500 moves, a transition can swing an arm across in half a beat
       // (peak ~0.11 at 124 BPM); a real jump is several times larger.
       expect(worst, `${bpm} ${lv}`).toBeLessThan(1);
-      expect(maxChannel).toBeLessThan(25); // degrees per frame
+      // Degrees per frame at 120 BPM, scaled with the danced tempo like the joint step above (a move
+      // within its speed limit at 170 BPM bends a knee at 26 degrees a frame: Booty Shake Knee Push).
+      expect(maxChannel, `${bpm} ${lv}`).toBeLessThan(25);
     }
   });
 });

@@ -86,7 +86,7 @@
 
 import type { BeatMap, SectionType } from '../analysis/beatmap';
 import type { Pose } from '../coach/skeleton';
-import { BORROW_CLOSE, BORROW_MAX, FAMILY_GENRE, LATIN_DANCES, SUB_OPEN, THEME_GENRES, borrowShare, borrowSources, isSubStyle, genreOpenness as styleOpenness, songGenres, type Genre, type Lend, type SubStyle } from './genres';
+import { BORROW_CLOSE, BORROW_MAX, FAMILY_GENRE, LATIN_DANCES, SUB_OPEN, THEME_GENRES, borrowShare, borrowSources, genreDepth, isSubStyle, genreOpenness as styleOpenness, songGenres, type Genre, type Lend, type SubStyle } from './genres';
 import { IDLE_MOVE, MOVES, keysOf, type Level, type Move } from './moves';
 import { getPool, warmPool } from './pool';
 import { BALANCED_POP, readGenre, signatureMoveIds, styleKey, type SongStyle } from './songStyle';
@@ -204,9 +204,10 @@ export function styleFactor(m: Move, style: SongStyle): number {
     w *= fo;
   }
   if (style.themes.length) {
+    // A flavour theme (themeW) counts its weight.
     let n = 0;
-    for (const t of m.themes) if (style.themes.includes(t)) n++;
-    if (n) w *= n >= 2 ? 4 : 3;
+    for (const t of m.themes) if (style.themes.includes(t)) n += style.themeW?.[t] ?? 1;
+    if (n > 0) w *= n >= 2 ? 4 : n >= 1 ? 3 : 1 + 2 * n;
   }
   return w;
 }
@@ -968,6 +969,8 @@ export class Choreographer {
   /** The genre beats the plan chose (assignGenres), and the beats of borrowed moves cast so far. */
   private genrePlanned = 0;
   private lentBeats = 0;
+  /** Share of the usual genre time the open sets carry (genres.ts genreDepth: 1 unless only flavour themes opened them). */
+  private depth = 1;
 
   constructor(seedKey: string, intensity: Intensity, half: boolean, opts: RoutineOpts = {}, bpm?: number) {
     this.intensity = intensity;
@@ -987,6 +990,7 @@ export class Choreographer {
     const open = styleGenres(this.style);
     this.genres = open;
     this.openness = genreOpenness(this.style, open);
+    this.depth = genreDepth(this.style);
     this.tone = calmTone(this.style, open);
     this.drive = songDrive(this.style);
     this.highCap = highCap(this.style, intensity);
@@ -1217,7 +1221,7 @@ export class Choreographer {
         const b = this.slot(s.of, o);
         s.genre = b.genre;
         s.borrow = b.borrow;
-      } else if (this.liveGenres && LIVE_GENRE_SLOTS.has(key)) {
+      } else if (this.liveGenres && LIVE_GENRE_SLOTS.has(key) && (this.depth >= 1 || this.planRng() < this.depth)) {
         s.genre = this.pickGenre();
         // Live plans can't measure the song: each thin-set slot borrows with its share's chance.
         const bp = s.genre ? this.borrows.get(s.genre) : undefined;
@@ -1293,6 +1297,10 @@ export class Choreographer {
       if ((it.o.occ ?? 0) % 2 === 1) odd.set(k, (odd.get(k) ?? 0) + beats);
     }
     if (total <= 0) return;
+    // Sets opened only by a flavour theme carry that share of the usual genre time (genreDepth).
+    const target = GENRE_TARGET * this.depth;
+    const minG = GENRE_MIN * this.depth;
+    const maxG = GENRE_MAX * this.depth;
     // A selection of genre slots: GENRE_PRIORITY order until GENRE_TARGET, no slot above `cap`; with a
     // cap, then the other slots that fit it, smallest first (verse swaps, one-offs, side slots), never
     // the verse motif's A or the hook's H1 (verses and choruses are carried by global moves).
@@ -1309,15 +1317,15 @@ export class Choreographer {
         left.delete(k);
       };
       for (const k of GENRE_PRIORITY) {
-        if (c >= GENRE_TARGET * total) break;
+        if (c >= target * total) break;
         const b = left.get(k);
-        if (b !== undefined && b <= cap && c + b <= GENRE_MAX * total) add(k);
+        if (b !== undefined && b <= cap && c + b <= maxG * total) add(k);
       }
-      if (cap < Infinity && c < GENRE_TARGET * total) {
+      if (cap < Infinity && c < target * total) {
         const rest = [...left.entries()].filter(([k, b]) => !k.startsWith('warm') && !MOTIF_ANCHORS.has(k) && b <= cap).sort((x, y) => x[1] - y[1] || (x[0] < y[0] ? -1 : 1));
         for (const [k, b] of rest) {
-          if (c >= GENRE_TARGET * total) break;
-          if (c + b <= GENRE_MAX * total) add(k);
+          if (c >= target * total) break;
+          if (c + b <= maxG * total) add(k);
         }
       }
       return { left, keys, kb, c };
@@ -1325,8 +1333,8 @@ export class Choreographer {
     // No one slot carries more than GENRE_SLOT_CAP of the genre time aimed at, so it spreads over
     // several accents (Easy's few, long slots made one genre move half a song's genre time) - when
     // the song's kit has room for that (the capped selection reaches GENRE_MIN); else as before.
-    let sel = select(GENRE_SLOT_CAP * GENRE_TARGET * total);
-    if (sel.c < GENRE_MIN * total) sel = select(Infinity);
+    let sel = select(GENRE_SLOT_CAP * target * total);
+    if (sel.c < minG * total) sel = select(Infinity);
     groups.clear();
     for (const [k, b] of sel.left) groups.set(k, b);
     const chosen = sel.keys;
@@ -1339,13 +1347,13 @@ export class Choreographer {
       cur += groups.get(k)!;
       groups.delete(k);
     };
-    if (cur < GENRE_MIN * total) {
+    if (cur < minG * total) {
       // Last resort, smallest first, the motif anchors last; a slot too big whole may give the set its odd runs.
       const rest = [...groups.entries()].filter(([k]) => !k.startsWith('warm')).sort((a, b) => +MOTIF_ANCHORS.has(a[0]) - +MOTIF_ANCHORS.has(b[0]) || a[1] - b[1] || (a[0] < b[0] ? -1 : 1));
       for (const [k, b] of rest) {
-        if (cur >= GENRE_MIN * total) break;
-        if (cur + b <= GENRE_MAX * total) take(k);
-        else if ((odd.get(k) ?? 0) > 0 && cur + odd.get(k)! <= GENRE_MAX * total) {
+        if (cur >= minG * total) break;
+        if (cur + b <= maxG * total) take(k);
+        else if ((odd.get(k) ?? 0) > 0 && cur + odd.get(k)! <= maxG * total) {
           groups.set(`${k}@odd`, odd.get(k)!);
           groups.delete(k);
           take(`${k}@odd`);
@@ -1383,7 +1391,7 @@ export class Choreographer {
     if (this.borrows.size) this.assignBorrowing(chosen, genreOf, chosenBeats);
     // A verse, build or break slot carrying more than its share of the genre time (Easy's few, long slots) splits:
     // its later runs alternate with a second move of its set, so one genre move doesn't stand for the style.
-    const cap = GENRE_SLOT_CAP * GENRE_TARGET * total;
+    const cap = GENRE_SLOT_CAP * target * total;
     for (const s of this.slots.values()) if (s.genre && !s.of && SPLIT_ROLES.has(s.role) && s.beats > cap) s.odd = s.genre;
   }
 
@@ -2166,7 +2174,13 @@ const FEEL_SOFT_BPM: readonly [number, number] = [125, 150];
 const FEEL_SOFT_LEAN = 1.5;
 /** Audio intensity over which a song goes from soft (1) to not (0), unless its rhythm is all-out (drive range). */
 const FEEL_SOFT_INTENSITY: readonly [number, number] = [0.3, 0.55];
-const FEEL_SOFT_DRIVE: readonly [number, number] = [0.85, 1];
+/**
+ * A busy rhythm makes a song energetic whatever its timbre (Hey Ya!: intensity 0.43, drive 0.9, counted
+ * and danced at 159; the soft double counts read drive 0.67-0.75).
+ */
+const FEEL_SOFT_DRIVE: readonly [number, number] = [0.75, 0.95];
+/** A song this calm (style.calm) is not doubled on the audio's say (My Immortal: a busy piano, a ballad). */
+const FEEL_DOUBLE_CALM: readonly [number, number] = [0.3, 0.6];
 /** A half-time backbeat is what trap, drill and bass music are at their counted tempo: it counts this much less there. */
 const FEEL_BACKBEAT_STYLE = 0.6;
 /** Calm songs step slower than their genre's usual tempo (a ballad of any genre). */
@@ -2205,7 +2219,7 @@ const FAST_CALM: readonly [number, number] = [0.6, 0.8];
 function fastStyle(style: SongStyle): number {
   let f = 0;
   for (const s of FAST_SUBS) f = Math.max(f, style.subs?.[s] ?? 0);
-  if (style.themes.some((t) => FAST_THEMES.includes(t))) f = 1;
+  for (const t of style.themes) if (FAST_THEMES.includes(t)) f = Math.max(f, style.themeW?.[t] ?? 1);
   const calm = style.calm ?? 0;
   return f * (1 - Math.min(1, Math.max(0, (calm - FAST_CALM[0]) / (FAST_CALM[1] - FAST_CALM[0]))));
 }
@@ -2228,8 +2242,13 @@ function fastStyle(style: SongStyle): number {
  *     sound alone, from FEEL_PRIOR_MARGIN: less as the count runs up past 150
  *     (post-punk counted at 185 steps at 92), and much less on a soft-sounding
  *     song counted fast (a soft song counted at 156 steps at 78).
- * Twice: the audio must offer it (doubleTempo >= FEEL_AUDIO) with FEEL_MARGIN
- * (drum and bass counted at 87 with a strong double candidate at 174).
+ * A song is soft-sounding by low audio intensity on a rhythm that isn't busy
+ * (FEEL_SOFT_DRIVE: Hey Ya!'s 0.43 intensity on a 0.9 drive is not soft).
+ * Twice: the audio must offer it (doubleTempo >= FEEL_AUDIO); from FEEL_MARGIN
+ * the margin falls as for half with the candidate's strength, as far as the
+ * song is energetic (not calm, not soft): drum and bass counted at 87, Shake
+ * It Off at 80, Footloose at 87 with strong double candidates step at the
+ * double; a ballad's busy piano doesn't.
  * Without genre names nothing changes: the per-move speed limits (speed.ts)
  * still send fast moves to half time.
  */
@@ -2253,7 +2272,17 @@ export function danceFeel(style: SongStyle, bpm: number, cand: TempoCandidates, 
     }
     if (d(bpm / 2) + margin < d(bpm)) return 0.5;
   }
-  if ((cand.double ?? 0) >= FEEL_AUDIO && bpm * 2 <= 210 && d(bpm * 2) + FEEL_MARGIN < d(bpm)) return 2;
+  const dbl = cand.double ?? 0;
+  if (dbl >= FEEL_AUDIO && bpm * 2 <= 210) {
+    // A strong double candidate on an energetic song lowers the margin as a strong half candidate does: the
+    // tracker counts many fast pop songs at half (Shake It Off 80 -> 160, Footloose 87 -> 174, skate punk 93
+    // -> 187). Not on a calm or soft one (a ballad's busy accompaniment is not its step).
+    const it = audio.intensity;
+    const soundSoft = it === undefined ? 0 : (1 - r(it, FEEL_SOFT_INTENSITY[0], FEEL_SOFT_INTENSITY[1])) * (1 - r(audio.drive ?? 0.5, FEEL_SOFT_DRIVE[0], FEEL_SOFT_DRIVE[1]));
+    const energy = (1 - r(style.calm ?? 0, FEEL_DOUBLE_CALM[0], FEEL_DOUBLE_CALM[1])) * (1 - Math.max(soundSoft, style.soft ?? 0));
+    const margin = FEEL_MARGIN - (FEEL_MARGIN + FEEL_HALF_LEAN) * r(dbl, FEEL_AUDIO, FEEL_AUDIO_FULL) * energy;
+    if (d(bpm * 2) + margin < d(bpm)) return 2;
+  }
   return 1;
 }
 
@@ -2478,13 +2507,15 @@ function genreScale(style: SongStyle, open: ReadonlySet<Genre>, intensity: Inten
     else global += w;
   }
   const openness = genreOpenness(style, open);
+  // Sets opened only by a flavour theme take that share of the usual genre time (genreDepth).
+  const all = GENRE_SHARE * genreDepth(style);
   let sum = 0;
   for (const g of open) if ((mass.get(g) ?? 0) > 0) sum += openness.get(g) ?? 1;
   for (const g of open) {
     const mg = mass.get(g) ?? 0;
     if (mg <= 0 || sum <= 0) continue;
-    const share = (GENRE_SHARE * (openness.get(g) ?? 1)) / sum;
-    const k = (share / (1 - GENRE_SHARE)) * (global / mg);
+    const share = (all * (openness.get(g) ?? 1)) / sum;
+    const k = (share / (1 - all)) * (global / mg);
     out.set(g, Math.min(GENRE_SCALE_MAX, Math.max(GENRE_SCALE_MIN, k)));
   }
   return out;
