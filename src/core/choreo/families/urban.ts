@@ -87,13 +87,13 @@ const srA: PoseSpec = {
 };
 const srMid: PoseSpec = { y: -0.03, bend: 5, twist: 0, turn: 0, nod: 0, shR: 0.4, shL: 0.4, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], ...LOOSE };
 
-// Woo walk: a heavy strut on the spot, the opposite arm swinging up across the chest.
-const wooA: PoseSpec = {
+// Drill strut: a heavy strut on the spot, the opposite arm swinging up across the chest.
+const strutA: PoseSpec = {
   y: -0.1, x: 0.02, hips: 0.02, twist: -16, bend: -4, nod: -6, turn: 6, shL: 0.8, shR: 0.1,
   rf: [0.1, 0, 0.03], lf: [-0.09, 0.09, 0.06], kneeL: 0.15, kneeR: 0.08,
   r: at(1, 0.26, 0.54, -0.1, E_BACK), l: at(-1, 0.05, 0.8, 0.24, E_ACROSS), handR: 0.6, handL: 0.6,
 };
-const wooMid: PoseSpec = {
+const strutMid: PoseSpec = {
   y: -0.04, x: 0, hips: 0, twist: 0, bend: -2, nod: -2, turn: 0, shL: 0.3, shR: 0.3,
   rf: [0.1, 0, 0.02], lf: [-0.1, 0, 0.02], kneeL: 0.04, kneeR: 0.04,
   r: at(1, 0.2, 0.58, 0.08, E_OUT), l: at(-1, -0.2, 0.58, 0.08, E_OUT), handR: 0.6, handL: 0.6,
@@ -299,9 +299,9 @@ export const moves: MoveDef[] = [
     keys: [[0, swingFwd], [0.5, swingBack], [1, swingFwd], [1.5, swingBack]],
   }),
   full({
-    id: 'woo-walk', name: 'Woo Walk', tags: 'hiphop | full | walk', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms', 'torso'],
+    id: 'drill-strut', name: 'Drill Strut', tags: 'hiphop | full | walk', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms', 'torso'],
     desc: 'Strut on the spot with a heavy bounce: step down onto one foot as the other knee lifts, the opposite arm swinging up across the chest and the shoulders rocking with it, chin up; then the other side.',
-    keys: [[0, wooA], [0.75, wooMid], [1, mir(wooA)], [1.75, wooMid]],
+    keys: [[0, strutA], [0.75, strutMid], [1, mir(strutA)], [1.75, strutMid]],
   }),
   full({
     id: 'sturdy-hop', name: 'Sturdy Hop', tags: 'hiphop | legs | jump', beats: 2, level: 'high', d: 2, parts: ['legs', 'jump', 'arms'], jump: true, impact: true,
