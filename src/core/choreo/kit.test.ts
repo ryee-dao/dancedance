@@ -242,6 +242,9 @@ describe('choreographic structure', () => {
           for (const run of runs(r, type)) {
             const first = r.instances.find((i) => i.move.base === run[0] && i.section === type && !i.sig)!;
             if (type === 'verse' && first.start < 64) continue; // the warm-up
+            // A combo danced at half time takes twice the chorus: a 16-bar chorus keeps one hold, and the kit may need
+            // the hook's slot as a genre accent to reach GENRE_MIN (r1 cardio since the song's energy steers the combo).
+            if (type === 'chorus' && r.instances.some((i) => i.sig && i.half)) continue;
             expect(first.move.genre, `${lv} ${id} ${type} ${first.move.id}`).toBeUndefined();
           }
         }
