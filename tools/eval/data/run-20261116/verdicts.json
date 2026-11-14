@@ -1,0 +1,150 @@
+{
+ "185717604": {
+  "verdict": "right",
+  "reason": "Pop rock label, rock set (Foot on the Monitor, Swaying Drummer, Guitar Neck Raise, Power Chord Windmill) at the right 92.6, no jumps, high moves only on Hard (22 %); Hair Flip leading Easy is the odd bit for a soft-rock singalong."
+ },
+ "1739416297": {
+  "verdict": "acceptable",
+  "reason": "Reggae theme opens the Caribbean set (Steppers Skank, One Drop, Rock Steady Sway, Wine & Wave) with calm 0.63, but a song the sources call slow and laid-back is danced at 125 (no half candidate read), with Slap & Clap + Kick Ball and Gully Creepa; label 'Folk rock'. Tempo for this version is unsourced.",
+  "causes": ["tempo-double"]
+ },
+ "1473487611": {
+  "verdict": "right",
+  "reason": "Lookup turns iTunes 'Soundtrack' into Afrobeats + dancehall: afro, Caribbean and hip-hop sets (Waist Wine, Afro Groove, Shoki, Legwork, Wacky Dip) at the right 101. Hard 46 % high / 12 % jumps is more than 'grooving' asks."
+ },
+ "1411648267": {
+  "verdict": "acceptable",
+  "reason": "Right 84 BPM, calm 0.69, no jumps or high moves, swing set (Waltz Balance, Gaze Afar, Bee's Knees, Shorty George) suits a Sinatra-tribute standard, but the label is 'Country' and Boot Scoot / Heel Bounces come in: the lookup's song-level 'country' (Willie Nelson's usual genre) outranks 'jazz / traditional pop'.",
+  "causes": ["genre-too-broad"]
+ },
+ "1440843361": {
+  "verdict": "right",
+  "reason": "Counted at 166, danced at the felt 83 (half): pop-rock label, rock set (Slap Bass, Swaying Drummer, Air Drums half time, Shoulder Barge) on a laid-back groove; Hard's 34 % high moves and Running Man Shuffle are a stretch."
+ },
+ "189259142": {
+  "verdict": "right",
+  "reason": "R&B label at the right 78.3, R&B set (Slow-Jam Sway, Snap Sway, Hand-Slide Sway, Knee-Pop Two-Step, Slow Drag, Hip Roll Down), no jumps. calm reads 0.10 on a ballad, so Churn the Butter, V Step Jab and The Fly lead Easy / Medium; tai-chi Golden Rooster is the clash."
+ },
+ "1443134345": {
+  "verdict": "right",
+  "reason": "Hip house label, house and hip-hop sets (Vogue Pose, Scissor Step, House Farmer, Swag Surf) with borrowed EDM at the right 120; Hard 57 % high / 18 % jumps suits a party track. Milly Rock, Jerkin' and Cutting Shapes are 20-30 years late; no new jack swing step. (Hand-picked video.)"
+ },
+ "211280601": {
+  "verdict": "right",
+  "reason": "Bachata set leads (Basic in Place, Side Step, Hip Roll, Body Wave, Arm Wave) at the right 125 with little intensity; album-level 'salsa / merengue' adds Salsa Cross Step and Front & Back Taps, and generic Ripple Wave (224 beats) fills Easy."
+ },
+ "1717358148": {
+  "verdict": "acceptable",
+  "reason": "Latin family right at a plausible 94, but no cumbia: the list is 'Latin pop' and the artist's MusicBrainz 'cumbia, cumbia mexicana, tejano' collapses to 'latin', so the generic Latin set dances Merengue Twist March, Cha-Cha, Güiro Scrape and Mambo Rock. (Relaxed pick.)",
+  "causes": ["lookup-miss"]
+ },
+ "1829701947": {
+  "verdict": "acceptable",
+  "reason": "No song list, but the artist's 'bollywood' opens the South Asian set (Jhummar Sway, Kathak Tatkar, matka, Thumka); label stays 'Soundtrack', Knee Lift Airplane fills 193 Easy beats, and Hard (21 % jumps, 34 % high, Bhangra hops) is too much for a tender romantic duet. Tempo unsourced."
+  ,"causes": ["level-handling", "generic-fill"]
+ },
+ "1203777162": {
+  "verdict": "acceptable",
+  "reason": "Right 108.7, but plain 'Pop' with no set: the song-level umbrella 'pop' holds while every album and artist source says soul / funk / disco, so a funky soul story-song gets Ocean Arms, Rope Climb and Strike a Pose. Harmless, nothing of soul or funk. Thin evidence.",
+  "causes": ["genre-too-broad", "generic-fill"]
+ },
+ "1440813515": {
+  "verdict": "acceptable",
+  "reason": "Synth-pop label at the right 112 (swing 1.0 reads the 12/8 shuffle and rightly opens nothing), but synth-pop has no set: generic aerobics (Wind-Up Toy March, Hammer Fists, Slam Clap) and Hard at 46 % high / 11 % jumps for a wistful mid-tempo song.",
+  "causes": ["lexicon-gap", "generic-fill", "level-handling"]
+ },
+ "724635463": {
+  "verdict": "right",
+  "reason": "Country-pop label and country set (Heel Bounces, Rubboard Scratch, Clogging Basic, Lasso, Heel & Hook, Sailor Step). The new double rule lifts the felt ~92 to 184.5 (the researched alternative count); 62-81 % of steps then go half time, so it still dances near 92, but House Skate and 35 % high on Hard are louder than a warm duet."
+ },
+ "1820264339": {
+  "verdict": "acceptable",
+  "reason": "K-pop label and set are right, but a tender ballad felt at ~70 is danced at 140 (half 1.0 and backbeat 1.0 offered, discounted because the soundtrack album's 'trap EDM' reads as bass music) with cute idol moves (Bunny Ears, Cheek Taps, Cute Clasp Sway) and Single Whip.",
+  "causes": ["tempo-double", "genre-too-broad"]
+ },
+ "1822642848": {
+  "verdict": "acceptable",
+  "reason": "Urbano label at the right 100, but the song's only name is the umbrella 'urbano', so the artist's first genre (reggaeton) opens the reggaeton set: dembow steps (Dembow Heel Tap, Cross Step, Knee Pop) and borrowed Caribbean / Brazilian moves on a Latin trap track. Close cousin, not the song's style. Thin evidence.",
+  "causes": ["genre-too-broad"]
+ },
+ "1876044804": {
+  "verdict": "right",
+  "reason": "Cumbia label and set (Cumbia Forward Shuffle, Cumbia Step, Kick & Back, Machete, Circle Basic, Pollera Wave) on Chilean tecnocumbia at 108; Who Knows Shrug and Bow and Arrow fillers. The title-as-genre source is right here. Thin evidence."
+ },
+ "1838737598": {
+  "verdict": "acceptable",
+  "reason": "Pop soul · R&B at the right 116 with swing (Charleston Kick, Boogie Back, Spank the Baby) and R&B sets, but slow-jam moves (Slow-Jam Sway, Slow Drag) and Heart Hands lead a brassy driving big-band song, and Hard stays at 12 % high, 0 % jumps although intensity reads 0.99.",
+  "causes": ["level-handling"]
+ },
+ "588338026": {
+  "verdict": "acceptable",
+  "reason": "Plain 'Pop' (the list is only 'pop'), no set, generic moves (Wave Goodbye, Kickline Clap, Cheer Kick) at 124 with calm 0 and Hard 32 % high on a wry chanson duet the sources call tender; nothing French or theatrical. Rhythm unsourced.",
+  "causes": ["lexicon-gap", "generic-fill"]
+ },
+ "1045696596": {
+  "verdict": "right",
+  "reason": "Metal label, metal and rock sets with borrowed punk (Fist Bang, Doom Sway, Breakdown + Elbow Strikes, Circle Pit Call, Wall of Death Crouch) on Christian metalcore; Hard 30 % jumps / 45 % high suits it. Slap & Clap leading Easy is the filler."
+ },
+ "1482724511": {
+  "verdict": "acceptable",
+  "reason": "J-pop label at the sourced 128, but J-pop opens the K-pop set: idol moves (V Step Wipers, Fan Chant Clap, Cat Paws, Big Heart, Cheek Taps) as a stand-in, and Touchdown & Daggers leads Easy. (Hand-picked video; thin evidence.)",
+  "causes": ["lexicon-gap"]
+ },
+ "300735237": {
+  "verdict": "acceptable",
+  "reason": "No beat grid (bpm 0) on a fast punk track, but the free-time pace is now 127 on a driving 0.96: rock set (Sumo Squat V Pump, Barge, Shoulder Barge) and Hard 29 % jumps. 'Alternative' only (lookup adds nothing), so no punk set, and Easy has Star Pose and Crescent Moon. Thin evidence.",
+  "causes": ["lookup-miss", "tempo-none"]
+ },
+ "828341367": {
+  "verdict": "right",
+  "reason": "Soul label, R&B and funk sets (Slow-Jam Sway, Snap Sway, Uncle Sam Point, Roll the Dice, Knee-Pop Two-Step, The Fly) at the right 97.4 on smooth 80s synth-soul; Step Touch L Arms (128 Easy beats) is the filler."
+ },
+ "1773144745": {
+  "verdict": "right",
+  "reason": "No pulse found in a raga; calm 0.98, free time at 56 with the lyrical set (Halo Sway, Tendu, Fall & Recover, Spine Roll, Reach & Recover) suits meditative movement; Triple Step and Hard's 27 % high (Standing Figure Four) are the stretch. Label 'New age', not bhangra: right to keep the South Asian set shut. Thin evidence."
+ },
+ "1496293910": {
+  "verdict": "acceptable",
+  "reason": "Plain 'Pop', no set, but toned to the song: calm 0.55, 94 BPM, gentle generic moves (Blow a Kiss, Eagle Arms, Slow Sway Burst, Ripple Wave), no jumps. Nothing of lo-fi bedroom pop; harmless. Artist-level evidence.",
+  "causes": ["generic-fill"]
+ },
+ "6814092011": {
+  "verdict": "right",
+  "reason": "Reggae label (dancehall would be closer) with the Caribbean set's dancehall steps (Waist Wine, Log On, Gully Creepa, Wacky Dip, Willie Bounce, Palance, Signal di Plane) at 99; low jumps and highs on a sensual lover's tune."
+ },
+ "1442442750": {
+  "verdict": "acceptable",
+  "reason": "Hip-hop label and set at the right 86, but a calm, dreamy lo-fi instrumental reads calm 0.16, so Krump Chest Pop, Humpty Hop and Hard's 12 % jumps / 19 % high come in where head-nods and sways are wanted. Thin evidence.",
+  "causes": ["trait-misread", "level-handling"]
+ },
+ "1669270635": {
+  "verdict": "acceptable",
+  "reason": "Metal label and set (Doom Sway, Breakdown Nod, Fist Bang, Wall of Death Crouch, Low Headbang) fit death-doom, but it is counted and danced at 151.7 and Hard is 28 % jumps / 54 % high with Quarter-Turn Hops; the title word 'Turns' adds a 'spin' theme. Slow and crushing per the sources (tempo unsourced).",
+  "causes": ["level-handling", "title-word"]
+ },
+ "1542433776": {
+  "verdict": "acceptable",
+  "reason": "Rock label and set at the sourced 125, but reflective jangly heartland rock gets Hair Flip (164 Easy beats), Headbang Arms Up, Pogo Windmill, Mic Grab Scream and Hard 18 % jumps: arena / punk vocabulary for an atmospheric song. Thin evidence.",
+  "causes": ["genre-too-broad"]
+ },
+ "1101462014": {
+  "verdict": "acceptable",
+  "reason": "'Jazz' opens swing only (no more funk): Lindy steps (Side Triple Steps, Truckin', Shorty George, Stomp Off, Boogie Forward) at 102 on a contemplative ECM-style piano trio that is not dance music. Gentle levels, no jumps. (Hand-picked video.)",
+  "causes": ["genre-too-broad"]
+ },
+ "1881400792": {
+  "verdict": "acceptable",
+  "reason": "Indie pop label at the right 130, but indie pop has no set: generic moves (Ocean Arms 109 Easy beats, Hands Behind Head, Jazz Square High Clap, The Twist Flick Arms); calm 0.54 keeps it gentle where a cheerful bounce is wanted. Harmless.",
+  "causes": ["lexicon-gap", "generic-fill"]
+ },
+ "6830290039": { "verdict": "unjudged", "reason": "Nothing found about the song. Internally: Singer-songwriter · Ballad, 137 halved to 68.7, calm 0.70, no set, soft generic moves." },
+ "6775875168": { "verdict": "unjudged", "reason": "Nothing found about the song. Internally: Latin jazz, salsa and swing sets with borrowed cumbia at 94." },
+ "6793653164": { "verdict": "unjudged", "reason": "Nothing found about the song. Internally: R&B, 132 halved to 66, R&B and funk sets." },
+ "1110492456": { "verdict": "unjudged", "reason": "Nothing found about the song. Internally: R&B at 100, R&B / funk / hip-hop sets, no jumps." },
+ "1565560200": { "verdict": "unjudged", "reason": "Nothing found about the song. Internally: Hip-hop at 75, hip-hop set." },
+ "1772540945": { "verdict": "unjudged", "reason": "Nothing found about the song. Internally: Pop at 128 (half 0.86 and swing 1.0 not taken), no set, generic moves. (Hand-picked video.)" },
+ "709034581": { "verdict": "unjudged", "reason": "Nothing found about the song. Internally: Alternative, rock set at 132. (Hand-picked video.)" },
+ "961995056": { "verdict": "unjudged", "reason": "Nothing found about the song. Internally: Electronic, no set, generic moves at 125, Hard 18 % jumps." },
+ "1675732755": { "verdict": "unjudged", "reason": "Nothing found about the song. Internally: the song's 'alternative' plus the artist's 'metal' make 'Alternative · Metal' at 81." },
+ "1486109884": { "verdict": "unjudged", "reason": "Nothing found about the song. Internally: beatless calm piano, World music · Ballad, free time at 61 with the lyrical set. (Hand-picked video.)" }
+}

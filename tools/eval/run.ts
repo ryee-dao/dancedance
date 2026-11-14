@@ -68,6 +68,8 @@
  *                    --comments-out FILE (outside the repo) takes the comment text, videos.json the count.
  * Round two (seed 20261115, sample drawn with --exclude of both earlier samples) and
  * round one re-scored with the current code: data/run-20261115 (and its round1-rescore/).
+ * Round three (seed 20261116, --exclude of every earlier set incl. the catalog and famous14 as
+ * exclude-catalog-famous14.json): data/run-20261116.
  */
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
