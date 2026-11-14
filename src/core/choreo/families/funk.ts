@@ -64,10 +64,11 @@ export const patterns: PatternSet = {
     heelSwivel: {
       beats: 2, parts: ['legs'],
       keys: [
-        [0, { y: -0.045, kneeR: 0.6, kneeL: 0.6, rf: [0.075, 0, 0], lf: [-0.075, 0, 0], hips: 0.012 }],
-        [0.5, { y: -0.035, kneeR: -0.42, kneeL: -0.42, rf: [0.075, 0, 0], lf: [-0.075, 0, 0], hips: -0.012 }],
-        [1, { y: -0.045, kneeR: 0.6, kneeL: 0.6, rf: [0.075, 0, 0], lf: [-0.075, 0, 0], hips: 0.012 }],
-        [1.5, { y: -0.015, kneeR: 0.0, kneeL: 0.0, rf: [0.075, 0, 0], lf: [-0.075, 0, 0] }],
+        // Both toes swivel to one side (knees with them, hips the other way), then to the other side.
+        [0, { y: -0.06, x: 0.01, kneeR: 0.7, kneeL: -0.7, rf: [0.085, 0, 0], lf: [-0.065, 0, 0], slideR: true, slideL: true, hips: -0.03, tilt: -4, pitchR: 12, pitchL: 12 }],
+        [0.5, { y: -0.03, x: 0, kneeR: 0, kneeL: 0, rf: [0.075, 0, 0], lf: [-0.075, 0, 0], slideR: true, slideL: true, hips: 0, tilt: 0, pitchR: 6, pitchL: 6 }],
+        [1, { y: -0.06, x: -0.01, kneeR: -0.7, kneeL: 0.7, rf: [0.065, 0, 0], lf: [-0.085, 0, 0], slideR: true, slideL: true, hips: 0.03, tilt: 4, pitchR: 12, pitchL: 12 }],
+        [1.5, { y: -0.03, x: 0, kneeR: 0, kneeL: 0, rf: [0.075, 0, 0], lf: [-0.075, 0, 0], slideR: true, slideL: true, hips: 0, tilt: 0, pitchR: 6, pitchL: 6 }],
       ],
     },
     kneePop: {
@@ -310,7 +311,7 @@ export const moves: MoveDef[] = [
   // Original basics
   combo('funky-chicken', 'Funky Chicken', 'kneeKnock', 'wings', 'mid', 2, 'funk | full |', { desc: 'Knees knock in and out while bent elbows flap like wings.' }),
   combo('kick-ball-change', 'Kick Ball Change', 'kickBall', 'snaps', 'mid', 2, 'funk pop | legs | kick', { desc: 'Kick forward, step onto the ball of that foot behind, change weight to the other foot.' }),
-  combo('heel-swivel', 'Heel Swivel', 'heelSwivel', 'jazzHands', 'mid', 2, 'funk pop | legs | twist', { desc: 'Feet together, swivel both heels out and in on the half beats.' }),
+  combo('heel-swivel', 'Heel Swivel', 'heelSwivel', 'jazzHands', 'mid', 2, 'funk pop | legs | twist', { desc: 'Feet together and up on the balls, swivel both toes to one side and then the other, the knees swinging together like windscreen wipers.' }),
   combo('knee-pop', 'Knee Pop', 'kneePop', 'fkKneePush', 'mid', 2, 'funk pop hiphop | legs hips |', { desc: 'Pop one knee in with the heel up while that hand pushes the thigh down and the other fist rises.' }),
   combo('kick-point', 'Side Kick & Point', 'kickSide', 'discoPoint', 'mid', 3, 'funk pop | full | kick point'),
   combo('rock-step-clap', 'Rock Step Clap', 'rockBack', 'clap', 'low', 1, 'funk pop rock | legs | clap'),

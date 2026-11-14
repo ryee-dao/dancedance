@@ -260,6 +260,27 @@ server running (`npx vite --port <port>`):
 all three looks side by side: `&compare=1`. **Look at every new move in all
 three looks** (classic, human, sticker) before keeping it.
 
+Headless, to PNG (no browser of your own; scratch output, never commit it):
+```sh
+npx tsx tools/moves/sheet.ts --moves id1,id2            # sheet, one row per look
+npx tsx tools/moves/sheet.ts --genre trap --styles human --views 0,90 --trail
+npx tsx tools/moves/sheet.ts --strip <id>               # one move big: 3 looks, front + side view, paths
+npx tsx tools/moves/sheet.ts --at HEAD~1 --moves <id> --name before   # the same at an older revision
+npx tsx tools/moves/sheet.ts --duo duo-palm-press       # partner moves
+npx tsx tools/moves/reference.ts search "<dance> dance tutorial"      # how the real dance is done
+npx tsx tools/moves/reference.ts frames <video id> --from 1:19 --to 1:25 --fps 4 --crop 0.35,0,0.65,1
+```
+`--views 0,90` adds a camera from the side: motion that only shows there
+(forward kicks, forward / back steps, rolls, reaches at the camera,
+horizontal circles) is invisible on the wall. `--trail` draws the hands',
+toes' and head's paths: a move whose paths are tiny dots reads as standing
+still. Remedies the figure supports: turn the body to a diagonal / quarter
+profile (`spin` 25-45) for the part that needs depth (running man, mambo
+rock, whip); exaggerate the visible component (knees pointing to the side in
+a twist or swivel, hip shift + tilt); restage a circle into the front plane;
+arms that swing against a twist. Reference footage is for understanding the
+steps only: author from scratch.
+
 ## Quality bar (dos and don'ts)
 
 Do:

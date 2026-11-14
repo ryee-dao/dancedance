@@ -6,10 +6,18 @@
  * Pattern ids added by this file are prefixed `pop` (ids are global).
  */
 
-import { ARM, CHEST_BOX, OPEN_LOW, W, at, mir, type ArmAngles, type PoseSpec } from '../poseKit';
+import { ARM, OPEN_LOW, W, at, mir, type ArmAngles, type PoseSpec } from '../poseKit';
 import { combo, full, type MoveDef, type PatternSet } from '../catalog';
 
-const twistA: PoseSpec = { y: -0.08, x: 0.015, hipTwist: -32, twist: 40, lean: 4, turn: -22, rf: [0.12, 0, 0.0], lf: [-0.12, 0.03, 0.03] };
+// Twist: hips and knees swivel one way on the balls of the feet while the chest and arms swing the
+// other. Yaw alone barely shows head-on, so both knees point to the side (kneeR / kneeL) and the
+// hips shift with them: that is what a viewer actually sees of a twist from the front.
+const twistA: PoseSpec = {
+  y: -0.08, x: 0.015, hips: -0.02, tilt: -3, hipTwist: -32, twist: 40, lean: 4, turn: -22,
+  rf: [0.12, 0, 0.0], lf: [-0.12, 0.03, 0.03], kneeR: -0.45, kneeL: 0.55, pitchR: 16, pitchL: 10,
+};
+/** Twist arms: bent, held out from the body, swinging across with the chest (against the hips). */
+const twistArmsA: PoseSpec = { r: at(1, 0.34, 0.64, -0.02, [0.4, -1, -0.4]), l: at(-1, 0.02, 0.66, 0.22, [0.4, -1, -0.2]), handR: 0, handL: 0 };
 const rippleA: PoseSpec = { lean: 3, head: -3, r: [100, 0, 64, 0], l: [80, 0, 116, 0], handR: 1, handL: 1 };
 const pendA: PoseSpec = { r: [52, 8, 58, 14], l: [38, 138, 46, 128], handR: 1, handL: 1 };
 const oceanA: PoseSpec = { lean: 11, head: 6, r: [128, 0, 134, 0], l: [186, 0, 214, 0], handR: 1, handL: 1 };
@@ -260,7 +268,7 @@ export const patterns: PatternSet = {
     },
   },
   arms: {
-    twistArms: { beats: 1, parts: [], keys: [[0, { r: CHEST_BOX, l: CHEST_BOX, handR: 0, handL: 0 }]] },
+    twistArms: { beats: 2, parts: ['arms'], keys: [[0, twistArmsA], [1, mir(twistArmsA)]] },
     ripple: { beats: 2, parts: ['arms'], torso: true, keys: [[0, rippleA], [1, mir(rippleA)]] },
     pendulum: { beats: 2, parts: ['arms'], keys: [[0, pendA], [1, mir(pendA)]] },
     ocean: { beats: 4, parts: ['arms', 'torso'], torso: true, keys: [[0, oceanA], [1, oceanMid], [2, mir(oceanA)], [3, oceanMid]] },
@@ -521,7 +529,7 @@ export const patterns: PatternSet = {
 
 export const moves: MoveDef[] = [
   // --- Original pop staples ---
-  combo('the-twist', 'The Twist', 'twist', 'twistArms', 'mid', 1, 'funk pop | hips full | twist'),
+  combo('the-twist', 'The Twist', 'twist', 'twistArms', 'mid', 1, 'funk pop | hips full | twist', { desc: 'On the balls of the feet, swivel the hips and both knees to one side as the bent arms swing across to the other, then twist back, sinking a little on every beat.' }),
   combo('box-step', 'Box Step', 'boxStep', 'rest', 'mid', 2, 'pop latin | legs | walk'),
   combo('box-clap', 'Box Step Clap', 'boxStep', 'clap', 'mid', 3, 'pop | legs | clap walk'),
   combo('swim', 'Freestyle Swim', 'sway', 'swim', 'mid', 2, 'pop disco | arms | wave'),

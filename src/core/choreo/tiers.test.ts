@@ -209,7 +209,8 @@ describe('soft weights', () => {
   });
 
   it('Sweaty favours high-impact and hard moves; Chill gentle, simple ones (never jumps); none is exclusive but Chill\'s jumps', () => {
-    const maps = IDS.map((id) => songMap(124, id));
+    // Cardio's jump share is small (a few %), so 8 songs can land on none by chance: use 24.
+    const maps = Array.from({ length: 24 }, (_, k) => songMap(124, `w${k + 1}`));
     const chill = picks(maps, 'chill');
     const cardio = picks(maps, 'cardio');
     const sweaty = picks(maps, 'sweaty');

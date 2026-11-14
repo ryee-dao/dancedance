@@ -17,7 +17,8 @@ import { hand } from '../../coach/poses';
 
 // ---------------------------------------------------------------------------
 // Hip isolations (footwork)
-const shakeA: PoseSpec = wide(-0.065, { hips: 0.034, tilt: 6, kneeR: 0.1, kneeL: 0.1 });
+// Hip shake: as big a side-to-side hip pop as the pelvis allows, the knee under the dropping hip bending.
+const shakeA: PoseSpec = wide(-0.07, { hips: 0.06, tilt: 10, kneeR: 0.04, kneeL: 0.18, lean: -2 });
 const circR: PoseSpec = wide(-0.045, { hips: 0.06, tilt: 6, bend: -1, head: -3 });
 const circBack: PoseSpec = wide(-0.03, { hips: 0, bend: 8, nod: 4 });
 const circFront: PoseSpec = wide(-0.07, { hips: 0, bend: -5, nod: -3, kneeR: 0.14, kneeL: 0.14 });
@@ -228,8 +229,10 @@ export const patterns: PatternSet = {
     mambo: {
       beats: 2, parts: ['legs'], mirror: true, torso: true,
       keys: [
-        [0, { rf: [0.09, 0, 0.15], hips: 0.03, tilt: 3, y: -0.03, bend: -4, nod: -3 }],
-        [1, { rf: [0.1, 0, -0.11], hips: -0.02, tilt: -2, y: -0.035, bend: 5, nod: 3 }],
+        // Rock forward, replace, rock back: the steps go toward / away from the viewer, so the body
+        // turns 25 deg toward the stepping foot to show them, with a bigger weight change and lean.
+        [0, { spin: 25, rf: [0.1, 0, 0.19], hips: 0.04, tilt: 4, y: -0.06, bend: 5, nod: 2, kneeR: 0.12 }],
+        [1, { spin: 25, rf: [0.1, 0, -0.15], hips: -0.03, tilt: -3, y: -0.05, bend: -6, nod: -3, pitchR: 20 }],
       ],
     },
     // Bachata: side, together, side, tap with a hip pop.

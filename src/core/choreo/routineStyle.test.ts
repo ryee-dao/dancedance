@@ -178,7 +178,8 @@ describe('song character x level', () => {
   const driving = resolveSongStyle({ title: 'Bring Me to Life', genre: 'Hard Rock' }, { bpm: 78, traits: { calm: 0.15, heavy: 0.8, drive: 0.85 } });
 
   it('a calm "Hard Rock" song (My Immortal) gets no rock showpieces, no jumps, smooth moves and longer holds', () => {
-    const SHOWPIECES = /headbang|hair-swing|air-guitar|pogo|mosh|circle-pit|windmill|rock-star-jump|guitar/;
+    // Rock / metal / punk showpieces (not the aerobic windmill toe touch).
+    const SHOWPIECES = /headbang|hair-swing|air-guitar|pogo|mosh|circle-pit|power-windmill|hardcore-windmill|rock-star-jump|guitar/;
     for (const lv of ['chill', 'cardio', 'sweaty'] as const) {
       const c = stats(ballad, 78, lv);
       const d = stats(driving, 78, lv);

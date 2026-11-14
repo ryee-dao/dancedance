@@ -134,7 +134,7 @@ try {
     const id = opt('strip')!;
     const q = common({
       mode: 'sheet', moves: id, styles, frames: opt('frames') ?? 12, span: opt('span'), views: opt('views') ?? '0,90',
-      trail: 1, cw: opt('cw') ?? 220, ch: opt('ch') ?? 300,
+      trail: 1, cw: opt('cw') ?? 150, ch: opt('ch') ?? 220,
     });
     await page.open(`${base}/coach-demo.html?${q}`);
     await save(page, `${opt('name') ?? id}-strip.png`);
