@@ -32,7 +32,7 @@
 #   secrets.COOKIE_REFRESH_TOKEN  fine-grained token for this repo with only "Secrets: read and
 #                         write". With it, the job saves the cookies YouTube refreshes during
 #                         a run back into YT_COOKIES, and makes one signed-in request on
-#                         about half of the scheduled runs (at random), so the session lasts longer. At the first
+#                         every scheduled run (after a random wait), so the session lasts longer. At the first
 #                         rejection it stops asking (secrets.YT_SESSION_REJECTED, written by
 #                         the job) until YT_COOKIES is replaced. It cannot sign in again by
 #                         itself: when YouTube ends the session, export fresh cookies by hand.
@@ -43,6 +43,9 @@ run-name: "${{ inputs.map_json && 'Contributed beat map' || inputs.add_title && 
 on:
   schedule:
     - cron: '23 * * * *'
+    # A second hourly slot: GitHub skips most scheduled starts, and two slots bring the
+    # real pace closer to one run every couple of hours.
+    - cron: '53 * * * *'
   workflow_dispatch:
     inputs:
       video_id:
@@ -180,7 +183,7 @@ jobs:
       # Optional (needs both YT_COOKIES and COOKIE_REFRESH_TOKEN). YouTube hands
       # out refreshed cookies while a signed-in session is used, and yt-dlp writes
       # them to its cookie file. This step stores that file as the new YT_COOKIES
-      # secret. On about half of the scheduled runs, at random and after a random
+      # secret. On every scheduled run, after a random
       # wait, it first asks YouTube for the details of one already-published song
       # (no audio is downloaded), so the session stays in use, and it stops asking at the first rejection (until the cookies are
       # replaced). Cookies are never printed and the file is deleted.
@@ -213,10 +216,9 @@ jobs:
             exit 0
           fi
           if [ "$SCHEDULED" = "true" ]; then
-            # Sporadic on purpose: about every other scheduled run, picked at random, after a
-            # random wait of 0 to 90 s (to the millisecond). The wait is short because app
-            # requests (add a song) queue behind this job.
-            if [ $((RANDOM % 2)) -eq 0 ]; then echo "No signed-in request this run (random)."; exit 0; fi
+            # Every scheduled run, after a random wait of 0 to 90 s (to the millisecond). The
+            # wait is short because app requests (add a song) queue behind this job. GitHub
+            # starts scheduled runs late and skips many, so the times are irregular anyway.
             wait_ms=$(node -e 'console.log(require("crypto").randomInt(0, 90001))')
             sleep "$(printf '%d.%03d' $((wait_ms / 1000)) $((wait_ms % 1000)))"
             id=$(node -e 'const a=require("./public/beatmaps/index.json").ids||[];if(a.length)console.log(a[Math.floor(Math.random()*a.length)])')
