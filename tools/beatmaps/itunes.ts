@@ -2,9 +2,13 @@
  * Official song length (and canonical names) from the iTunes Search API, for
  * `--add "Artist - Title"` when no length is given. The app sends the length
  * it showed the user, so this is only used by the CLI and by manual runs of
- * the workflow without a length.
+ * the workflow without a length (and for the genre). Explicit songs missing
+ * from the iTunes search are looked up on Deezer and in Apple's per-artist
+ * song list (lookupOfficial).
  */
 import { normalizeName } from '../../src/beat/cloud';
+import { deezerUrl, parseDeezer, type DeezerTrack } from '../../src/ui/deezer';
+import { itunesArtistSongsUrl, itunesArtistUrl, parseArtistIds } from '../../src/ui/songSearch';
 import { artistVariants, requestCore } from './pick';
 
 export interface ItunesTrack {
@@ -91,16 +95,57 @@ export function pickOfficialLength(req: { artist: string; title: string }, track
   return { artist: first.artistName, title: first.trackName, durationSec: Math.round(first.trackTimeMillis! / 1000), ...(genre ? { genre } : {}) };
 }
 
-/** Look the song up on iTunes. Resolves null when not found or unreachable. */
-export async function lookupOfficial(
-  req: { artist: string; title: string },
-  fetchFn: (url: string) => Promise<{ ok: boolean; json(): Promise<unknown> }> = (u) => fetch(u),
-): Promise<OfficialSong | null> {
+/** Deezer tracks (src/ui/deezer.ts) in the iTunes shape pickOfficialLength reads (no release date, no genre). */
+export function deezerAsItunes(tracks: DeezerTrack[]): ItunesTrack[] {
+  return tracks.map((t) => ({ artistName: t.artist, trackName: t.title, collectionName: t.album, trackTimeMillis: t.durationSec * 1000 }));
+}
+
+type JsonFetch = (url: string) => Promise<{ ok: boolean; json(): Promise<unknown> }>;
+
+async function getJson(fetchFn: JsonFetch, url: string): Promise<unknown | null> {
   try {
-    const res = await fetchFn(itunesSearchUrl(`${req.artist} ${req.title}`));
-    if (!res.ok) return null;
-    return pickOfficialLength(req, parseItunes(await res.json()));
+    const res = await fetchFn(url);
+    return res.ok ? await res.json() : null;
   } catch {
     return null;
   }
+}
+
+/**
+ * Look the song up. The anonymous iTunes search lists only clean versions of
+ * explicit songs (nothing for songs without one), so when it has no match:
+ * Deezer's search (src/ui/deezer.ts, the same second catalog as the app's
+ * search) for the names and length, and Apple's song list of the artist
+ * (`lookup?id=…&entity=song`, which does list explicit tracks) for the genre,
+ * or for the length when Deezer has no match either. Resolves null when not
+ * found or unreachable.
+ */
+export async function lookupOfficial(req: { artist: string; title: string }, fetchFn: JsonFetch = (u) => fetch(u)): Promise<OfficialSong | null> {
+  const it = await getJson(fetchFn, itunesSearchUrl(`${req.artist} ${req.title}`));
+  const fromSearch = it ? pickOfficialLength(req, parseItunes(it)) : null;
+  if (fromSearch) return fromSearch;
+  let fromDeezer: OfficialSong | null = null;
+  const dz = await getJson(fetchFn, deezerUrl(`${req.artist} ${req.title}`, { limit: 25 }));
+  try {
+    fromDeezer = dz ? pickOfficialLength(req, deezerAsItunes(parseDeezer(dz))) : null;
+  } catch {
+    fromDeezer = null; // Deezer's error answer
+  }
+  const fromArtist = await lookupArtistSongs(req, fetchFn);
+  if (fromDeezer && fromArtist && Math.abs(fromArtist.durationSec - fromDeezer.durationSec) <= 2) {
+    return { ...fromDeezer, ...(fromArtist.genre ? { genre: fromArtist.genre } : {}) };
+  }
+  return fromDeezer ?? fromArtist;
+}
+
+/** Apple's songs of the request's artist (exact name), matched by pickOfficialLength; null if none. */
+async function lookupArtistSongs(req: { artist: string; title: string }, fetchFn: JsonFetch): Promise<OfficialSong | null> {
+  const name = req.artist.split(/\s*(?:,|&|\bfeat\.?|\bft\.?|\bx\b)\s*/i)[0] || req.artist;
+  const found = await getJson(fetchFn, itunesArtistUrl(name));
+  const id = found ? parseArtistIds(found, name)[0] : undefined;
+  if (!id) return null;
+  const songs = await getJson(fetchFn, itunesArtistSongsUrl(id));
+  if (!songs) return null;
+  const tracks = parseItunes(songs).filter((t) => (t as { kind?: unknown }).kind === 'song');
+  return pickOfficialLength(req, tracks);
 }

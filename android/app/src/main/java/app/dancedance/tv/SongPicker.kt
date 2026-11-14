@@ -386,6 +386,10 @@ object SongPicker {
         val artworkUrl: String,
         /** iTunes `primaryGenreName` ("Pop", "Hip-Hop/Rap", ...), cleaned by [cleanGenre]; "" when absent. */
         val genre: String = "",
+        /** iTunes `trackExplicitness` "cleaned": the clean version of an explicit song ([SongMerge]). */
+        val clean: Boolean = false,
+        /** "itunes" or "deezer" ([SongCatalog]). */
+        val source: String = "itunes",
     ) {
         val key: String get() = "${normalizeName(artist)} - ${normalizeName(title)}"
     }
@@ -421,6 +425,7 @@ object SongPicker {
                 artworkUrl = (r["artworkUrl100"] as? String)?.takeIf { it.startsWith("https://") }
                     ?.replace(Regex("/\\d+x\\d+bb\\."), "/300x300bb.") ?: "",
                 genre = cleanGenre(r["primaryGenreName"]),
+                clean = r["trackExplicitness"] == "cleaned",
             )
             val dup = out.indexOfFirst { it.key == hit.key && abs(it.durationSec - sec) <= 2 }
             if (dup >= 0) {

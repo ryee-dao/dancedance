@@ -52,7 +52,7 @@ How the video is picked, with no human or AI in the loop: the job searches YouTu
 
 Good to know:
 
-- Songs must be in Apple's music catalogue (the search uses it for the official title and length), be on YouTube, and be at most 15 minutes long.
+- Songs must be in Apple's or Deezer's music catalogue (the search asks both for the official title and length; only the search text is sent), be on YouTube, and be at most 15 minutes long. Apple's public search lists only the clean versions of explicit songs, so Deezer fills in explicit songs and their real titles. When the clean and explicit versions differ in length, both are listed.
 - If you add several songs quickly, GitHub may drop some waiting requests. The app re-sends the ones it is still waiting for, and after 15 minutes offers **Send again**.
 - **Removing** an added song (choose it, then **Remove from My added songs**) hides it on that device only.
 - The site is cached for a few minutes, so a song can take a little longer than the job itself to appear.
@@ -194,7 +194,7 @@ The TV reads your playlist again every time the app opens, so songs you add on y
 No GitHub token needed.
 
 1. On the phone page, choose **Find a song** and search for a song and artist.
-2. Tap the right match. Its length comes from Apple's iTunes catalogue.
+2. Tap the right match. Its length comes from Apple's iTunes catalogue, or from Deezer's for songs Apple's search doesn't list (often explicit songs).
 3. The TV searches YouTube itself and suggests the best video, using the same rules as the cloud job (official lyric video or official audio first, then a popular lyric video, then the artist's own audio track; no live versions, remixes, covers, sped-up versions or wrong lengths).
 4. Press **Add to my TV**, or **Add this one instead** under one of the other suggestions.
 
@@ -428,7 +428,7 @@ npm run beatmaps -- --limit 5                            # at most 5 songs this 
 npm run beatmaps -- --force                              # redo songs that already have a map
 npm run beatmaps -- --retry-blocked                      # retry songs YouTube blocked, right away
 npm run beatmaps -- --dry-run                            # list what would be processed; downloads nothing
-npm run beatmaps -- --add "a-ha - Take On Me"            # add a song by search (length looked up on iTunes)
+npm run beatmaps -- --add "a-ha - Take On Me"            # add a song by search (length looked up on iTunes, else Deezer)
 npm run beatmaps -- --add "a-ha - Take On Me" --dry-run  # just show which video it would pick
 PLAYLIST_URL='https://www.youtube.com/playlist?list=…' npm run beatmaps
 ```
