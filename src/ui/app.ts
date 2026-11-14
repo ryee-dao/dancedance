@@ -10,7 +10,7 @@ import type { PlayItem } from '../player/types';
 import type { Nav, Screen } from './dom';
 import { initFocusNav, setScreenScope } from './focusNav';
 import { createHome } from './home';
-import { library, songGenre, songGenres } from './library';
+import { library, songArtistGenres, songGenre, songGenres } from './library';
 import { createLinkPlaylist } from './linkPlaylist';
 import { createAddSong } from './addSong';
 import { store } from '../store';
@@ -49,6 +49,7 @@ export function startApp(root: HTMLElement): void {
               getPlayCount: (id) => store.playCount(id),
               getGenre: (id) => songGenre(id),
               getGenres: (id) => songGenres(id),
+              getArtistGenre: (id) => songArtistGenres(id)?.[0],
               getPlayers: () => store.settings().players,
               getGraphics: () => store.settings().graphics,
             }),
