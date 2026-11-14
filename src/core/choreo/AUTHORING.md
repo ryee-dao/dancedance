@@ -285,8 +285,10 @@ across all files. A broken definition is skipped and reported in
   - `pitchR` / `pitchL` foot pitch (deg): + = up on the ball of the foot (the
     heel rises automatically, toes stay on the floor), - = heel dig (toes up).
     Reads best in quarter profile; head-on it is a subtle cue.
-  - `formR` / `formL: 'point' | 'horns'`: a pointing index finger or rock
-    horns (drawn in all three looks; otherwise `handR` 0 = fist, 1 = open).
+  - `formR` / `formL: 'point' | 'horns' | 'fingers'`: a pointing index
+    finger, rock horns, or an open hand with the four fingers spread apart
+    (`'fingers'`: jazz hands, piano keys, wiggling fingers); drawn in all
+    three looks; otherwise `handR` 0 = fist, 1 = open.
   - Reach: a hand is at most 0.315 from its shoulder (upper arm 0.165 +
     forearm 0.15); `at()` / `hand()` clamp targets beyond that onto the sphere,
     so a far target silently becomes a straight arm.
@@ -412,7 +414,19 @@ npx tsx tools/moves/sheet.ts --at HEAD~1 --moves <id> --name before   # the same
 npx tsx tools/moves/sheet.ts --duo duo-palm-press       # partner moves
 npx tsx tools/moves/reference.ts search "<dance> dance tutorial"      # how the real dance is done
 npx tsx tools/moves/reference.ts frames <video id> --from 1:19 --to 1:25 --fps 4 --crop 0.35,0,0.65,1
+npx tsx tools/moves/jumps.ts <id> --bpm 140             # where a "joint jumps at 60 fps" failure happens
+npx tsx tools/moves/bench.ts --moves id1,id2 --sprites  # drawing cost per figure (compare runs on one machine)
 ```
+- `sheet.ts`: headless PNGs of what the coach really draws (contact sheets,
+  `--strip` for one move big, `--gallery` on the real stage, `--duo`,
+  `--views` / `--trail`, `--at <rev>` for before / after).
+- `reference.ts`: find a reference clip (`search`, `info`) and cut a frame
+  strip from it (`frames`, `--with` a sheet render under it) to study the
+  steps; never trace it.
+- `jumps.ts`: the fastest joint steps of a move at 60 fps with their beat,
+  to find what breaks the "no joint jumps" validity rule.
+- `bench.ts`: headless figure drawing cost (ms per figure, paths or
+  `--sprites`), `--param cam=..,piv=..,feet=0` to compare camera settings.
 `--views 0,90` adds a camera from the side: motion that only shows there
 (forward kicks, forward / back steps, rolls, reaches at the camera,
 horizontal circles) is invisible on the wall. `--trail` draws the hands',
@@ -423,6 +437,34 @@ rock, whip); exaggerate the visible component (knees pointing to the side in
 a twist or swivel, hip shift + tilt); restage a circle into the front plane;
 arms that swing against a twist. Reference footage is for understanding the
 steps only: author from scratch.
+
+What the front camera shows of depth (`VIEW` in `coach/styles.ts`, shared by
+every look, the duo stage and the thumbnails):
+- The eye is at head height (`piv` 0.95) and close (`cam` 2.6 figure units;
+  it was 4.2 / 0.55). A point toward the viewer scales up about eye height,
+  so below it it drops on the screen: a foot stepped 0.15 toward the viewer
+  lands about 0.06 LOWER on screen, a step back about 0.06 HIGHER, while a
+  hand at chest height moves under a third of that. Forward / back steps,
+  mambo and salsa breaks now read on the floor; arms you placed do not move.
+  Everything at z = 0 (the neutral stance, side-to-side moves) draws exactly
+  where it did.
+- Each foot has a contact shadow on the floor at the foot's depth, shrinking
+  and fading as the foot lifts: a foot stepped back (higher, shadow under it)
+  reads differently from a lifted foot (shadow left on the floor below).
+- A hand whose forearm points at the camera with `formR` / `formL: 'point'`
+  (or another form) draws the fingers foreshortened in front of the fist (a
+  short stub with a round fingertip, thicker the more it faces the viewer)
+  in every look: "pointing at you" reads. `'fingers'` is the open hand with
+  spread fingers.
+- Partner moves (`duoMoves.ts`): truly back to back is each player turned a
+  full quarter AWAY from the partner, `spin` about -90 (P2 mirrored), with
+  the roots about 0.40 apart (`x` 0.3 from each home spot) so the backs
+  nearly touch; at -60 they read as two people facing the front, at -105 the
+  backs of the heads show. Orbits (`orbitKeys`) take a radius or `[rx, rz]`
+  (an ellipse wider across the screen than in depth; the move's `orbit` is
+  then rz) and a `warp` (0..0.5) that hurries the pair through the moments
+  one stands straight in front of the other and lingers where they are side
+  by side.
 
 ## Quality bar (dos and don'ts)
 
