@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { handle, PROBE_TRACK_ID, safeEqual, type Env } from './index';
+import { handle, PROBE_TRACK_ID, RELAY_VERSION, resetRunsCache, RUNS_CACHE_MS, safeEqual, type Env } from './index';
 
 const TOKEN = 'github_pat_SECRET_TOKEN_never_in_responses_0123456789';
 const ORIGIN = 'https://jo.github.io';
@@ -281,7 +281,7 @@ describe('add-song relay', () => {
     const PROBE = { ...TRACK, trackId: PROBE_TRACK_ID };
     const ok = upstream({ lookup: { results: [PROBE] } });
     const h = await read(await handle(new Request('https://relay.example/health?probe=1', { headers: { Origin: ORIGIN } }), env, ok, NOW));
-    expect(h.body).toEqual({ ok: true, repo: 'jo/dancedance', passphrase: false, dailyLimit: 30, mapDailyLimit: 60, apple: 'ok' });
+    expect(h.body).toEqual({ ok: true, repo: 'jo/dancedance', passphrase: false, dailyLimit: 30, mapDailyLimit: 60, version: RELAY_VERSION, apple: 'ok' });
     expect(ok.calls.map((c) => c.url)).toEqual([`https://itunes.apple.com/lookup?id=${PROBE_TRACK_ID}&entity=song`]);
     expect((ok.calls[0].init?.headers as Record<string, string>).Authorization).toBeUndefined();
     const probe = async (f: ReturnType<typeof upstream>) =>
@@ -314,9 +314,90 @@ describe('add-song relay', () => {
 
   it('health shows the repo and whether a passphrase is needed, never secrets; missing config is reported', async () => {
     const h = await read(await handle(new Request('https://relay.example/health', { headers: { Origin: ORIGIN } }), { ...env, ADD_PASSPHRASE: 'p' }, upstream(), NOW));
-    expect(h).toEqual({ status: 200, cors: ORIGIN, body: { ok: true, repo: 'jo/dancedance', passphrase: true, dailyLimit: 30, mapDailyLimit: 60 } });
+    expect(h).toEqual({ status: 200, cors: ORIGIN, body: { ok: true, repo: 'jo/dancedance', passphrase: true, dailyLimit: 30, mapDailyLimit: 60, version: RELAY_VERSION } });
     expect(JSON.stringify(h.body)).not.toContain('"p"');
     const bare = await read(await handle(add({ trackId: 1 }), { ALLOWED_ORIGINS: ORIGIN }, upstream(), NOW));
     expect(bare.body.error).toBe('not-configured');
+  });
+
+  it('GET /runs: reduced run status only (no titles, actors or commits), cached, token never returned', async () => {
+    resetRunsCache();
+    const calls: { url: string; auth?: string }[] = [];
+    const runs = {
+      total_count: 4,
+      workflow_runs: [
+        {
+          id: 2,
+          path: '.github/workflows/beatmaps.yml',
+          event: 'workflow_dispatch',
+          display_title: 'Add song: Evanescence - My Immortal',
+          status: 'in_progress',
+          conclusion: null,
+          created_at: '2026-11-10T11:58:00Z',
+          run_started_at: '2026-11-10T11:58:02Z',
+          updated_at: '2026-11-10T11:59:00Z',
+          actor: { login: 'someone' },
+          head_commit: { message: 'secret' },
+        },
+        { id: 1, path: '.github/workflows/beatmaps.yml', event: 'schedule', display_title: 'Beat maps', status: 'completed', conclusion: 'failure', created_at: '2026-11-10T11:23:00Z', updated_at: '2026-11-10T11:30:00Z' },
+        { id: 3, path: '.github/workflows/android.yml', event: 'push', display_title: 'x', status: 'completed', conclusion: 'success', created_at: '2026-11-10T11:00:00Z' },
+        { id: 4, path: '.github/workflows/deploy.yml', event: 'push', display_title: 'Fix tests', status: 'completed', conclusion: 'success', created_at: '2026-11-10T10:00:00Z' },
+      ],
+    };
+    const jobs = (id: number) => ({
+      jobs:
+        id === 2
+          ? [{ name: 'update', status: 'in_progress', conclusion: null, started_at: '2026-11-10T11:58:05Z', completed_at: null, steps: [{ name: 'Make beat maps', status: 'in_progress', conclusion: null, started_at: '2026-11-10T11:59:00Z' }] }]
+          : [
+              { name: 'update', status: 'completed', conclusion: 'failure', started_at: '2026-11-10T11:23:05Z', completed_at: '2026-11-10T11:30:00Z', steps: [{ name: 'YouTube rejected the sign-in', status: 'completed', conclusion: 'failure' }] },
+              { name: 'deploy', status: 'completed', conclusion: 'skipped', started_at: null, completed_at: null, steps: [] },
+            ],
+    });
+    const f = async (url: string, init?: RequestInit): Promise<Response> => {
+      calls.push({ url, auth: (init?.headers as Record<string, string>)?.Authorization });
+      const m = /\/runs\/(\d+)\/jobs/.exec(url);
+      return new Response(JSON.stringify(m ? jobs(Number(m[1])) : runs), { status: 200 });
+    };
+    const get = () => new Request('https://relay.example/runs', { headers: { Origin: ORIGIN } });
+    const r = await read(await handle(get(), env, f, NOW));
+    expect(r.status).toBe(200);
+    expect(r.cors).toBe(ORIGIN);
+    expect(r.body.runs.map((x: { id: number; kind: string; workflow: string }) => [x.id, x.workflow, x.kind])).toEqual([
+      [2, 'beatmaps', 'add'],
+      [1, 'beatmaps', 'scheduled'],
+      [4, 'deploy', 'push'],
+    ]);
+    expect(r.body.runs[0].jobs).toEqual([
+      { name: 'update', part: 'update', status: 'in_progress', conclusion: null, startedAt: '2026-11-10T11:58:05Z', completedAt: null, step: 'Make beat maps', stepStartedAt: '2026-11-10T11:59:00Z' },
+    ]);
+    expect(r.body.runs[1].jobs[0].failedStep).toBe('YouTube rejected the sign-in');
+    const text = JSON.stringify(r.body);
+    for (const leak of ['Evanescence', 'someone', 'secret', 'Fix tests']) expect(text).not.toContain(leak);
+    expect(calls.map((c) => c.url)).toEqual([
+      'https://api.github.com/repos/jo/dancedance/actions/runs?branch=main&per_page=20&exclude_pull_requests=true',
+      'https://api.github.com/repos/jo/dancedance/actions/runs/2/jobs?per_page=20',
+      'https://api.github.com/repos/jo/dancedance/actions/runs/1/jobs?per_page=20',
+    ]);
+    expect(calls.every((c) => c.auth === `Bearer ${TOKEN}`)).toBe(true);
+    // Cached: no GitHub calls within RUNS_CACHE_MS; after it, finished runs' jobs are reused.
+    calls.length = 0;
+    await handle(get(), env, f, () => new Date(NOW().getTime() + RUNS_CACHE_MS - 1000));
+    expect(calls).toEqual([]);
+    await handle(get(), env, f, () => new Date(NOW().getTime() + RUNS_CACHE_MS + 1000));
+    expect(calls.map((c) => c.url.replace('https://api.github.com/repos/jo/dancedance/actions/', ''))).toEqual([
+      'runs?branch=main&per_page=20&exclude_pull_requests=true',
+      'runs/2/jobs?per_page=20',
+    ]);
+  });
+
+  it('GET /runs: GitHub errors are passed on as codes only; POST and missing config are refused', async () => {
+    resetRunsCache();
+    const leak = async () => new Response(`{"message":"Bad credentials ${TOKEN}"}`, { status: 401 });
+    expect(await read(await handle(new Request('https://relay.example/runs', { headers: { Origin: ORIGIN } }), env, leak, NOW))).toMatchObject({
+      status: 502,
+      body: { ok: false, error: 'github-401' },
+    });
+    expect((await handle(new Request('https://relay.example/runs', { method: 'POST', headers: { Origin: ORIGIN } }), env, leak, NOW)).status).toBe(405);
+    expect((await read(await handle(new Request('https://relay.example/runs'), { ALLOWED_ORIGINS: ORIGIN }, leak, NOW))).body.error).toBe('not-configured');
   });
 });
