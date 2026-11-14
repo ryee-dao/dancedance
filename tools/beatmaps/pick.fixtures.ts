@@ -489,3 +489,20 @@ export const wayoo = rows([
   ["NmB7daag2pk","Wahoo McDaniel on the Toughest Wrestlers He Ever Faced - Johnny Valentine & More!","Title Match Wrestling",true,1931,223,"Wahoo McDaniel discusses the toughest wrestlers he ever faced in his career including Johnny Valenti"],
   ["gGoxvAo8x38","Wahoo McDaniel on why he quit on Dory Funk Sr in TX for his bad payout!","Title Match Wrestling",true,4784,382,"Wahoo McDaniel discusses why he quit on Dory Funk Sr in TX for his bad payout. Wahoo also quit on Ph"],
 ]);
+
+/** "Fito Olivares Que Te Vas Y Te Vas lyrics" + "Fito Olivares Que Te Vas Y Te Vas official audio" + "Fito Olivares Que Te Vas Y Te Vas" */
+export const queTeVas = rows([
+  ["02eBacAUMqA","Fito Olivares - Que Te Vas y Te Vas ( Letra/Lyrics) | “ vete y no digas adiós es mejor para los dos”","Lynx.",false,185492,200,"Artista: Fito Olivares Canción: Que Te Vas y Te vas Lanzamiento: 19/11/2023 Género: Cumbia Sigue a F"],
+  ["AkLs5ZRRroQ","Que Te Vas Y Te Vas","Fito Olivares Y La Pura Sabrosura",true,8834279,200,"Provided to YouTube by TuneCore Que Te Vas Y Te Vas · Fito Olivares Tambores Y Sabor ℗ 1994 UMG Reco"],
+  ["e_pwtPye-nA","Que Te Vas","Fito Olivares Y La Pura Sabrosura",true,708288,207,"Provided to YouTube by Believe SAS Que Te Vas · Fito Olivares Que Te Vas ℗ Pentagon Music / Media Ag"],
+  ["jbgDh1aCe_4","Fito Olivares - Que Te Vas Y Te Vas","raiderricardo",false,49635,200,"Fito Olivares - Que Te Vas Y Te Vas."],
+  ["ycY9d5H6xcM","Fito Olivares - Que Te Vas y Te Vas (EPICENTER+REEVERB)","JRZ EPICENTER BASS",false,403120,200,""],
+  ["4ZJuBRPhWB0","Fito Olivares qué te vas","Vino con Coka",false,18627,191,""],
+  ["zVDY16YDg6g","QUE TE VAS Y TE VAS FITO OLIVARES (SIMPLE MIX) DJ EBAROS #tropitangobailable  #tropitango #TIKTOK","djebaros",false,234906,171,"NO SABEN LO AGRADECIDO QUE ESTOY DE TODOS USTEDES GRACIAS POR TANTO PERDON POR TAN POCO!!!! TEMITA ."],
+  ["BWMM8u0Q_wM","FITO OLIVARES - QUE TE VAS ( CON GUARACHA ) ","PECHITO REMIX OFICIAL",false,3483,207,"guaracha #fitoolivares #quetevas #remixdj."],
+  ["GmfQyM5RFDM","Que Te Vas, Que Te Vas - Fito Olivares","Leyendas Sonideras Vol.2",false,722361,197,"Exitos Del Tropitango Vol.1 - Selección de Oro."],
+  ["QN8_pzu45o8","¨Que te vas¨  FITO  OLIVARES","Música Grupera de Siempre",false,1307,212,"Que te vas¨ tema de la inspiracion de Don Rodolfo FITO OLIVARES. Rodolfo Olivares ( Camargo, Tamauli"],
+  ["Hlv4P5fvzls","Fito Olivares - que te vas y te vas 🎶","El VenoDiaz",false,541,201,"comparte para que no se pierda la buena musica."],
+  ["t7hUnwXJaRU","Que Te vas Y te Vas - Fito Olivares (REVERB)","Dragón_(EPICENTER)",false,2697,201,""],
+  ["GA0yfcOhnJ8","Que Te Vas - Fito Olivares","Jose Fernando CL",false,4232,207,"Muy buen ritmo en esta cumbia ..."],
+]);

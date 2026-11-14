@@ -12,6 +12,7 @@ import app.dancedance.tv.PickFixtures.insane
 import app.dancedance.tv.PickFixtures.nowThatWeFoundLove
 import app.dancedance.tv.PickFixtures.nullification
 import app.dancedance.tv.PickFixtures.purloin
+import app.dancedance.tv.PickFixtures.queTeVas
 import app.dancedance.tv.PickFixtures.quieroSerTuyo
 import app.dancedance.tv.PickFixtures.rapSavedMe
 import app.dancedance.tv.PickFixtures.runAway
@@ -325,6 +326,24 @@ class SongPickerTest {
         assertEquals(emptyList<String>(), ids(req, listOf(art.copy(channel = "Legendaires Officiel"))))
         val fake = e("OFFICIEL000", "Dua Lipa - Levitating (Official Lyric Video)", "Dua Lipa Officiel", views = 2_000_000, duration = 204)
         assertEquals("unverified channel using the artist's name", reason(lev, listOf(fake), fake.id))
+    }
+
+    @Test fun queTeVasChannelBillsTheArtistWithHisBand() {
+        val req = Request("Fito Olivares", "Que Te Vas Y Te Vas", 199)
+        assertEquals(listOf("topic:AkLs5ZRRroQ"), ids(req, queTeVas))
+        assertEquals("different song", reason(req, queTeVas, "e_pwtPye-nA"))
+        assertEquals("remix", reason(req, queTeVas, "zVDY16YDg6g"))
+        val art = queTeVas.first { it.id == "AkLs5ZRRroQ" }
+        for (channel in listOf("Fito Olivares and the Sabrosura Band", "Fito Olivares & His Band", "Fito Olivares con La Pura Sabrosura", "Fito Olivares + Orquesta", "FitoOlivaresVEVO & The Band")) {
+            assertEquals(channel, listOf("topic:AkLs5ZRRroQ"), ids(req, listOf(art.copy(channel = channel))))
+        }
+        assertEquals("art track from another channel", reason(req, listOf(art.copy(verified = false, views = 5_000)), art.id))
+        for (channel in listOf("La Pura Sabrosura y Fito Olivares", "Fito Olivares y Bronco", "Fito Olivares & Ramón Ayala", "Grupo Fito Olivares Tributo y La Banda")) {
+            assertEquals(channel, "art track from another channel", reason(req, listOf(art.copy(channel = channel)), art.id))
+        }
+        val duo = e("DUOCHANNEL0", "Dua Lipa - Levitating (Official Audio)", "Calvin Harris & Dua Lipa", true, duration = 204)
+        assertEquals("not official, not a lyric video", reason(lev, listOf(duo), duo.id))
+        assertEquals("not official, not a lyric video", reason(lev, listOf(duo.copy(channel = "Dua Lipa & The Band", verified = false)), duo.id))
     }
 
     @Test fun neverSinceStillNotFound() {

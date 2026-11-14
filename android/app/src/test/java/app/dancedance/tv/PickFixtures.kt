@@ -245,6 +245,22 @@ object PickFixtures {
         Entry("IPPxle0CBRk", "M-Zine - Crepitate", "sheo_ _ʚїɞ", false, 386L, 371L, "Buy at: https://www.beatport.com/track/c"),
     )
 
+    val queTeVas: List<Entry> = listOf(
+        Entry("02eBacAUMqA", "Fito Olivares - Que Te Vas y Te Vas ( Letra/Lyrics) | “ vete y no digas adiós es mejor para los dos”", "Lynx.", false, 185492L, 200L, "Artista: Fito Olivares Canción: Que Te Vas y Te vas Lanzamiento: 19/11/2023 Género: Cumbia Sigue a F"),
+        Entry("AkLs5ZRRroQ", "Que Te Vas Y Te Vas", "Fito Olivares Y La Pura Sabrosura", true, 8834279L, 200L, "Provided to YouTube by TuneCore Que Te Vas Y Te Vas · Fito Olivares Tambores Y Sabor ℗ 1994 UMG Reco"),
+        Entry("e_pwtPye-nA", "Que Te Vas", "Fito Olivares Y La Pura Sabrosura", true, 708288L, 207L, "Provided to YouTube by Believe SAS Que Te Vas · Fito Olivares Que Te Vas ℗ Pentagon Music / Media Ag"),
+        Entry("jbgDh1aCe_4", "Fito Olivares - Que Te Vas Y Te Vas", "raiderricardo", false, 49635L, 200L, "Fito Olivares - Que Te Vas Y Te Vas."),
+        Entry("ycY9d5H6xcM", "Fito Olivares - Que Te Vas y Te Vas (EPICENTER+REEVERB)", "JRZ EPICENTER BASS", false, 403120L, 200L, ""),
+        Entry("4ZJuBRPhWB0", "Fito Olivares qué te vas", "Vino con Coka", false, 18627L, 191L, ""),
+        Entry("zVDY16YDg6g", "QUE TE VAS Y TE VAS FITO OLIVARES (SIMPLE MIX) DJ EBAROS #tropitangobailable  #tropitango #TIKTOK", "djebaros", false, 234906L, 171L, "NO SABEN LO AGRADECIDO QUE ESTOY DE TODOS USTEDES GRACIAS POR TANTO PERDON POR TAN POCO!!!! TEMITA ."),
+        Entry("BWMM8u0Q_wM", "FITO OLIVARES - QUE TE VAS ( CON GUARACHA ) ", "PECHITO REMIX OFICIAL", false, 3483L, 207L, "guaracha #fitoolivares #quetevas #remixdj."),
+        Entry("GmfQyM5RFDM", "Que Te Vas, Que Te Vas - Fito Olivares", "Leyendas Sonideras Vol.2", false, 722361L, 197L, "Exitos Del Tropitango Vol.1 - Selección de Oro."),
+        Entry("QN8_pzu45o8", "¨Que te vas¨  FITO  OLIVARES", "Música Grupera de Siempre", false, 1307L, 212L, "Que te vas¨ tema de la inspiracion de Don Rodolfo FITO OLIVARES. Rodolfo Olivares ( Camargo, Tamauli"),
+        Entry("Hlv4P5fvzls", "Fito Olivares - que te vas y te vas 🎶", "El VenoDiaz", false, 541L, 201L, "comparte para que no se pierda la buena musica."),
+        Entry("t7hUnwXJaRU", "Que Te vas Y te Vas - Fito Olivares (REVERB)", "Dragón_(EPICENTER)", false, 2697L, 201L, ""),
+        Entry("GA0yfcOhnJ8", "Que Te Vas - Fito Olivares", "Jose Fernando CL", false, 4232L, 207L, "Muy buen ritmo en esta cumbia ..."),
+    )
+
     val quieroSerTuyo: List<Entry> = listOf(
         Entry("AcbBKIShKh8", "QUIERO Ser Tuyo 💝 - Tito Rojas [Lyric Video]", "JN Music Group", true, 19079357L, 314L, "Disfruta de \"Quiero Ser Tuyo\" de Tito Ro"),
         Entry("-TSWAn0bqAU", "Quiero ser tuyo tito rojas con letra", "RecPlay", false, 3674182L, 313L, ""),

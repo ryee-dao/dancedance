@@ -253,15 +253,49 @@ function channelVariants(artist: string): string[] {
   return [...new Set(out)].filter((v) => v.length >= 2);
 }
 
+/** "and" in a channel's billing ("X and the Y", "X & His Orchestra", "X y La Y", "X con Y"). */
+const BILLING_JOIN = /\s+(?:and|y|e|et|und|con|with|avec|mit)\s+|\s*[&+]\s*/gi;
+/** Words that start a band billing: "the", "his", "La", "Su", ... */
+const BILLING_ARTICLE = new Set([
+  'the', 'his', 'her', 'their', 'la', 'el', 'los', 'las', 'le', 'les', 'su', 'sus', 'son', 'sa', 'ses', 'seu', 'sua', 'os', 'die', 'der', 'das', 'seine', 'ihre', 'il',
+]);
+/** Words that make a billing a band: "X & Orchestra", "X y Conjunto Azul". */
+const BILLING_ENSEMBLE = new Set([
+  'orchestra', 'orquesta', 'orquestra', 'orchestre', 'orchester', 'band', 'banda', 'boys', 'conjunto', 'grupo', 'combo', 'ensemble',
+  'trio', 'quartet', 'quintet', 'crew', 'gang', 'mariachi', 'sonora', 'singers', 'choir', 'coro', 'players', 'allstars',
+]);
+
+/** `rest` reads as the artist's band, not another act: "the Boyz", "La Pura Sabrosura", "Orchestra". */
+function bandBilling(rest: string): boolean {
+  const w = toks(rest);
+  return w.length > 0 && (BILLING_ARTICLE.has(w[0]) || w.some((x) => BILLING_ENSEMBLE.has(x)));
+}
+
+/**
+ * Leading names of a channel billed as "<lead> <and> <band>" ("Fito Olivares Y La Pura
+ * Sabrosura" -> "Fito Olivares"). Only the first-billed side: "Calvin Harris & Disciples"
+ * is not Disciples', and a duo ("Brooks & Dunn") is not Brooks'.
+ */
+function billingLeads(channel: string): string[] {
+  const out: string[] = [];
+  for (const m of channel.matchAll(BILLING_JOIN)) {
+    const lead = channel.slice(0, m.index);
+    if (lead.trim() && bandBilling(channel.slice(m.index! + m[0].length))) out.push(lead);
+  }
+  return out;
+}
+
 /**
  * The channel is the artist's own: one of its cores spells the artist. A verified channel
- * may also give the name in two forms ("神山羊 / Yoh Kamiyama"); then either form counts.
+ * may also give the name in two forms ("神山羊 / Yoh Kamiyama"), either of which counts, or
+ * bill the artist with a band ("Fito Olivares Y La Pura Sabrosura"), when the artist leads.
  */
 function isArtistChannel(e: SearchEntry, variants: string[]): boolean {
   const names = [e.channel];
   if (e.verified) {
     const parts = e.channel.split(CHANNEL_NAME_SPLIT).filter((p) => p.trim());
     if (parts.length >= 2) names.push(...parts);
+    names.push(...names.flatMap(billingLeads));
   }
   return names.some((n) => channelCores(n).some((c) => variants.includes(c)));
 }

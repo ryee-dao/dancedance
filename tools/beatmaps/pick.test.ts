@@ -15,6 +15,7 @@ import {
   nowThatWeFoundLove,
   nullification,
   purloin,
+  queTeVas,
   quieroSerTuyo,
   rapSavedMe,
   runAway,
@@ -367,6 +368,28 @@ describe('rankCandidates on real search results: channel-name misses from run-20
     const lev = { artist: 'Dua Lipa', title: 'Levitating', durationSec: 203 };
     const fake = e({ id: 'OFFICIEL000', title: 'Dua Lipa - Levitating (Official Lyric Video)', channel: 'Dua Lipa Officiel', duration: 204, views: 2e6 });
     expect(reasonFor(lev, [fake], fake.id)).toBe("unverified channel using the artist's name");
+  });
+
+  it('Que Te Vas Y Te Vas (Fito Olivares): his verified channel bills him with his band, "Fito Olivares Y La Pura Sabrosura"', () => {
+    const req = { artist: 'Fito Olivares', title: 'Que Te Vas Y Te Vas', durationSec: 199 };
+    expect(ids(req, queTeVas)).toEqual(['topic:AkLs5ZRRroQ']); // art track, 200 s, 8.8 M views
+    expect(reasonFor(req, queTeVas, 'e_pwtPye-nA')).toBe('different song'); // "Que Te Vas", same channel
+    expect(reasonFor(req, queTeVas, 'zVDY16YDg6g')).toBe('remix');
+    const art = queTeVas.find((x) => x.id === 'AkLs5ZRRroQ')!;
+    for (const channel of ['Fito Olivares and the Sabrosura Band', 'Fito Olivares & His Band', 'Fito Olivares con La Pura Sabrosura', 'Fito Olivares + Orquesta', 'FitoOlivaresVEVO & The Band']) {
+      expect(ids(req, [{ ...art, channel }])).toEqual(['topic:AkLs5ZRRroQ']);
+    }
+    // Unverified, the billing is not trusted: a few views and it is another channel's art track.
+    expect(reasonFor(req, [{ ...art, verified: false, views: 5_000 }], art.id)).toBe('art track from another channel');
+    // Only the first-billed side, and only before a band billing: a duo or a feature is another act.
+    for (const channel of ['La Pura Sabrosura y Fito Olivares', 'Fito Olivares y Bronco', 'Fito Olivares & Ramón Ayala', 'Grupo Fito Olivares Tributo y La Banda']) {
+      expect(reasonFor(req, [{ ...art, channel }], art.id)).toBe('art track from another channel');
+    }
+    const lev = { artist: 'Dua Lipa', title: 'Levitating', durationSec: 203 };
+    const duo = e({ id: 'DUOCHANNEL0', title: 'Dua Lipa - Levitating (Official Audio)', channel: 'Calvin Harris & Dua Lipa', verified: true, duration: 204 });
+    expect(reasonFor(lev, [duo], duo.id)).toBe('not official, not a lyric video');
+    // An unverified "Dua Lipa & The Band" is the impostor case.
+    expect(reasonFor(lev, [{ ...duo, channel: 'Dua Lipa & The Band', verified: false }], duo.id)).toBe('not official, not a lyric video');
   });
 
   it('Never Since (Refraction): still not found; the only upload is 9 s longer than iTunes and on an unverified channel', () => {

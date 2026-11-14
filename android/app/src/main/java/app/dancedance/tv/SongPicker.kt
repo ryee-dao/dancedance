@@ -190,15 +190,46 @@ object SongPicker {
             .distinct()
             .filter { it.length >= 2 }
 
+    /** "and" in a channel's billing ("X and the Y", "X & His Orchestra", "X y La Y", "X con Y"). */
+    private val BILLING_JOIN = re("\\s+(?:and|y|e|et|und|con|with|avec|mit)\\s+|\\s*[&+]\\s*")
+    /** Words that start a band billing: "the", "his", "La", "Su", ... */
+    private val BILLING_ARTICLE = setOf(
+        "the", "his", "her", "their", "la", "el", "los", "las", "le", "les", "su", "sus", "son", "sa", "ses", "seu", "sua", "os", "die", "der", "das", "seine", "ihre", "il",
+    )
+    /** Words that make a billing a band: "X & Orchestra", "X y Conjunto Azul". */
+    private val BILLING_ENSEMBLE = setOf(
+        "orchestra", "orquesta", "orquestra", "orchestre", "orchester", "band", "banda", "boys", "conjunto", "grupo", "combo", "ensemble",
+        "trio", "quartet", "quintet", "crew", "gang", "mariachi", "sonora", "singers", "choir", "coro", "players", "allstars",
+    )
+
+    /** [rest] reads as the artist's band, not another act: "the Boyz", "La Pura Sabrosura", "Orchestra". */
+    private fun bandBilling(rest: String): Boolean {
+        val w = toks(rest)
+        return w.isNotEmpty() && (w[0] in BILLING_ARTICLE || w.any { it in BILLING_ENSEMBLE })
+    }
+
+    /**
+     * Leading names of a channel billed as "<lead> <and> <band>" ("Fito Olivares Y La Pura
+     * Sabrosura" -> "Fito Olivares"). Only the first-billed side: "Calvin Harris & Disciples" is
+     * not Disciples', and a duo ("Brooks & Dunn") is not Brooks'.
+     */
+    private fun billingLeads(channel: String): List<String> =
+        BILLING_JOIN.findAll(channel).mapNotNull { m ->
+            val lead = channel.substring(0, m.range.first)
+            if (lead.isNotBlank() && bandBilling(channel.substring(m.range.last + 1))) lead else null
+        }.toList()
+
     /**
      * The channel is the artist's own: one of its cores spells the artist. A verified channel may
-     * also give the name in two forms ("神山羊 / Yoh Kamiyama"); then either form counts.
+     * also give the name in two forms ("神山羊 / Yoh Kamiyama"), either of which counts, or bill
+     * the artist with a band ("Fito Olivares Y La Pura Sabrosura"), when the artist leads.
      */
     private fun isArtistChannel(e: Entry, variants: List<String>): Boolean {
         val names = mutableListOf(e.channel)
         if (e.verified) {
             val parts = e.channel.split(CHANNEL_NAME_SPLIT).filter { it.isNotBlank() }
             if (parts.size >= 2) names += parts
+            names += names.flatMap(::billingLeads)
         }
         return names.any { n -> channelCores(n).any { it in variants } }
     }
