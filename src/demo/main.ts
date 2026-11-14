@@ -35,13 +35,14 @@ import { loopPlan } from '../core/coach/loop';
 import { LOOKS } from '../core/coach/humanPainter';
 import { COLORS, FigurePainter, drawCoachPreview, StageRenderer2D, type StripInfo } from '../core/coach/renderer';
 import { CH, J, createPose, createSkeleton, solveSkeleton, type Skeleton } from '../core/coach/skeleton';
-import { COACH_STYLE_IDS, DEFAULT_COACH_BUILD, coachStyleInfo, parseCoachBuild, parseCoachStyle, type CoachStyle } from '../core/coach/styles';
+import { COACH_STYLE_IDS, DEFAULT_COACH_BUILD, coachStyleInfo, parseCoachBuild, parseCoachStyle, VIEW, viewFromParams, type CoachStyle } from '../core/coach/styles';
 import { createCoachStage } from '../ui/coachStage';
 import type { FrameInfo } from '../ui/play';
 import { SECTION_PLAN, SYNTH_MAX_BPM, SYNTH_MIN_BPM, SimSource, type SimMode } from './synth';
 
 const q = new URLSearchParams(location.search);
 const mode = q.get('mode') ?? 'song';
+viewFromParams(q);
 /** The bench's tempo range (the synthetic map refuses anything else). */
 const clampBpm = (v: number): number => (Number.isFinite(v) ? Math.min(SYNTH_MAX_BPM, Math.max(SYNTH_MIN_BPM, Math.round(v))) : 120);
 let bpm = clampBpm(Number(q.get('bpm') ?? 120));
@@ -392,6 +393,8 @@ function sheetMoves(set: string): Move[] {
  *                                  the move, at most the whole loop plan)
  *   &trail=1                       an extra cell with the paths of hands, feet and head
  *                                  over the frames' span (how much visibly moves)
+ *   &cams=cam/piv/rise/feet;...    one row per camera (before / after the stage camera)
+ *   &form=point|horns|fingers      preview a hand form on both hands
  */
 function runSheet(): void {
   const set = q.get('set') ?? 'catalogue';
@@ -408,10 +411,17 @@ function runSheet(): void {
   const spanQ = q.get('span') !== null ? Number(q.get('span')) : NaN;
   const start = Number(q.get('start') ?? 0);
   const trail = q.get('trail') === '1';
+  const formQ = ({ point: 1, horns: 2, fingers: 3 } as Record<string, number>)[q.get('form') ?? ''] ?? 0;
+  // &cams=cam/piv/rise/feet;...: one row per camera (before / after comparisons in one sheet).
+  const view0 = { ...VIEW };
+  const cams = (q.get('cams') ?? '').split(';').filter(Boolean).map((c) => {
+    const [cam, piv, rise, feet] = c.split('/').map(Number);
+    return { cam: cam || view0.cam, piv: Number.isFinite(piv) ? piv : view0.piv, rise: rise || 0, feet: !!feet, label: c };
+  });
   const labelW = 220;
   const cols = frames + (trail ? 1 : 0);
-  const rows: { m: Move; st: CoachStyle; view: number }[] = [];
-  for (const m of moves) for (const st of styles) for (const view of views) rows.push({ m, st, view });
+  const rows: { m: Move; st: CoachStyle; view: number; cam: (typeof cams)[number] | null }[] = [];
+  for (const m of moves) for (const st of styles) for (const view of views) for (const cam of cams.length ? cams : [null]) rows.push({ m, st, view, cam });
   const canvas = el('canvas');
   canvas.width = labelW + cols * cellW;
   canvas.height = Math.max(1, rows.length) * cellH;
@@ -428,7 +438,8 @@ function runSheet(): void {
   const TRAIL_JOINTS: readonly [number, string][] = [
     [J.HA_R, '#ff6b6b'], [J.HA_L, '#4dabf7'], [J.TOE_R, '#ffa94d'], [J.TOE_L, '#69db7c'], [J.HEAD, '#e599f7'],
   ];
-  rows.forEach(({ m, st, view }, row) => {
+  rows.forEach(({ m, st, view, cam }, row) => {
+    Object.assign(VIEW, cam ? { cam: cam.cam, piv: cam.piv, rise: cam.rise, feet: cam.feet } : view0);
     const painter = new FigurePainter();
     painter.style = st;
     painter.build = build;
@@ -456,11 +467,17 @@ function runSheet(): void {
       ctx.fillStyle = COLORS.band;
       ctx.fillText(`${coachStyleInfo(st).name}${view ? `  view ${view}°` : ''}  ${bpm} bpm`, 10, y0 + 138);
     }
+    if (cam) {
+      ctx.fillStyle = COLORS.band;
+      ctx.fillText(`camera ${cam.label}`, 10, y0 + 156);
+    }
     const floor = y0 + cellH - 14;
     const scale = cellH * 0.66;
     const solve = (b: number) => {
       ev.evaluate(plan, b * period, pose);
       if (view) pose[CH.SPIN] += view;
+      // &form=point|horns|fingers: preview a hand form on every frame (what an author would set).
+      if (formQ) pose[CH.FORM_R] = pose[CH.FORM_L] = formQ;
       solveSkeleton(pose, sk);
     };
     for (let f = 0; f < frames; f++) {

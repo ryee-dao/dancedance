@@ -21,7 +21,7 @@ import { HumanPainter, humanLook } from './humanPainter';
 import { loopPlan, type LoopPlan } from './loop';
 import { DirtyRects, MAX_SLOTS, makeLayer } from './dirty';
 import { BODY, J, NUM_JOINTS, createPose, createSkeleton, solveSkeleton, type Skeleton } from './skeleton';
-import { CAM, DEFAULT_COACH_BUILD, DEFAULT_COACH_STYLE, PIV_Y, type CoachBuild, type CoachStyle } from './styles';
+import { DEFAULT_COACH_BUILD, DEFAULT_COACH_STYLE, VIEW, depthScale, screenUp, type CoachBuild, type CoachStyle } from './styles';
 import { lookIdOf, nullContext, scaleOf, sharedSpriteCache, spriteKey, type PieceArtist, type SpriteCache, type SpriteEntry } from './sprites';
 import { M, bandQuad, blitOrDraw, blitSegment, boneMatrix, fillClippedToQuad, fillGrown, flattenSegments, frameMatrix, qFigure, segBucket, segLength, spriteEllipse, spriteLine, spritePanel, spriteRing } from './spriteParts';
 
@@ -141,6 +141,18 @@ const PC_MITT = 10;
 const CHEST_CMDS = new Float64Array(18);
 const BAND_Q = new Float64Array(8);
 
+/**
+ * How much the forearm el -> ha points at the viewer (0..1): 0 up to 35 %
+ * of its length toward the camera, 1 from 90 %. Drives the foreshortened
+ * pointing hand in every look.
+ */
+export function towardViewer(p: Float64Array, el: number, ha: number): number {
+  const dx = p[ha * 3] - p[el * 3], dy = p[ha * 3 + 1] - p[el * 3 + 1], dz = p[ha * 3 + 2] - p[el * 3 + 2];
+  const l = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+  const t = (dz / l - 0.35) / 0.55;
+  return t < 0 ? 0 : t > 1 ? 1 : t;
+}
+
 /** Small index of a classic colour for sprite keys. */
 function classicColor(c: string): number {
   switch (c) {
@@ -208,6 +220,7 @@ export class FigurePainter implements PieceArtist {
   private pcForm = 0;
   private pcSide = 0;
   private pcAux = 0;
+  private pcTw = 0;
   /**
    * Recolour the top (two-player identity): the classic torso, or the human
    * looks' shirt (+ hood). null = the look's own colours.
@@ -233,10 +246,10 @@ export class FigurePainter implements PieceArtist {
     const p = sk.p;
     for (let j = 0; j < NUM_JOINTS; j++) {
       const x = p[j * 3], y = p[j * 3 + 1], z = p[j * 3 + 2];
-      const s = CAM / (CAM - z);
+      const s = depthScale(z);
       this.ps[j] = s;
       this.px[j * 2] = cx + x * s * scale;
-      this.px[j * 2 + 1] = floorY - (PIV_Y + (y - PIV_Y) * s) * scale;
+      this.px[j * 2 + 1] = floorY - screenUp(y, z, s) * scale;
     }
   }
 
@@ -414,22 +427,43 @@ export class FigurePainter implements PieceArtist {
 
   private shadow(ctx: CanvasRenderingContext2D, sk: Skeleton, cx: number, floorY: number, scale: number): void {
     const air = sk.air;
-    const x = cx + ((sk.p[J.AN_L * 3] + sk.p[J.AN_R * 3]) * 0.5) * scale;
-    const spread = Math.abs(sk.p[J.AN_R * 3] - sk.p[J.AN_L * 3]);
+    const p = sk.p;
+    const spread = Math.abs(p[J.AN_R * 3] - p[J.AN_L * 3]);
     const k = Math.max(0.35, 1 - air * 3.2);
-    if (this.sprites) {
-      const a = ctx.globalAlpha;
-      ctx.globalAlpha = a * 0.55 * k;
-      spriteEllipse(this.sprites, ctx, '#05040a', 1, 0, 0, 1, 0, 0, x, floorY + 0.01 * scale, (0.2 + spread * 0.5) * k * scale, 0.035 * k * scale, 0);
-      ctx.globalAlpha = a;
-      return;
+    const feet = VIEW.feet;
+    // The body's soft pool (fainter when each foot also casts its own spot).
+    const mz = (p[J.AN_L * 3 + 2] + p[J.AN_R * 3 + 2]) * 0.5;
+    const ms = depthScale(mz);
+    this.ellipse(ctx, cx + (p[J.AN_L * 3] + p[J.AN_R * 3]) * 0.5 * ms * scale, floorY - (screenUp(0, mz, ms) - 0.01) * scale, (0.2 + spread * 0.5) * k * scale, 0.035 * k * scale, (feet ? 0.32 : 0.55) * k);
+    if (!feet) return;
+    // A contact spot under each foot, on the floor where the foot is: it moves
+    // up / down the screen with the foot's depth (a step toward the viewer
+    // lands lower) and shrinks and fades as the foot lifts, so a lifted foot
+    // and a foot stepped back (both higher on screen) read differently.
+    for (let s = 0; s < 2; s++) {
+      const an = s === 0 ? J.AN_R : J.AN_L, to = s === 0 ? J.TOE_R : J.TOE_L;
+      const fx = (p[an * 3] + p[to * 3]) * 0.5, fz = (p[an * 3 + 2] + p[to * 3 + 2]) * 0.5;
+      const lift = Math.max(0, Math.min(p[an * 3 + 1] - BODY.ankleY, p[to * 3 + 1] - 0.004));
+      const f = Math.max(0, 1 - lift * 3.5);
+      if (f <= 0.05) continue;
+      const fs = depthScale(fz);
+      const r = (0.62 + 0.38 * f) * fs * scale;
+      this.ellipse(ctx, cx + fx * fs * scale, floorY - (screenUp(0, fz, fs) - 0.01) * scale, 0.085 * r, 0.026 * r, 0.75 * f * f);
     }
-    ctx.globalAlpha *= 0.55 * k;
-    ctx.fillStyle = '#05040a';
-    ctx.beginPath();
-    ctx.ellipse(x, floorY + 0.01 * scale, (0.2 + spread * 0.5) * k * scale, 0.035 * k * scale, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha /= 0.55 * k;
+  }
+
+  /** One shadow ellipse (path or sprite) at alpha `a` × the current alpha. */
+  private ellipse(ctx: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: number, a: number): void {
+    const a0 = ctx.globalAlpha;
+    ctx.globalAlpha = a0 * a;
+    if (this.sprites) spriteEllipse(this.sprites, ctx, '#05040a', 1, 0, 0, 1, 0, 0, x, y, rx, ry, 0);
+    else {
+      ctx.fillStyle = '#05040a';
+      ctx.beginPath();
+      ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = a0;
   }
 
   private seg2(ctx: CanvasRenderingContext2D, a: number, b: number, c: number, w1: number, w2: number, color: string, ol: number, scale: number, wid = 0): void {
@@ -470,43 +504,35 @@ export class FigurePainter implements PieceArtist {
     this.seg2(ctx, sh, el, ha, B.upper, B.fore, color, ol, scale, W_UPPER);
     // Hand: a round mitt, bigger when open.
     const px = this.px;
-    if (form > 0) open = 0;
+    if (form > 0) open = form === 3 ? 1 : 0;
     const oc = open < 0 ? 0 : open > 1 ? 1 : open;
     const x = px[ha * 2], y = px[ha * 2 + 1];
-    let dx = 1, dy = 0;
+    let dx = 1, dy = 0, tw = 0;
     if (form > 0) {
       dx = x - px[el * 2];
       dy = y - px[el * 2 + 1];
       const dl = Math.sqrt(dx * dx + dy * dy) || 1;
       dx /= dl;
       dy /= dl;
+      tw = towardViewer(this.sk3!, el, ha);
     }
     if (this.sprites) {
-      this.handC(ctx, x, y, this.ps[ha], oc, form, dx, dy, color, light, scale, ol);
+      this.handC(ctx, x, y, this.ps[ha], oc, form, dx, dy, color, light, scale, ol, tw);
       return;
     }
-    this.classicHand(ctx, x, y, BODY.handR * this.ps[ha] * scale * (0.92 + 0.22 * oc), dx, dy, form, color, light, ol);
+    this.classicHand(ctx, x, y, BODY.handR * this.ps[ha] * scale * (0.92 + 0.22 * oc), dx, dy, form, color, light, ol, tw);
   }
 
   /** Classic hand at (x, y): mitt of radius r, cuff ring, pointing finger / horns along (dx, dy). */
-  private classicHand(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, dx: number, dy: number, form: number, color: string, light: string, ol: number): void {
-    if (form > 0) {
-      // Pointing index finger / rock horns, out along the forearm.
-      const spread = form === 2 ? [0.42, -0.42] : [0];
-      for (const pass of [0, 1]) {
-        ctx.strokeStyle = pass === 0 ? COLORS.outline : light;
-        ctx.lineWidth = r * 0.62 + (pass === 0 ? ol * 3.2 : 0);
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        for (const a of spread) {
-          const c = Math.cos(a), s = Math.sin(a);
-          const fx = dx * c - dy * s, fy = dx * s + dy * c;
-          ctx.moveTo(x + fx * r * 0.4, y + fy * r * 0.4);
-          ctx.lineTo(x + fx * r * (form === 2 ? 1.95 : 2.25), y + fy * r * (form === 2 ? 1.95 : 2.25));
-        }
-        ctx.stroke();
-      }
-    }
+  /**
+   * tw (0..1): how much the finger(s) point at the viewer. Foreshortened:
+   * shorter, and past 0.5 drawn over the mitt, thicker, with a round
+   * fingertip pad (the "pointing at you" hand).
+   */
+  private classicHand(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, dx: number, dy: number, form: number, color: string, light: string, ol: number, tw = 0): void {
+    const front = tw > 0.5;
+    // Behind the mitt: the whole finger; in front: its outline goes under the mitt, its fill over it.
+    if (form > 0) this.classicFingers(ctx, x, y, r, dx, dy, form, light, ol, tw, front ? 0 : 2);
     ctx.fillStyle = light;
     ctx.strokeStyle = COLORS.outline;
     ctx.lineWidth = ol * 1.6;
@@ -519,6 +545,60 @@ export class FigurePainter implements PieceArtist {
     ctx.lineWidth = ol * 1.4;
     ctx.beginPath();
     ctx.arc(x, y, r * 0.55, 0, Math.PI * 2);
+    ctx.stroke();
+    if (form > 0 && front) this.classicFingers(ctx, x, y, r, dx, dy, form, light, ol, tw, 1);
+  }
+
+  /** Pointing index finger / rock horns out along (dx, dy), foreshortened by tw (see classicHand). */
+  /** which: 0 = outline only, 1 = fill (+ thin outline, nail crease), 2 = both. */
+  private classicFingers(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, dx: number, dy: number, form: number, light: string, ol: number, tw: number, which: number): void {
+    const front = tw > 0.5;
+    const spread = form === 2 ? 0.42 : form === 3 ? 0.3 : 0;
+    const full = form === 2 ? 1.95 : form === 3 ? 1.75 : 2.25;
+    // Screen length: the full finger in the picture plane, a stub when it points at the viewer.
+    const len = front ? 1.15 + 0.3 * (1 - tw) : full - (full - 1.2) * tw * 2;
+    const w = r * (form === 3 ? 0.36 : front ? (form === 2 ? 0.5 : 0.56) + 0.12 * tw : 0.62);
+    // Four spread fingers: -1.5 .. 1.5 steps of `spread`; one or two otherwise.
+    const a0 = form === 3 ? -1.5 * spread : -spread, a1 = -a0 + 1e-9, da = form === 3 ? spread : spread || 1;
+    for (let pass = which === 1 ? 1 : 0; pass < (which === 0 ? 1 : 2); pass++) {
+      if (pass === 1 && which === 1) {
+        // Over the mitt: a thin outline of its own so the finger separates from it.
+        ctx.strokeStyle = COLORS.outline;
+        ctx.lineWidth = w + ol * 1.1;
+        ctx.beginPath();
+        for (let a = a0; a <= a1; a += da) {
+          const c = Math.cos(a), s = Math.sin(a);
+          const fx = dx * c - dy * s, fy = dx * s + dy * c;
+          ctx.moveTo(x + fx * r * 0.45, y + fy * r * 0.45);
+          ctx.lineTo(x + fx * r * len, y + fy * r * len);
+        }
+        ctx.stroke();
+      }
+      ctx.strokeStyle = pass === 0 ? COLORS.outline : light;
+      ctx.lineWidth = w + (pass === 0 ? ol * 3.2 : 0);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      for (let a = a0; a <= a1; a += da) {
+        const c = Math.cos(a), s = Math.sin(a);
+        const fx = dx * c - dy * s, fy = dx * s + dy * c;
+        ctx.moveTo(x + fx * r * (front ? 0.45 : 0.4), y + fy * r * (front ? 0.45 : 0.4));
+        ctx.lineTo(x + fx * r * len, y + fy * r * len);
+      }
+      ctx.stroke();
+    }
+    if (!front || which === 0) return;
+    // Fingertip pad: a nail crease at each tip.
+    ctx.strokeStyle = COLORS.outline;
+    ctx.lineWidth = ol;
+    ctx.beginPath();
+    for (let a = a0; a <= a1; a += da) {
+      const c = Math.cos(a), s = Math.sin(a);
+      const fx = dx * c - dy * s, fy = dx * s + dy * c;
+      const ang = Math.atan2(fy, fx);
+      const cx = x + fx * r * (len - 0.12), cy = y + fy * r * (len - 0.12);
+      ctx.moveTo(cx + Math.cos(ang - 1.1) * w * 0.3, cy + Math.sin(ang - 1.1) * w * 0.3);
+      ctx.arc(cx, cy, w * 0.3, ang - 1.1, ang + 1.1);
+    }
     ctx.stroke();
   }
 
@@ -1012,13 +1092,16 @@ export class FigurePainter implements PieceArtist {
     }
   }
 
-  private handC(ctx: CanvasRenderingContext2D, x: number, y: number, ps: number, oc: number, form: number, dx: number, dy: number, color: string, light: string, scale: number, ol: number): void {
+  private handC(ctx: CanvasRenderingContext2D, x: number, y: number, ps: number, oc: number, form: number, dx: number, dy: number, color: string, light: string, scale: number, ol: number, tw = 0): void {
     const sp = this.sprites!;
     const R = this.partScale(ps, scale), k = this.kOut, qs = qFigure(this.spriteRef || scale);
     const { qp, olS } = this.olFor(ps, R, ol, scale);
     const ob = Math.round(oc * 8);
-    const f = form < 0 ? 0 : form > 2 ? 2 : form;
-    const key = this.ckey(KC_HAND, qs, f, classicColor(color), qp, ob);
+    const f = form < 0 ? 0 : form > 3 ? 3 : form;
+    // Fingers (fist or, spread, an open mitt): the open slot carries the toward-the-viewer step instead.
+    const tb = f > 0 ? Math.round(tw * 6) : 0;
+    const key = this.ckey(KC_HAND, qs, f, classicColor(color), qp, f > 0 ? 16 + tb : ob);
+    this.pcTw = tb / 6;
     this.pcOpen = ob / 8;
     this.pcForm = f;
     this.pcColor = color;
@@ -1132,7 +1215,7 @@ export class FigurePainter implements PieceArtist {
         ctx.stroke();
         break;
       case PC_HAND:
-        this.classicHand(ctx, 0, 0, BODY.handR * R * (0.92 + 0.22 * this.pcOpen), 1, 0, this.pcForm, this.pcColor, this.pcLight, olS);
+        this.classicHand(ctx, 0, 0, BODY.handR * R * (0.92 + 0.22 * this.pcOpen), 1, 0, this.pcForm, this.pcColor, this.pcLight, olS, this.pcTw);
         break;
       case PC_MITT:
         ctx.fillStyle = this.pcLight;

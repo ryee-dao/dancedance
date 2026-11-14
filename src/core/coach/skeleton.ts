@@ -64,7 +64,7 @@ export const CH = {
   KNEE_L: 32,
   SLIDE_R: 33, // 1 = the foot slides to its next spot along the floor (no step arc)
   SLIDE_L: 34,
-  FORM_R: 35, // hand form: 0 = plain (fist / open by HAND_R), 1 = pointing index finger, 2 = horns
+  FORM_R: 35, // hand form: 0 = plain (fist / open by HAND_R), 1 = pointing index finger, 2 = horns, 3 = spread fingers
   FORM_L: 36,
   PITCH_R: 37, // foot pitch, deg: + = up on the ball of the foot (heel raised), - = heel dig (toes up)
   PITCH_L: 38,
@@ -73,7 +73,7 @@ export const CH = {
 export const NUM_CHANNELS = 39;
 
 /** Hand forms (CH.FORM_R / FORM_L values). */
-export const HAND_FORM = { plain: 0, point: 1, horns: 2 } as const;
+export const HAND_FORM = { plain: 0, point: 1, horns: 2, fingers: 3 } as const;
 
 /**
  * Channels that wrap and interpolate the short way round: only the swing

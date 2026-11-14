@@ -38,6 +38,8 @@
  *   --at <rev>         render the app as it was at that revision (before / after,
  *                      e.g. --at HEAD~1 --name before); ids are looked up there
  *   --url <http://..>  use a running dev server instead of starting one
+ *   --param k=v,k2=v2  extra bench parameters, e.g. camera experiments
+ *                      (--param rise=0,cam=4.2 = the old flat front view)
  *
  * Prints the written paths. Images are scratch output: never commit them.
  */
@@ -91,6 +93,11 @@ function common(extra: Record<string, string | number | undefined>): string {
   const p = new URLSearchParams();
   const all: Record<string, string | number | undefined> = { bpm, build, ...extra };
   for (const [k, v] of Object.entries(all)) if (v !== undefined && v !== '') p.set(k, String(v));
+  // --param k=v,k2=v2: extra bench parameters (camera / cue experiments: cam, rise, cues).
+  for (const kv of (opt('param') ?? '').split(',').filter(Boolean)) {
+    const i = kv.indexOf('=');
+    p.set(i < 0 ? kv : kv.slice(0, i), i < 0 ? '1' : kv.slice(i + 1));
+  }
   return p.toString();
 }
 

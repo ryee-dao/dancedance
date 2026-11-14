@@ -75,3 +75,48 @@ export function duoBuilds(chosen: CoachBuild): readonly [CoachBuild, CoachBuild]
 // Projection shared by every style (mild perspective around a pivot height).
 export const CAM = 4.2;
 export const PIV_Y = 0.55;
+
+/**
+ * The stage camera, shared by every look, the stage, the duo stage and the
+ * thumbnails. Set once at start-up (the demo bench reads ?cam= / ?rise= for
+ * comparisons): sprites are cached per look, not per camera.
+ *
+ *   cam   distance of the eye (figure units): perspective scale CAM / (CAM - z).
+ *   piv   eye height: points off the picture plane scale about it, so below
+ *         it a point coming toward the viewer drops, above it it rises.
+ *   rise  how far a point moves UP the screen per unit of depth AWAY from the
+ *         viewer (an oblique, slightly-from-above view): a foot stepping
+ *         toward the viewer moves down the screen, a step back moves up, a
+ *         forward bend drops the head. 0 = the old flat front view. Every
+ *         joint at z = 0 (the neutral stance, side-to-side moves) is
+ *         unchanged, so framing and proportions stay as authored.
+ *   feet  a contact shadow under each foot (on the floor at the foot's depth,
+ *         shrinking as it lifts) on top of the body's soft shadow pool.
+ */
+export const VIEW = { cam: 2.6, piv: 0.95, rise: 0, feet: true };
+
+/** Perspective scale at depth z (toward the viewer +). */
+export function depthScale(z: number): number {
+  return VIEW.cam / (VIEW.cam - z);
+}
+
+/**
+ * Screen height above the floor line (figure units, before × scale) of a
+ * point at height y and depth z, with s = depthScale(z).
+ */
+export function screenUp(y: number, z: number, s: number): number {
+  return VIEW.piv + (y - VIEW.piv) * s - z * VIEW.rise;
+}
+
+/** Bench / sheet overrides of the camera: ?cam=<distance>&rise=<per unit depth>. */
+export function viewFromParams(q: URLSearchParams): void {
+  const num = (k: string): number | null => {
+    const v = q.get(k);
+    const n = v === null ? NaN : Number(v);
+    return Number.isFinite(n) ? n : null;
+  };
+  VIEW.cam = Math.max(1.5, num('cam') ?? VIEW.cam);
+  VIEW.piv = Math.max(0, Math.min(1.4, num('piv') ?? VIEW.piv));
+  VIEW.rise = Math.max(0, Math.min(1, num('rise') ?? VIEW.rise));
+  if (q.has('feet')) VIEW.feet = q.get('feet') !== '0';
+}

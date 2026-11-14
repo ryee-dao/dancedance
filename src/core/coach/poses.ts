@@ -14,7 +14,7 @@
  * (anticipation), then travels and arrives on the next beat with some speed.
  */
 
-import { ANGULAR_CHANNELS, BODY, CH, NUM_CHANNELS, createPose, mirrorPose, type Pose } from './skeleton';
+import { ANGULAR_CHANNELS, BODY, CH, HAND_FORM, NUM_CHANNELS, createPose, mirrorPose, type Pose } from './skeleton';
 
 // ---------------------------------------------------------------------------
 // Authoring
@@ -56,9 +56,13 @@ export interface PoseSpec {
   /** The foot glides to this key's spot (no step arc): slides, swivels. */
   slideR?: boolean;
   slideL?: boolean;
-  /** Hand form: a pointing index finger or rock horns (else fist / open by handR). */
-  formR?: 'point' | 'horns';
-  formL?: 'point' | 'horns';
+  /**
+   * Hand form: a pointing index finger, rock horns, or an open hand with its
+   * fingers drawn apart ('fingers': piano keys, jazz hands, wiggling
+   * fingers); else fist / open by handR.
+   */
+  formR?: 'point' | 'horns' | 'fingers';
+  formL?: 'point' | 'horns' | 'fingers';
   /** Foot pitch, deg: + = up on the ball of the foot (heel raised; the heel lifts automatically), - = heel dig (toes up). */
   pitchR?: number;
   pitchL?: number;
@@ -173,6 +177,8 @@ function setFoot(p: Pose, c: number, f: FootSpec): void {
 }
 
 /** Build a pose from a partial spec over the neutral stance. */
+const FORM_ID: Record<NonNullable<PoseSpec['formR']>, number> = HAND_FORM;
+
 export function pose(spec: PoseSpec): Pose {
   const p = createPose();
   p.set(NEUTRAL);
@@ -201,8 +207,8 @@ export function pose(spec: PoseSpec): Pose {
   if (spec.kneeL !== undefined) p[CH.KNEE_L] = spec.kneeL;
   if (spec.slideR) p[CH.SLIDE_R] = 1;
   if (spec.slideL) p[CH.SLIDE_L] = 1;
-  if (spec.formR) p[CH.FORM_R] = spec.formR === 'point' ? 1 : 2;
-  if (spec.formL) p[CH.FORM_L] = spec.formL === 'point' ? 1 : 2;
+  if (spec.formR) p[CH.FORM_R] = FORM_ID[spec.formR];
+  if (spec.formL) p[CH.FORM_L] = FORM_ID[spec.formL];
   if (spec.pitchR !== undefined) p[CH.PITCH_R] = spec.pitchR;
   if (spec.pitchL !== undefined) p[CH.PITCH_L] = spec.pitchL;
   return p;
