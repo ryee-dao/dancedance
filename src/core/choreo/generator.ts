@@ -2173,7 +2173,13 @@ const FEEL_SOFT_BPM: readonly [number, number] = [125, 150];
 const FEEL_SOFT_LEAN = 1.5;
 /** Audio intensity over which a song goes from soft (1) to not (0), unless its rhythm is all-out (drive range). */
 const FEEL_SOFT_INTENSITY: readonly [number, number] = [0.3, 0.55];
-const FEEL_SOFT_DRIVE: readonly [number, number] = [0.85, 1];
+/**
+ * A busy rhythm makes a song energetic whatever its timbre (Hey Ya!: intensity 0.43, drive 0.9, counted
+ * and danced at 159; the soft double counts read drive 0.67-0.75).
+ */
+const FEEL_SOFT_DRIVE: readonly [number, number] = [0.75, 0.95];
+/** A song this calm (style.calm) is not doubled on the audio's say (My Immortal: a busy piano, a ballad). */
+const FEEL_DOUBLE_CALM: readonly [number, number] = [0.3, 0.6];
 /** A half-time backbeat is what trap, drill and bass music are at their counted tempo: it counts this much less there. */
 const FEEL_BACKBEAT_STYLE = 0.6;
 /** Calm songs step slower than their genre's usual tempo (a ballad of any genre). */
@@ -2235,8 +2241,13 @@ function fastStyle(style: SongStyle): number {
  *     sound alone, from FEEL_PRIOR_MARGIN: less as the count runs up past 150
  *     (post-punk counted at 185 steps at 92), and much less on a soft-sounding
  *     song counted fast (a soft song counted at 156 steps at 78).
- * Twice: the audio must offer it (doubleTempo >= FEEL_AUDIO) with FEEL_MARGIN
- * (drum and bass counted at 87 with a strong double candidate at 174).
+ * A song is soft-sounding by low audio intensity on a rhythm that isn't busy
+ * (FEEL_SOFT_DRIVE: Hey Ya!'s 0.43 intensity on a 0.9 drive is not soft).
+ * Twice: the audio must offer it (doubleTempo >= FEEL_AUDIO); from FEEL_MARGIN
+ * the margin falls as for half with the candidate's strength, as far as the
+ * song is energetic (not calm, not soft): drum and bass counted at 87, Shake
+ * It Off at 80, Footloose at 87 with strong double candidates step at the
+ * double; a ballad's busy piano doesn't.
  * Without genre names nothing changes: the per-move speed limits (speed.ts)
  * still send fast moves to half time.
  */
@@ -2260,7 +2271,17 @@ export function danceFeel(style: SongStyle, bpm: number, cand: TempoCandidates, 
     }
     if (d(bpm / 2) + margin < d(bpm)) return 0.5;
   }
-  if ((cand.double ?? 0) >= FEEL_AUDIO && bpm * 2 <= 210 && d(bpm * 2) + FEEL_MARGIN < d(bpm)) return 2;
+  const dbl = cand.double ?? 0;
+  if (dbl >= FEEL_AUDIO && bpm * 2 <= 210) {
+    // A strong double candidate on an energetic song lowers the margin as a strong half candidate does: the
+    // tracker counts many fast pop songs at half (Shake It Off 80 -> 160, Footloose 87 -> 174, skate punk 93
+    // -> 187). Not on a calm or soft one (a ballad's busy accompaniment is not its step).
+    const it = audio.intensity;
+    const soundSoft = it === undefined ? 0 : (1 - r(it, FEEL_SOFT_INTENSITY[0], FEEL_SOFT_INTENSITY[1])) * (1 - r(audio.drive ?? 0.5, FEEL_SOFT_DRIVE[0], FEEL_SOFT_DRIVE[1]));
+    const energy = (1 - r(style.calm ?? 0, FEEL_DOUBLE_CALM[0], FEEL_DOUBLE_CALM[1])) * (1 - Math.max(soundSoft, style.soft ?? 0));
+    const margin = FEEL_MARGIN - (FEEL_MARGIN + FEEL_HALF_LEAN) * r(dbl, FEEL_AUDIO, FEEL_AUDIO_FULL) * energy;
+    if (d(bpm * 2) + margin < d(bpm)) return 2;
+  }
   return 1;
 }
 

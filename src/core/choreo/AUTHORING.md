@@ -37,6 +37,14 @@ Variations share their move's tier; a recombination takes the genre of a
 layer that belongs to one, and two genres are never mixed. A layer pattern
 used by any global move counts as global, so don't give a global move the
 arms of a genre move (that leaks the genre into every song's variations).
+Strongly toned footwork (a jump, a stomp, a kick or high knee: a foot lifted
+to 0.15) joins a genre set's arms only when one of that set's own moves
+dances it (`variations.ts tonedFoot`, `footNative`): giving a set a kick
+move lets its arms recombine onto that kick; plain bases pair with any set.
+A tradition theme opens its set by its name's place in the song's list
+(`SongStyle.themeW`, `songStyle.ts THEME_FADE`): a trailing name gives a
+flavour, and when only flavour themes open sets the genre time shrinks with
+them (`genres.ts genreDepth`).
 
 ## Genre sets: groups and sub-styles
 
@@ -243,8 +251,10 @@ ids:
   and swing themes; any of them unless the song is calm) the genre and the
   sound decide alone too: a count past 150 that only those genres step at,
   or a soft-sounding song (low audio intensity, or soft genre names) counted
-  at 125-150 and up. Twice: the analysis must offer it (doubleTempo >= 0.5)
-  and it must be clearly closer. The routine then runs on the felt grid
+  at 125-150 and up (a busy rhythm, drive 0.75-0.95, is energetic whatever
+  the timbre). Twice: the analysis must offer it (doubleTempo >= 0.5); a
+  strong candidate lowers the margin as for half, on an energetic song only
+  (the tracker counts many fast pop songs at half: Shake It Off, Footloose). The routine then runs on the felt grid
   (`Routine.times`, `feel`).
 - Free time (`hasFreeTime`, `freeTimeMap`): a finished map with no beat
   grid gets a slow flow on a nominal grid (56-96 BPM from the genre's tempo

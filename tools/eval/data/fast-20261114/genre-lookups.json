@@ -1,0 +1,6828 @@
+{
+  "heyya": {
+    "genres": [
+      "funk",
+      "neo soul",
+      "alternative hip hop",
+      "electro",
+      "pop soul",
+      "soul"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "southern hip hop",
+      "progressive rap",
+      "atlanta hip hop",
+      "alternative hip hop"
+    ],
+    "moods": [
+      "energetic"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Pop",
+          "electro",
+          "funk",
+          "neo-soul"
+        ],
+        "ref": "Hey Ya!",
+        "links": {
+          "albumArticle": "Speakerboxxx/The Love Below",
+          "artistArticle": "Outkast"
+        },
+        "at": "2026-11-14T11:59:25.952Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "alternative hip-hop",
+          "hip-hop",
+          "funk",
+          "pop music",
+          "soul"
+        ],
+        "ref": "Q281085",
+        "at": "2026-11-14T11:59:28.173Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "hip hop",
+          "pop",
+          "contemporary r&b",
+          "electronic",
+          "house",
+          "neo-soul",
+          "pop soul",
+          "sunshine pop"
+        ],
+        "counts": [
+          4,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/f450a3d1-c7c4-3985-85f0-8bff98c63e17",
+        "at": "2026-11-14T11:59:36.283Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "genres": [
+          "Hip-Hop"
+        ],
+        "moods": [
+          "Energetic"
+        ],
+        "ref": "track/33468934",
+        "at": "2026-11-14T11:59:26.024Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T11:59:25.755Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T11:59:25.756Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "hip hop",
+          "pop rap",
+          "alternative hip-hop",
+          "contemporary r&b",
+          "funk",
+          "pop",
+          "hip-hop",
+          "electronic",
+          "neo-soul",
+          "pop soul",
+          "r&b",
+          "southern hip hop",
+          "southern rap",
+          "alternative hip hop",
+          "alternative rap",
+          "alternative rap;dirty south;rap;southern rap",
+          "gangsta",
+          "gangsta rap",
+          "indie pop / neo soul / r&b / funk",
+          "jazz",
+          "pop/rock",
+          "soul",
+          "southern hip-hop"
+        ],
+        "counts": [
+          14,
+          5,
+          4,
+          4,
+          4,
+          4,
+          3,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/fa64febd-61e0-346e-aaa2-04564ed4f0a3 (Speakerboxxx / The Love Below; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "fa64febd-61e0-346e-aaa2-04564ed4f0a3",
+          "album": "Speakerboxxx / The Love Below",
+          "discogsMaster": "26106",
+          "wikidata": "Q603672"
+        },
+        "at": "2026-11-14T11:59:37.518Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Southern hip-hop",
+          "progressive rap",
+          "funk",
+          "jazz",
+          "pop",
+          "progressive soul",
+          "psychedelia"
+        ],
+        "ref": "Speakerboxxx/The Love Below",
+        "links": {
+          "wikidata": "Q603672"
+        },
+        "at": "2026-11-14T11:59:37.885Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "hip-hop"
+        ],
+        "ref": "Q603672",
+        "at": "2026-11-14T11:59:38.771Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Conscious",
+          "Funk",
+          "Pop Rap",
+          "Gangsta",
+          "Electro",
+          "Electronic",
+          "Hip Hop",
+          "Funk / Soul",
+          "Pop"
+        ],
+        "ref": "master/26106 (Speakerboxxx / The Love Below)",
+        "at": "2026-11-14T11:59:37.792Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "collection/1774798661 (Speakerboxxx/The Love Below)",
+        "links": {
+          "album": "Speakerboxxx/The Love Below"
+        },
+        "at": "2026-11-14T11:59:28.990Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "hip hop",
+          "southern hip hop",
+          "pop rap",
+          "pop",
+          "atlanta hip hop",
+          "conscious hip hop",
+          "contemporary r&b",
+          "dirty south",
+          "funk",
+          "neo-soul"
+        ],
+        "counts": [
+          10,
+          6,
+          3,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/73fdb566-a9b1-494c-9f32-51768ec9fd27 (OutKast; credited on the song)",
+        "links": {
+          "mbArtist": "73fdb566-a9b1-494c-9f32-51768ec9fd27",
+          "wikidata": "Q472595"
+        },
+        "at": "2026-11-14T11:59:38.931Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Southern hip-hop",
+          "progressive rap",
+          "psychedelic rap"
+        ],
+        "ref": "Outkast",
+        "links": {
+          "wikidata": "Q472595"
+        },
+        "at": "2026-11-14T11:59:39.930Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "Southern hip-hop",
+          "progressive rap",
+          "psychedelic rap",
+          "funk",
+          "dirty south",
+          "Atlanta hip-hop",
+          "alternative hip-hop",
+          "psychedelic hip-hop",
+          "jazz rap",
+          "jazz"
+        ],
+        "ref": "Q472595",
+        "at": "2026-11-14T11:59:40.983Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Hip-Hop",
+          "Urban/R&B"
+        ],
+        "ref": "artist/111945",
+        "at": "2026-11-14T11:59:28.238Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "artist/289550 (OutKast)",
+        "at": "2026-11-14T11:59:28.991Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T11:59:40.983Z"
+  },
+  "takeonme": {
+    "genres": [
+      "synth-pop",
+      "new wave",
+      "electronic",
+      "pop rock",
+      "pop",
+      "dance"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "album",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "synth-pop",
+      "new wave",
+      "pop rock",
+      "soft rock"
+    ],
+    "moods": [
+      "excitable"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Synth-pop",
+          "new wave"
+        ],
+        "ref": "Take On Me",
+        "links": {
+          "artistArticle": "a-ha"
+        },
+        "at": "2026-11-14T12:00:00.196Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "synth-pop"
+        ],
+        "ref": "Q107263325",
+        "at": "2026-11-14T12:00:12.869Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "synth-pop",
+          "electronic",
+          "80s",
+          "dance / electro pop",
+          "new wave",
+          "todd in the shadows"
+        ],
+        "counts": [
+          3,
+          3,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/d8aadff5-81d2-3490-b865-ca77e64ad0c1,89475e94-e0f1-4e87-a4c9-cf02e564c4a8",
+        "at": "2026-11-14T11:59:42.955Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "genres": [
+          "Synthpop"
+        ],
+        "moods": [
+          "Excitable"
+        ],
+        "ref": "track/32882300",
+        "at": "2026-11-14T11:59:41.184Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T11:59:40.994Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T11:59:40.994Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "contemporary pop/rock",
+          "new wave",
+          "synth-pop",
+          "dance-rock",
+          "pop rock",
+          "electronic",
+          "new romantic",
+          "synthpop",
+          "80's",
+          "alternative",
+          "pop/rock"
+        ],
+        "counts": [
+          12,
+          5,
+          5,
+          5,
+          4,
+          4,
+          3,
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/af7347df-ef5a-3c41-826d-d884f8916c17 (Hunting High and Low; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "af7347df-ef5a-3c41-826d-d884f8916c17",
+          "album": "Hunting High and Low",
+          "discogsMaster": "11134",
+          "wikidata": "Q426283"
+        },
+        "at": "2026-11-14T11:59:43.959Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Synth-pop",
+          "new wave"
+        ],
+        "ref": "Hunting High and Low",
+        "links": {
+          "wikidata": "Q426283"
+        },
+        "at": "2026-11-14T12:00:04.581Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "pop music",
+          "pop rock",
+          "new wave",
+          "synth-pop"
+        ],
+        "ref": "Q426283",
+        "at": "2026-11-14T12:00:10.782Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Synth-pop",
+          "Electronic",
+          "Pop"
+        ],
+        "ref": "master/11134 (Hunting High And Low)",
+        "at": "2026-11-14T11:59:44.276Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "collection/380907762 (Hunting High and Low (Deluxe Edition))",
+        "links": {
+          "album": "Hunting High and Low (Deluxe Edition)"
+        },
+        "at": "2026-11-14T11:59:44.129Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "new wave",
+          "pop",
+          "norwegian",
+          "synth-pop",
+          "dance-pop",
+          "synthpop",
+          "1980s",
+          "1990s",
+          "2000s",
+          "euro-dance",
+          "euro-pop",
+          "sophisti-pop",
+          "synth pop"
+        ],
+        "counts": [
+          15,
+          8,
+          6,
+          5,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/7364dea6-ca9a-48e3-be01-b44ad0d19897 (a‐ha; credited on the song)",
+        "links": {
+          "mbArtist": "7364dea6-ca9a-48e3-be01-b44ad0d19897",
+          "wikidata": "Q156305"
+        },
+        "at": "2026-11-14T11:59:45.415Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Synth-pop",
+          "new wave",
+          "pop rock",
+          "pop",
+          "alternative rock"
+        ],
+        "ref": "A-ha",
+        "links": {
+          "wikidata": "Q156305"
+        },
+        "at": "2026-11-14T12:00:02.482Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "synth-pop",
+          "new wave",
+          "alternative rock",
+          "electronic rock",
+          "pop rock",
+          "soft rock"
+        ],
+        "ref": "Q156305",
+        "at": "2026-11-14T12:00:08.679Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Synthpop",
+          "Rock/Pop"
+        ],
+        "ref": "artist/113130",
+        "at": "2026-11-14T11:59:43.397Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "artist/166566 (a-ha)",
+        "at": "2026-11-14T11:59:44.129Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:00:12.869Z"
+  },
+  "footloose": {
+    "genres": [
+      "pop rock",
+      "new wave",
+      "rockabilly",
+      "heartland rock",
+      "aor",
+      "rock"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "album",
+      "song"
+    ],
+    "artistGenres": [
+      "pop rock",
+      "soft rock",
+      "yacht rock",
+      "pop"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Rock",
+          "country",
+          "rockabilly",
+          "heartland rock",
+          "pop rock"
+        ],
+        "ref": "Footloose (song)",
+        "links": {
+          "albumArticle": "Footloose (1984 soundtrack)",
+          "artistArticle": "Kenny Loggins"
+        },
+        "at": "2026-11-14T12:01:01.092Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "pop rock",
+          "new wave"
+        ],
+        "ref": "Q653189",
+        "at": "2026-11-14T12:01:25.831Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "pop rock",
+          "new wave",
+          "pop",
+          "rock"
+        ],
+        "counts": [
+          3,
+          2,
+          2,
+          1
+        ],
+        "ref": "release-group/069ffcf4-310d-49e0-b11e-9ce764536b20",
+        "at": "2026-11-14T12:00:16.277Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "track/33324219",
+        "at": "2026-11-14T12:00:13.059Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:00:12.874Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:00:12.875Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "club-house",
+          "pop",
+          "album rock",
+          "pop rock",
+          "rock",
+          "aor",
+          "electronic",
+          "film soundtrack",
+          "synth-pop",
+          "synthpop",
+          "trance"
+        ],
+        "counts": [
+          4,
+          4,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/f43e80bb-9b3c-367f-b37d-312585efbb47 (Footloose: Original Soundtrack of the Paramount Motion Picture; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "f43e80bb-9b3c-367f-b37d-312585efbb47",
+          "album": "Footloose: Original Soundtrack of the Paramount Motion Picture",
+          "discogsMaster": "112502",
+          "wikidata": "Q611368"
+        },
+        "at": "2026-11-14T12:00:17.294Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "AOR",
+          "pop rock",
+          "synth-pop"
+        ],
+        "ref": "Footloose (1984 soundtrack)",
+        "links": {
+          "wikidata": "Q611368"
+        },
+        "at": "2026-11-14T12:01:09.566Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "pop rock"
+        ],
+        "ref": "Q611368",
+        "at": "2026-11-14T12:01:21.679Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Soundtrack",
+          "Pop Rock",
+          "Rock",
+          "Stage & Screen"
+        ],
+        "ref": "master/112502 (Footloose (Original Motion Picture Soundtrack))",
+        "at": "2026-11-14T12:00:17.573Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "reason": "the release is the song's single",
+        "ref": "Footloose (Original Motion Picture Soundtrack)",
+        "links": {
+          "album": "Footloose (Original Motion Picture Soundtrack)"
+        },
+        "at": "2026-11-14T12:00:16.171Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "rock",
+          "singer-songwriter",
+          "soft rock",
+          "american",
+          "yacht rock",
+          "classic pop and rock",
+          "classic rock",
+          "pop rock"
+        ],
+        "counts": [
+          4,
+          3,
+          3,
+          3,
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/15042d2b-2d4c-4451-a96a-6f547642de13 (Kenny Loggins; credited on the song)",
+        "links": {
+          "mbArtist": "15042d2b-2d4c-4451-a96a-6f547642de13",
+          "wikidata": "Q435965"
+        },
+        "at": "2026-11-14T12:00:18.690Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Rock",
+          "pop",
+          "folk rock",
+          "R&B",
+          "soul",
+          "soft rock"
+        ],
+        "ref": "Kenny Loggins",
+        "links": {
+          "wikidata": "Q435965"
+        },
+        "at": "2026-11-14T12:01:05.420Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "pop rock",
+          "country music",
+          "yacht rock",
+          "folk rock",
+          "soft rock",
+          "soul",
+          "rhythm and blues"
+        ],
+        "ref": "Q435965",
+        "at": "2026-11-14T12:01:17.557Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Rock",
+          "Rock/Pop"
+        ],
+        "ref": "artist/114486",
+        "at": "2026-11-14T12:00:15.273Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "artist/59300023 (Kenny Loggins)",
+        "at": "2026-11-14T12:00:16.171Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:01:25.831Z"
+  },
+  "shakeitoff": {
+    "genres": [
+      "dance-pop",
+      "synth-pop",
+      "pop",
+      "electropop",
+      "alt-pop",
+      "electronic"
+    ],
+    "genreLevels": [
+      "song",
+      "album",
+      "song",
+      "album",
+      "album",
+      "album"
+    ],
+    "artistGenres": [
+      "pop rock",
+      "country",
+      "country pop",
+      "synth-pop"
+    ],
+    "moods": [
+      "needy"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Dance-pop"
+        ],
+        "ref": "Shake It Off",
+        "links": {
+          "albumArticle": "1989 (album)",
+          "artistArticle": "Taylor Swift"
+        },
+        "at": "2026-11-14T12:02:01.064Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "dance-pop"
+        ],
+        "ref": "Q17544624",
+        "at": "2026-11-14T12:02:50.096Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "dance-pop",
+          "2014",
+          "artist on cover",
+          "billboard hot 100",
+          "todd in the shadows",
+          "year end chart"
+        ],
+        "counts": [
+          3,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/999e9130-0fc3-4667-8455-f283d7f7fabf",
+        "at": "2026-11-14T12:01:34.294Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "moods": [
+          "Needy"
+        ],
+        "ref": "track/34100642",
+        "at": "2026-11-14T12:01:26.012Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:01:25.835Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:01:25.835Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "synth-pop",
+          "dance-pop",
+          "electropop",
+          "alternative pop",
+          "5+ wochen",
+          "breakup",
+          "country rock",
+          "electronic",
+          "love",
+          "playful",
+          "romantic",
+          "uplifting"
+        ],
+        "counts": [
+          10,
+          10,
+          7,
+          4,
+          3,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/4d9ec1c2-58ec-48a4-aa0a-916718adead0 (1989; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "4d9ec1c2-58ec-48a4-aa0a-916718adead0",
+          "album": "1989",
+          "discogsMaster": "750386",
+          "wikidata": "Q17544553"
+        },
+        "at": "2026-11-14T12:01:35.455Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Synth-pop"
+        ],
+        "ref": "1989 (album)",
+        "links": {
+          "wikidata": "Q17544553"
+        },
+        "at": "2026-11-14T12:02:17.621Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "pop music",
+          "synth-pop"
+        ],
+        "ref": "Q17544553",
+        "at": "2026-11-14T12:02:41.937Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Dance-pop",
+          "Synth-pop",
+          "Ballad",
+          "Pop"
+        ],
+        "ref": "master/750386 (1989)",
+        "at": "2026-11-14T12:01:35.719Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "collection/1440933512 (1989 (Deluxe Edition))",
+        "links": {
+          "album": "1989 (Deluxe Edition)"
+        },
+        "at": "2026-11-14T12:01:28.990Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "country",
+          "country pop",
+          "singer/songwriter",
+          "female vocals",
+          "singer-songwriter",
+          "2010s",
+          "2020s",
+          "icon",
+          "pop rock",
+          "contemporary country",
+          "synth-pop",
+          "2000s",
+          "artist of the decade",
+          "indie folk",
+          "late 2000s",
+          "alternative pop",
+          "cultural icon",
+          "electropop",
+          "millennial",
+          "re-recording",
+          "chamber pop",
+          "folk pop",
+          "indie pop",
+          "list",
+          "nuno",
+          "teen pop",
+          "americana",
+          "dance",
+          "dance-pop",
+          "relic inn",
+          "top 40"
+        ],
+        "counts": [
+          43,
+          28,
+          26,
+          20,
+          17,
+          12,
+          11,
+          11,
+          11,
+          9,
+          7,
+          6,
+          4,
+          4,
+          4,
+          4,
+          3,
+          3,
+          3,
+          3,
+          3,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/20244d07-534f-4eff-b4d4-930878889970 (Taylor Swift; credited on the song)",
+        "links": {
+          "mbArtist": "20244d07-534f-4eff-b4d4-930878889970",
+          "wikidata": "Q26876",
+          "enwiki": "Taylor Swift"
+        },
+        "at": "2026-11-14T12:01:37.151Z"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "the artist article lists no genre",
+        "ref": "Taylor Swift",
+        "links": {
+          "wikidata": "Q26876"
+        },
+        "at": "2026-11-14T12:02:09.473Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "pop music",
+          "country music"
+        ],
+        "ref": "Q26876",
+        "at": "2026-11-14T12:02:33.798Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Pop",
+          "Rock/Pop"
+        ],
+        "ref": "artist/111352",
+        "at": "2026-11-14T12:01:28.237Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "artist/159260351 (Taylor Swift)",
+        "at": "2026-11-14T12:01:28.990Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:02:50.096Z"
+  },
+  "happy": {
+    "genres": [
+      "pop",
+      "soul"
+    ],
+    "genreLevels": [
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "pop rap",
+      "hip hop",
+      "pop soul",
+      "soul"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Soul",
+          "neo soul"
+        ],
+        "ref": "Happy (Pharrell Williams song)",
+        "links": {
+          "albumArticle": "Girl (Pharrell Williams album)",
+          "artistArticle": "Pharrell Williams"
+        },
+        "at": "2026-11-14T12:03:16.645Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "reason": "no item with this title",
+        "at": "2026-11-14T12:03:06.326Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "happy",
+          "pop"
+        ],
+        "counts": [
+          1,
+          1
+        ],
+        "ref": "recording/786bf1c6-cf2b-40fd-829a-7fa95741cdbd",
+        "at": "2026-11-14T12:02:53.907Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "reason": "no track by this artist with this title",
+        "at": "2026-11-14T12:02:50.290Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:02:50.098Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:02:50.098Z"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "the recordings are on no album or EP",
+        "at": "2026-11-14T12:02:53.907Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album G I R L",
+        "at": "2026-11-14T12:03:41.056Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T12:03:41.057Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T12:02:53.907Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "collection/863835302 (G I R L)",
+        "links": {
+          "album": "G I R L"
+        },
+        "at": "2026-11-14T12:02:53.728Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "contemporary r&b",
+          "hip hop",
+          "pop",
+          "pop rap",
+          "pop soul",
+          "r&b",
+          "soul",
+          "contemporary rap",
+          "funk",
+          "producer tag - pharrell"
+        ],
+        "counts": [
+          5,
+          5,
+          5,
+          4,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/149f91ef-1287-46da-9a8e-87fee02f1471 (Pharrell Williams; credited on the song)",
+        "links": {
+          "mbArtist": "149f91ef-1287-46da-9a8e-87fee02f1471",
+          "wikidata": "Q14313"
+        },
+        "at": "2026-11-14T12:02:55.633Z"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "the artist article lists no genre",
+        "ref": "Pharrell Williams",
+        "links": {
+          "wikidata": "Q14313"
+        },
+        "at": "2026-11-14T12:03:32.936Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "contemporary R&B",
+          "hip-hop",
+          "pop music"
+        ],
+        "ref": "Q14313",
+        "at": "2026-11-14T12:03:33.093Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Hip-Hop",
+          "Urban/R&B"
+        ],
+        "ref": "artist/117697",
+        "at": "2026-11-14T12:02:52.508Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "artist/1361068 (Pharrell Williams)",
+        "at": "2026-11-14T12:02:53.728Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:03:41.057Z"
+  },
+  "maniac": {
+    "genres": [
+      "synth-pop",
+      "Hi-NRG",
+      "dance-pop",
+      "electro",
+      "pop rock",
+      "pop"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "album",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "pop rock",
+      "synth-pop",
+      "new wave",
+      "pop"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Synth-pop",
+          "dance-pop",
+          "hi-NRG"
+        ],
+        "ref": "Maniac (Michael Sembello song)",
+        "links": {
+          "albumArticle": "Bossa Nova Hotel",
+          "artistArticle": "Michael Sembello"
+        },
+        "at": "2026-11-14T12:04:00.280Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "synth-pop"
+        ],
+        "ref": "Q171260",
+        "at": "2026-11-14T12:04:25.041Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "electronic",
+          "pop",
+          "hi-nrg",
+          "pop rock",
+          "todd in the shadows"
+        ],
+        "counts": [
+          3,
+          2,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/24bf8d6c-4854-3657-a098-d86885ebc358",
+        "at": "2026-11-14T12:03:43.187Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "genres": [
+          "Pop-Rock"
+        ],
+        "moods": [
+          "..."
+        ],
+        "ref": "track/33579738",
+        "at": "2026-11-14T12:03:41.249Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Soundtrack"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:03:41.058Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:03:41.058Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "dance-pop",
+          "soundtrack",
+          "electro",
+          "pop",
+          "pop rock",
+          "disco",
+          "film soundtrack",
+          "hi-nrg",
+          "synthpop"
+        ],
+        "counts": [
+          3,
+          3,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/98471b71-d480-35eb-bdd3-14ad968c9f4a (Flashdance: Original Soundtrack from the Motion Picture; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "98471b71-d480-35eb-bdd3-14ad968c9f4a",
+          "album": "Flashdance: Original Soundtrack from the Motion Picture",
+          "discogsMaster": "97313",
+          "wikidata": "Q1324956"
+        },
+        "at": "2026-11-14T12:03:58.738Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Electro",
+          "Euro disco",
+          "hi-NRG",
+          "synth-pop",
+          "pop rock"
+        ],
+        "ref": "Flashdance (soundtrack)",
+        "links": {
+          "wikidata": "Q1324956"
+        },
+        "at": "2026-11-14T12:04:17.045Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "electro",
+          "stage and screen"
+        ],
+        "ref": "Q1324956",
+        "at": "2026-11-14T12:04:33.182Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Soundtrack",
+          "Electro",
+          "Synth-pop",
+          "Electronic",
+          "Pop",
+          "Stage & Screen"
+        ],
+        "ref": "master/97313 (Flashdance (Original Soundtrack From The Motion Picture))",
+        "at": "2026-11-14T12:03:58.996Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Soundtrack"
+        ],
+        "ref": "collection/1425259305 (Flashdance (Original Soundtrack from the Motion Picture))",
+        "links": {
+          "album": "Flashdance (Original Soundtrack from the Motion Picture)"
+        },
+        "at": "2026-11-14T12:03:44.500Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "pop rock",
+          "synth-pop"
+        ],
+        "counts": [
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/fcde7037-181e-437f-9417-60a38958c0fa (Michael Sembello; credited on the song)",
+        "links": {
+          "mbArtist": "fcde7037-181e-437f-9417-60a38958c0fa",
+          "wikidata": "Q1929388"
+        },
+        "at": "2026-11-14T12:04:00.190Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "New wave",
+          "synth-pop",
+          "pop rock",
+          "hi-NRG",
+          "R&B",
+          "soul",
+          "pop",
+          "funk"
+        ],
+        "ref": "Michael Sembello",
+        "links": {
+          "wikidata": "Q1929388"
+        },
+        "at": "2026-11-14T12:04:08.864Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "pop rock"
+        ],
+        "ref": "Q1929388",
+        "at": "2026-11-14T12:04:08.864Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Pop-Rock",
+          "Rock/Pop"
+        ],
+        "ref": "artist/123433",
+        "at": "2026-11-14T12:03:43.502Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Dance"
+        ],
+        "ref": "artist/181968 (Michael Sembello)",
+        "at": "2026-11-14T12:03:44.500Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:04:33.182Z"
+  },
+  "wakemeup": {
+    "genres": [
+      "dance-pop",
+      "synth-pop",
+      "bubblegum pop",
+      "pop rock",
+      "new wave",
+      "pop"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "album",
+      "song"
+    ],
+    "artistGenres": [
+      "dance-pop",
+      "new wave",
+      "blue-eyed soul",
+      "pop rock"
+    ],
+    "moods": [
+      "good natured"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Dance-pop",
+          "bubblegum"
+        ],
+        "ref": "Wake Me Up Before You Go-Go",
+        "links": {
+          "albumArticle": "Make It Big",
+          "artistArticle": "Wham!"
+        },
+        "at": "2026-11-14T12:04:33.324Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "pop music",
+          "dance-pop"
+        ],
+        "ref": "Q1490448,Q104713420",
+        "at": "2026-11-14T12:05:41.366Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "synth-pop",
+          "electronic",
+          "pop",
+          "pop rock"
+        ],
+        "counts": [
+          4,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/e56ea208-d428-4335-8826-0dd635420da6",
+        "at": "2026-11-14T12:04:35.399Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "moods": [
+          "Good Natured"
+        ],
+        "ref": "track/32878992",
+        "at": "2026-11-14T12:04:33.447Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:04:33.187Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:04:33.187Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "adult contemporary",
+          "new wave",
+          "contemporary pop/rock",
+          "dance-pop",
+          "pop rock",
+          "pop/rock",
+          "punk/new wave",
+          "electronic"
+        ],
+        "counts": [
+          7,
+          4,
+          3,
+          2,
+          2,
+          2,
+          2,
+          2,
+          1
+        ],
+        "ref": "release-group/0e319e00-ac06-34ed-b4fa-f6d206d4a4e6 (Make It Big; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "0e319e00-ac06-34ed-b4fa-f6d206d4a4e6",
+          "album": "Make It Big",
+          "discogsMaster": "102749",
+          "wikidata": "Q1209845"
+        },
+        "at": "2026-11-14T12:04:36.644Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Pop",
+          "new wave",
+          "pop-soul"
+        ],
+        "ref": "Make It Big",
+        "links": {
+          "wikidata": "Q1209845"
+        },
+        "at": "2026-11-14T12:05:00.733Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "pop music"
+        ],
+        "ref": "Q1209845",
+        "at": "2026-11-14T12:05:25.088Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Synth-pop",
+          "Ballad",
+          "Soul",
+          "Electronic",
+          "Funk / Soul",
+          "Pop"
+        ],
+        "ref": "master/102749 (Make It Big)",
+        "at": "2026-11-14T12:04:36.869Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "collection/193084944 (Make It Big)",
+        "links": {
+          "album": "Make It Big"
+        },
+        "at": "2026-11-14T12:04:36.335Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "dance-pop",
+          "christmas music",
+          "queer",
+          "synth-pop"
+        ],
+        "counts": [
+          5,
+          3,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/d570bb31-b9ca-45a4-a2d9-11b186d9c159 (Wham!; credited on the song)",
+        "links": {
+          "mbArtist": "d570bb31-b9ca-45a4-a2d9-11b186d9c159",
+          "wikidata": "Q744087"
+        },
+        "at": "2026-11-14T12:04:38.123Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Pop",
+          "dance-pop",
+          "post-disco"
+        ],
+        "ref": "Wham!",
+        "links": {
+          "wikidata": "Q744087"
+        },
+        "at": "2026-11-14T12:05:08.924Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "pop music",
+          "new wave",
+          "blue-eyed soul"
+        ],
+        "ref": "Q744087",
+        "at": "2026-11-14T12:05:33.212Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Pop",
+          "Rock/Pop"
+        ],
+        "ref": "artist/113091",
+        "at": "2026-11-14T12:04:35.801Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "artist/548421 (Wham!)",
+        "at": "2026-11-14T12:04:36.336Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:05:41.366Z"
+  },
+  "stillstanding": {
+    "genres": [
+      "pop rock",
+      "synth-pop",
+      "rock",
+      "new pop",
+      "pop",
+      "piano rock"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "song",
+      "album"
+    ],
+    "artistGenres": [
+      "pop rock",
+      "soft rock",
+      "R&B",
+      "piano rock"
+    ],
+    "moods": [
+      "excitable"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Synth-pop",
+          "new pop"
+        ],
+        "ref": "I'm Still Standing",
+        "links": {
+          "albumArticle": "Too Low for Zero",
+          "artistArticle": "Elton John"
+        },
+        "at": "2026-11-14T12:05:41.501Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "rock music"
+        ],
+        "ref": "Q2354146",
+        "at": "2026-11-14T12:06:38.415Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "pop rock",
+          "rock"
+        ],
+        "counts": [
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/fbfe148d-e099-4ae9-ba0f-d3baa46ee29f",
+        "at": "2026-11-14T12:05:43.491Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "moods": [
+          "Excitable"
+        ],
+        "ref": "track/32726232",
+        "at": "2026-11-14T12:05:41.573Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:05:41.368Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:05:41.368Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "adult contemporary",
+          "pop rock",
+          "contemporary pop/rock",
+          "pop",
+          "album rock",
+          "piano rock",
+          "singer/songwriter",
+          "rock",
+          "soft rock"
+        ],
+        "counts": [
+          5,
+          5,
+          4,
+          4,
+          2,
+          2,
+          2,
+          1,
+          1
+        ],
+        "ref": "release-group/06e023f6-8b88-3554-9ce6-e2b8f1e69925 (Too Low for Zero; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "06e023f6-8b88-3554-9ce6-e2b8f1e69925",
+          "album": "Too Low for Zero",
+          "discogsMaster": "87201",
+          "wikidata": "Q1753148"
+        },
+        "at": "2026-11-14T12:05:46.740Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Pop rock"
+        ],
+        "ref": "Too Low for Zero",
+        "links": {
+          "wikidata": "Q1753148"
+        },
+        "at": "2026-11-14T12:06:05.881Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "pop rock"
+        ],
+        "ref": "Q1753148",
+        "at": "2026-11-14T12:06:05.881Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Pop Rock",
+          "Rock"
+        ],
+        "ref": "master/87201 (Too Low For Zero)",
+        "at": "2026-11-14T12:05:46.962Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "collection/1440912988 (Too Low For Zero (Bonus Track Version))",
+        "links": {
+          "album": "Too Low For Zero (Bonus Track Version)"
+        },
+        "at": "2026-11-14T12:05:44.990Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "pop rock",
+          "piano rock",
+          "rock",
+          "soft rock",
+          "singer-songwriter",
+          "adult contemporary",
+          "rock and roll",
+          "classic rock",
+          "singer/songwriter",
+          "album rock",
+          "am pop",
+          "british",
+          "contemporary pop/rock",
+          "film score",
+          "show/musical",
+          "2008 universal fire victim",
+          "country",
+          "dance",
+          "disco",
+          "electronica",
+          "english",
+          "folk rock",
+          "glam rock",
+          "hip hop",
+          "house",
+          "indie dance",
+          "pop music",
+          "progressive rock",
+          "psychedelic rock",
+          "r&b",
+          "uk"
+        ],
+        "counts": [
+          18,
+          11,
+          10,
+          10,
+          7,
+          6,
+          5,
+          5,
+          3,
+          3,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/b83bc61f-8451-4a5d-8b8e-7e9ed295e822 (Elton John; credited on the song)",
+        "links": {
+          "mbArtist": "b83bc61f-8451-4a5d-8b8e-7e9ed295e822",
+          "wikidata": "Q2808"
+        },
+        "at": "2026-11-14T12:05:48.448Z"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "the artist article lists no genre",
+        "ref": "Elton John",
+        "links": {
+          "wikidata": "Q2808"
+        },
+        "at": "2026-11-14T12:06:14.132Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "rock music",
+          "pop rock",
+          "glam rock",
+          "soft rock",
+          "rhythm and blues"
+        ],
+        "ref": "Q2808",
+        "at": "2026-11-14T12:06:30.268Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Pop",
+          "Rock/Pop"
+        ],
+        "ref": "artist/111256",
+        "at": "2026-11-14T12:05:43.800Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "artist/54657 (Elton John)",
+        "at": "2026-11-14T12:05:44.990Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:06:38.415Z"
+  },
+  "brightside": {
+    "genres": [
+      "indie rock",
+      "alternative rock",
+      "power pop",
+      "new wave",
+      "pop rock",
+      "synth-pop"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "alternative rock",
+      "pop rock",
+      "post punk revival",
+      "indie rock"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Alternative rock",
+          "new wave",
+          "synth-pop",
+          "pop rock",
+          "power pop",
+          "synth-rock",
+          "post-punk"
+        ],
+        "ref": "Mr. Brightside",
+        "links": {
+          "albumArticle": "Hot Fuss",
+          "artistArticle": "the Killers"
+        },
+        "at": "2026-11-14T12:06:38.565Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "indie rock"
+        ],
+        "ref": "Q1999714",
+        "at": "2026-11-14T12:07:27.290Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "alternative rock",
+          "electro",
+          "electronic",
+          "pop rock",
+          "power pop",
+          "rock",
+          "indie rock",
+          "new wave",
+          "pop",
+          "post-punk revival"
+        ],
+        "counts": [
+          3,
+          3,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/5d59bcbf-94cc-3bd6-a65d-89200d55ba07",
+        "at": "2026-11-14T12:06:40.481Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "genres": [
+          "Indie"
+        ],
+        "ref": "track/33550031",
+        "at": "2026-11-14T12:06:38.607Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:06:38.418Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:06:38.418Z"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "the recordings are on no album or EP",
+        "at": "2026-11-14T12:06:40.481Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "the album article lists no genre",
+        "ref": "Direct Hits (The Killers album)",
+        "links": {
+          "wikidata": "Q14922572"
+        },
+        "at": "2026-11-14T12:07:02.954Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "indie rock"
+        ],
+        "ref": "Q14922572",
+        "at": "2026-11-14T12:07:43.552Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T12:06:40.481Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Alternative"
+        ],
+        "ref": "collection/1440891166 (Direct Hits)",
+        "links": {
+          "album": "Direct Hits"
+        },
+        "at": "2026-11-14T12:06:41.599Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "alternative rock",
+          "indie rock",
+          "pop rock",
+          "new wave",
+          "post-punk revival",
+          "heartland rock",
+          "rock",
+          "big music",
+          "christmas music",
+          "pop"
+        ],
+        "counts": [
+          19,
+          9,
+          6,
+          5,
+          5,
+          4,
+          3,
+          2,
+          1,
+          1
+        ],
+        "ref": "artist/95e1ead9-4d31-4808-a7ac-32c3614c116b (The Killers; credited on the song)",
+        "links": {
+          "mbArtist": "95e1ead9-4d31-4808-a7ac-32c3614c116b",
+          "wikidata": "Q220730"
+        },
+        "at": "2026-11-14T12:06:41.695Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Alternative rock",
+          "pop rock",
+          "post-punk revival",
+          "new wave",
+          "heartland rock"
+        ],
+        "ref": "The Killers",
+        "links": {
+          "wikidata": "Q220730"
+        },
+        "at": "2026-11-14T12:07:11.111Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "alternative rock"
+        ],
+        "ref": "Q220730",
+        "at": "2026-11-14T12:07:35.415Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Indie",
+          "Rock/Pop"
+        ],
+        "ref": "artist/112016",
+        "at": "2026-11-14T12:06:40.839Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Alternative"
+        ],
+        "ref": "artist/6483093 (The Killers)",
+        "at": "2026-11-14T12:06:41.599Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:07:43.552Z"
+  },
+  "dontstopmenow": {
+    "genres": [
+      "pop rock",
+      "power pop",
+      "pop",
+      "hard rock",
+      "glam rock",
+      "rock"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "album",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "pop rock",
+      "glam rock",
+      "progressive rock",
+      "hard rock"
+    ],
+    "moods": [
+      "rousing"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Pop rock",
+          "power pop"
+        ],
+        "ref": "Don't Stop Me Now",
+        "links": {
+          "albumArticle": "Jazz (Queen album)",
+          "artistArticle": "Queen (band)"
+        },
+        "at": "2026-11-14T12:07:43.699Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "popular music",
+          "rock music",
+          "glam rock"
+        ],
+        "ref": "Q262417,Q70202958",
+        "at": "2026-11-14T12:08:48.876Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "rock",
+          "aor classic rock",
+          "classic rock",
+          "electro house",
+          "electronic",
+          "pop",
+          "pop rock"
+        ],
+        "counts": [
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/2ba955d7-084c-40d8-81e5-e4c2a712482b,f6c8312f-a5d5-4e62-bb5f-4f3ad4cc5779",
+        "at": "2026-11-14T12:07:45.900Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "moods": [
+          "Rousing"
+        ],
+        "ref": "track/32768013",
+        "at": "2026-11-14T12:07:43.815Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:07:43.554Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:07:43.554Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "hard rock",
+          "rock",
+          "pop rock",
+          "aor classic rock",
+          "glam rock",
+          "pop",
+          "arena rock",
+          "art rock",
+          "classic rock"
+        ],
+        "counts": [
+          9,
+          7,
+          4,
+          3,
+          3,
+          2,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/c192ea46-7377-34f0-b332-dd9810edd560 (Jazz; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "c192ea46-7377-34f0-b332-dd9810edd560",
+          "album": "Jazz",
+          "discogsMaster": "7103",
+          "wikidata": "Q270083"
+        },
+        "at": "2026-11-14T12:07:47.055Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Hard rock",
+          "heavy metal",
+          "pop",
+          "arena rock"
+        ],
+        "ref": "Jazz (Queen album)",
+        "links": {
+          "wikidata": "Q270083"
+        },
+        "at": "2026-11-14T12:08:08.097Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "rock music",
+          "hard rock",
+          "heavy metal music",
+          "pop music",
+          "arena rock"
+        ],
+        "ref": "Q270083",
+        "at": "2026-11-14T12:08:32.493Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Hard Rock",
+          "Pop Rock",
+          "Rock"
+        ],
+        "ref": "master/7103 (Jazz)",
+        "at": "2026-11-14T12:07:47.454Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "collection/6781079346 (Jazz (Deluxe Edition))",
+        "links": {
+          "album": "Jazz (Deluxe Edition)"
+        },
+        "at": "2026-11-14T12:07:46.868Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "rock",
+          "glam rock",
+          "hard rock",
+          "art rock",
+          "british",
+          "pop rock",
+          "classic rock",
+          "progressive rock",
+          "symphonic rock",
+          "uk",
+          "glorious",
+          "70's",
+          "beholder",
+          "pop",
+          "80's",
+          "80s",
+          "afro house",
+          "album rock",
+          "baroque pop",
+          "british metal",
+          "contemporary pop/rock",
+          "dance-rock",
+          "deep tech",
+          "disco",
+          "eclectic",
+          "film soundtrack",
+          "heavy metal",
+          "heavy metal music",
+          "medley",
+          "queer",
+          "traditional heavy metal",
+          "united kingdom",
+          "vyrzukhisuc-artiest"
+        ],
+        "counts": [
+          45,
+          26,
+          23,
+          16,
+          15,
+          12,
+          8,
+          7,
+          6,
+          5,
+          3,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/0383dadf-2a4e-4d10-a46a-e9e041da8eb3 (Queen; credited on the song)",
+        "links": {
+          "mbArtist": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "wikidata": "Q15862"
+        },
+        "at": "2026-11-14T12:07:48.490Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Rock",
+          "pop"
+        ],
+        "ref": "Queen (band)",
+        "links": {
+          "wikidata": "Q15862"
+        },
+        "at": "2026-11-14T12:08:16.330Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "progressive rock",
+          "glam rock",
+          "hard rock",
+          "rock music",
+          "art rock",
+          "pop rock",
+          "traditional heavy metal",
+          "heavy metal music"
+        ],
+        "ref": "Q15862",
+        "at": "2026-11-14T12:08:40.673Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Rock",
+          "Rock/Pop"
+        ],
+        "ref": "artist/111238",
+        "at": "2026-11-14T12:07:46.100Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "artist/3296287 (Queen)",
+        "at": "2026-11-14T12:07:46.868Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:08:48.876Z"
+  },
+  "runawaybaby": {
+    "genres": [
+      "pop rock",
+      "soul",
+      "funk",
+      "doo-wop",
+      "pop soul",
+      "soft rock"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "song",
+      "album"
+    ],
+    "artistGenres": [
+      "R&B",
+      "new wave",
+      "hip hop",
+      "funk"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Funk",
+          "pop rock",
+          "doo-wop",
+          "soul"
+        ],
+        "ref": "Runaway Baby",
+        "links": {
+          "albumArticle": "Doo-Wops & Hooligans",
+          "artistArticle": "Bruno Mars"
+        },
+        "at": "2026-11-14T12:08:49.007Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "funk",
+          "pop rock",
+          "doo-wop",
+          "soul"
+        ],
+        "ref": "Q7379647",
+        "at": "2026-11-14T12:09:13.355Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "r&b",
+          "contemporary r&b",
+          "pop rock",
+          "pop soul",
+          "soul"
+        ],
+        "counts": [
+          7,
+          3,
+          2,
+          2,
+          2,
+          2
+        ],
+        "ref": "recording/a323da57-33ba-4dac-9ff9-48ef7bba6482",
+        "at": "2026-11-14T12:09:04.981Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "track/32771228",
+        "at": "2026-11-14T12:08:49.058Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:08:48.880Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:08:48.880Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "contemporary r&b",
+          "funk / soul",
+          "reggae",
+          "soul",
+          "pop rap",
+          "pop soul",
+          "rock",
+          "soft rock",
+          "funk",
+          "r&b",
+          "5+ wochen",
+          "adult contemporary",
+          "english",
+          "hip hop",
+          "offizielle charts",
+          "pop rock",
+          "r b",
+          "reggae-pop",
+          "rhythm & blues"
+        ],
+        "counts": [
+          14,
+          8,
+          4,
+          4,
+          4,
+          3,
+          3,
+          3,
+          3,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/b3d1fbf7-dd1c-4119-a16e-58c2feb5bcb0 (Doo-Wops & Hooligans; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "b3d1fbf7-dd1c-4119-a16e-58c2feb5bcb0",
+          "album": "Doo-Wops & Hooligans",
+          "discogsMaster": "297460",
+          "wikidata": "Q631088",
+          "enwiki": "Doo-Wops & Hooligans"
+        },
+        "at": "2026-11-14T12:09:06.392Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Pop",
+          "reggae pop",
+          "R&B"
+        ],
+        "ref": "Doo-Wops & Hooligans",
+        "links": {
+          "wikidata": "Q631088"
+        },
+        "at": "2026-11-14T12:09:21.631Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "pop music",
+          "contemporary R&B",
+          "pop reggae",
+          "pop rock",
+          "soft rock"
+        ],
+        "ref": "Q631088",
+        "at": "2026-11-14T12:09:37.825Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Soft Rock",
+          "Soul",
+          "Contemporary R&B",
+          "Ballad",
+          "Rock",
+          "Reggae",
+          "Funk / Soul",
+          "Pop"
+        ],
+        "ref": "master/297460 (Doo-Wops & Hooligans)",
+        "at": "2026-11-14T12:09:06.625Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "collection/576654788 (Doo-Wops & Hooligans)",
+        "links": {
+          "album": "Doo-Wops & Hooligans"
+        },
+        "at": "2026-11-14T12:08:52.373Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "funk",
+          "r&b",
+          "contemporary r&b",
+          "hip hop",
+          "2010s",
+          "contemporary pop/rock",
+          "music for soccer moms",
+          "new jack swing",
+          "new wave",
+          "reggae",
+          "relic inn",
+          "rock",
+          "soul"
+        ],
+        "counts": [
+          14,
+          6,
+          5,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/afb680f2-b6eb-4cd7-a70b-a63b25c763d5 (Bruno Mars; credited on the song)",
+        "links": {
+          "mbArtist": "afb680f2-b6eb-4cd7-a70b-a63b25c763d5",
+          "wikidata": "Q1450"
+        },
+        "at": "2026-11-14T12:09:08.182Z"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "the artist article lists no genre",
+        "ref": "Bruno Mars",
+        "links": {
+          "wikidata": "Q1450"
+        },
+        "at": "2026-11-14T12:09:29.821Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "pop music",
+          "contemporary R&B",
+          "hip-hop",
+          "new wave",
+          "reggae",
+          "funk"
+        ],
+        "ref": "Q1450",
+        "at": "2026-11-14T12:09:45.980Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Pop",
+          "Rock/Pop"
+        ],
+        "ref": "artist/111674",
+        "at": "2026-11-14T12:08:51.281Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "artist/278873078 (Bruno Mars)",
+        "at": "2026-11-14T12:08:52.374Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:09:45.980Z"
+  },
+  "pumpit": {
+    "genres": [
+      "rap rock",
+      "pop rap",
+      "hip hop",
+      "dance",
+      "pop",
+      "conscious hip hop"
+    ],
+    "genreLevels": [
+      "song",
+      "album",
+      "song",
+      "song",
+      "song",
+      "album"
+    ],
+    "artistGenres": [
+      "pop rap",
+      "dance-pop",
+      "alternative hip hop",
+      "electropop"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Hip hop",
+          "dance",
+          "rap rock",
+          "surf"
+        ],
+        "ref": "Pump It",
+        "links": {
+          "albumArticle": "Monkey Business (Black Eyed Peas album)",
+          "artistArticle": "Black Eyed Peas"
+        },
+        "at": "2026-11-14T12:09:46.134Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "rapping",
+          "hip-hop"
+        ],
+        "ref": "Q2287369,Q2331516",
+        "at": "2026-11-14T12:10:43.054Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "hip hop",
+          "pop"
+        ],
+        "counts": [
+          1,
+          1
+        ],
+        "ref": "release-group/7eaf3431-6299-33e2-b283-bcbff0681230",
+        "at": "2026-11-14T12:09:48.015Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "reason": "the track has no genre",
+        "ref": "track/35993442",
+        "at": "2026-11-14T12:09:46.177Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:09:45.986Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:09:45.986Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "hip hop",
+          "pop rap",
+          "dance-pop",
+          "conscious",
+          "pop",
+          "conscious hip hop",
+          "club",
+          "dance",
+          "electronic",
+          "funk",
+          "hip hop rap"
+        ],
+        "counts": [
+          7,
+          6,
+          4,
+          3,
+          3,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/990c6869-9722-3190-9e49-bbac56ae53b6 (Monkey Business; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "990c6869-9722-3190-9e49-bbac56ae53b6",
+          "album": "Monkey Business",
+          "discogsMaster": "89646",
+          "wikidata": "Q580022"
+        },
+        "at": "2026-11-14T12:09:49.246Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Hip-hop",
+          "pop"
+        ],
+        "ref": "Monkey Business (Black Eyed Peas album)",
+        "links": {
+          "wikidata": "Q580022"
+        },
+        "at": "2026-11-14T12:10:02.473Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "hip-hop"
+        ],
+        "ref": "Q580022",
+        "at": "2026-11-14T12:10:26.764Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Pop Rap",
+          "Conscious",
+          "Contemporary R&B",
+          "Hip Hop",
+          "Funk / Soul"
+        ],
+        "ref": "master/89646 (Monkey Business)",
+        "at": "2026-11-14T12:09:49.523Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "collection/1442872260 (iTunes Originals: The Black Eyed Peas)",
+        "links": {
+          "album": "iTunes Originals: The Black Eyed Peas"
+        },
+        "at": "2026-11-14T12:09:49.499Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "hip hop",
+          "pop rap",
+          "dance-pop",
+          "pop",
+          "west coast hip hop"
+        ],
+        "counts": [
+          8,
+          6,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/d5be5333-4171-427e-8e12-732087c6b78e (Black Eyed Peas; credited on the song)",
+        "links": {
+          "mbArtist": "d5be5333-4171-427e-8e12-732087c6b78e",
+          "wikidata": "Q134541"
+        },
+        "at": "2026-11-14T12:09:50.759Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Hip-hop",
+          "pop rap",
+          "alternative hip-hop",
+          "dance-pop",
+          "R&B",
+          "electropop"
+        ],
+        "ref": "Black Eyed Peas",
+        "links": {
+          "wikidata": "Q134541"
+        },
+        "at": "2026-11-14T12:10:10.646Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "alternative hip-hop",
+          "pop rap",
+          "hip-hop",
+          "pop music",
+          "Latin hip-hop"
+        ],
+        "ref": "Q134541",
+        "at": "2026-11-14T12:10:34.911Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "reason": "no artist of this name",
+        "at": "2026-11-14T12:09:48.397Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "artist/360391 (Black Eyed Peas)",
+        "at": "2026-11-14T12:09:49.499Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:10:43.054Z"
+  },
+  "onestepbeyond": {
+    "genres": [
+      "ska",
+      "new wave",
+      "pop",
+      "2 tone",
+      "rock",
+      "ska revival"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "album",
+      "song",
+      "album"
+    ],
+    "artistGenres": [
+      "ska",
+      "new wave",
+      "2 tone",
+      "pop rock"
+    ],
+    "moods": [
+      "excitable"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "New wave"
+        ],
+        "ref": "One Step Beyond (song)",
+        "links": {
+          "albumArticle": "One Step Beyond...",
+          "artistArticle": "Madness (band)"
+        },
+        "at": "2026-11-14T12:10:43.198Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "ska"
+        ],
+        "ref": "Q1147612",
+        "at": "2026-11-14T12:11:48.284Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "ska"
+        ],
+        "counts": [
+          1,
+          1
+        ],
+        "ref": "release-group/5f7b6786-181b-491b-aa8d-b5b5b4662017",
+        "at": "2026-11-14T12:10:45.409Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "moods": [
+          "Excitable"
+        ],
+        "ref": "track/32914775",
+        "at": "2026-11-14T12:10:43.234Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:10:43.059Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:10:43.059Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "ska",
+          "contemporary pop/rock",
+          "rock",
+          "new wave",
+          "pop/rock",
+          "punk/new wave",
+          "ska revival",
+          "two-tone ska revival",
+          "2 tone",
+          "british",
+          "pop"
+        ],
+        "counts": [
+          6,
+          5,
+          5,
+          3,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/f1e1b952-ec8d-363a-bd63-4c72d248cb51 (One Step Beyond…; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "f1e1b952-ec8d-363a-bd63-4c72d248cb51",
+          "album": "One Step Beyond…",
+          "discogsMaster": "19714",
+          "wikidata": "Q1953629"
+        },
+        "at": "2026-11-14T12:10:46.527Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "2 Tone",
+          "ska",
+          "rocksteady",
+          "new wave",
+          "R&B"
+        ],
+        "ref": "One Step Beyond...",
+        "links": {
+          "wikidata": "Q1953629"
+        },
+        "at": "2026-11-14T12:11:07.658Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "ska",
+          "pop music"
+        ],
+        "ref": "Q1953629",
+        "at": "2026-11-14T12:11:31.997Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Ska",
+          "Rock"
+        ],
+        "ref": "master/19714 (One Step Beyond...)",
+        "at": "2026-11-14T12:10:46.766Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "reason": "the release is the song's single",
+        "ref": "One Step Beyond...",
+        "links": {
+          "album": "One Step Beyond..."
+        },
+        "at": "2026-11-14T12:10:46.472Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "ska",
+          "2 tone",
+          "new wave",
+          "pop",
+          "sophisti-pop",
+          "british",
+          "zolo",
+          "pop rock",
+          "psychedelic pop",
+          "punk",
+          "rock"
+        ],
+        "counts": [
+          17,
+          7,
+          7,
+          5,
+          4,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/5f58803e-8c4c-478e-8b51-477f38483ede (Madness; credited on the song)",
+        "links": {
+          "mbArtist": "5f58803e-8c4c-478e-8b51-477f38483ede",
+          "wikidata": "Q745741"
+        },
+        "at": "2026-11-14T12:10:47.916Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Two-tone",
+          "ska",
+          "pop",
+          "new wave",
+          "rocksteady"
+        ],
+        "ref": "Madness (band)",
+        "links": {
+          "wikidata": "Q745741"
+        },
+        "at": "2026-11-14T12:11:15.806Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "2 tone",
+          "synth-pop",
+          "ska",
+          "new wave",
+          "pop music",
+          "reggae"
+        ],
+        "ref": "Q745741",
+        "at": "2026-11-14T12:11:40.148Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Ska",
+          "Rock/Pop"
+        ],
+        "ref": "artist/113569",
+        "at": "2026-11-14T12:10:45.450Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "artist/362303 (Madness)",
+        "at": "2026-11-14T12:10:46.472Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:11:48.284Z"
+  },
+  "monkeyman": {
+    "genres": [
+      "roots reggae",
+      "ska",
+      "reggae"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "ska",
+      "rocksteady",
+      "reggae"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Reggae"
+        ],
+        "ref": "Monkey Man (Toots & the Maytals song)",
+        "links": {
+          "artistArticle": "Toots & the Maytals"
+        },
+        "at": "2026-11-14T12:12:12.868Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "reggae"
+        ],
+        "ref": "Q16953156",
+        "at": "2026-11-14T12:12:12.713Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "reggae",
+          "roots reggae",
+          "ska"
+        ],
+        "counts": [
+          13,
+          6,
+          6
+        ],
+        "ref": "recording/d78fb152-7e8b-4559-9a13-fd2b8e9afcbb,632f7287-d6d9-4343-9c90-2debce0c3e46,e0762622-43af-49eb-80f1-396b1b6236db,e6b42463-7638-4237-9b42-2a5c9ba4366d,2dc95881-bada-48ba-a8b0-174615c68b12",
+        "at": "2026-11-14T12:11:52.403Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "reason": "no track by this artist with this title",
+        "at": "2026-11-14T12:11:48.577Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Reggae"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:11:48.287Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:11:48.287Z"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "the recordings are on no album or EP",
+        "at": "2026-11-14T12:11:52.403Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Toots & the Maytals - Pressure Drop",
+        "at": "2026-11-14T12:12:20.980Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T12:12:20.980Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T12:11:52.403Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Reggae"
+        ],
+        "ref": "collection/602608174 (Toots & the Maytals - Pressure Drop)",
+        "links": {
+          "album": "Toots & the Maytals - Pressure Drop"
+        },
+        "at": "2026-11-14T12:11:51.821Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "reggae",
+          "ska",
+          "rocksteady",
+          "jamaican ska",
+          "reggae-pop",
+          "roots reggae",
+          "soul"
+        ],
+        "counts": [
+          5,
+          4,
+          3,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/29730ee3-e1c7-4e28-9ccd-3a0e6b0e8103 (Toots & The Maytals; credited on the song)",
+        "links": {
+          "mbArtist": "29730ee3-e1c7-4e28-9ccd-3a0e6b0e8103",
+          "wikidata": "Q845465"
+        },
+        "at": "2026-11-14T12:11:53.942Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Ska",
+          "rocksteady",
+          "reggae"
+        ],
+        "ref": "Toots and the Maytals",
+        "links": {
+          "wikidata": "Q845465"
+        },
+        "at": "2026-11-14T12:12:29.111Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "ska",
+          "rocksteady",
+          "reggae"
+        ],
+        "ref": "Q845465",
+        "at": "2026-11-14T12:12:29.285Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "reason": "no artist of this name",
+        "at": "2026-11-14T12:11:50.787Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Reggae"
+        ],
+        "ref": "artist/2379983 (Toots & The Maytals)",
+        "at": "2026-11-14T12:11:51.822Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:12:29.285Z"
+  },
+  "taintedlove": {
+    "genres": [
+      "soul",
+      "Northern soul",
+      "pop"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "soul",
+      "R&B",
+      "funk",
+      "gospel"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Soul"
+        ],
+        "ref": "Tainted Love",
+        "links": {
+          "artistArticle": "Gloria Jones"
+        },
+        "at": "2026-11-14T12:12:37.269Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "Northern soul"
+        ],
+        "ref": "Q708273",
+        "at": "2026-11-14T12:13:25.172Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "soul",
+          "funk soul"
+        ],
+        "counts": [
+          2,
+          1
+        ],
+        "ref": "release-group/b6f669f4-e070-3748-8b2b-a32f47de4d93",
+        "at": "2026-11-14T12:12:33.311Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "reason": "no track by this artist with this title",
+        "at": "2026-11-14T12:12:29.476Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:12:29.289Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:12:29.289Z"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "the recordings are on no album or EP",
+        "at": "2026-11-14T12:12:33.311Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no album (the song is a single, or the album is unknown)",
+        "at": "2026-11-14T12:12:37.269Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T12:12:37.269Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T12:12:33.311Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "reason": "the release is the song's single",
+        "ref": "Tainted Love - Single",
+        "links": {
+          "album": "Tainted Love - Single"
+        },
+        "at": "2026-11-14T12:12:32.854Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "soul",
+          "disco",
+          "northern soul",
+          "pop soul",
+          "rock and indie"
+        ],
+        "counts": [
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/1fb910ff-917b-409e-a787-6143fd7b1387 (Gloria Jones; credited on the song)",
+        "links": {
+          "mbArtist": "1fb910ff-917b-409e-a787-6143fd7b1387",
+          "wikidata": "Q270546"
+        },
+        "at": "2026-11-14T12:12:34.781Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "R&B",
+          "soul",
+          "pop",
+          "funk",
+          "gospel",
+          "glam rock"
+        ],
+        "ref": "Gloria Jones",
+        "links": {
+          "wikidata": "Q270546"
+        },
+        "at": "2026-11-14T12:13:00.836Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "soul"
+        ],
+        "ref": "Q270546",
+        "at": "2026-11-14T12:13:17.008Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Soul",
+          "Urban/R&B"
+        ],
+        "ref": "artist/129264",
+        "at": "2026-11-14T12:12:31.700Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "R&B/Soul"
+        ],
+        "ref": "artist/2321681 (Gloria Jones)",
+        "at": "2026-11-14T12:12:32.854Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:13:25.172Z"
+  },
+  "doiloveyou": {
+    "genres": [
+      "soul",
+      "Northern soul",
+      "Motown",
+      "R&B",
+      "pop",
+      "dance"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "soul",
+      "gospel"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Soul",
+          "northern soul"
+        ],
+        "ref": "Do I Love You (Indeed I Do)",
+        "links": {
+          "artistArticle": "Frank Wilson (musician)"
+        },
+        "at": "2026-11-14T12:13:25.315Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "popular music",
+          "soul",
+          "Northern soul"
+        ],
+        "ref": "Q5286042,Q115208337",
+        "at": "2026-11-14T12:14:05.967Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "soul",
+          "motown",
+          "northern soul",
+          "club",
+          "dance",
+          "r&b",
+          "rock",
+          "soul; northern soul; motown"
+        ],
+        "counts": [
+          5,
+          3,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "recording/5e53d8da-6c79-49da-bf9c-f8631b9cc785,6f62eb95-0998-4207-938a-0783afbff72f,6be1a10b-43f3-4dec-ac4a-40ff71c93a24,bfa600a8-e66b-48b7-b313-d771a00b63fb",
+        "at": "2026-11-14T12:13:27.232Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "reason": "the track has no genre",
+        "ref": "track/34336561",
+        "at": "2026-11-14T12:13:25.382Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Soul"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:13:25.177Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:13:25.177Z"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "the recordings are on no album or EP",
+        "at": "2026-11-14T12:13:27.233Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no album (the song is a single, or the album is unknown)",
+        "at": "2026-11-14T12:13:28.788Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T12:13:28.788Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T12:13:27.233Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "reason": "the release is the song's single",
+        "ref": "Do I Love You (Indeed I Do) - Single",
+        "links": {
+          "album": "Do I Love You (Indeed I Do) - Single"
+        },
+        "at": "2026-11-14T12:13:28.788Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "classic pop and rock",
+          "soul"
+        ],
+        "counts": [
+          1,
+          1
+        ],
+        "ref": "artist/d8392f05-fb39-402e-8e21-913f2b27b5c6 (Frank Wilson; credited on the song)",
+        "links": {
+          "mbArtist": "d8392f05-fb39-402e-8e21-913f2b27b5c6",
+          "wikidata": "Q8962695"
+        },
+        "at": "2026-11-14T12:13:28.681Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Soul",
+          "gospel"
+        ],
+        "ref": "Frank Wilson (musician)",
+        "links": {
+          "wikidata": "Q8962695"
+        },
+        "at": "2026-11-14T12:13:41.672Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "soul"
+        ],
+        "ref": "Q8962695",
+        "at": "2026-11-14T12:13:41.672Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "reason": "the artist has no genre",
+        "ref": "artist/137375",
+        "at": "2026-11-14T12:13:27.614Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Soul"
+        ],
+        "ref": "artist/1694316633 (Frank Wilson)",
+        "at": "2026-11-14T12:13:28.788Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:14:05.967Z"
+  },
+  "rockthistown": {
+    "genres": [
+      "rockabilly",
+      "rock and roll",
+      "new wave",
+      "rock"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "rockabilly",
+      "rock and roll",
+      "new wave",
+      "pop rock"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Rockabilly",
+          "rock and roll",
+          "new wave"
+        ],
+        "ref": "Rock This Town",
+        "links": {
+          "albumArticle": "Stray Cats (album)",
+          "artistArticle": "Stray Cats"
+        },
+        "at": "2026-11-14T12:14:06.121Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "rockabilly"
+        ],
+        "ref": "Q7354727",
+        "at": "2026-11-14T12:14:38.576Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "rockabilly",
+          "rock"
+        ],
+        "counts": [
+          2,
+          1
+        ],
+        "ref": "release-group/70f342bc-eeb3-4f7b-94b1-e8a22692268c",
+        "at": "2026-11-14T12:14:10.070Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "moods": [
+          "..."
+        ],
+        "ref": "track/33126883",
+        "at": "2026-11-14T12:14:06.145Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:14:05.970Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:14:05.970Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "neo-rockabilly",
+          "rock",
+          "rockabilly"
+        ],
+        "counts": [
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/0992771c-eb8b-4106-974b-747b895ba429 (Rebels Rule; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "0992771c-eb8b-4106-974b-747b895ba429",
+          "album": "Rebels Rule",
+          "discogsMaster": "222064"
+        },
+        "at": "2026-11-14T12:14:11.465Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Rebels Rule",
+        "at": "2026-11-14T12:14:22.399Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T12:14:22.399Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "the master (Rebels Rule) does not list the song",
+        "ref": "master/222064",
+        "at": "2026-11-14T12:14:11.737Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "collection/1443118047 (Built for Speed)",
+        "links": {
+          "album": "Built for Speed"
+        },
+        "at": "2026-11-14T12:14:09.616Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "rock",
+          "rockabilly",
+          "rock & roll"
+        ],
+        "counts": [
+          6,
+          5,
+          1
+        ],
+        "ref": "artist/0e763b87-f3cd-4a63-986f-bebc4189f1f0 (Stray Cats; credited on the song)",
+        "links": {
+          "mbArtist": "0e763b87-f3cd-4a63-986f-bebc4189f1f0",
+          "wikidata": "Q1161663"
+        },
+        "at": "2026-11-14T12:14:12.886Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Rockabilly",
+          "new wave"
+        ],
+        "ref": "Stray Cats",
+        "links": {
+          "wikidata": "Q1161663"
+        },
+        "at": "2026-11-14T12:14:30.536Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "rockabilly"
+        ],
+        "ref": "Q1161663",
+        "at": "2026-11-14T12:14:46.733Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Rockabilly",
+          "Rock/Pop"
+        ],
+        "ref": "artist/116485",
+        "at": "2026-11-14T12:14:08.362Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "artist/554105 (Stray Cats)",
+        "at": "2026-11-14T12:14:09.616Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:14:46.733Z"
+  },
+  "rockaroundtheclock": {
+    "genres": [
+      "rock and roll",
+      "rockabilly",
+      "rock"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "rock and roll",
+      "rockabilly",
+      "pop rock",
+      "rock"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Rock and roll",
+          "rockabilly"
+        ],
+        "ref": "Rock Around the Clock",
+        "links": {
+          "albumArticle": "Rock Around the Clock (album)",
+          "artistArticle": "Bill Haley & His Comets"
+        },
+        "at": "2026-11-14T12:15:00.955Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "rock and roll",
+          "rockabilly"
+        ],
+        "ref": "Q552098",
+        "at": "2026-11-14T12:15:27.437Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "rock",
+          "rockabilly",
+          "rock and roll"
+        ],
+        "counts": [
+          3,
+          3,
+          2
+        ],
+        "ref": "recording/009b28a7-5ad8-4543-879f-a457cb7f5c9f,d971e54f-97bd-4cdb-9add-1bc6018e40cd",
+        "at": "2026-11-14T12:14:50.803Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "reason": "no track by this artist with this title",
+        "at": "2026-11-14T12:14:46.938Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:14:46.734Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:14:46.734Z"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "the recordings are on no album or EP",
+        "at": "2026-11-14T12:14:50.803Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album 20th Century Masters - The Millennium Collection: The Best of Bill Haley & His Comets",
+        "at": "2026-11-14T12:15:17.232Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T12:15:17.232Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T12:14:50.803Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "collection/1440751175 (20th Century Masters - The Millennium Collection: The Best of Bill Haley & His Comets)",
+        "links": {
+          "album": "20th Century Masters - The Millennium Collection: The Best of Bill Haley & His Comets"
+        },
+        "at": "2026-11-14T12:14:50.352Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "rock"
+        ],
+        "counts": [
+          1
+        ],
+        "ref": "artist/2c8ddf66-bca7-4ed5-8ef6-b5d55b3fd3ff (Bill Haley; credited on the song)",
+        "links": {
+          "mbArtist": "2c8ddf66-bca7-4ed5-8ef6-b5d55b3fd3ff",
+          "wikidata": "Q202319"
+        },
+        "at": "2026-11-14T12:14:52.353Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Rock and roll",
+          "rockabilly",
+          "Western swing"
+        ],
+        "ref": "Bill Haley",
+        "links": {
+          "wikidata": "Q202319"
+        },
+        "at": "2026-11-14T12:15:25.377Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "rock music",
+          "country music"
+        ],
+        "ref": "Q202319",
+        "at": "2026-11-14T12:15:35.566Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Rock & Roll",
+          "Rock/Pop"
+        ],
+        "ref": "artist/116483",
+        "at": "2026-11-14T12:14:49.153Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "artist/325860 (Bill Haley and His Comets)",
+        "at": "2026-11-14T12:14:50.352Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:15:35.566Z"
+  },
+  "greatballs": {
+    "genres": [
+      "rock and roll"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "rockabilly",
+      "rock and roll",
+      "country",
+      "honky-tonk"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Rock and roll"
+        ],
+        "ref": "Great Balls of Fire",
+        "links": {
+          "artistArticle": "Jerry Lee Lewis"
+        },
+        "at": "2026-11-14T12:15:35.681Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "rock and roll"
+        ],
+        "ref": "Q1028032,Q66022966",
+        "at": "2026-11-14T12:16:33.518Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "rock & roll"
+        ],
+        "counts": [
+          1
+        ],
+        "ref": "recording/f633a668-cce3-47be-a4d2-aa94e47a000b",
+        "at": "2026-11-14T12:15:37.438Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "reason": "the track has no genre",
+        "ref": "track/34036145",
+        "at": "2026-11-14T12:15:35.825Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Soundtrack"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:15:35.567Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:15:35.567Z"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "the recordings are on no album or EP",
+        "at": "2026-11-14T12:15:37.438Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no album (the song is a single, or the album is unknown)",
+        "at": "2026-11-14T12:15:39.112Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T12:15:39.112Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T12:15:37.438Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "reason": "the release is the song's single",
+        "ref": "Great Balls of Fire! (Original Motion Picture Soundtrack)",
+        "links": {
+          "album": "Great Balls of Fire! (Original Motion Picture Soundtrack)"
+        },
+        "at": "2026-11-14T12:15:39.112Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "rockabilly",
+          "country",
+          "honky tonk",
+          "rock",
+          "rock & roll",
+          "rock and roll",
+          "[r12065312]",
+          "2008 universal fire victim",
+          "blues",
+          "country gospel",
+          "singer-songwriter",
+          "sun box",
+          "the best of jerry lee lewis"
+        ],
+        "counts": [
+          5,
+          3,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/b59ac58d-036e-4bba-8112-c32a34c4575b (Jerry Lee Lewis; credited on the song)",
+        "links": {
+          "mbArtist": "b59ac58d-036e-4bba-8112-c32a34c4575b",
+          "wikidata": "Q202729"
+        },
+        "at": "2026-11-14T12:15:38.998Z"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "the artist article lists no genre",
+        "ref": "Jerry Lee Lewis",
+        "links": {
+          "wikidata": "Q202729"
+        },
+        "at": "2026-11-14T12:16:09.186Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "rock music",
+          "blues",
+          "country music",
+          "rockabilly",
+          "honky tonk",
+          "gospel music"
+        ],
+        "ref": "Q202729",
+        "at": "2026-11-14T12:16:25.352Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Rock & Roll",
+          "Rock/Pop"
+        ],
+        "ref": "artist/111453",
+        "at": "2026-11-14T12:15:38.140Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "artist/123130 (Jerry Lee Lewis)",
+        "at": "2026-11-14T12:15:39.112Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:16:33.518Z"
+  },
+  "johnnybgoode": {
+    "genres": [
+      "rock and roll",
+      "blues",
+      "pop"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "album"
+    ],
+    "artistGenres": [
+      "rock and roll",
+      "blues rock",
+      "blues",
+      "pop rock"
+    ],
+    "moods": [
+      "excitable"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Rock and roll"
+        ],
+        "ref": "Johnny B. Goode",
+        "links": {
+          "artistArticle": "Chuck Berry"
+        },
+        "at": "2026-11-14T12:16:33.653Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "rock and roll"
+        ],
+        "ref": "Q931481",
+        "at": "2026-11-14T12:17:22.504Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "dance/by-style/dance-dance-revolution",
+          "playback/in-sequence-only",
+          "remark/catchy"
+        ],
+        "counts": [
+          1,
+          1,
+          1
+        ],
+        "ref": "recording/b0dbd195-fdd5-41f1-a3f5-d8b08b788fb5",
+        "at": "2026-11-14T12:16:37.542Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "genres": [
+          "Rock & Roll"
+        ],
+        "moods": [
+          "Excitable"
+        ],
+        "ref": "track/32756085",
+        "at": "2026-11-14T12:16:33.727Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Blues"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:16:33.520Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:16:33.520Z"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "the recordings are on no album or EP",
+        "at": "2026-11-14T12:16:37.542Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Chess Pieces: The Very Best of Chess Records",
+        "at": "2026-11-14T12:16:41.777Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T12:16:41.777Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T12:16:37.542Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "collection/1452975975 (Chess Pieces: The Very Best of Chess Records)",
+        "links": {
+          "album": "Chess Pieces: The Very Best of Chess Records"
+        },
+        "at": "2026-11-14T12:16:37.203Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "rock and roll",
+          "rock",
+          "blues",
+          "blues rock",
+          "rhythm & blues",
+          "rock & roll",
+          "classic rock",
+          "rhythm and blues",
+          "rock-and-roll",
+          "rockabilly",
+          "soul"
+        ],
+        "counts": [
+          7,
+          5,
+          3,
+          3,
+          3,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/592a3b6d-c42b-4567-99c9-ecf63bd66499 (Chuck Berry; credited on the song)",
+        "links": {
+          "mbArtist": "592a3b6d-c42b-4567-99c9-ecf63bd66499",
+          "wikidata": "Q5921"
+        },
+        "at": "2026-11-14T12:16:38.901Z"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "the artist article lists no genre",
+        "ref": "Chuck Berry",
+        "links": {
+          "wikidata": "Q5921"
+        },
+        "at": "2026-11-14T12:17:00.177Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "rock music",
+          "blues",
+          "rock and roll"
+        ],
+        "ref": "Q5921",
+        "at": "2026-11-14T12:17:14.313Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Rock",
+          "Rock/Pop"
+        ],
+        "ref": "artist/111469",
+        "at": "2026-11-14T12:16:35.942Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "artist/343170 (Chuck Berry)",
+        "at": "2026-11-14T12:16:37.203Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:17:22.504Z"
+  },
+  "supershy": {
+    "genres": [
+      "K-pop",
+      "liquid drum and bass",
+      "jersey club",
+      "bubblegum pop",
+      "drum and bass",
+      "baltimore club"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "album",
+      "album"
+    ],
+    "artistGenres": [
+      "K-pop",
+      "dance-pop",
+      "pop",
+      "asian"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Liquid drum and bass",
+          "Jersey club",
+          "bubblegum"
+        ],
+        "ref": "Super Shy",
+        "links": {
+          "artistArticle": "NewJeans"
+        },
+        "at": "2026-11-14T12:17:22.637Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "K-pop",
+          "liquid drum and bass",
+          "Jersey club",
+          "bubblegum music"
+        ],
+        "ref": "Q120447028",
+        "at": "2026-11-14T12:17:46.960Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "pixel art"
+        ],
+        "counts": [
+          1
+        ],
+        "ref": "release-group/1bb441a0-6dd9-4b47-88b4-cf88db07ac96",
+        "at": "2026-11-14T12:17:38.569Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "reason": "the track has no genre",
+        "ref": "track/36262553",
+        "at": "2026-11-14T12:17:22.705Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "K-Pop"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:17:22.506Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:17:22.506Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "k-pop",
+          "uk garage",
+          "2-step",
+          "5+ wochen",
+          "alternative r&b",
+          "baltimore club",
+          "contemporary r&b",
+          "dance-pop",
+          "electronic",
+          "english",
+          "ep",
+          "experimental",
+          "future garage",
+          "girl group",
+          "offizielle charts",
+          "pop"
+        ],
+        "counts": [
+          5,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/d2b0e110-fe62-4c91-9504-5dbfbedf1374 (Get Up; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "d2b0e110-fe62-4c91-9504-5dbfbedf1374",
+          "album": "Get Up",
+          "discogsMaster": "3175560",
+          "wikidata": "Q119834713"
+        },
+        "at": "2026-11-14T12:17:39.882Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Dance",
+          "R&B"
+        ],
+        "ref": "Get Up (EP)",
+        "links": {
+          "wikidata": "Q119834713"
+        },
+        "at": "2026-11-14T12:17:55.249Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "K-pop"
+        ],
+        "ref": "Q119834713",
+        "at": "2026-11-14T12:18:11.705Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "K-pop",
+          "Contemporary R&B",
+          "UK Garage",
+          "Drum n Bass",
+          "Baltimore Club",
+          "Electronic",
+          "Pop"
+        ],
+        "ref": "master/3175560 (Get Up)",
+        "at": "2026-11-14T12:17:40.110Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "reason": "the release is the song's single",
+        "ref": "NewJeans 'Super Shy' - Single",
+        "links": {
+          "album": "NewJeans 'Super Shy' - Single"
+        },
+        "at": "2026-11-14T12:17:25.688Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "k-pop",
+          "girl group",
+          "4th gen k-pop",
+          "kpop",
+          "throwback sound"
+        ],
+        "counts": [
+          9,
+          5,
+          2,
+          2,
+          1
+        ],
+        "ref": "artist/49204a7a-ed85-407a-828f-6fd46f1d8126 (NewJeans; credited on the song)",
+        "links": {
+          "mbArtist": "49204a7a-ed85-407a-828f-6fd46f1d8126",
+          "wikidata": "Q113189277"
+        },
+        "at": "2026-11-14T12:17:47.814Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "K-pop",
+          "pop",
+          "R&B"
+        ],
+        "ref": "NewJeans",
+        "links": {
+          "wikidata": "Q113189277"
+        },
+        "at": "2026-11-14T12:18:03.422Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "K-pop",
+          "dance-pop",
+          "contemporary R&B"
+        ],
+        "ref": "Q113189277",
+        "at": "2026-11-14T12:18:19.890Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "K-Pop",
+          "Asian"
+        ],
+        "ref": "artist/171336",
+        "at": "2026-11-14T12:17:24.936Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "K-Pop"
+        ],
+        "ref": "artist/1635469693 (NewJeans)",
+        "at": "2026-11-14T12:17:25.688Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:18:19.890Z"
+  },
+  "asifitsyourlast": {
+    "genres": [
+      "K-pop",
+      "house",
+      "synth-pop",
+      "moombahton",
+      "electro",
+      "dance"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "album",
+      "song"
+    ],
+    "artistGenres": [
+      "K-pop",
+      "trap",
+      "hip hop",
+      "EDM"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Dance",
+          "synth-pop",
+          "house",
+          "reggae",
+          "moombahton"
+        ],
+        "ref": "As If It's Your Last",
+        "links": {
+          "artistArticle": "Blackpink"
+        },
+        "at": "2026-11-14T12:18:20.168Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "house music",
+          "reggae",
+          "K-pop",
+          "reggaeton"
+        ],
+        "ref": "Q30513869",
+        "at": "2026-11-14T12:19:08.826Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "reason": "0 single(s) and 1 recording(s) found, none tagged",
+        "at": "2026-11-14T12:18:23.836Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "reason": "the track has no genre",
+        "ref": "track/35733137",
+        "at": "2026-11-14T12:18:20.116Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "K-Pop"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:18:19.893Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:18:19.893Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "k-pop",
+          "electro",
+          "electronic",
+          "hip hop",
+          "j-pop",
+          "pop"
+        ],
+        "counts": [
+          2,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/4f54a818-25f4-4c5c-b962-a698dfd01098 (BLACKPINK; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "4f54a818-25f4-4c5c-b962-a698dfd01098",
+          "album": "BLACKPINK",
+          "discogsMaster": "1230790",
+          "wikidata": "Q33027037"
+        },
+        "at": "2026-11-14T12:18:25.126Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "J-pop",
+          "K-pop",
+          "pop rock"
+        ],
+        "ref": "Blackpink (EP)",
+        "links": {
+          "wikidata": "Q33027037"
+        },
+        "at": "2026-11-14T12:18:36.336Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "K-pop"
+        ],
+        "ref": "Q33027037",
+        "at": "2026-11-14T12:18:36.336Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "J-pop",
+          "K-pop",
+          "Dance-pop",
+          "Electro",
+          "Electronic",
+          "Hip Hop",
+          "Pop"
+        ],
+        "ref": "master/1230790 (Blackpink)",
+        "at": "2026-11-14T12:18:25.386Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "reason": "the release is the song's single",
+        "ref": "AS IF IT'S YOUR LAST - Single",
+        "links": {
+          "album": "AS IF IT'S YOUR LAST - Single"
+        },
+        "at": "2026-11-14T12:18:23.423Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "k-pop",
+          "girl group",
+          "3rd gen k-pop",
+          "pop",
+          "2010s",
+          "2020s",
+          "female vocals",
+          "girl crush",
+          "hip hop",
+          "asian pop",
+          "dance"
+        ],
+        "counts": [
+          12,
+          5,
+          3,
+          3,
+          2,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1
+        ],
+        "ref": "artist/48646387-1664-4c9a-9139-9bfd091b823c (BLACKPINK; credited on the song)",
+        "links": {
+          "mbArtist": "48646387-1664-4c9a-9139-9bfd091b823c",
+          "wikidata": "Q25056945"
+        },
+        "at": "2026-11-14T12:18:26.764Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "K-pop",
+          "EDM",
+          "hip-hop",
+          "trap"
+        ],
+        "ref": "Blackpink",
+        "links": {
+          "wikidata": "Q25056945"
+        },
+        "at": "2026-11-14T12:18:44.501Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "K-pop",
+          "electronic dance music",
+          "hip-hop",
+          "J-pop",
+          "trap music"
+        ],
+        "ref": "Q25056945",
+        "at": "2026-11-14T12:19:00.670Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "K-Pop"
+        ],
+        "ref": "artist/144038",
+        "at": "2026-11-14T12:18:22.360Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "K-Pop"
+        ],
+        "ref": "artist/1141774019 (BLACKPINK)",
+        "at": "2026-11-14T12:18:23.423Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:19:08.826Z"
+  },
+  "suavemente": {
+    "genres": [
+      "merengue",
+      "tropical",
+      "latin"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "merengue",
+      "salsa",
+      "latin"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Merengue"
+        ],
+        "ref": "Suavemente (Elvis Crespo song)",
+        "links": {
+          "albumArticle": "Suavemente",
+          "artistArticle": "Elvis Crespo"
+        },
+        "at": "2026-11-14T12:19:09.003Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "merengue"
+        ],
+        "ref": "Q834123",
+        "at": "2026-11-14T12:19:57.946Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "latin",
+          "merengue",
+          "cuban",
+          "dance",
+          "latin dance",
+          "salsa",
+          "spanish"
+        ],
+        "counts": [
+          5,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "recording/1a34ff34-03c4-4b2c-91af-9d18436f7df2",
+        "at": "2026-11-14T12:19:12.809Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "genres": [
+          "Latin"
+        ],
+        "ref": "track/32764104",
+        "at": "2026-11-14T12:19:09.010Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Música tropical"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:19:08.830Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:19:08.830Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "latin",
+          "merengue"
+        ],
+        "counts": [
+          3,
+          3
+        ],
+        "ref": "release-group/e63df37f-8ebe-3f51-9cff-665fd07994ff (Suavemente; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "e63df37f-8ebe-3f51-9cff-665fd07994ff",
+          "album": "Suavemente",
+          "discogsMaster": "279590",
+          "wikidata": "Q7630544"
+        },
+        "at": "2026-11-14T12:19:14.041Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Merengue"
+        ],
+        "ref": "Suavemente",
+        "links": {
+          "wikidata": "Q7630544"
+        },
+        "at": "2026-11-14T12:19:25.303Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "merengue"
+        ],
+        "ref": "Q7630544",
+        "at": "2026-11-14T12:19:49.812Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Merengue",
+          "Latin"
+        ],
+        "ref": "master/279590 (Suavemente)",
+        "at": "2026-11-14T12:19:14.264Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "reason": "the release is the song's single",
+        "ref": "Suavemente",
+        "links": {
+          "album": "Suavemente"
+        },
+        "at": "2026-11-14T12:19:12.457Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "merengue",
+          "latin"
+        ],
+        "counts": [
+          2,
+          1
+        ],
+        "ref": "artist/776b2c10-31fe-4c4b-9982-f408279b80a9 (Elvis Crespo; credited on the song)",
+        "links": {
+          "mbArtist": "776b2c10-31fe-4c4b-9982-f408279b80a9",
+          "wikidata": "Q913111"
+        },
+        "at": "2026-11-14T12:19:17.494Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Merengue"
+        ],
+        "ref": "Elvis Crespo",
+        "links": {
+          "wikidata": "Q913111"
+        },
+        "at": "2026-11-14T12:19:41.820Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "merengue",
+          "salsa"
+        ],
+        "ref": "Q913111",
+        "at": "2026-11-14T12:20:06.094Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Latin",
+          "Latin"
+        ],
+        "ref": "artist/111580",
+        "at": "2026-11-14T12:19:11.348Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Latin"
+        ],
+        "ref": "artist/326519 (Elvis Crespo)",
+        "at": "2026-11-14T12:19:12.457Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:20:06.094Z"
+  },
+  "bilirrubina": {
+    "genres": [
+      "bachata",
+      "merengue",
+      "salsa",
+      "tropical",
+      "latin"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "bachata",
+      "merengue",
+      "salsa",
+      "tropical"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "reason": "no article about this song (La Bilirrubina: by another artist)",
+        "at": "2026-11-14T12:20:14.602Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "reason": "no song item by this artist",
+        "at": "2026-11-14T12:20:22.401Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "latin",
+          "merengue",
+          "bachata",
+          "salsa"
+        ],
+        "counts": [
+          4,
+          2,
+          1,
+          1
+        ],
+        "ref": "recording/f6776146-3a62-4087-b232-c6c8a917672a",
+        "at": "2026-11-14T12:20:14.111Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "reason": "no track by this artist with this title",
+        "at": "2026-11-14T12:20:06.302Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Música tropical"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:20:06.096Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:20:06.096Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "latin",
+          "bachata",
+          "merengue",
+          "salsa"
+        ],
+        "counts": [
+          4,
+          2,
+          2,
+          1
+        ],
+        "ref": "release-group/acb01f0a-5c5a-35d3-adbf-08697accd6c9 (Bachata rosa; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "acb01f0a-5c5a-35d3-adbf-08697accd6c9",
+          "album": "Bachata rosa",
+          "discogsMaster": "219449",
+          "wikidata": "Q4838723"
+        },
+        "at": "2026-11-14T12:20:17.488Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Bachata",
+          "merengue",
+          "salsa"
+        ],
+        "ref": "Bachata Rosa",
+        "links": {
+          "wikidata": "Q4838723"
+        },
+        "at": "2026-11-14T12:20:30.673Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "bachata",
+          "merengue",
+          "salsa"
+        ],
+        "ref": "Q4838723",
+        "at": "2026-11-14T12:20:46.826Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Bachata",
+          "Merengue",
+          "Salsa",
+          "Latin"
+        ],
+        "ref": "master/219449 (Bachata Rosa)",
+        "at": "2026-11-14T12:20:17.803Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Música tropical"
+        ],
+        "ref": "collection/19468976 (Bachata Rosa)",
+        "links": {
+          "album": "Bachata Rosa"
+        },
+        "at": "2026-11-14T12:20:09.651Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "bachata",
+          "latin",
+          "latin pop",
+          "merengue",
+          "salsa"
+        ],
+        "counts": [
+          3,
+          3,
+          3,
+          2,
+          2
+        ],
+        "ref": "artist/1659a41f-27d3-4823-8a15-bf7cd295cf59 (Juan Luis Guerra 4.40; credited on the song)",
+        "links": {
+          "mbArtist": "1659a41f-27d3-4823-8a15-bf7cd295cf59",
+          "wikidata": "Q61776645"
+        },
+        "at": "2026-11-14T12:20:18.864Z"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T12:20:38.826Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "the artist item has no genre",
+        "ref": "Q61776645",
+        "at": "2026-11-14T12:20:38.826Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "reason": "no artist of this name",
+        "at": "2026-11-14T12:20:08.512Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Música tropical"
+        ],
+        "ref": "artist/1474382045 (Juan Luis Guerra 4.40)",
+        "at": "2026-11-14T12:20:09.652Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:20:46.826Z"
+  },
+  "differentology": {
+    "genres": [
+      "dancehall",
+      "soca",
+      "world",
+      "reggae"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "soca",
+      "dancehall",
+      "reggae",
+      "modern dancehall"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "World",
+          "soca",
+          "jazz"
+        ],
+        "ref": "Differentology",
+        "links": {
+          "albumArticle": "Differentology (album)",
+          "artistArticle": "Bunji Garlin"
+        },
+        "at": "2026-11-14T12:21:17.457Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "reason": "no item with this title",
+        "at": "2026-11-14T12:21:03.073Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "dancehall",
+          "reggae"
+        ],
+        "counts": [
+          1,
+          1
+        ],
+        "ref": "recording/35a4102b-6dc4-4f3c-8043-606bd64d031a",
+        "at": "2026-11-14T12:20:56.874Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "reason": "the track has no genre",
+        "ref": "track/35302070",
+        "at": "2026-11-14T12:20:47.018Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Reggae"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:20:46.828Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:20:46.828Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "reggae",
+          "soca"
+        ],
+        "counts": [
+          1,
+          1
+        ],
+        "ref": "release-group/1a658684-7eb5-43c6-ad19-121673859cef (Differentology; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "1a658684-7eb5-43c6-ad19-121673859cef",
+          "album": "Differentology",
+          "discogsMaster": "889139"
+        },
+        "at": "2026-11-14T12:20:58.249Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Ready For the Road",
+        "at": "2026-11-14T12:21:41.851Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T12:21:41.851Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Soca",
+          "Dancehall",
+          "Reggae"
+        ],
+        "ref": "master/889139 (Differentology)",
+        "at": "2026-11-14T12:20:58.475Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Reggae"
+        ],
+        "ref": "collection/852184357 (Ready For the Road - EP)",
+        "links": {
+          "album": "Ready For the Road - EP"
+        },
+        "at": "2026-11-14T12:20:50.440Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "soca"
+        ],
+        "counts": [
+          1
+        ],
+        "ref": "artist/41efa16f-03e8-4a59-b925-6c6685ad148f (Bunji Garlin; credited on the song)",
+        "links": {
+          "mbArtist": "41efa16f-03e8-4a59-b925-6c6685ad148f",
+          "wikidata": "Q4997720"
+        },
+        "at": "2026-11-14T12:20:59.559Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Reggae",
+          "soca",
+          "dancehall"
+        ],
+        "ref": "Bunji Garlin",
+        "links": {
+          "wikidata": "Q4997720"
+        },
+        "at": "2026-11-14T12:21:33.720Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "reggae",
+          "soca music",
+          "dancehall"
+        ],
+        "ref": "Q4997720",
+        "at": "2026-11-14T12:21:33.864Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "reason": "the artist has no genre",
+        "ref": "artist/157158",
+        "at": "2026-11-14T12:20:49.238Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Modern Dancehall"
+        ],
+        "ref": "artist/72363208 (Bunji Garlin)",
+        "at": "2026-11-14T12:20:50.440Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:21:41.851Z"
+  },
+  "kalemba": {
+    "genres": [
+      "afro house"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "kuduro",
+      "moombahton",
+      "breakbeat",
+      "dance"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "reason": "no article about this song",
+        "at": "2026-11-14T12:22:09.384Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "reason": "no item with this title",
+        "at": "2026-11-14T12:21:41.988Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "reason": "no recording of this song by this artist",
+        "at": "2026-11-14T12:21:43.596Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "reason": "no track by this artist with this title",
+        "at": "2026-11-14T12:21:42.028Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Afro House"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:21:41.853Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:21:41.853Z"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T12:21:43.596Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Rough Diamond",
+        "at": "2026-11-14T12:22:17.545Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T12:22:17.546Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T12:21:43.596Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Afro House"
+        ],
+        "ref": "collection/1789174781 (Rough Diamond - EP)",
+        "links": {
+          "album": "Rough Diamond - EP"
+        },
+        "at": "2026-11-14T12:21:45.413Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "kuduro",
+          "angola"
+        ],
+        "counts": [
+          5,
+          2
+        ],
+        "ref": "artist/2061f628-01cd-4343-a078-900f639d67fe (Buraka Som Sistema; the only artist of this name)",
+        "links": {
+          "mbArtist": "2061f628-01cd-4343-a078-900f639d67fe",
+          "wikidata": "Q1010243"
+        },
+        "at": "2026-11-14T12:21:48.392Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Kuduro",
+          "breakbeat",
+          "zouk",
+          "alternative dance",
+          "moombahton"
+        ],
+        "ref": "Buraka Som Sistema",
+        "links": {
+          "wikidata": "Q1010243"
+        },
+        "at": "2026-11-14T12:22:25.671Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "kuduro",
+          "moombahton",
+          "zouk",
+          "breakbeat"
+        ],
+        "ref": "Q1010243",
+        "at": "2026-11-14T12:22:25.821Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Dance",
+          "Electronic"
+        ],
+        "ref": "artist/122475",
+        "at": "2026-11-14T12:21:44.272Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Dance"
+        ],
+        "ref": "artist/195511742 (Buraka Som Sistema)",
+        "at": "2026-11-14T12:21:45.413Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:22:25.821Z"
+  },
+  "dejavu": {
+    "genres": [
+      "eurobeat",
+      "electronic"
+    ],
+    "genreLevels": [
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "eurobeat",
+      "dance"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "reason": "no article about this song (Déjà vu (disambiguation): disambiguation page)",
+        "at": "2026-11-14T12:22:50.262Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "reason": "no item with this title",
+        "at": "2026-11-14T12:22:33.955Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "eurobeat"
+        ],
+        "counts": [
+          2
+        ],
+        "ref": "recording/ba7e6df6-10fe-4629-8752-eebb17b31a1d",
+        "at": "2026-11-14T12:22:41.955Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "reason": "no track by this artist with this title",
+        "at": "2026-11-14T12:22:26.071Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Electronic"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:22:25.827Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:22:25.827Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "electronic",
+          "eurobeat"
+        ],
+        "counts": [
+          1,
+          1
+        ],
+        "ref": "release-group/ef430f6a-7f99-4e50-8bf8-d4616091c749 (Deja Vu; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "ef430f6a-7f99-4e50-8bf8-d4616091c749",
+          "album": "Deja Vu"
+        },
+        "at": "2026-11-14T12:22:43.278Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no album (the song is a single, or the album is unknown)",
+        "at": "2026-11-14T12:22:50.264Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T12:22:50.264Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T12:22:43.279Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "reason": "the release is the song's single",
+        "ref": "Deja Vu",
+        "links": {
+          "album": "Deja Vu"
+        },
+        "at": "2026-11-14T12:22:29.316Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "eurobeat"
+        ],
+        "counts": [
+          5
+        ],
+        "ref": "artist/9298d14c-ddf0-40b0-b6df-427e319524b3 (Dave Rodgers; credited on the song)",
+        "links": {
+          "mbArtist": "9298d14c-ddf0-40b0-b6df-427e319524b3",
+          "wikidata": "Q1205935",
+          "enwiki": "Dave Rodgers"
+        },
+        "at": "2026-11-14T12:22:44.807Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Eurobeat"
+        ],
+        "ref": "Dave Rodgers",
+        "links": {
+          "wikidata": "Q1205935"
+        },
+        "at": "2026-11-14T12:23:00.620Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "Eurobeat"
+        ],
+        "ref": "Q1205935",
+        "at": "2026-11-14T12:23:08.611Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "reason": "the artist has no genre",
+        "ref": "artist/146045",
+        "at": "2026-11-14T12:22:28.297Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Dance"
+        ],
+        "ref": "artist/1229035038 (Dave Rodgers)",
+        "at": "2026-11-14T12:22:29.316Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:23:08.611Z"
+  },
+  "sk8erboi": {
+    "genres": [
+      "pop punk",
+      "power pop",
+      "pop rock",
+      "pop",
+      "skate punk",
+      "punk"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "pop rock",
+      "pop punk",
+      "alternative rock",
+      "post-grunge"
+    ],
+    "moods": [
+      "intense"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Skate punk",
+          "pop-punk",
+          "power pop"
+        ],
+        "ref": "Sk8er Boi",
+        "links": {
+          "albumArticle": "Let Go (Avril Lavigne album)",
+          "artistArticle": "Avril Lavigne"
+        },
+        "at": "2026-11-14T12:23:08.740Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "pop music",
+          "power pop",
+          "skate punk",
+          "pop-punk"
+        ],
+        "ref": "Q543058",
+        "at": "2026-11-14T12:23:41.345Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "rock",
+          "pop punk",
+          "pop",
+          "pop rock",
+          "power pop",
+          "punk",
+          "punk rock",
+          "skate punk",
+          "teen punk"
+        ],
+        "counts": [
+          3,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/7257d8e2-807d-3597-991f-2e33931147c6",
+        "at": "2026-11-14T12:23:16.938Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "moods": [
+          "Intense"
+        ],
+        "ref": "track/32761622",
+        "at": "2026-11-14T12:23:08.792Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:23:08.617Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:23:08.617Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "alternative rock",
+          "pop",
+          "pop rock",
+          "rock",
+          "pop punk",
+          "teen rock",
+          "adult alternative pop/rock",
+          "pop/rock",
+          "teen pop",
+          "alternative",
+          "post-grunge",
+          "alternative/indie rock",
+          "contemporary pop/rock",
+          "mall punk",
+          "clean up",
+          "let go",
+          "pop and chart",
+          "pop rock_blues_rock_blues_rock_pop rock_rock_pop rock_blues_rock_rock",
+          "teen punk"
+        ],
+        "counts": [
+          9,
+          9,
+          7,
+          6,
+          5,
+          5,
+          4,
+          4,
+          4,
+          3,
+          3,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/0837aca2-319e-3f2f-a2d3-c525802068d6 (Let Go; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "0837aca2-319e-3f2f-a2d3-c525802068d6",
+          "album": "Let Go",
+          "discogsMaster": "28622",
+          "wikidata": "Q213039"
+        },
+        "at": "2026-11-14T12:23:18.191Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Pop-punk",
+          "alternative rock",
+          "pop rock",
+          "post-grunge"
+        ],
+        "ref": "Let Go (Avril Lavigne album)",
+        "links": {
+          "wikidata": "Q213039"
+        },
+        "at": "2026-11-14T12:23:33.285Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "pop-punk",
+          "alternative rock",
+          "pop rock",
+          "post-grunge"
+        ],
+        "ref": "Q213039",
+        "at": "2026-11-14T12:24:05.806Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Alternative Rock",
+          "Pop Rock",
+          "Rock"
+        ],
+        "ref": "master/28622 (Let Go)",
+        "at": "2026-11-14T12:23:18.582Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "collection/315025768 (Let Go)",
+        "links": {
+          "album": "Let Go"
+        },
+        "at": "2026-11-14T12:23:12.117Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "pop punk",
+          "alternative rock",
+          "pop rock",
+          "post-grunge",
+          "pop",
+          "teen pop",
+          "adult contemporary",
+          "teen punk",
+          "acoustic rock",
+          "alternative pop",
+          "female vocals",
+          "pop-punk",
+          "rock",
+          "mall punk"
+        ],
+        "counts": [
+          18,
+          13,
+          13,
+          6,
+          5,
+          4,
+          3,
+          3,
+          2,
+          2,
+          2,
+          2,
+          2,
+          1
+        ],
+        "ref": "artist/0103c1cc-4a09-4a5d-a344-56ad99a77193 (Avril Lavigne; credited on the song)",
+        "links": {
+          "mbArtist": "0103c1cc-4a09-4a5d-a344-56ad99a77193",
+          "wikidata": "Q30449"
+        },
+        "at": "2026-11-14T12:23:26.018Z"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "the artist article lists no genre",
+        "ref": "Avril Lavigne",
+        "links": {
+          "wikidata": "Q30449"
+        },
+        "at": "2026-11-14T12:24:00.838Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "alternative rock",
+          "pop-punk",
+          "pop rock",
+          "post-grunge",
+          "soft rock"
+        ],
+        "ref": "Q30449",
+        "at": "2026-11-14T12:24:13.942Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Pop-Rock",
+          "Rock/Pop"
+        ],
+        "ref": "artist/111538",
+        "at": "2026-11-14T12:23:11.028Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "artist/459885 (Avril Lavigne)",
+        "at": "2026-11-14T12:23:12.117Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:24:13.942Z"
+  },
+  "ohhappyday": {
+    "genres": [
+      "gospel"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "gospel"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "reason": "no article about this song (Oh Happy Day: by another artist)",
+        "at": "2026-11-14T12:24:22.436Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "reason": "no song item by this artist",
+        "at": "2026-11-14T12:24:38.469Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "gospel"
+        ],
+        "counts": [
+          2
+        ],
+        "ref": "release-group/8e55dd60-cb4f-4469-9ffa-28c40558120b",
+        "at": "2026-11-14T12:24:17.854Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "reason": "no track by this artist with this title",
+        "at": "2026-11-14T12:24:14.147Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Christian"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:24:13.950Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:24:13.950Z"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T12:24:17.854Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Oh Happy Day, the Power of Gospel",
+        "at": "2026-11-14T12:24:38.713Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T12:24:38.713Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T12:24:17.854Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Christian"
+        ],
+        "ref": "collection/313249574 (Oh Happy Day, the Power of Gospel)",
+        "links": {
+          "album": "Oh Happy Day, the Power of Gospel"
+        },
+        "at": "2026-11-14T12:24:17.529Z"
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "reason": "no artist of this name",
+        "at": "2026-11-14T12:24:19.097Z"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T12:24:30.586Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T12:24:30.587Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "reason": "no artist of this name",
+        "at": "2026-11-14T12:24:16.373Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Christian"
+        ],
+        "ref": "artist/19512372 (The Edwin Hawkins Singers)",
+        "at": "2026-11-14T12:24:17.529Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:24:38.713Z"
+  },
+  "wantyouback": {
+    "genres": [
+      "soul",
+      "pop soul",
+      "Motown",
+      "bubblegum pop",
+      "funk",
+      "R&B"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "soul",
+      "disco",
+      "R&B",
+      "funk"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Pop",
+          "soul"
+        ],
+        "ref": "I Want You Back",
+        "links": {
+          "albumArticle": "Diana Ross Presents The Jackson 5",
+          "artistArticle": "the Jackson 5"
+        },
+        "at": "2026-11-14T12:25:00.965Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "reason": "the item has no genre",
+        "ref": "Q1445942",
+        "at": "2026-11-14T12:25:25.352Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "soul",
+          "funk",
+          "motown",
+          "bubblegum",
+          "pop soul",
+          "r&b",
+          "rock"
+        ],
+        "counts": [
+          7,
+          6,
+          4,
+          3,
+          2,
+          2,
+          2,
+          2
+        ],
+        "ref": "recording/2adbe38a-cb16-42dd-9c55-ee6ddfe94c1f,6a16fd65-347c-4875-8725-1618064de6bd,01db10b3-6074-496c-a71e-8d4c4662fe87",
+        "at": "2026-11-14T12:24:40.997Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "reason": "no track by this artist with this title",
+        "at": "2026-11-14T12:24:38.926Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:24:38.717Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:24:38.717Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "boy band",
+          "bubblegum",
+          "pop soul",
+          "soul",
+          "funk"
+        ],
+        "counts": [
+          2,
+          2,
+          2,
+          2,
+          1
+        ],
+        "ref": "release-group/564b97a3-8001-3c32-a1a1-1a6199911923 (Diana Ross Presents the Jackson 5; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "564b97a3-8001-3c32-a1a1-1a6199911923",
+          "album": "Diana Ross Presents the Jackson 5",
+          "discogsMaster": "121867",
+          "wikidata": "Q45787"
+        },
+        "at": "2026-11-14T12:24:42.066Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Pop",
+          "soul",
+          "R&B"
+        ],
+        "ref": "Diana Ross Presents The Jackson 5",
+        "links": {
+          "wikidata": "Q45787"
+        },
+        "at": "2026-11-14T12:25:17.228Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "soul"
+        ],
+        "ref": "Q45787",
+        "at": "2026-11-14T12:25:41.666Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Soul",
+          "Funk / Soul"
+        ],
+        "ref": "master/121867 (Diana Ross Presents The Jackson 5)",
+        "at": "2026-11-14T12:24:42.287Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "collection/1440912101 (The Ultimate Collection)",
+        "links": {
+          "album": "The Ultimate Collection"
+        },
+        "at": "2026-11-14T12:24:42.247Z"
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "reason": "no artist of this name",
+        "at": "2026-11-14T12:24:43.319Z"
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Pop",
+          "R&B",
+          "soul",
+          "funk",
+          "disco",
+          "bubblegum"
+        ],
+        "ref": "The Jackson 5",
+        "links": {
+          "wikidata": "Q43267"
+        },
+        "at": "2026-11-14T12:25:09.104Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "rhythm and blues",
+          "pop music",
+          "soul",
+          "disco",
+          "funk",
+          "bubblegum music"
+        ],
+        "ref": "Q43267",
+        "at": "2026-11-14T12:25:49.836Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "reason": "no artist of this name",
+        "at": "2026-11-14T12:24:41.147Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "R&B/Soul"
+        ],
+        "ref": "artist/104063 (Jackson 5)",
+        "at": "2026-11-14T12:24:42.247Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:25:49.836Z"
+  },
+  "loseyourself": {
+    "genres": [
+      "hardcore hip hop",
+      "rap rock",
+      "gangsta rap",
+      "pop rap",
+      "conscious hip hop",
+      "midwestern rap"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "hardcore hip hop",
+      "horrorcore",
+      "Midwest hip hop",
+      "comedy hip hop"
+    ],
+    "moods": [
+      "angry"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "genres": [
+          "Hip-hop",
+          "rap rock",
+          "hardcore hip-hop"
+        ],
+        "ref": "Lose Yourself",
+        "links": {
+          "albumArticle": "8 Mile: Music from and Inspired by the Motion Picture",
+          "artistArticle": "Eminem"
+        },
+        "at": "2026-11-14T12:26:01.084Z",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "genres": [
+          "hip-hop",
+          "rap rock",
+          "hardcore hip-hop"
+        ],
+        "ref": "Q957616",
+        "at": "2026-11-14T12:26:55.073Z",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "genres": [
+          "hip hop",
+          "conscious hip hop",
+          "gangsta",
+          "pop rap",
+          "hardcore hip hop",
+          "midwestern rap",
+          "rap",
+          "gangsta rap",
+          "midwestern hip hop",
+          "rap/hip hop"
+        ],
+        "counts": [
+          10,
+          5,
+          5,
+          4,
+          3,
+          3,
+          2,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/88df7110-f219-3821-83b8-56443eaa34c3",
+        "at": "2026-11-14T12:25:51.707Z",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "genres": [
+          "Hip-Hop"
+        ],
+        "moods": [
+          "Angry"
+        ],
+        "ref": "track/32925676",
+        "at": "2026-11-14T12:25:50.024Z"
+      },
+      "itunes": {
+        "status": "found",
+        "genres": [
+          "Soundtrack"
+        ],
+        "ref": "stored",
+        "at": "2026-11-14T12:25:49.840Z"
+      },
+      "title": {
+        "status": "none",
+        "reason": "the title is not a genre name",
+        "at": "2026-11-14T12:25:49.840Z"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "hip hop",
+          "gangsta rap",
+          "hip-hop",
+          "hardcore rap",
+          "pop rap",
+          "soundtrack",
+          "gangsta",
+          "rap",
+          "hardcore hip hop",
+          "ost",
+          "film soundtrack",
+          "soundtracks"
+        ],
+        "counts": [
+          12,
+          6,
+          5,
+          4,
+          4,
+          4,
+          3,
+          3,
+          2,
+          2,
+          1,
+          1
+        ],
+        "ref": "release-group/33d67f25-ee34-3bb9-86d6-c23abd5d9550 (8 Mile: Music From and Inspired by the Motion Picture; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "33d67f25-ee34-3bb9-86d6-c23abd5d9550",
+          "album": "8 Mile: Music From and Inspired by the Motion Picture",
+          "discogsMaster": "114474",
+          "wikidata": "Q274911"
+        },
+        "at": "2026-11-14T12:25:53.061Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Hip-hop"
+        ],
+        "ref": "8 Mile: Music from and Inspired by the Motion Picture",
+        "links": {
+          "wikidata": "Q274911"
+        },
+        "at": "2026-11-14T12:26:22.601Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "stage and screen",
+          "hip-hop"
+        ],
+        "ref": "Q274911",
+        "at": "2026-11-14T12:26:46.917Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Gangsta",
+          "Pop Rap",
+          "Hip Hop"
+        ],
+        "ref": "master/114474 (Music From And Inspired By The Motion Picture 8 Mile)",
+        "at": "2026-11-14T12:25:53.326Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "genres": [
+          "Soundtrack"
+        ],
+        "ref": "collection/1440903339 (8 Mile (Music from and Inspired By the Motion Picture))",
+        "links": {
+          "album": "8 Mile (Music from and Inspired By the Motion Picture)"
+        },
+        "at": "2026-11-14T12:25:53.100Z"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "genres": [
+          "hip hop",
+          "rap",
+          "detroit",
+          "hardcore hip hop",
+          "pop rap",
+          "detroit hip hop",
+          "midwest hip hop",
+          "hip-hop",
+          "boom bap",
+          "conscious hip hop",
+          "midwestern hip-hop",
+          "2008 universal fire victim",
+          "actor",
+          "gangsta rap",
+          "horrorcore",
+          "music trade",
+          "pop",
+          "record producer",
+          "singer",
+          "songwriter",
+          "trap"
+        ],
+        "counts": [
+          39,
+          17,
+          9,
+          7,
+          7,
+          5,
+          5,
+          4,
+          3,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/b95ce3ff-3d05-4e87-9e01-c97b66af13d4 (Eminem; credited on the song)",
+        "links": {
+          "mbArtist": "b95ce3ff-3d05-4e87-9e01-c97b66af13d4",
+          "wikidata": "Q5608"
+        },
+        "at": "2026-11-14T12:25:54.941Z"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "the artist article lists no genre",
+        "ref": "Eminem",
+        "links": {
+          "wikidata": "Q5608"
+        },
+        "at": "2026-11-14T12:26:14.475Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "hip-hop",
+          "horrorcore",
+          "hardcore hip-hop",
+          "comedy hip-hop",
+          "rap rock",
+          "Midwest hip-hop"
+        ],
+        "ref": "Q5608",
+        "at": "2026-11-14T12:26:38.752Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "genres": [
+          "Hip-Hop",
+          "Urban/R&B"
+        ],
+        "ref": "artist/111304",
+        "at": "2026-11-14T12:25:52.256Z"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "artist/111051 (Eminem)",
+        "at": "2026-11-14T12:25:53.100Z"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T12:26:55.073Z"
+  }
+}
