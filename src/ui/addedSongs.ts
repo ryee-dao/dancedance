@@ -134,7 +134,7 @@ export function reconcile(
     } else if (progress) {
       views.push({ ...p, state: 'waiting', message: `${progress.label}: ${progress.percent}%${progress.eta ? `, ${progress.eta}` : ''}`, progress });
     } else {
-      views.push({ ...p, state: 'waiting', message: 'Being added… usually 5–10 minutes' });
+      views.push({ ...p, state: 'waiting', message: 'Being added… usually 3–5 minutes' });
     }
   }
   return { appeared, views };

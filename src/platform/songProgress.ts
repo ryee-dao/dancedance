@@ -3,17 +3,23 @@
  * estimate of the time left. Pure (tests: songProgress.test.ts).
  *
  * Stages and their share of the bar, with the time each is expected to take.
- * Measured on the real workflow (2026-11): the `update` job ~4.5 min (setup
- * ~1 min, then ~30 s download + a few seconds analysis per song it handles, and
- * it may handle other waiting songs too), `deploy` ~2-3 min. The expectations
- * below are deliberately longer, so the song tends to arrive early, not late.
+ * Measured on a real add since song data deploys without the tests (2026-11-14,
+ * run 43648725768): whole run 2 min 14 s; `update` 1 min 44 s (about 1 min
+ * installing tools, then ~30-40 s per song it handles: it can also handle other
+ * waiting songs); `deploy` 19 s; then the app notices on its next 30 s poll.
+ * The expectations below are deliberately longer (about 4 min 45 s in all,
+ * against ~3 min in practice), so the song tends to arrive early, not late.
  *
- *   starting    0-4 %   the request is sent, GitHub hasn't shown the run yet    1 min
- *   queued      4 %     the run waits for another song job (no estimate)
- *   setup       5-20 %  the job installs its tools                              1.5 min
- *   analysing   20-65 % finding the song on YouTube and working out its beats   4 min
- *   publishing  65-97 % the beat map is committed; the site is being rebuilt    4 min
+ *   starting    0-5 %   the request is sent, GitHub hasn't shown the run yet    45 s
+ *   queued      5 %     the run waits for another song job (no estimate)
+ *   setup       5-35 %  the job installs its tools                              1 min 15 s
+ *   analysing   35-75 % finding the song on YouTube and working out its beats   1 min 30 s
+ *   publishing  75-97 % the beat map is committed; the site is being updated    1 min 15 s
  *   live        100 %   only once the song is in the site's own song list
+ *
+ * A stage counts as overrun (and says "taking longer than usual") after 1.5x
+ * its expected time plus a minute, e.g. when the site update waits behind a code
+ * push's deploy, which still runs the full checks (~3 min).
  *
  * Real signals pick the stage (the run, its jobs and current step, the song
  * appearing in the repository, then on the site). Time only fills the bar
@@ -63,19 +69,16 @@ interface Span {
   ms: number;
 }
 export const SPANS = {
-  starting: { from: 0, to: 4, ms: 1 * MIN },
-  setup: { from: 5, to: 20, ms: 1.5 * MIN },
-  analysing: { from: 20, to: 65, ms: 4 * MIN },
-  publishing: { from: 65, to: 97, ms: 4 * MIN },
+  starting: { from: 0, to: 5, ms: 0.75 * MIN },
+  setup: { from: 5, to: 35, ms: 1.25 * MIN },
+  analysing: { from: 35, to: 75, ms: 1.5 * MIN },
+  publishing: { from: 75, to: 97, ms: 1.25 * MIN },
 } satisfies Record<string, Span>;
-const QUEUED_PERCENT = 4;
+const QUEUED_PERCENT = 5;
 /** Without run data: starting + setup + analysing as one stretch. */
-const BLIND: Span = { from: 0, to: 65, ms: SPANS.starting.ms + SPANS.setup.ms + SPANS.analysing.ms };
+const BLIND: Span = { from: 0, to: SPANS.analysing.to, ms: SPANS.starting.ms + SPANS.setup.ms + SPANS.analysing.ms };
 /** A stage counts as overrun once it has taken this much longer than expected. */
 export const overrunAfter = (ms: number) => ms * 1.5 + MIN;
-
-/** Steps of the update job after its tools are installed. */
-const WORK_STEPS = new Set(['Make beat maps', 'Keep the YouTube session fresh', 'Commit beat maps', 'YouTube rejected the sign-in']);
 
 /** Share of a stage done after `elapsed`: linear to 85 % at the expected time, then creeping towards (never reaching) 99 %. */
 function fill(elapsed: number, ms: number): number {
@@ -178,8 +181,8 @@ export function songProgress(s: ProgressSignals): Progress {
   }
 
   if (run && run.status === 'in_progress') {
-    if (upd && upd.status === 'in_progress' && upd.step && WORK_STEPS.has(upd.step)) {
-      const since = t(upd.stepStartedAt) ?? t(upd.startedAt) ?? t(run.startedAt) ?? now;
+    if (upd && upd.status === 'in_progress' && upd.phase === 'work') {
+      const since = t(upd.phaseStartedAt) ?? t(upd.startedAt) ?? t(run.startedAt) ?? now;
       return at('analysing', SPANS.analysing, since, 'Finding the song and working out its beats', SPANS.publishing.ms);
     }
     if (upd) {

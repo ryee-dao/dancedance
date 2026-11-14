@@ -115,7 +115,7 @@ describe('relay client', () => {
     expect(await relayRuns('https://x.dev', fake(404, { ok: false, error: 'bad-request' }))).toBe('unsupported');
     expect(await relayRuns('https://x.dev', fake(502, { ok: false, error: 'github-500' }))).toBeNull();
     expect(await relayRuns('https://x.dev', fake(200, '<html>'))).toBeNull();
-    const run = { id: 5, workflow: 'beatmaps', kind: 'add', status: 'completed', conclusion: 'failure', createdAt: '2026-11-14T22:10:18Z', startedAt: '2026-11-14T22:10:18Z', updatedAt: '2026-11-14T22:17:31Z', jobs: [{ name: 'deploy / build', part: 'deploy', status: 'completed', conclusion: 'failure', startedAt: null, completedAt: null, failedStep: 'Run npm test' }] };
+    const run = { id: 5, workflow: 'beatmaps', kind: 'add', status: 'completed', conclusion: 'failure', createdAt: '2026-11-14T22:10:18Z', startedAt: '2026-11-14T22:10:18Z', updatedAt: '2026-11-14T22:17:31Z', jobs: [{ name: 'deploy / build', part: 'deploy', status: 'completed', conclusion: 'failure', startedAt: null, completedAt: null, failedAt: 'tests' }] };
     const f = fake(200, { ok: true, runs: [run, { id: 'x' }, { ...run, id: 6, workflow: 'android' }] });
     expect(await relayRuns('https://x.dev', f)).toEqual([run]);
     expect(f.calls[0].url).toBe('https://x.dev/runs');

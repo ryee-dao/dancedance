@@ -27,8 +27,9 @@
  *                         token only 60 API calls an hour). Each run is reduced to
  *                         { id, workflow, kind, status, conclusion, createdAt, startedAt, updatedAt, jobs? }
  *                         and each job to { name, part, status, conclusion, startedAt, completedAt,
- *                         step?, stepStartedAt?, failedStep? } (step names come from the workflow
- *                         files). Never run titles, logs, inputs or anything else. Cached for
+ *                         phase?: 'setup' | 'work', phaseStartedAt?, failedAt?: 'tests' | 'build' |
+ *                         'download' | 'other', signInRejected?: true } (flags worked out in runs.ts).
+ *                         Never run titles, step names, logs, inputs or anything else. Cached for
  *                         RUNS_CACHE_MS. 200 { ok: true, runs: [...] }; 502 { ok: false, error: github-<status> }
  *
  * Artist, title and length come from Apple's lookup of the track ID when

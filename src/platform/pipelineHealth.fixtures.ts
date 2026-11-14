@@ -37,8 +37,11 @@ export function ghJob(name: string, status: string, conclusion: string | null, s
   };
 }
 
-/** Today's failure: the update job committed the song, then the deploy's tests failed. */
-export function addRunDeployFailed(): RunSummary {
+/**
+ * The update job committed the song, then the site wasn't published. (On 2026-11-14 it was the
+ * tests; song data now deploys without them, so the build or publish step is what can fail here.)
+ */
+export function addRunDeployFailed(failingStep = 'Run actions/upload-pages-artifact@v5'): RunSummary {
   const [run] = summarizeRuns({
     workflow_runs: [ghRun({ id: 43646660709, title: SECRET_TITLE, conclusion: 'failure', created: '2026-11-14T22:10:18Z', updated: '2026-11-14T22:17:31Z' })],
   });
@@ -46,10 +49,25 @@ export function addRunDeployFailed(): RunSummary {
     jobs: [
       ghJob('update', 'completed', 'success', '2026-11-14T22:10:21Z', '2026-11-14T22:14:51Z'),
       ghJob('deploy / build', 'completed', 'failure', '2026-11-14T22:14:53Z', '2026-11-14T22:17:30Z', [
-        ['npm ci', 'completed', 'success'],
-        ['Run npm test', 'completed', 'failure'],
+        ['Run npm ci', 'completed', 'success'],
+        [failingStep, 'completed', 'failure'],
       ]),
       ghJob('deploy / deploy', 'completed', 'skipped', '2026-11-14T22:17:31Z', '2026-11-14T22:17:30Z'),
+    ],
+  });
+  return run;
+}
+
+/** A code push whose Deploy site run failed its tests (jobs as runsNeedingJobs fetches them). */
+export function pushDeployTestsFailed(id: number, created: string): RunSummary {
+  const run = deployRun(id, 'failure', created);
+  run.jobs = summarizeJobs({
+    jobs: [
+      ghJob('build', 'completed', 'failure', created, created, [
+        ['Run npm ci', 'completed', 'success'],
+        ['Run npm test', 'completed', 'failure'],
+      ]),
+      ghJob('deploy', 'completed', 'skipped', null, null),
     ],
   });
   return run;

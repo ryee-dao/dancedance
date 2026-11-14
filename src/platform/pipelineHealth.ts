@@ -28,12 +28,12 @@ export type { RunJob, RunSummary };
  * check then says to redeploy it.
  */
 export const RELAY_VERSION = 2;
-/** A committed change normally reaches the site in under 10 minutes (deploy ~3 min, Pages cache up to 10). */
-export const SITE_GRACE_MS = 15 * 60_000;
-/** Step names in beatmaps.yml / deploy.yml the checks recognise. */
-export const STEP_SIGNIN = 'YouTube rejected the sign-in';
-export const STEP_MAPS = 'Make beat maps';
-export const STEP_TESTS = 'Run npm test';
+/**
+ * Committed song data normally reaches the site within a few minutes: a data-only
+ * deploy takes under a minute (measured 19 s), it may wait behind a code push's
+ * deploy (~3 min with the checks), and the app sees the change on its next poll.
+ */
+export const SITE_GRACE_MS = 10 * 60_000;
 
 type FetchFn = (url: string, init?: RequestInit) => Promise<Pick<Response, 'ok' | 'status' | 'text'> & { headers?: Pick<Headers, 'get'> }>;
 
@@ -120,13 +120,13 @@ export function updateJob(run: RunSummary): RunJob | undefined {
 }
 
 /** The site-publishing part of a Beat maps run: 'none' when it didn't run (no changes) or isn't known yet. */
-export function deployOutcome(run: RunSummary): { state: 'none' | 'running' | 'success' | 'failure' | 'cancelled'; at: string | null; failedStep?: string } {
+export function deployOutcome(run: RunSummary): { state: 'none' | 'running' | 'success' | 'failure' | 'cancelled'; at: string | null; failedAt?: RunJob['failedAt'] } {
   const jobs = (run.jobs ?? []).filter((j) => j.part === 'deploy');
   const ran = jobs.filter((j) => j.conclusion !== 'skipped' || j.status !== 'completed');
   if (!jobs.length || !ran.length) return { state: 'none', at: null };
   const at = ran.map((j) => j.startedAt).filter((x): x is string => !!x).sort()[0] ?? run.updatedAt;
   const bad = ran.find((j) => failed(j.conclusion));
-  if (bad) return { state: 'failure', at, ...(bad.failedStep ? { failedStep: bad.failedStep } : {}) };
+  if (bad) return { state: 'failure', at, ...(bad.failedAt ? { failedAt: bad.failedAt } : {}) };
   if (ran.some((j) => j.status !== 'completed')) return { state: 'running', at };
   if (ran.some((j) => j.conclusion === 'cancelled')) return { state: 'cancelled', at };
   return { state: 'success', at };
@@ -312,13 +312,13 @@ export function checkJob(runs: RunsResult | null, now: number): HealthCheck {
   const deploy = deployOutcome(last);
   const updateFailed = upd ? failed(upd.conclusion) : failed(last.conclusion) && deploy.state !== 'failure';
   if (updateFailed) {
-    const step = upd?.failedStep;
+    const signin = !!upd?.signInRejected;
     return {
       id: 'job',
       title,
       state: 'problem',
-      text: step === STEP_SIGNIN ? `The last song job failed (${when}): YouTube rejected its sign-in.${also}` : `The last song job failed (${when}).${also}`,
-      todo: step === STEP_SIGNIN ? COOKIES_TODO : ACTIONS_HINT,
+      text: signin ? `The last song job failed (${when}): YouTube rejected its sign-in.${also}` : `The last song job failed (${when}).${also}`,
+      todo: signin ? COOKIES_TODO : ACTIONS_HINT,
     };
   }
   if (last.conclusion === 'cancelled' || upd?.conclusion === 'cancelled') {
@@ -327,16 +327,19 @@ export function checkJob(runs: RunsResult | null, now: number): HealthCheck {
   return { id: 'job', title, state: 'ok', text: `The last song job worked (${when}).${also}` };
 }
 
+type DeployAttempt = { state: 'running' | 'success' | 'failure' | 'cancelled'; at: string; failedAt?: RunJob['failedAt'] };
+
 /** The newest attempt to publish the site: a Deploy site run, or the deploy part of a Beat maps run. */
-export function latestDeploy(runs: readonly RunSummary[]): { state: 'running' | 'success' | 'failure' | 'cancelled'; at: string; failedStep?: string } | null {
-  const attempts: { state: 'running' | 'success' | 'failure' | 'cancelled'; at: string; failedStep?: string }[] = [];
+export function latestDeploy(runs: readonly RunSummary[]): DeployAttempt | null {
+  const attempts: DeployAttempt[] = [];
   for (const r of runs) {
     if (r.workflow === 'deploy') {
       const state = r.status !== 'completed' ? 'running' : failed(r.conclusion) ? 'failure' : r.conclusion === 'cancelled' ? 'cancelled' : r.conclusion === 'success' ? 'success' : null;
-      if (state) attempts.push({ state, at: r.startedAt });
+      const failedAt = state === 'failure' && r.jobs ? deployOutcome(r).failedAt : undefined;
+      if (state) attempts.push({ state, at: r.startedAt, ...(failedAt ? { failedAt } : {}) });
     } else {
       const d = deployOutcome(r);
-      if (d.state !== 'none') attempts.push({ state: d.state, at: d.at ?? r.updatedAt, ...(d.failedStep ? { failedStep: d.failedStep } : {}) });
+      if (d.state !== 'none') attempts.push({ state: d.state, at: d.at ?? r.updatedAt, ...(d.failedAt ? { failedAt: d.failedAt } : {}) });
     }
   }
   attempts.sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
@@ -351,21 +354,24 @@ export function checkSite(runs: RunsResult | null, now: number): HealthCheck {
   const when = ago(d.at, now);
   if (d.state === 'running') return { id: 'site', title, state: 'ok', text: 'The site is updating now.' };
   if (d.state === 'failure') {
-    return d.failedStep === STEP_TESTS
-      ? {
-          id: 'site',
-          title,
-          state: 'problem',
-          text: `The site didn’t update after the last change (${when}): a test failed while it was being built.`,
-          todo: 'Fix the failing test (the red run under Actions on GitHub says which) and push to main. The site then updates by itself.',
-        }
-      : {
-          id: 'site',
-          title,
-          state: 'problem',
-          text: `The site didn’t update after the last change (${when}).`,
-          todo: 'Open the red run under Actions on GitHub to see why and fix it. Then run Actions → Deploy site → Run workflow.',
-        };
+    // Song data is published without the type-check and tests (deploy.yml data_only), so failed
+    // tests only hold back a code change: worth fixing, but songs still reach the site.
+    if (d.failedAt === 'tests') {
+      return {
+        id: 'site',
+        title,
+        state: 'warn',
+        text: `A code change failed its tests (${when}), so the site wasn’t updated with it. Added songs still reach the site.`,
+        todo: 'Fix the failing test (the red Deploy site run under Actions on GitHub says which) and push to main.',
+      };
+    }
+    return {
+      id: 'site',
+      title,
+      state: 'problem',
+      text: d.failedAt === 'build' ? `The site couldn’t be built or published (${when}).` : `The last site update failed (${when}).`,
+      todo: 'Open the red run under Actions on GitHub to see why. Then run Actions → Deploy site → Run workflow.',
+    };
   }
   if (d.state === 'cancelled') return { id: 'site', title, state: 'warn', text: `The last site update was stopped (${when}).`, todo: DEPLOY_AGAIN };
   return { id: 'site', title, state: 'ok', text: `The site last updated ${when}.` };
@@ -376,7 +382,7 @@ export type YoutubeState = 'ok' | 'blocked' | 'outdated' | 'signin' | 'unknown';
 /**
  * Whether YouTube lets the cloud job download, from its newest attempts: the
  * entries of status.json and songs-status.json tried within 45 min of the newest
- * one, plus a failed "YouTube rejected the sign-in" step in the newest finished run.
+ * one, plus a rejected sign-in (signInRejected) in the newest finished run.
  */
 export function youtubeState(
   videos: readonly VideoAttempt[] | null | undefined,
@@ -385,7 +391,7 @@ export function youtubeState(
 ): { state: YoutubeState; at: string | null } {
   const last = runs ? songRuns(runs).find((r) => r.status === 'completed') : undefined;
   const upd = last && updateJob(last);
-  if (upd?.failedStep === STEP_SIGNIN) return { state: 'signin', at: last!.updatedAt };
+  if (upd?.signInRejected) return { state: 'signin', at: last!.updatedAt };
   const tries: { state: string; reason?: string; t: number; at: string }[] = [];
   for (const v of videos ?? []) {
     const t = Date.parse(v.lastTried);

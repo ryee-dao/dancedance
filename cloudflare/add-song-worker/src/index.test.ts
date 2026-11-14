@@ -368,11 +368,12 @@ describe('add-song relay', () => {
       [4, 'deploy', 'push'],
     ]);
     expect(r.body.runs[0].jobs).toEqual([
-      { name: 'update', part: 'update', status: 'in_progress', conclusion: null, startedAt: '2026-11-10T11:58:05Z', completedAt: null, step: 'Make beat maps', stepStartedAt: '2026-11-10T11:59:00Z' },
+      { name: 'update', part: 'update', status: 'in_progress', conclusion: null, startedAt: '2026-11-10T11:58:05Z', completedAt: null, phase: 'work', phaseStartedAt: '2026-11-10T11:59:00Z' },
     ]);
-    expect(r.body.runs[1].jobs[0].failedStep).toBe('YouTube rejected the sign-in');
+    expect(r.body.runs[1].jobs[0]).toMatchObject({ failedAt: 'download', signInRejected: true });
     const text = JSON.stringify(r.body);
-    for (const leak of ['Evanescence', 'someone', 'secret', 'Fix tests']) expect(text).not.toContain(leak);
+    // Only status, times, job names and flags: no titles, actors, commits or step names.
+    for (const leak of ['Evanescence', 'someone', 'secret', 'Fix tests', 'Make beat maps', 'rejected the sign-in']) expect(text).not.toContain(leak);
     expect(calls.map((c) => c.url)).toEqual([
       'https://api.github.com/repos/jo/dancedance/actions/runs?branch=main&per_page=20&exclude_pull_requests=true',
       'https://api.github.com/repos/jo/dancedance/actions/runs/2/jobs?per_page=20',

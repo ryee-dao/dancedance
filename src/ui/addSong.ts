@@ -218,7 +218,7 @@ export function createAddSong(nav: Nav): Screen {
         'p',
         { class: 'dialog-text' },
         already ??
-          'Your GitHub repository’s beat-map job finds this song on YouTube and works out its beats. It usually appears on the home screen in 5–10 minutes.',
+          'Your GitHub repository’s beat-map job finds this song on YouTube and works out its beats. It usually appears on the home screen in 3–5 minutes.',
       ),
       msg,
       h(
@@ -290,7 +290,7 @@ export function createAddSong(nav: Nav): Screen {
         renderResults();
         const again = list.querySelector<HTMLElement>(`[data-index="${hits.indexOf(hit)}"]`);
         if (again) focusEl(again, { instant: true });
-        toast(`“${hit.title}” is being added. It usually takes 5–10 minutes. You’ll find it on the home screen.`, 6000);
+        toast(`“${hit.title}” is being added. It usually takes 3–5 minutes. You’ll find it on the home screen.`, 6000);
         return;
       }
       if (res.needs) {

@@ -12,7 +12,7 @@ describe('reconcile', () => {
   it('pending songs appear when songs.json lists them (by artist + title, any case)', () => {
     const r = reconcile([pend('a-ha', 'Take On Me'), pend('ABBA', 'Waterloo')], [song('abcdefghijk', 'A-HA', 'take on me')], {}, T + 60_000);
     expect(r.appeared.map((a) => a.song.videoId)).toEqual(['abcdefghijk']);
-    expect(r.views).toMatchObject([{ title: 'Waterloo', state: 'waiting', message: 'Being added… usually 5–10 minutes' }]);
+    expect(r.views).toMatchObject([{ title: 'Waterloo', state: 'waiting', message: 'Being added… usually 3–5 minutes' }]);
   });
   it('shows cloud failures for this attempt, ignores older ones, and flags slow requests', () => {
     const k = songKey('ABBA', 'Waterloo');

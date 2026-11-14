@@ -24,12 +24,12 @@ describe('song progress', () => {
     expect(p).toMatchObject({ stage: 'starting', label: 'Starting the song job', overrun: false });
     expect(p.percent).toBeGreaterThanOrEqual(0);
     expect(p.percent).toBeLessThan(SPANS.setup.from);
-    expect(p.eta).toBe('about 11 min left'); // 50 s + 1.5 + 4 + 4 min, rounded up
+    expect(p.eta).toBe('about 5 min left'); // 35 s + 1¼ + 1½ + 1¼ min = 4 min 35 s, rounded up
   });
 
   it('queued behind another run: says it is waiting and gives no ticking estimate', () => {
     const p = songProgress(sig({ now: SENT + 5 * MIN, run: run('queued'), otherRunning: true }));
-    expect(p).toEqual({ stage: 'queued', percent: 4, label: 'Waiting for another song job to finish', eta: null, overrun: false });
+    expect(p).toEqual({ stage: 'queued', percent: 5, label: 'Waiting for another song job to finish', eta: null, overrun: false });
     expect(songProgress(sig({ now: SENT + 10 * MIN, run: run('queued') })).eta).toBeNull();
     expect(songProgress(sig({ run: run('queued') })).label).toBe('Waiting for GitHub to start the job');
   });
@@ -38,16 +38,16 @@ describe('song progress', () => {
     const setup = songProgress(sig({ now: SENT + 50_000, run: run('in_progress', [setupJob()]) }));
     expect(setup).toMatchObject({ stage: 'setup', label: 'Getting the job ready' });
     expect(setup.percent).toBeGreaterThanOrEqual(5);
-    expect(setup.percent).toBeLessThan(20);
-    expect(setup.eta).toBe('about 9 min left');
-    const maps = songProgress(sig({ now: SENT + 80_000 + 2 * MIN, run: run('in_progress', [mapsJob()]) }));
-    expect(maps).toMatchObject({ stage: 'analysing', label: 'Finding the song and working out its beats', eta: 'about 6 min left' });
-    expect(maps.percent).toBeGreaterThanOrEqual(20);
-    expect(maps.percent).toBeLessThan(65);
+    expect(setup.percent).toBeLessThan(35);
+    expect(setup.eta).toBe('about 4 min left'); // 45 s + 1½ + 1¼ min
+    const maps = songProgress(sig({ now: SENT + 80_000 + 1 * MIN, run: run('in_progress', [mapsJob()]) }));
+    expect(maps).toMatchObject({ stage: 'analysing', label: 'Finding the song and working out its beats', eta: 'about 2 min left' });
+    expect(maps.percent).toBeGreaterThanOrEqual(35);
+    expect(maps.percent).toBeLessThan(75);
     const committed = SENT + 5 * MIN;
-    const pub = songProgress(sig({ now: committed + 2 * MIN, run: run('in_progress', [ghJob('update', 'completed', 'success', iso(SENT + 20_000), iso(committed)), ghJob('deploy / build', 'in_progress', null, iso(committed + 2000), null)]) }));
-    expect(pub).toMatchObject({ stage: 'publishing', label: 'Putting it on the site', eta: 'about 2 min left' });
-    expect(pub.percent).toBeGreaterThanOrEqual(65);
+    const pub = songProgress(sig({ now: committed + 1 * MIN, run: run('in_progress', [ghJob('update', 'completed', 'success', iso(SENT + 20_000), iso(committed)), ghJob('deploy / build', 'in_progress', null, iso(committed + 2000), null)]) }));
+    expect(pub).toMatchObject({ stage: 'publishing', label: 'Putting it on the site', eta: 'about 1 min left' });
+    expect(pub.percent).toBeGreaterThanOrEqual(75);
     expect(pub.percent).toBeLessThan(97);
   });
 
@@ -64,11 +64,13 @@ describe('song progress', () => {
 
   it('the estimate counts down coarsely and never past zero; an overrun says so', () => {
     const at = (min: number) => songProgress(sig({ now: SENT + min * MIN, inRepoSince: SENT })).eta;
-    expect([at(0), at(1.2), at(3.1), at(3.9), at(4.5), at(6.9)]).toEqual(['about 4 min left', 'about 3 min left', 'about 1 min left', 'about 1 min left', 'any moment now', 'any moment now']);
-    expect(at(7.1)).toBe('taking longer than usual');
-    expect(songProgress(sig({ now: SENT + 7.1 * MIN, inRepoSince: SENT })).overrun).toBe(true);
-    // An overrun earlier stage also says so instead of sitting on a number.
-    expect(songProgress(sig({ now: SENT + 80_000 + 8 * MIN, run: run('in_progress', [mapsJob()]) })).eta).toBe('taking longer than usual');
+    // Publishing is expected to take 1 min 15 s; overrun after 1.5x that plus a minute (2 min 52 s).
+    expect([at(0), at(0.3), at(1), at(1.3), at(2.8)]).toEqual(['about 2 min left', 'about 1 min left', 'about 1 min left', 'any moment now', 'any moment now']);
+    expect(at(2.9)).toBe('taking longer than usual');
+    expect(songProgress(sig({ now: SENT + 2.9 * MIN, inRepoSince: SENT })).overrun).toBe(true);
+    // An overrun earlier stage also says so instead of sitting on a number (e.g. several songs in one run).
+    expect(songProgress(sig({ now: SENT + 80_000 + 3 * MIN, run: run('in_progress', [mapsJob()]) })).eta).toBe('about 2 min left'); // the site update still ahead
+    expect(songProgress(sig({ now: SENT + 80_000 + 3.5 * MIN, run: run('in_progress', [mapsJob()]) })).eta).toBe('taking longer than usual');
     expect([0, -5, 1, 60_000, 60_001, 119_000, 241_000].map(etaText)).toEqual([
       'any moment now',
       'any moment now',
@@ -84,7 +86,7 @@ describe('song progress', () => {
     const job = songProgress(sig({ now: Date.parse('2026-11-14T22:46:00Z'), sentAt: Date.parse('2026-11-14T22:39:50Z'), run: addRunUpdateFailed() }));
     expect(job).toMatchObject({ stage: 'failed', failure: 'job', label: 'The song job failed', eta: null });
     const site = songProgress(sig({ now: Date.parse('2026-11-14T22:20:00Z'), run: addRunDeployFailed(), inRepoSince: Date.parse('2026-11-14T22:15:00Z') }));
-    expect(site).toMatchObject({ stage: 'failed', failure: 'site', label: 'The site didn’t update', eta: null, percent: 65 });
+    expect(site).toMatchObject({ stage: 'failed', failure: 'site', label: 'The site didn’t update', eta: null, percent: 75 });
     // Even before the repository copy shows the song, the deploy job's failure says it.
     expect(songProgress(sig({ now: Date.parse('2026-11-14T22:20:00Z'), run: addRunDeployFailed() })).failure).toBe('site');
     // An update job that went red after committing (rejected YouTube sign-in) still publishes: not a failure.
@@ -96,7 +98,7 @@ describe('song progress', () => {
   it('without any run data, one stretch timed from the send; the bar never goes back', () => {
     const blind = songProgress(sig({ now: SENT + 3 * MIN, runsKnown: false }));
     expect(blind).toMatchObject({ stage: 'analysing', label: 'Making the beat map' });
-    expect(blind.percent).toBeLessThan(65);
+    expect(blind.percent).toBeLessThan(75);
     const later = songProgress(sig({ now: SENT + 3 * MIN, run: run('in_progress', [setupJob()]), floor: blind.percent }));
     expect(later.stage).toBe('setup');
     expect(later.percent).toBe(blind.percent);

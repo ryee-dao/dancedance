@@ -282,7 +282,7 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
       from.setAttribute('disabled', '');
       const res = await sendSong({ key: p.key, artist: p.artist, title: p.title, durationSec: p.durationSec, artworkUrl: p.artworkUrl, trackId: p.trackId });
       from.removeAttribute('disabled');
-      if (res.ok) toast(`Sent again. “${p.title}” usually takes 5–10 minutes.`);
+      if (res.ok) toast(`Sent again. “${p.title}” usually takes 3–5 minutes.`);
       else if (res.needs) {
         openConnectDialog({ parent: el, returnFocus: from, message: res.message, mode: res.needs, submitLabel: 'Save and send', onConnected: () => void go() });
       } else toast(res.message, 6000);

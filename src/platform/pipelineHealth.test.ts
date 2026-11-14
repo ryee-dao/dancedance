@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RELAY_VERSION as WORKER_RELAY_VERSION } from '../../cloudflare/add-song-worker/src/index';
-import { summarizeRuns } from '../../cloudflare/add-song-worker/src/runs';
+import { summarizeJobs, summarizeRuns } from '../../cloudflare/add-song-worker/src/runs';
 import {
   addRunDeployFailed,
   addRunOk,
@@ -12,6 +12,7 @@ import {
   IMMORTAL,
   LIVE_SONGS,
   NOW,
+  pushDeployTestsFailed,
   SECRET_TITLE,
   statusText,
 } from './pipelineHealth.fixtures';
@@ -77,17 +78,27 @@ describe('song adding health: fixtures', () => {
     expect(r.summary).toBe('2 problems with adding songs');
   });
 
-  it('update ok, deploy failed (2026-11-14: a unit test failed), and the site is behind', () => {
+  it('update ok, deploy failed (the site wasn’t built or published), and the site is behind', () => {
     const repo = site({ songs: [...LIVE_SONGS, IMMORTAL], at: '2026-11-14T22:14:43Z', ids: ['_Vj092UgKwQ', IMMORTAL.videoId] }, true);
     const r = assessHealth({ now: NOW, relay: relayOk, runs: ok([addRunDeployFailed(), addRunOk(600, '2026-11-14T21:30:00Z', '2026-11-14T21:37:00Z')]), live: site({}), repo });
     const c = byId(r.checks);
     expect(c.job).toMatchObject({ state: 'ok', text: 'The last song job worked (42 min ago).' });
-    expect(c.site.state).toBe('problem');
-    expect(c.site.text).toBe('The site didn’t update after the last change (45 min ago): a test failed while it was being built.');
-    expect(c.site.todo).toMatch(/Fix the failing test/);
+    expect(c.site).toMatchObject({ state: 'problem', text: 'The site couldn’t be built or published (45 min ago).' });
+    expect(c.site.todo).toMatch(/Deploy site → Run workflow/);
     expect(c.live.state).toBe('problem');
     expect(c.live.text).toBe('A song was added but isn’t on the site yet: “My Immortal”.');
     expect(c.live.todo).toBe('They appear once the site update above works again.');
+  });
+
+  it('a code push that failed its tests is worth a look, but no longer holds songs back', () => {
+    const r = assessHealth({ now: NOW, relay: relayOk, runs: ok([pushDeployTestsFailed(11, '2026-11-14T22:45:00Z'), addRunOk()]), live: site({}), repo: site({}, true) });
+    const c = byId(r.checks);
+    expect(c.site).toMatchObject({ state: 'warn', text: 'A code change failed its tests (15 min ago), so the site wasn’t updated with it. Added songs still reach the site.' });
+    expect(c.site.todo).toMatch(/Fix the failing test/);
+    expect(r.overall).toBe('warn');
+    // Before its jobs are known it is just "the last site update failed".
+    const bare = assessHealth({ now: NOW, relay: relayOk, runs: ok([deployRun(11, 'failure', '2026-11-14T22:45:00Z'), addRunOk()]), live: site({}), repo: site({}, true) });
+    expect(byId(bare.checks).site).toMatchObject({ state: 'problem', text: 'The last site update failed (15 min ago).' });
   });
 
   it('a later push deploy that worked counts as the latest site update', () => {
@@ -159,7 +170,11 @@ describe('YouTube state', () => {
   });
   it('a red "YouTube rejected the sign-in" step means the cookies expired', () => {
     const [run] = summarizeRuns({ workflow_runs: [ghRun({ id: 7, event: 'schedule', conclusion: 'failure', created: '2026-11-14T22:23:00Z' })] });
-    run.jobs = [{ name: 'update', part: 'update', status: 'completed', conclusion: 'failure', startedAt: null, completedAt: null, failedStep: 'YouTube rejected the sign-in' }];
+    run.jobs = summarizeJobs({
+      jobs: [ghJob('update', 'completed', 'failure', null, null, [['Commit beat maps', 'completed', 'success'], ['YouTube rejected the sign-in', 'completed', 'failure']])],
+    });
+    expect(run.jobs[0]).toMatchObject({ signInRejected: true, failedAt: 'download' });
+    expect(JSON.stringify(run.jobs)).not.toContain('rejected the sign-in'); // a flag, not the step name
     expect(youtubeState([], {}, [run]).state).toBe('signin');
     const r = byId(assessHealth({ now: NOW, relay: null, runs: ok([run]), live: null, repo: null }).checks);
     expect(r.youtube.todo).toMatch(/YT_COOKIES/);
@@ -196,8 +211,9 @@ describe('fetching runs from GitHub without a token', () => {
       [2, 'add', 'in_progress'],
       [1, 'add', 'completed'],
     ]);
-    expect(r.runs[0].jobs?.[0]).toMatchObject({ part: 'update', step: 'Make beat maps' });
+    expect(r.runs[0].jobs?.[0]).toMatchObject({ part: 'update', phase: 'work' });
     const text = JSON.stringify(r);
+    expect(text).not.toContain('Make beat maps');
     expect(text).not.toContain('Evanescence');
     expect(text).not.toContain('someone');
     expect(text).not.toContain('secret commit');
