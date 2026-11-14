@@ -1,6 +1,6 @@
 {
-  "analyzerVersion": "1.2.0",
-  "generatedAt": "2026-11-14T09:17:19.575Z",
+  "analyzerVersion": "1.4.0",
+  "generatedAt": "2026-11-14T21:50:00.282Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -1826,8 +1826,8 @@
         "pop rap",
         "synth-pop",
         "Britpop",
-        "teen pop",
-        "R&B"
+        "R&B",
+        "pop"
       ],
       "genreLevels": [
         "song",
@@ -1835,7 +1835,7 @@
         "song",
         "song",
         "album",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "dance-pop",

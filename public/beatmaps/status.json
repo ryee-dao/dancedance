@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-11T22:36:33.524Z",
+  "updatedAt": "2026-11-14T21:50:00.282Z",
   "videos": {
     "-7XnDlYY9qw": {
       "state": "ok",
@@ -27,9 +27,11 @@
       "lastTried": "2026-11-11T22:16:10.891Z"
     },
     "1j_XvebOg4c": {
-      "state": "ok",
-      "attempts": 4,
-      "lastTried": "2026-11-11T22:08:37.951Z"
+      "state": "blocked",
+      "reason": "blocked",
+      "message": "YouTube asked this machine to prove it is not a bot: [youtube] 1j_XvebOg4c: Sign in to confirm you’re not a bot. This helps protect our community. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how …",
+      "attempts": 5,
+      "lastTried": "2026-11-14T21:49:36.346Z"
     },
     "1oAn81h21aQ": {
       "state": "ok",
@@ -267,9 +269,11 @@
       "lastTried": "2026-11-11T22:32:36.507Z"
     },
     "SRdlnO9gMIY": {
-      "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:09:27.430Z"
+      "state": "blocked",
+      "reason": "blocked",
+      "message": "YouTube asked this machine to prove it is not a bot: [youtube] SRdlnO9gMIY: Sign in to confirm you’re not a bot. This helps protect our community. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how …",
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:50:00.262Z"
     },
     "Sb5aq5HcS1A": {
       "state": "ok",
@@ -617,9 +621,11 @@
       "lastTried": "2026-11-11T22:25:34.588Z"
     },
     "xjiYBGs0TUA": {
-      "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:09:02.007Z"
+      "state": "blocked",
+      "reason": "blocked",
+      "message": "YouTube asked this machine to prove it is not a bot: [youtube] xjiYBGs0TUA: Sign in to confirm you’re not a bot. This helps protect our community. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how …",
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:49:47.827Z"
     },
     "yvvamodXZbw": {
       "state": "ok",

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-14T09:17:19.575Z",
+  "updatedAt": "2026-11-14T21:50:00.282Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -1528,7 +1528,7 @@
         "carefree"
       ],
       "complete": true,
-      "at": "2026-11-14T07:54:02.988Z",
+      "at": "2026-11-14T21:50:00.265Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -1581,6 +1581,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T21:50:00.265Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -7132,7 +7137,7 @@
         "troubled"
       ],
       "complete": true,
-      "at": "2026-11-14T07:55:07.374Z",
+      "at": "2026-11-14T21:50:00.270Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -7209,6 +7214,11 @@
             "Hard Rock"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T21:50:00.270Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -7408,7 +7418,7 @@
         "nu metal"
       ],
       "complete": true,
-      "at": "2026-11-14T07:56:17.287Z",
+      "at": "2026-11-14T21:50:00.279Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -7468,6 +7478,11 @@
             "Rock"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T21:50:00.279Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -20556,7 +20571,7 @@
         "Latin rock"
       ],
       "complete": true,
-      "at": "2026-11-14T07:55:11.538Z",
+      "at": "2026-11-14T21:50:00.278Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -20624,6 +20639,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T21:50:00.278Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -21024,8 +21044,8 @@
         "pop rap",
         "synth-pop",
         "Britpop",
-        "teen pop",
-        "R&B"
+        "R&B",
+        "pop"
       ],
       "genreLevels": [
         "song",
@@ -21033,7 +21053,7 @@
         "song",
         "song",
         "album",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "dance-pop",
@@ -21045,7 +21065,7 @@
         "excitable"
       ],
       "complete": true,
-      "at": "2026-11-14T07:54:05.155Z",
+      "at": "2026-11-14T21:50:00.269Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -21113,6 +21133,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T21:50:00.269Z"
         },
         "musicbrainz-album": {
           "status": "found",
