@@ -80,6 +80,12 @@ export interface SongStyle {
   soft?: number;
   /** Hard-hitting sound 0..1 (audio intensity): sharp, percussive moves suit it. */
   hard?: number;
+  /**
+   * The audio readings the character came from (traits intensity and drive, 0..1; undefined = not read), for the
+   * song's energy (generator.ts songEnergy), which uses them continuously rather than through soft / hard alone.
+   */
+  intensity?: number;
+  drive?: number;
   /** Tempo people usually step to for the song's genre names (BPM); the tempo-octave check and the free-time pace. */
   bpm?: number;
   /** The scene a song-level genre name says (K-pop, J-pop ...): it leads the dancing. */
@@ -1343,6 +1349,8 @@ export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyl
   if (still) out.still = true;
   if (soft !== undefined) out.soft = Math.round(soft * 1000) / 1000;
   if (hard !== undefined) out.hard = Math.round(hard * 1000) / 1000;
+  if (intensity !== undefined) out.intensity = Math.round(clamp(intensity) * 1000) / 1000;
+  if (traits?.drive !== undefined && Number.isFinite(traits.drive)) out.drive = Math.round(clamp(traits.drive) * 1000) / 1000;
   if (ev.bpm) out.bpm = ev.bpm;
   if (ev.scene) out.scene = ev.scene;
   return out;

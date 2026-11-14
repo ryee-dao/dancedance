@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { EASY_HARD_CAP, calmTone, calmToned, generateRoutine, highCap, songDrive, type Intensity, type MoveInstance, type Routine } from './generator';
+import { EASY_HARD_CAP, GLOBAL_MOVE_CAP, calmTone, calmToned, generateRoutine, highCap, songDrive, songEnergy, type Intensity, type MoveInstance, type Routine } from './generator';
+import { moveAggression, moveReach } from './weights';
 import { MOVES } from './moves';
 import { publishedSongs } from './published.testutil';
 import { resolveSongStyle, type SongStyle } from './songStyle';
@@ -8,7 +9,7 @@ import { songMap } from './testutil';
 /**
  * The generic fill's tone: calm-toned moves (tai chi, yoga, warm-up flows,
  * ballet arms) stay out of the main sections of songs that aren't calm, and
- * the share of high-intensity moves follows the song's drive as well as the
+ * the share of high-intensity moves follows the song's energy as well as the
  * level.
  */
 
@@ -108,11 +109,101 @@ describe('high-intensity fill follows the song', () => {
   it('stays within the high-intensity budget (highCap) on every published map, and Easy keeps to simple moves', () => {
     for (const s of publishedSongs()) {
       for (const lv of LEVELS) {
-        const d = danced(generateRoutine(s.map, lv, { style: s.style }));
+        const r = generateRoutine(s.map, lv, { style: s.style });
+        const d = danced(r);
         // A slot may run half over the budget when it is cast (HIGH_OVER), variations a little more.
-        expect(share(d, (i) => i.move.level === 'high'), `${s.title} ${lv}`).toBeLessThanOrEqual(highCap(s.style, lv) + 0.1);
+        // The budget is the song's energy at the tempo it is danced at (songEnergy).
+        expect(share(d, (i) => i.move.level === 'high'), `${s.title} ${lv}`).toBeLessThanOrEqual(highCap(s.style, lv, r.bpm) + 0.1);
         if (lv === 'chill') expect(share(d, (i) => i.move.difficulty > 1), s.title).toBeLessThanOrEqual(2 * EASY_HARD_CAP);
       }
+    }
+  });
+});
+
+describe('the song\'s energy steers the material within the level', () => {
+  const IDS24 = Array.from({ length: 24 }, (_, k) => `e${k}`);
+  const st = (genres: string[], intensity: number, calm: number) => resolveSongStyle({ genres }, { traits: { calm, drive: 0.85, intensity } });
+  /** Danced-time averages over 24 songs: aggression of the genre / global moves, reach, high and jump shares, the top global move of the main sections. */
+  function stats(s: SongStyle, bpm: number, lv: Intensity) {
+    let t = 0, g = 0, ga = 0, gl = 0, gla = 0, reach = 0, high = 0, jump = 0;
+    const top: number[] = [];
+    for (const id of IDS24) {
+      const r = generateRoutine(songMap(bpm, id), lv, { style: s });
+      const by = new Map<string, number>();
+      const m = main(r);
+      for (const i of m) if (!i.sig && !i.move.genre) by.set(i.move.base, (by.get(i.move.base) ?? 0) + i.span);
+      top.push(Math.max(0, ...by.values()) / Math.max(1, beats(m)));
+      for (const i of danced(r)) {
+        const a = moveAggression(i.move);
+        t += i.span;
+        reach += moveReach(i.move) * i.span;
+        if (i.move.level === 'high') high += i.span;
+        if (i.move.jump) jump += i.span;
+        if (i.move.genre) (g += i.span), (ga += a * i.span);
+        else (gl += i.span), (gla += a * i.span);
+      }
+    }
+    return { genreAggr: ga / Math.max(1, g), globalAggr: gla / Math.max(1, gl), reach: reach / t, high: high / t, jump: jump / t, top: mean(top), topMax: Math.max(...top) };
+  }
+
+  it('reads intensity, drive, the danced tempo, calm and softness continuously', () => {
+    const e = (intensity: number, bpm = 120, calm = 0.1) => songEnergy(resolveSongStyle({ genre: 'Pop' }, { traits: { calm, drive: 0.85, intensity } }), bpm);
+    expect(e(0.1)).toBeLessThan(e(0.5));
+    expect(e(0.5)).toBeLessThan(e(0.9));
+    expect(e(0.5, 80)).toBeLessThan(e(0.5, 128));
+    expect(e(0.5, 120, 0.9)).toBeLessThan(0.5 * e(0.5, 120, 0.1));
+    expect(e(0.95, 128)).toBeGreaterThan(0.85);
+    expect(e(0.1, 80, 0.8)).toBeLessThan(0.1);
+    // No audio intensity (an older map): the genre names and the tempo, around the middle.
+    const plain = songEnergy(resolveSongStyle({ genre: 'Pop' }), 116);
+    expect(plain).toBeGreaterThan(0.4);
+    expect(plain).toBeLessThan(0.65);
+  });
+
+  // Nov 2026, 24 songs each (before -> after the energy steered the casting): the genre moves' aggression
+  // (moveAggression), gentle / energetic rock, Medium 0.35 / 0.58 -> 0.31 / 0.63, Hard 0.44 / 0.71 -> 0.42 / 0.75;
+  // R&B Medium 0.24 / 0.28 -> 0.21 / 0.33, Hard 0.28 / 0.40 -> 0.24 / 0.47. The generic fill of a plain pop song,
+  // gentle / bright: Easy 0.14 / 0.25 -> 0.12 / 0.26, Medium 0.26 / 0.46 -> 0.23 / 0.55, Hard 0.32 / 0.59 -> 0.28 / 0.64.
+  it('an open set dances its aggressive moves on its energetic songs and its smooth ones on its gentle songs', () => {
+    for (const [genres, gap] of [[['rock'], 0.25], [['R&B'], 0.1]] as const) {
+      for (const lv of ['cardio', 'sweaty'] as const) {
+        const gentle = stats(st([...genres], 0.3, 0.25), 100, lv);
+        const hard = stats(st([...genres], 0.95, 0), 124, lv);
+        expect(hard.genreAggr - gentle.genreAggr, `${genres} ${lv}`).toBeGreaterThan(gap);
+      }
+    }
+  });
+
+  it('a song with no genre set: the generic fill follows the song too (gentle songs gentle, bright songs bright)', () => {
+    for (const [lv, gap] of [['chill', 0.08], ['cardio', 0.22], ['sweaty', 0.25]] as const) {
+      const gentle = stats(st(['pop'], 0.25, 0.25), 100, lv);
+      const bright = stats(st(['pop'], 0.9, 0), 124, lv);
+      expect(bright.globalAggr - gentle.globalAggr, lv).toBeGreaterThan(gap);
+      if (lv !== 'chill') expect(bright.high - gentle.high, lv).toBeGreaterThan(0.15);
+    }
+  });
+
+  it('Hard on a gentle song is still a workout: bigger range, deeper bends, more travel, not aggressive or jumpy', () => {
+    const gentle = st(['pop'], 0.25, 0.25);
+    const easy = stats(gentle, 100, 'chill');
+    const medium = stats(gentle, 100, 'cardio');
+    const hard = stats(gentle, 100, 'sweaty');
+    // 24 songs, Nov 2026: reach Easy / Medium / Hard 0.17 / 0.34 / 0.42 before -> 0.16 / 0.36 / 0.46, Hard's
+    // high-intensity share 21 % -> 11 %, no jumps either way.
+    expect(hard.reach).toBeGreaterThan(medium.reach + 0.05);
+    expect(medium.reach).toBeGreaterThan(easy.reach + 0.1);
+    expect(hard.reach).toBeGreaterThan(0.42);
+    expect(hard.high).toBeLessThan(0.15);
+    expect(hard.jump).toBe(0);
+  });
+
+  it('no global kit move carries more than its share of the main sections', () => {
+    // 24 ordinary pop songs, Nov 2026: the top global move's share of the main sections, mean, before -> after:
+    // Easy 0.31 -> 0.20, Medium 0.22 -> 0.20, Hard 0.22 -> 0.20; at most 0.38 / 0.31 / 0.31 -> 0.25 / 0.25 / 0.25.
+    for (const lv of LEVELS) {
+      const s = stats(st(['pop'], 0.55, 0.1), 116, lv);
+      expect(s.top, lv).toBeLessThan(GLOBAL_MOVE_CAP[lv] + 0.04);
+      expect(s.topMax, lv).toBeLessThanOrEqual(0.3);
     }
   });
 });

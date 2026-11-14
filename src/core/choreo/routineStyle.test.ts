@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Family } from './families';
 import { cardsOf } from './cards';
 import { GENRE_MAX, GENRE_MIN, generateRoutine, moveVigour, type Intensity, type MoveInstance, type RoutineOpts } from './generator';
-import { moveSmoothness } from './weights';
+import { moveReach, moveSmoothness } from './weights';
 import { MOVES } from './moves';
 import { BALANCED_POP, resolveSongStyle, signatureMoveIds, songSignature, type SongStyle } from './songStyle';
 import { songMap } from './testutil';
@@ -51,8 +51,9 @@ describe('song style -> routine', () => {
       const p = picks(generateRoutine(songMap(120, id), 'cardio', { style: s }).instances);
       const distinct = new Set(p.map((i) => i.move.id));
       // A kit of recurring moves (verse motif, hook, power move, break ...), not a stream of new ones
-      // (40 songs, Nov 2026: 7-14 distinct, mean 10.0 before the jump budget, 10.1 after).
-      expect(distinct.size).toBeGreaterThanOrEqual(7);
+      // (40 songs, Nov 2026: 7-14 distinct, mean 10.0 before the jump budget, 10.1 after; 6-14, mean 10.4 both
+      // before and after the song's energy steered the casting and the combo).
+      expect(distinct.size).toBeGreaterThanOrEqual(6);
       distinctSum += distinct.size;
       const fams = new Set(p.flatMap((i) => i.move.families));
       famSum += fams.size;
@@ -171,7 +172,7 @@ describe('song character x level', () => {
   const IDS = Array.from({ length: 24 }, (_, k) => `c${k + 1}`);
   /** Danced-time averages over several songs at one level (no grooves, cool-down or combo). */
   function stats(st: SongStyle, bpm: number, lv: Intensity) {
-    let t = 0, jump = 0, genre = 0, lyrical = 0, smooth = 0, vig = 0, keys = 0, cards = 0, cardBeats = 0;
+    let t = 0, jump = 0, high = 0, genre = 0, lyrical = 0, smooth = 0, vig = 0, reach = 0, keys = 0, cards = 0, cardBeats = 0;
     const ids = new Set<string>();
     for (const id of IDS) {
       const r = generateRoutine(songMap(bpm, id), lv, { style: st });
@@ -179,10 +180,12 @@ describe('song character x level', () => {
         if (i.move.idle || i.move.cooldown || i.sig) continue;
         t += i.span;
         if (i.move.jump) jump += i.span;
+        if (i.move.level === 'high') high += i.span;
         if (i.move.genre === 'lyrical') lyrical += i.span;
         else if (i.move.genre) genre += i.span;
         smooth += moveSmoothness(i.move) * i.span;
         vig += moveVigour(i.move) * i.span;
+        reach += moveReach(i.move) * i.span;
         // Keys per SONG beat: how busy the coach is on the music.
         keys += (i.move.keys.length / i.move.beats / (i.half ? 2 : 1)) * i.span;
         ids.add(i.move.base);
@@ -193,7 +196,7 @@ describe('song character x level', () => {
       }
     }
     // genre = genre time other than the lyrical mood set (which any calm song opens by design).
-    return { jump: jump / t, genre: genre / t, lyrical: lyrical / t, smooth: smooth / t, vig: vig / t, keys: keys / t, card: cardBeats / cards, ids };
+    return { jump: jump / t, high: high / t, genre: genre / t, lyrical: lyrical / t, smooth: smooth / t, vig: vig / t, reach: reach / t, keys: keys / t, card: cardBeats / cards, ids };
   }
   const ballad = resolveSongStyle({ title: 'My Immortal', genre: 'Hard Rock' }, { bpm: 78, traits: { calm: 0.9, heavy: 0.2, drive: 0.15 } });
   const driving = resolveSongStyle({ title: 'Bring Me to Life', genre: 'Hard Rock' }, { bpm: 78, traits: { calm: 0.15, heavy: 0.8, drive: 0.85 } });
@@ -224,9 +227,14 @@ describe('song character x level', () => {
     expect(hard.vig).toBeGreaterThan(easy.vig + 0.15);
     expect(hard.jump).toBeLessThan(0.01);
     expect(hard.smooth).toBeGreaterThan(0.6);
-    // Hard on a ballad is demanding through range and control (big, sustained moves; no novelty filler):
-    // 24 songs, Nov 2026: vigour 0.42 before, 0.50 with that lean.
-    expect(hard.vig).toBeGreaterThan(0.45);
+    // Hard on a ballad is demanding through range and control (big, sustained, deep and travelling moves; no
+    // novelty filler), not through high-intensity or aggressive material (songEnergy, energyFit): 24 songs, Nov 2026,
+    // vigour 0.42 before that lean, 0.50 with it, 0.42 since the song's energy also steers the casting (Hard 31 %
+    // high-intensity moves before it, 11 % since), while the range of motion (moveReach) went 0.37 -> 0.41.
+    expect(hard.vig).toBeGreaterThan(0.38);
+    expect(hard.reach).toBeGreaterThan(0.39);
+    expect(hard.reach).toBeGreaterThan(easy.reach + 0.2);
+    expect(hard.high).toBeLessThan(0.2);
     const banger = resolveSongStyle({ title: 'X', genre: 'Dance' }, { bpm: 170, traits: { calm: 0.1, drive: 0.9, fourFloor: 0.9 } });
     const bEasy = stats(banger, 170, 'chill');
     const bHard = stats(banger, 170, 'sweaty');

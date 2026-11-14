@@ -122,13 +122,18 @@ describe('the jump budget', () => {
   });
 
   it('is largest on a driving song at a brisk tempo, smaller on slow, soft or calm ones, none on Easy', () => {
-    const drive = resolveSongStyle({ genres: ['EDM'] }, { traits: { calm: 0.1, drive: 1 } });
+    const drive = resolveSongStyle({ genres: ['EDM'] }, { traits: { calm: 0.1, drive: 1, intensity: 0.9 } });
     expect(jumpCap(drive, 'chill', 124)).toBe(0);
     expect(jumpCap(drive, 'sweaty', 124)).toBeCloseTo(JUMP_CAP.sweaty, 6);
     expect(jumpCap(drive, 'sweaty', 90)).toBeLessThan(0.5 * JUMP_CAP.sweaty);
     expect(jumpCap(drive, 'cardio', 124)).toBeLessThan(jumpCap(drive, 'sweaty', 124));
     expect(jumpCap({ ...drive, calm: 0.7 }, 'sweaty', 124)).toBe(0);
     expect(jumpCap({ ...drive, soft: 1 }, 'sweaty', 124)).toBeLessThan(0.25 * JUMP_CAP.sweaty);
+    // The song's energy scales it continuously (songEnergy): an ordinary song keeps a part, a gentle one none.
+    const at = (intensity: number) => jumpCap(resolveSongStyle({ genres: ['EDM'] }, { traits: { calm: 0.1, drive: 0.9, intensity } }), 'sweaty', 124);
+    expect(at(0.55)).toBeGreaterThan(0);
+    expect(at(0.55)).toBeLessThan(0.6 * at(0.9));
+    expect(at(0.3)).toBe(0);
   });
 });
 

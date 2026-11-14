@@ -341,6 +341,43 @@ export function calmFactor(m: Move, calm: number | undefined, level: LevelName, 
   return f;
 }
 
+const AGGRESSION = new Map<Move, number>();
+/**
+ * How aggressive / high-energy a move is, 0 (smooth, gentle: a slow drag, a
+ * slow-jam sway) .. 1 (all-out: a pogo, a krump stomp, a hop), from its data
+ * alone: its level (how hard it works you), how sharp rather than flowing it
+ * is (moveSmoothness), and its percussive accents (jumps; kicks, stomps and
+ * punches; the impact flag). Range of motion is deliberately left out: a big,
+ * smooth move is a workout without being aggressive (moveReach).
+ */
+export function moveAggression(m: Move): number {
+  const hit = AGGRESSION.get(m);
+  if (hit !== undefined) return hit;
+  const level = m.level === 'high' ? 1 : m.level === 'mid' ? 0.5 : 0;
+  const hits = m.jump ? 1 : clamp((m.themes.some((t) => FAST_THEMES.has(t)) ? 0.6 : 0) + (m.impact ? 0.3 : 0));
+  const a = clamp(0.3 * level + 0.4 * (1 - moveSmoothness(m)) + 0.3 * hits);
+  AGGRESSION.set(m, a);
+  return a;
+}
+
+const REACH = new Map<Move, number>();
+/**
+ * How much a move asks of the body without hitting hard, 0..1: its range of
+ * motion (a percentile among the global dance moves, as moveVigour's), how
+ * deep it bends (squat depth) and whether it travels. Hard on a gentle song
+ * works through these: bigger range, deeper bends, more travel.
+ */
+export function moveReach(m: Move): number {
+  const hit = REACH.get(m);
+  if (hit !== undefined) return hit;
+  let minY = 0;
+  for (const k of m.keys) minY = Math.min(minY, k.pose[CH.Y]);
+  const depth = clamp((-minY - 0.03) / 0.12);
+  const r = clamp(0.55 * rankIn(ref().motion, moveMotion(m)) + 0.3 * depth + 0.15 * (m.travel !== 0 ? 1 : 0));
+  REACH.set(m, r);
+  return r;
+}
+
 /**
  * Easy on a fast song stays on the beat: moves busier than a key per beat
  * lose weight as the tempo they are danced at rises past 115 BPM (Medium and

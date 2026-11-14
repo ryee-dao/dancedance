@@ -242,9 +242,11 @@ describe('soft weights', () => {
     }
   });
 
-  it('brisk songs get more jumps than slow ones, slow songs still get some, and songs too fast for them fall back', () => {
+  it('brisk songs get more jumps than slow ones, and songs too fast for them fall back', () => {
     // Jumps lean toward the tempo they are danced at: brisk (~120-130) where most can still be done at full time.
     // On faster songs a jump over its speed limit is slowed to half time (and leans slow there) or left out, never frantic.
+    // A slow song of unknown character is a gentle one (songEnergy): it may not jump at all (it did, a little, before
+    // the energy scaled the jump budget, Nov 2026).
     const brisk = picks(IDS.map((id) => songMap(124, id)), 'sweaty');
     const slow = picks(IDS.map((id) => songMap(86, id)), 'sweaty');
     const fast = picks(IDS.map((id) => songMap(172, id)), 'sweaty');
@@ -252,7 +254,7 @@ describe('soft weights', () => {
     const js = share(slow, (i) => i.move.jump);
     const jf = share(fast, (i) => i.move.jump);
     expect(jb, `brisk ${jb.toFixed(3)} vs slow ${js.toFixed(3)}`).toBeGreaterThan(js * 1.2);
-    expect(js).toBeGreaterThan(0);
+    expect(jb).toBeGreaterThan(0.02);
     expect(jf, `fast ${jf.toFixed(3)} vs brisk ${jb.toFixed(3)}`).toBeLessThan(jb);
   });
 

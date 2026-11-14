@@ -6,10 +6,12 @@
  * that isn't calm), jumps, and high-intensity moves against the song's audio
  * intensity. Offline and pure; for before / after comparisons.
  *
- *   npx tsx tools/eval/fill.ts [--out songs.json] [--sets r15,r1,run,levels,heldout,famous,catalog]
- *   npx tsx tools/eval/fill.ts --compare before.json after.json   (summary of both, side by side)
+ *   npx tsx tools/eval/fill.ts [--out songs.json] [--sets r16,r15,r1,run,levels,heldout,famous,catalog]
+ *   npx tsx tools/eval/fill.ts --compare before.json after.json [--songs 'Rule the World|Husband']
+ *     (summary of both; --songs: those songs' high / jump shares and top moves per level, before -> after)
  *
  * Sets (the inputs each song is styled with):
+ *   r16      data/run-20261116: saved maps, the app's inputs (pass B of run.ts score)
  *   r15      data/run-20261115: saved maps, the app's inputs (pass B of run.ts score)
  *   r1       data/run-20261115/round1-rescore: round one, the same way
  *   run      data/run-20261113 as choreo.ts reads it (stats-re-mapped traits; pass A and, with a list, B)
@@ -63,6 +65,9 @@ interface LevelRow {
   hard: number;
   /** Largest share of the danced main-section beats one base move takes, and of the genre beats one genre move takes. */
   top1: number;
+  /** Largest share of the danced main-section beats one global (non-genre, non-combo) base move takes, and its name. */
+  topGlobal1?: number;
+  topGlobalName?: string;
   topGenre1: number;
   distinct: number;
   /** Calm-toned / boxing moves among the ten most danced base moves of the main sections (names). */
@@ -81,6 +86,9 @@ export interface SongRow {
   soft?: number;
   hard?: number;
   intensity?: number;
+  /** Audio drive (traits) and the tempo the Medium routine is danced at. */
+  drive?: number;
+  bpmDanced?: number;
   /** Calm / soft / lyrical: calm-toned moves are fine in its main sections. */
   calmSong: boolean;
   levels: Record<string, LevelRow>;
@@ -98,6 +106,7 @@ function summarise(set: string, key: string, name: string, info: SongInfo, map: 
   const open = [...styleGenres(style)];
   const calmSong = (style.calm ?? 0) >= 0.55 || (style.soft ?? 0) >= 0.5 || open.includes('lyrical');
   const levels: Record<string, LevelRow> = {};
+  let bpmDanced: number | undefined;
   for (const lv of LEVELS) {
     if (ONLY) console.error(` ${lv}`);
     const r = generateRoutine(map, lv, { style });
@@ -124,6 +133,8 @@ function summarise(set: string, key: string, name: string, info: SongInfo, map: 
       if (calmToned(i.move)) calmB += i.span;
     }
     const sorted = [...by.values()].sort((a, b) => b.b - a.b);
+    const glob = [...by.entries()].filter(([k, e]) => !k.startsWith('combo:') && !e.m.genre).sort((a, b) => b[1].b - a[1].b)[0];
+    if (lv === 'cardio') bpmDanced = Math.round((r.bpm ?? map.bpm) * 10) / 10;
     const top10 = sorted.slice(0, 10);
     const t = tierBeats(r, style);
     levels[lv] = {
@@ -133,6 +144,8 @@ function summarise(set: string, key: string, name: string, info: SongInfo, map: 
       high: sh((i) => i.move.level === 'high'),
       hard: sh((i) => i.move.difficulty > 1),
       top1: r3((sorted[0]?.b ?? 0) / mainBeats),
+      topGlobal1: r3((glob?.[1].b ?? 0) / mainBeats),
+      ...(glob ? { topGlobalName: glob[1].m.name } : {}),
       topGenre1: gAll ? r3(Math.max(...gby.values()) / gAll) : 0,
       distinct: by.size,
       calmTop: top10.filter((e) => calmToned(e.m)).map((e) => e.m.name),
@@ -147,13 +160,15 @@ function summarise(set: string, key: string, name: string, info: SongInfo, map: 
     ...(style.soft !== undefined ? { soft: style.soft } : {}),
     ...(style.hard !== undefined ? { hard: style.hard } : {}),
     ...(traits?.intensity !== undefined ? { intensity: traits.intensity } : {}),
+    ...(traits?.drive !== undefined ? { drive: traits.drive } : {}),
+    ...(bpmDanced !== undefined ? { bpmDanced } : {}),
   };
 }
 
 interface Sampled { key: string; artist: string; title: string; genre?: string; durationSec: number }
 
 /** run.ts score, pass B (what the app passes): saved maps, the lookup's list with its levels and the artist's genres. */
-function appSet(dir: string, set: string): SongRow[] {
+export function appSet(dir: string, set: string): SongRow[] {
   const sample = readJson<{ songs: Sampled[] }>(join(dir, 'sample.json'), { songs: [] });
   const lookups = readJson<Record<string, GenreLookup>>(join(dir, 'genre-lookups.json'), {});
   const genres = readJson<Record<string, string[]>>(join(dir, 'genres.json'), {});
@@ -298,6 +313,14 @@ function push(out: SongRow[], r: SongRow | null) {
 }
 
 const pct = (x: number) => `${Math.round(100 * x)}`;
+/**
+ * A song's energy for the correlations, judged by this tool from the raw readings (independent of the generator's
+ * own measure): the mean of intensity, 1 - calm, drive and the danced tempo (80 -> 0, 140 -> 1).
+ */
+function energyOf(r: SongRow): number {
+  const xs = [r.intensity ?? 0.5, 1 - (r.calm ?? 0.5), r.drive ?? 0.5, r.bpmDanced ? Math.min(1, Math.max(0, (r.bpmDanced - 80) / 60)) : 0.5];
+  return meanOf(xs);
+}
 const meanOf = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
 const corr = (xs: number[], ys: number[]) => {
   const mx = meanOf(xs), my = meanOf(ys);
@@ -319,6 +342,11 @@ export function summary(rows: SongRow[], title: string): string[] {
     const xs = rows.map((r) => r.levels[lv].top1);
     return `${pct(meanOf(xs))} / ${pct(Math.max(...xs))}`;
   });
+  row('top global move share of main beats: mean / max', (lv) => {
+    const xs = rows.map((r) => r.levels[lv].topGlobal1 ?? 0);
+    return `${pct(meanOf(xs))} / ${pct(Math.max(...xs))}`;
+  });
+  row('... songs whose top global move takes over 20 % / 15 %', (lv) => `${rows.filter((r) => (r.levels[lv].topGlobal1 ?? 0) > 0.2).length} / ${rows.filter((r) => (r.levels[lv].topGlobal1 ?? 0) > 0.15).length}`);
   row('top genre move share of genre beats: mean / max', (lv) => {
     const xs = opened.map((r) => r.levels[lv].topGenre1).filter((x) => x > 0);
     return xs.length ? `${pct(meanOf(xs))} / ${pct(Math.max(...xs))}` : '-';
@@ -345,9 +373,13 @@ export function summary(rows: SongRow[], title: string): string[] {
   const withI = rows.filter((r) => r.intensity !== undefined);
   if (withI.length >= 4) {
     row(`high share vs intensity (n=${withI.length}): corr`, (lv) => corr(withI.map((r) => r.intensity!), withI.map((r) => r.levels[lv].high)).toFixed(2));
+    row(`jump share vs intensity: corr`, (lv) => corr(withI.map((r) => r.intensity!), withI.map((r) => r.levels[lv].jump)).toFixed(2));
+    row(`high share vs energy (intensity, 1 - calm, drive, tempo): corr`, (lv) => corr(withI.map(energyOf), withI.map((r) => r.levels[lv].high)).toFixed(2));
+    row(`jump share vs energy: corr`, (lv) => corr(withI.map(energyOf), withI.map((r) => r.levels[lv].jump)).toFixed(2));
     const lo = withI.filter((r) => r.intensity! < 0.45 || (r.calm ?? 0) >= 0.55);
     const hi = withI.filter((r) => r.intensity! >= 0.65 && (r.calm ?? 0) < 0.45);
     row(`high share, soft/calm (n=${lo.length}) vs intense (n=${hi.length})`, (lv) => `${pct(meanOf(lo.map((r) => r.levels[lv].high)))} vs ${pct(meanOf(hi.map((r) => r.levels[lv].high)))}`);
+    row(`jump share, soft/calm vs intense`, (lv) => `${pct(meanOf(lo.map((r) => r.levels[lv].jump)))} vs ${pct(meanOf(hi.map((r) => r.levels[lv].jump)))}`);
   }
   out.push('');
   return out;
@@ -364,13 +396,32 @@ function report(rows: SongRow[]): string[] {
 if (process.argv[1]?.endsWith('fill.ts')) {
   if (process.argv.includes('--compare')) {
     const i = process.argv.indexOf('--compare');
-    for (const p of [process.argv[i + 1], process.argv[i + 2]]) {
+    const files = [process.argv[i + 1], process.argv[i + 2]];
+    const data = files.map((p) => JSON.parse(readFileSync(p, 'utf8')) as SongRow[]);
+    files.forEach((p, k) => {
       console.log(`### ${p}\n`);
-      console.log(report(JSON.parse(readFileSync(p, 'utf8')) as SongRow[]).join('\n'));
+      console.log(report(data[k]).join('\n'));
+    });
+    const songs = arg('songs');
+    if (songs) {
+      const re = new RegExp(songs, 'i');
+      const after = new Map(data[1].map((r) => [`${r.set}|${r.key}`, r]));
+      console.log('#### named songs (before -> after): high % / jump %, top global move %\n');
+      for (const b of data[0].filter((r) => re.test(r.name))) {
+        const a = after.get(`${b.set}|${b.key}`);
+        if (!a) continue;
+        console.log(`${b.set} ${b.name} (intensity ${b.intensity ?? '-'}, calm ${b.calm ?? '-'}, drive ${b.drive ?? '-'}, ${b.bpmDanced ?? '-'} BPM danced)`);
+        for (const lv of LEVELS) {
+          const x = b.levels[lv], y = a.levels[lv];
+          console.log(`  ${lv.padEnd(6)} high ${pct(x.high)} -> ${pct(y.high)}, jump ${pct(x.jump)} -> ${pct(y.jump)}, genre ${pct(x.genre)} -> ${pct(y.genre)}, top global ${x.topGlobalName ?? '-'} ${pct(x.topGlobal1 ?? 0)} -> ${y.topGlobalName ?? '-'} ${pct(y.topGlobal1 ?? 0)}`);
+          console.log(`         after: ${y.top.join(', ')}`);
+        }
+      }
     }
   } else {
-    const want = new Set((arg('sets') ?? 'r15,r1,run,levels,heldout,famous,catalog').split(','));
+    const want = new Set((arg('sets') ?? 'r16,r15,r1,run,levels,heldout,famous,catalog').split(','));
     const rows: SongRow[] = [];
+    if (want.has('r16')) rows.push(...appSet(join(DATA, 'run-20261116'), 'r16'));
     if (want.has('r15')) rows.push(...appSet(join(DATA, 'run-20261115'), 'r15'));
     if (want.has('r1')) rows.push(...appSet(join(DATA, 'run-20261115', 'round1-rescore'), 'r1'));
     if (want.has('run')) rows.push(...statsSet(join(DATA, 'run-20261113'), 'run', 'AB'));
