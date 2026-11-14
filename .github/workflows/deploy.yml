@@ -19,6 +19,11 @@ on:
         type: string
         required: false
         default: ''
+      data_only:
+        description: Only song data changed (beat maps, song lists), so skip the type-check and tests
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -44,8 +49,40 @@ jobs:
           cache: npm
 
       - run: npm ci
-      - run: npm run typecheck
-      - run: npm test
+
+      # The type-check and tests guard code changes. A commit that only changes song
+      # data (a new beat map, the song lists) is published without them: they take
+      # minutes, and a test that looks at every published song must not keep a newly
+      # added song off the site (it reports on the next code push instead).
+      # beatmaps.yml says so itself (data_only); for a push, compare what it changed.
+      # When that can't be worked out, the checks run.
+      - id: scope
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DATA_ONLY: ${{ inputs.data_only }}
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          checks=true
+          if [ "$DATA_ONLY" = "true" ]; then
+            checks=false
+          elif [ "$EVENT" = "push" ] && printf '%s' "$BEFORE" | grep -Eq '^[0-9a-f]{40}$' && [ "$BEFORE" != "0000000000000000000000000000000000000000" ]; then
+            if files=$(gh api "repos/$GITHUB_REPOSITORY/compare/$BEFORE...$AFTER" --jq '.files[].filename' 2>/dev/null); then
+              n=$(printf '%s\n' "$files" | grep -c . || true)
+              other=$(printf '%s\n' "$files" | grep -Evc '^(public/(beatmaps/[A-Za-z0-9_-]+|playlist|songs|songs-status|genres)\.json)?$' || true)
+              # The compare API lists at most 300 files: a full page may hide others.
+              if [ "$n" -gt 0 ] && [ "$n" -lt 300 ] && [ "$other" -eq 0 ]; then checks=false; fi
+            fi
+          fi
+          echo "checks=$checks" >> "$GITHUB_OUTPUT"
+          if [ "$checks" = "false" ]; then echo "Only song data changed: publishing without the type-check and tests." >> "$GITHUB_STEP_SUMMARY"; fi
+
+      - if: ${{ steps.scope.outputs.checks == 'true' }}
+        run: npm run typecheck
+      - if: ${{ steps.scope.outputs.checks == 'true' }}
+        run: npm test
       # Optional: address of the "add a song" Cloudflare relay (repository
       # variable ADD_SONG_URL). When the variable is unset, the value committed
       # in .env is used; an empty environment variable would override it, so it

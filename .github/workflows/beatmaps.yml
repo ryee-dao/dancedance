@@ -360,3 +360,5 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       ref: ${{ needs.update.outputs.sha }}
+      # This job commits only song data (the commit step refuses anything else).
+      data_only: true
