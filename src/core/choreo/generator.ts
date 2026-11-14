@@ -77,7 +77,7 @@
 
 import type { BeatMap, SectionType } from '../analysis/beatmap';
 import type { Pose } from '../coach/skeleton';
-import { BORROW_CLOSE, BORROW_MAX, FAMILY_GENRE, SUB_OPEN, THEME_GENRES, borrowShare, borrowSources, genreOpenness as styleOpenness, songGenres, type Genre, type Lend } from './genres';
+import { BORROW_CLOSE, BORROW_MAX, FAMILY_GENRE, SUB_OPEN, THEME_GENRES, borrowShare, borrowSources, isSubStyle, genreOpenness as styleOpenness, songGenres, type Genre, type Lend } from './genres';
 import { IDLE_MOVE, MOVES, keysOf, type Level, type Move } from './moves';
 import { getPool, warmPool } from './pool';
 import { BALANCED_POP, readGenre, signatureMoveIds, styleKey, type SongStyle } from './songStyle';
@@ -318,11 +318,13 @@ function showpiece(m: Move, host: Genre): boolean {
  *     reads there (speed.ts), with a tempo weight of at least BORROW_TEMPO;
  *     the level allows it (below Hard no difficulty 3; Easy: no jumps or
  *     fast turns, nothing high-intensity, impact <= BORROW_EASY_IMPACT);
- *   - the song's character: on a calm song (calm > 0.5) no jumps and only
- *     moves its calm favours (calmFactor >= 1: smooth, not percussive);
+ *   - the song's character: on a calm song (calm > 0.5) no jumps, only
+ *     moves its calm favours (calmFactor >= 1: not percussive) and about as
+ *     smooth as the borrower's typical move (its median smoothness -
+ *     BORROW_NEAR);
  *   - it dances like the borrower: its smoothness and impact within the
  *     range of the borrower's own usable moves, +- BORROW_NEAR (`range`:
- *     [smooth lo, smooth hi, impact lo, impact hi]);
+ *     [smooth lo, smooth hi, impact lo, impact hi, smooth median]);
  *   - from a set the song replaced (lending to the sub-style it is the
  *     parent of), only a move named for the borrower ("Samba Basic");
  *   - from a neighbour below BORROW_CLOSE: no showpiece of its own style,
@@ -337,10 +339,10 @@ function borrowFit(
   if (moveTempoMode(m, bpm, intensity) === 'out' || levelFactor(m, intensity) <= 0) return 0;
   if (intensity !== 'sweaty' && m.difficulty > 2) return 0;
   if (intensity === 'chill' && (m.level === 'high' || moveWeights(m).impact > BORROW_EASY_IMPACT)) return 0;
-  const calm = style.calm;
-  if (calm !== undefined && calm > 0.5 && (m.jump || calmFactor(m, calm, intensity) < 1)) return 0;
-  if (tempoFactor(m, dancedBpm(m, bpm, intensity)) < BORROW_TEMPO) return 0;
   const [sm, imp] = tonality(m);
+  const calm = style.calm;
+  if (calm !== undefined && calm > 0.5 && (m.jump || calmFactor(m, calm, intensity) < 1 || sm < range[4] - BORROW_NEAR)) return 0;
+  if (tempoFactor(m, dancedBpm(m, bpm, intensity)) < BORROW_TEMPO) return 0;
   if (sm < range[0] - BORROW_NEAR || sm > range[1] + BORROW_NEAR || imp < range[2] - BORROW_NEAR || imp > range[3] + BORROW_NEAR) return 0;
   if (lend.namedOnly && !namedSets(m).includes(host)) return 0;
   if (lend.w < BORROW_CLOSE && (showpiece(m, host) || styleFactor(m, style) < BORROW_STYLE * ownStyle)) return 0;
@@ -365,14 +367,18 @@ export function borrowPlan(style: SongStyle, intensity: Intensity, bpm?: number)
     if (share <= 0) continue;
     const sf = own.map((m) => styleFactor(m, style)).sort((a, b) => a - b);
     const ownStyle = sf[(sf.length - 1) >> 1];
-    const range = [Infinity, -Infinity, Infinity, -Infinity];
+    const range = [Infinity, -Infinity, Infinity, -Infinity, 0];
+    const smooth: number[] = [];
     for (const m of own) {
       const [sm, imp] = tonality(m);
       range[0] = Math.min(range[0], sm);
       range[1] = Math.max(range[1], sm);
       range[2] = Math.min(range[2], imp);
       range[3] = Math.max(range[3], imp);
+      smooth.push(sm);
     }
+    smooth.sort((a, b) => a - b);
+    range[4] = smooth[(smooth.length - 1) >> 1];
     const moves = new Map<Move, number>();
     for (const m of DANCE_MOVES) {
       const lend = m.genre ? lenders.get(m.genre) : undefined;
@@ -752,6 +758,9 @@ export function targetVigour(feels: readonly BarFeel[], section: SectionType, wa
 // second build move ...), chosen so that genre moves get GENRE_MIN..GENRE_MAX
 // (aiming at GENRE_TARGET) of the danced time; the verse motif's A and the
 // hook's H1 stay global, so verses and choruses are carried by global moves.
+// No genre slot carries more than GENRE_SLOT_CAP of the genre time when the
+// kit has room (several accents, not one move for half of it), and a
+// leading sub-style takes LEAD_SHARE of the genre beats (leadSubStyle).
 
 type Role = 'warm' | 'intro' | 'groove' | 'build' | 'hook' | 'power' | 'break';
 
@@ -804,6 +813,33 @@ const GENRE_PRIORITY: readonly string[] = [
   'power.0', 'hook.2', 'groove.2', 'build.1', 'groove.s1', 'hook.3', 'groove.c1', 'groove.t1', 'hook.4', 'build.2', 'break.1', 'break.2', 'power.2', 'groove.s2', 'build.0', 'groove.c2', 'hook.1',
   'groove.3', 'groove.1', 'intro.1', 'power.1', 'break.0', 'groove.s3', 'groove.s4', 'intro.0',
 ];
+/**
+ * Most of the genre time aimed at (GENRE_TARGET) one kit slot may carry, so a
+ * song's genre part is at least about 1 / GENRE_SLOT_CAP accents (a slot too
+ * big for it stays global; the kit itself doesn't grow).
+ */
+export const GENRE_SLOT_CAP = 0.35;
+/** Share of the genre slots a song's leading sub-style takes when other sets are open too (genres.ts SUB_STYLES; leadSubStyle). */
+export const LEAD_SHARE = 0.65;
+
+/**
+ * The sub-style that leads a song's genre part: the most open sub-style set
+ * the level can dance (lyrical, a mood, never leads), when the song opens
+ * another set too; null otherwise (the sets split by openness).
+ */
+export function leadSubStyle(ok: readonly Genre[], openness: ReadonlyMap<Genre, number>): Genre | null {
+  if (ok.length < 2) return null;
+  let best: Genre | null = null, bw = 0;
+  for (const g of ok) {
+    if (!isSubStyle(g) || g === 'lyrical') continue;
+    const w = openness.get(g) ?? 0;
+    if (w > bw) (bw = w), (best = g);
+  }
+  return best;
+}
+
+/** The verse motif's A and the hook's H1: global unless a song can't reach GENRE_MIN without them. */
+const MOTIF_ANCHORS = new Set(['groove.0', 'hook.0']);
 /** Genre accent slots of live plans (no song plan to measure). */
 const LIVE_GENRE_SLOTS = new Set(['power.0', 'hook.2', 'groove.2', 'build.1', 'break.1']);
 /** Share of the danced time genre moves get on a song that opens a genre: aim, floor, ceiling. */
@@ -868,6 +904,8 @@ export class Choreographer {
   /** Open genres that have moves this level can dance, with how strongly the song opens them. */
   private genreOk: Genre[] = [];
   private openness: Map<Genre, number>;
+  /** The song's leading sub-style when it opens other sets too (it takes LEAD_SHARE of the genre slots); null = split by openness. */
+  private lead: Genre | null = null;
   /** Thin open sets that borrow: the share of their slots, and the borrowed moves' weights (index-aligned with pool). */
   private borrows = new Map<Genre, { share: number; w: Float64Array }>();
   /** Display name of the song combo (one card). */
@@ -930,6 +968,7 @@ export class Choreographer {
       else this.varsByBase.set(m.base, [m]);
     }
     for (const g of open) if (moves.some((m, i) => m.genre === g && this.base[i] > 0 && this.levelF[i] > 0)) this.genreOk.push(g);
+    this.lead = leadSubStyle(this.genreOk, this.openness);
     const plan = opts.borrow !== false && this.genreOk.length ? borrowPlan(this.style, intensity, bpm) : null;
     if (plan?.size) {
       const at = new Map<Move, number>();
@@ -1121,7 +1160,15 @@ export class Choreographer {
 
   private pickGenre(): Genre | null {
     if (!this.genreOk.length) return null;
-    return pickWeighted(this.planRng, this.genreOk, this.genreOk.map((g) => this.openness.get(g) ?? 1));
+    const w = this.genreOk.map((g) => this.openness.get(g) ?? 1);
+    const lead = this.lead;
+    if (lead) {
+      // The leading sub-style takes LEAD_SHARE of the picks, the others the rest by openness.
+      const i = this.genreOk.indexOf(lead);
+      const rest = w.reduce((t, x, j) => (j === i ? t : t + x), 0);
+      w[i] = (LEAD_SHARE / (1 - LEAD_SHARE)) * rest;
+    }
+    return pickWeighted(this.planRng, this.genreOk, w);
   }
 
   /**
@@ -1153,14 +1200,17 @@ export class Choreographer {
     const nod = this.nodCombo;
     let total = 0;
     let cur = 0;
+    // The combo counts as tierBeats counts it: its curated nod steps are the song's own, in no tier.
+    const nodIds = new Set(this.style.signature ?? []);
     const sigBeats = this.signature.reduce((t, s) => t + s.move.beats, 0);
-    const sigGenre = sigBeats ? this.signature.reduce((t, s) => t + (s.move.genre ? s.move.beats : 0), 0) / sigBeats : 0;
+    const sigCounted = sigBeats ? this.signature.reduce((t, s) => t + (nodIds.has(s.move.id) ? 0 : s.move.beats), 0) / sigBeats : 0;
+    const sigGenre = sigBeats ? this.signature.reduce((t, s) => t + (s.move.genre && !nodIds.has(s.move.id) ? s.move.beats : 0), 0) / sigBeats : 0;
     const groups = new Map<string, number>();
     for (const it of items) {
       const beats = barsEnd(it.bars) - it.bars[0].start;
       if (it.kind === 'sig') {
         if (nod) continue;
-        total += beats;
+        total += beats * sigCounted;
         cur += beats * sigGenre;
         continue;
       }
@@ -1170,29 +1220,83 @@ export class Choreographer {
       groups.set(k, (groups.get(k) ?? 0) + beats);
     }
     if (total <= 0) return;
-    const chosen: string[] = [];
-    const chosenBeats = new Map<string, number>();
+    // A selection of genre slots: GENRE_PRIORITY order until GENRE_TARGET, no slot above `cap`; with a
+    // cap, then the other slots that fit it, smallest first (verse swaps, one-offs, side slots), never
+    // the verse motif's A or the hook's H1 (verses and choruses are carried by global moves).
+    const select = (cap: number) => {
+      const left = new Map(groups);
+      const keys: string[] = [];
+      const kb = new Map<string, number>();
+      let c = cur;
+      const add = (k: string) => {
+        const b = left.get(k)!;
+        keys.push(k);
+        kb.set(k, b);
+        c += b;
+        left.delete(k);
+      };
+      for (const k of GENRE_PRIORITY) {
+        if (c >= GENRE_TARGET * total) break;
+        const b = left.get(k);
+        if (b !== undefined && b <= cap && c + b <= GENRE_MAX * total) add(k);
+      }
+      if (cap < Infinity && c < GENRE_TARGET * total) {
+        const rest = [...left.entries()].filter(([k, b]) => !k.startsWith('warm') && !MOTIF_ANCHORS.has(k) && b <= cap).sort((x, y) => x[1] - y[1] || (x[0] < y[0] ? -1 : 1));
+        for (const [k, b] of rest) {
+          if (c >= GENRE_TARGET * total) break;
+          if (c + b <= GENRE_MAX * total) add(k);
+        }
+      }
+      return { left, keys, kb, c };
+    };
+    // No one slot carries more than GENRE_SLOT_CAP of the genre time aimed at, so it spreads over
+    // several accents (Easy's few, long slots made one genre move half a song's genre time) - when
+    // the song's kit has room for that (the capped selection reaches GENRE_MIN); else as before.
+    let sel = select(GENRE_SLOT_CAP * GENRE_TARGET * total);
+    if (sel.c < GENRE_MIN * total) sel = select(Infinity);
+    groups.clear();
+    for (const [k, b] of sel.left) groups.set(k, b);
+    const chosen = sel.keys;
+    const chosenBeats = sel.kb;
+    cur = sel.c;
     const take = (k: string) => {
       chosen.push(k);
       chosenBeats.set(k, groups.get(k)!);
       cur += groups.get(k)!;
       groups.delete(k);
     };
-    for (const k of GENRE_PRIORITY) {
-      if (cur >= GENRE_TARGET * total) break;
-      const b = groups.get(k);
-      if (b !== undefined && cur + b <= GENRE_MAX * total) take(k);
-    }
     if (cur < GENRE_MIN * total) {
-      const rest = [...groups.entries()].filter(([k]) => !k.startsWith('warm')).sort((a, b) => a[1] - b[1] || (a[0] < b[0] ? -1 : 1));
+      // Last resort, smallest first, the motif anchors last.
+      const rest = [...groups.entries()].filter(([k]) => !k.startsWith('warm')).sort((a, b) => +MOTIF_ANCHORS.has(a[0]) - +MOTIF_ANCHORS.has(b[0]) || a[1] - b[1] || (a[0] < b[0] ? -1 : 1));
       for (const [k, b] of rest) {
         if (cur >= GENRE_MIN * total) break;
         if (cur + b <= GENRE_MAX * total) take(k);
       }
     }
     const genreOf = new Map<string, Genre | null>();
+    const lead = this.lead;
+    // With a leading sub-style: each slot (priority order) goes to the open set furthest below its
+    // share of the chosen beats (the lead LEAD_SHARE, the others the rest by openness).
+    const want = new Map<Genre, number>();
+    const got = new Map<Genre, number>();
+    if (lead) {
+      const all = chosen.reduce((t, k) => t + chosenBeats.get(k)!, 0);
+      let rest = 0;
+      for (const g of this.genreOk) if (g !== lead) rest += this.openness.get(g) ?? 1;
+      for (const g of this.genreOk) want.set(g, all * (g === lead ? LEAD_SHARE : ((1 - LEAD_SHARE) * (this.openness.get(g) ?? 1)) / rest));
+    }
     for (const k of chosen) {
-      const g = this.pickGenre();
+      let g: Genre | null;
+      if (lead) {
+        g = null;
+        let best = -Infinity;
+        for (const x of this.genreOk) {
+          // Beats still owed to the set; a little noise so equal filling sets alternate song to song.
+          const d = want.get(x)! - (got.get(x) ?? 0) + 1e-3 * this.planRng();
+          if (d > best) (best = d), (g = x);
+        }
+        got.set(g!, (got.get(g!) ?? 0) + chosenBeats.get(k)!);
+      } else g = this.pickGenre();
       genreOf.set(k, g);
       for (const s of this.slots.values()) if (s.key === k || s.of === k) s.genre = g;
     }

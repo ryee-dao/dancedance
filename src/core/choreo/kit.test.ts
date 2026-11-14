@@ -66,6 +66,32 @@ describe('the kit on every published map', () => {
     }
   });
 
+  it('spreads a song\'s genre time over several accents: no one genre move takes most of it', () => {
+    // Mean per-song share of the top genre move (and distinct genre moves per song) over the published maps,
+    // Nov 2026: before GENRE_SLOT_CAP 46 / 45 / 41 % (3.6 / 4.3 / 4.8 moves), with it 43 / 35 / 33 % (3.7 / 4.9 / 5.4).
+    const most: Record<Intensity, number> = { chill: 0.46, cardio: 0.4, sweaty: 0.37 };
+    const least: Record<Intensity, number> = { chill: 3.4, cardio: 4.5, sweaty: 5 };
+    for (const lv of LEVELS) {
+      const tops: number[] = [];
+      const counts: number[] = [];
+      for (const { s, r } of routines(lv)) {
+        const per = new Map<string, number>();
+        let g = 0;
+        for (const i of r.instances) {
+          if (!i.move.genre || i.sig || i.move.idle || i.move.cooldown || i.section === 'outro') continue;
+          g += i.span;
+          per.set(i.move.base, (per.get(i.move.base) ?? 0) + i.span);
+        }
+        if (!g || !styleGenres(s.style).size) continue;
+        tops.push(Math.max(...per.values()) / g);
+        counts.push(per.size);
+      }
+      expect(tops.length, lv).toBeGreaterThan(30);
+      expect(mean(tops), lv).toBeLessThanOrEqual(most[lv]);
+      expect(mean(counts), lv).toBeGreaterThanOrEqual(least[lv]);
+    }
+  });
+
   it('keeps variety at least where it was before the kit (distinct moves per minute), with a floor per routine', () => {
     // Medians of distinct base moves per minute across the published maps before the kit: 2.89 / 4.05 / 4.36.
     const before: Record<Intensity, number> = { chill: 2.89, cardio: 4.05, sweaty: 4.36 };

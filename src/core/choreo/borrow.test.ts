@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { BeatMap } from '../analysis/beatmap';
 import billieJeanMap from '../../../public/beatmaps/7CTJcHjkq0E.json';
-import { GENRE_MAX, GENRE_MIN, borrowPlan, generateRoutine, levelFactor, styleGenres, tierBeats, type Intensity, type Routine } from './generator';
+import { GENRE_MAX, GENRE_MIN, LEAD_SHARE, borrowPlan, generateRoutine, leadSubStyle, levelFactor, styleGenres, tierBeats, type Intensity, type Routine } from './generator';
 import { BORROW_MAX, CALM_CLOSED, GENRE_MOVES, MIN_GENRE_SET, NEIGHBOURS, SUB_INFO, SUB_STANDALONE, borrowShare, borrowSources, calmGate, genreOpenness, isSubStyle, type Genre } from './genres';
 import { resolveSongStyle, type SongStyle } from './songStyle';
 import { songMap } from './testutil';
@@ -135,6 +135,32 @@ describe('borrowing: the share', () => {
         expect(distinct(true), `${name} ${lv}`).toBeGreaterThan(distinct(false));
       }
     }
+  });
+});
+
+describe('a song\'s leading sub-style', () => {
+  it('takes the larger part of the genre time when the song opens broader sets too (R&B over disco & funk / hip-hop)', () => {
+    for (const lv of ['cardio', 'sweaty'] as const) {
+      let lead = 0, all = 0, songs = 0;
+      for (const s of thinSongs('rnb', 24)) {
+        const open = styleGenres(s.style);
+        if (open.size < 2 || !open.has('rnb')) continue;
+        songs++;
+        for (const i of generateRoutine(s.map, lv, { style: s.style }).instances) {
+          if (!i.move.genre || i.sig || i.move.idle || i.move.cooldown || i.section === 'outro') continue;
+          all += i.span;
+          if (i.move.genre === 'rnb' || !open.has(i.move.genre)) lead += i.span;
+        }
+      }
+      expect(songs, lv).toBeGreaterThan(8);
+      // Measured Nov 2026: about 55 % (an even split by openness gave R&B about a third).
+      expect(lead / all, lv).toBeGreaterThan(0.5);
+    }
+    expect(LEAD_SHARE).toBeGreaterThan(0.5);
+    expect(leadSubStyle(['rnb', 'discofunk'], new Map([['rnb', 1], ['discofunk', 1]]))).toBe('rnb');
+    // Lyrical (a mood) never leads; one open set needs no lead.
+    expect(leadSubStyle(['rock', 'lyrical'], new Map([['rock', 0.5], ['lyrical', 1]]))).toBeNull();
+    expect(leadSubStyle(['edm'], new Map([['edm', 1]]))).toBeNull();
   });
 });
 

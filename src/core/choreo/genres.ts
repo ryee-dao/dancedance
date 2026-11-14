@@ -186,12 +186,16 @@ export interface Neighbour {
  *
  *   rnb       soul / funk grooves (R&B is soul's continuation: camel walk,
  *             boogaloo, four corners; the families keep the disco points out),
- *             hip-hop's smooth grooves, and on a calm song the lyrical set
- *             (slow jams' waves and reaches). Not swing / jazz: Lindy and
- *             Charleston are kicked, bouncy, partner-born steps, nothing like
- *             R&B's isolations, whatever the shared history; not dancehall /
- *             reggaeton (their wine and perreo name their scenes) nor trap
- *             (its party dances).
+ *             and on a calm song the lyrical set (slow jams' waves and
+ *             reaches). Not the hip-hop SET: R&B does share hip-hop's smooth
+ *             grooves, but those are global moves already; the set is the
+ *             named party dances (dougie, cabbage patch, the wop), exactly
+ *             what a "Billie Jean" must not get through its R&B (measured:
+ *             with R&B grown to 11 moves the cabbage patch fit its range).
+ *             Not swing / jazz: Lindy and Charleston are kicked, bouncy,
+ *             partner-born steps, nothing like R&B's isolations, whatever
+ *             the shared history; not dancehall / reggaeton (their wine and
+ *             perreo name their scenes) nor trap (its party dances).
  *   house     disco & funk (its parent: the hustle and roller footwork lives
  *             on in jacking), EDM (same four-on-the-floor floor, louder).
  *   edm       house (big room / electro / progressive house ARE house: the
@@ -215,7 +219,7 @@ export interface Neighbour {
  * borrow (the small traditions have no style close enough to lend).
  */
 export const NEIGHBOURS: Readonly<Partial<Record<Genre, readonly Neighbour[]>>> = {
-  rnb: [{ from: 'discofunk', w: 0.7 }, { from: 'hiphop', w: 0.5 }, { from: 'lyrical', w: 0.5, slow: true }],
+  rnb: [{ from: 'discofunk', w: 0.7 }, { from: 'lyrical', w: 0.5, slow: true }],
   house: [{ from: 'discofunk', w: 1 }, { from: 'edm', w: 0.6 }],
   edm: [{ from: 'house', w: 0.8 }, { from: 'bass', w: 0.4 }],
   bass: [{ from: 'trap', w: 0.6 }, { from: 'edm', w: 0.5 }, { from: 'drill', w: 0.4 }],

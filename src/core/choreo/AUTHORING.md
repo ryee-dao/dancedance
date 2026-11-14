@@ -82,8 +82,28 @@ neighbour). One rule replaces the old "keep the parent open until 16":
   signature nod, a `party`-family move, a move named for its own style,
   "Salsa Basic", "Disco Dip", "Drill Bounce", read with the song-genre
   lexicon) and families that suit the song at least half as well as the
-  borrower's own moves do (`styleFactor`; this is what keeps a "Billie
-  Jean" with R&B in its genre list off the hip-hop moves).
+  borrower's own moves do (`styleFactor`). R&B has no hip-hop neighbour at
+  all: the hip-hop set is its named party dances (a "Billie Jean" with R&B
+  in its genre list must not get them), and hip-hop's smooth grooves are
+  global moves anyway.
+
+### How a song's genre slots are chosen and shared
+
+The kit's genre accents are whole kit slots (`assignGenres` in
+`generator.ts`), 20-40 % of the danced time. Two rules keep one song's
+genre part from being one move:
+
+- No slot carries more than `GENRE_SLOT_CAP` (0.35) of the genre time aimed
+  at (`GENRE_TARGET`), so it spreads over about three accents or more:
+  `GENRE_PRIORITY` first, then the other slots that fit, smallest first,
+  never the verse motif's A or the hook's H1. When a song's kit is too small
+  for that to reach `GENRE_MIN` (short songs on Easy), the uncapped choice
+  of before applies. The kit itself doesn't grow: only which of its slots
+  are genre accents changes, so routines stay as learnable.
+- With a sub-style open next to broader sets (R&B with disco & funk and
+  hip-hop, metal with rock), the most open sub-style (`leadSubStyle`; never
+  `lyrical`) takes `LEAD_SHARE` (0.65) of the genre beats, the other sets
+  fill the rest by openness, slot by slot by the beats each is still owed.
 
 Large sets have no neighbours and never borrow: their songs come out exactly
 as without borrowing (`borrow.test.ts`). When you grow a thin set, its songs
@@ -96,7 +116,7 @@ borrow needs a `NEIGHBOURS` entry with the dance reason next to it.
 | `punk` | pogo, ska skank, hardcore two-step, circle-pit running, slam dancing | punk / hardcore / pop punk / ska / emo names; fast (150+), driving, rough rock | adds to rock; borrows metal | `genreSets/mood.ts` |
 | `trap` | the whip, nae nae, shoot, woah, griddy; quick poses on hi-hat rolls, bounce on the half-time snare | trap, crunk, snap, rage, cloud rap names; half-time feel + hat rolls / heavy 808 | adds to hip-hop; borrows drill, bass | `genreSets/urban.ts` |
 | `drill` | drill bounce, arm swings, shoulder rocks, shmoney, the strut | drill (UK / NY / Chicago ...), grime partly; half-time feel + syncopated hats and sliding bass | adds to hip-hop; borrows trap | `genreSets/urban.ts` |
-| `rnb` | body rolls, smooth two-steps, shoulder / hip isolations, slow grind grooves | R&B, neo soul, new jack swing, quiet storm; a swung, unhurried groove | none: the family mix opens what it leads; borrows soul / funk grooves, smooth hip-hop, lyrical (calm) | `genreSets/urban.ts` |
+| `rnb` | body rolls, smooth two-steps, shoulder / hip isolations, slow grind grooves | R&B, neo soul, new jack swing, quiet storm; a swung, unhurried groove | none: the family mix opens what it leads; borrows soul / funk grooves, lyrical (calm); never the hip-hop set (its party dances) | `genreSets/urban.ts` |
 | `house` | jacking, lofting, heel-toe footwork, skate / train / farmer, loose legs, voguing hands and frames | house names (deep / tech / Chicago / French, nu-disco, UK garage); four-on-the-floor at ~115-127 BPM | borrows disco & funk (parent), EDM | `genreSets/electronic.ts` |
 | `edm` | fist pumping, shuffle (cutting shapes), the jump on the drop, hands-up builds | EDM, big room, electro / progressive house, trance, techno, hardstyle; four-on-the-floor at 124+ | borrows house, bass | `genreSets/electronic.ts` |
 | `bass` | DnB skank, rail / wobble bounce, liquid and popping hits, phonk drift arms | dubstep, drum and bass, phonk, future bass; heavy sub-bass with half-time feel, or dense hats at ~170 | borrows trap, EDM, drill | `genreSets/electronic.ts` |
