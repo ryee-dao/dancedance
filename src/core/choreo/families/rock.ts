@@ -194,7 +194,9 @@ export const patterns: PatternSet = {
     },
   },
   accent: {
-    headBang: { beats: 1, parts: [], keys: [[0, { nod: 16, bend: 4 }], [0.5, { nod: -6, bend: 0 }]] },
+    // Restaged Nov 2026 (readability review): a nod with 4 deg of chest showed as a face that barely
+    // changed head-on; a headbang is a pump from the upper back, so the chest bows with the nod.
+    headBang: { beats: 1, parts: [], keys: [[0, { nod: 18, bend: 17 }], [0.5, { nod: -7, bend: -1 }]] },
     // Torso-driven bang: the chest bows, the neck only nods.
     rkBodyBang: { beats: 1, parts: ['torso'], keys: [[0, { nod: 13, bend: 13 }], [0.5, { nod: -5, bend: 1 }]] },
     rkLowBang: { beats: 1, parts: ['torso'], keys: [[0, { nod: 16, bend: 24, head: 0 }], [0.5, { nod: 0, bend: 10 }]] },

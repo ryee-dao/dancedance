@@ -53,12 +53,15 @@ export const patterns: PatternSet = {
       beats: 1, parts: ['legs'], mirror: true, torso: true,
       keys: [[0, { rf: [0.17, 0, 0.13], y: -0.04, hips: -0.015, lean: 5, nod: 8 }], [0.5, { rf: [0.09, 0.02, 0.02], y: -0.012, lean: 1, nod: 2 }]],
     },
+    // Restaged (Nov 2026 readability review): head-on the forward kick read as a knee lift, so the
+    // body turns a quarter toward the kicking side and the kick is a low, nearly straight leg that
+    // shows across the screen; the ball step lands behind on the toes and the change squares up.
     kickBall: {
       beats: 2, parts: ['legs'], mirror: true,
       keys: [
-        [0, { rf: [0.11, 0.14, 0.26], y: -0.005, x: -0.01, bend: -4 }],
-        [1, { rf: [0.1, 0.035, -0.07], y: -0.03, x: 0.0 }],
-        [1.5, { rf: [0.09, 0, 0], lf: [-0.09, 0.03, 0.02], y: -0.045 }],
+        [0, { spin: 32, rf: [0.09, 0.15, 0.3], lf: [-0.08, 0, 0], kneeR: 0, y: -0.02, x: -0.01, pitchR: -10 }],
+        [1, { spin: 18, rf: [0.08, 0.02, -0.1], lf: [-0.08, 0.02, 0.02], pitchR: 35, y: -0.035, x: 0.0 }],
+        [1.5, { spin: 0, rf: [0.09, 0, -0.02], lf: [-0.09, 0.03, 0.03], pitchR: 0, y: -0.05 }],
       ],
     },
     heelSwivel: {

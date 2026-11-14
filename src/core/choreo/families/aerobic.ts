@@ -47,9 +47,15 @@ const backKick: PoseSpec = {
 };
 const tireA: PoseSpec = { y: 0.03, x: -0.02, rf: [0.18, 0.2, 0.1], lf: [-0.18, 0, 0], kneeR: 0.2, r: at(1, 0.34, 0.62, 0.1, [1, -0.2, -0.2]), l: at(-1, -0.3, 0.86, 0.12, [1, -0.2, -0.2]), ...FIST };
 const tireDn: PoseSpec = { y: -0.05, rf: [0.18, 0, 0], lf: [-0.18, 0, 0] };
+// Restaged Nov 2026 (readability review): at a quarter beat the 0.09 lift of a foot set 0.17 out
+// barely left the floor on screen and the hands hardly moved, so the drill read as a held squat.
+// The feet now patter a little narrower with the knee coming up higher, the standing foot on its
+// ball, and the hands pump up and down in opposition like a sprinter's.
 const fastFeet = (k: number): PoseSpec => ({
-  y: k % 2 ? -0.1 : -0.11, bend: 12, nod: 2, rf: [0.17, k % 2 ? 0 : 0.09, 0.02], lf: [-0.17, k % 2 ? 0.09 : 0, 0.02], kneeR: 0.12, kneeL: 0.12,
-  r: at(1, 0.15, k % 2 ? 0.56 : 0.66, 0.24, [0.5, -1, -0.2]), l: at(-1, -0.15, k % 2 ? 0.66 : 0.56, 0.24, [0.5, -1, -0.2]), ...OPEN,
+  y: k % 2 ? -0.09 : -0.1, bend: 12, nod: 2,
+  rf: [0.14, k % 2 ? 0 : 0.13, 0.03], lf: [-0.14, k % 2 ? 0.13 : 0, 0.03], kneeR: 0.15, kneeL: 0.15,
+  pitchR: k % 2 ? 30 : 0, pitchL: k % 2 ? 0 : 30,
+  r: at(1, 0.16, k % 2 ? 0.52 : 0.7, 0.22, [0.5, -1, -0.2]), l: at(-1, -0.16, k % 2 ? 0.7 : 0.52, 0.22, [0.5, -1, -0.2]), handR: 0.3, handL: 0.3,
 });
 const athletic = (x: number, rx: number, lx: number, slide: boolean): PoseSpec => ({
   x, y: slide ? -0.08 : -0.15, bend: 10, rf: [rx, 0, 0], lf: [lx, 0, 0], kneeR: 0.1, kneeL: 0.1, ...(slide ? { slideL: true } : {}),

@@ -162,12 +162,16 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'gully-creepa', name: 'Gully Creepa', tags: 'hiphop | legs | walk dancehall', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms'],
-    desc: 'Crouch a little with the elbows bent and shoulders hunched, and creep with small bouncy steps, one foot then the other, the hands paddling low in front.',
+    desc: 'Sink into a deep crouch, knees wide and the chest bowed forward, and creep: lift one knee and set the foot down as that shoulder dips and the arms hang and swing low in front, then the other side, sneaky and bouncy.',
+    // Restaged (Nov 2026 readability review, Elephant Man / Howcast footage): the old crouch was shallow
+    // and the hands sat at the hips, which read as a hands-on-hips squat bounce. The creep is a deep,
+    // wide crouch bowed forward, the hands dangling low by the knees and swinging with the steps, and a
+    // knee lifting each beat with the same shoulder dipping, so the sneaking rocks side to side.
     keys: [
-      [0, { y: -0.15, bend: 12, nod: 6, shR: 0.7, shL: 0.7, rf: [0.12, 0, 0.07], lf: [-0.11, 0.06, -0.02], kneeR: 0.2, kneeL: 0.1, hips: 0.02, r: at(1, 0.18, 0.56, 0.24, E_OUT), l: at(-1, -0.14, 0.62, 0.2, E_OUT), handR: 0.6, handL: 0.6 }],
-      [0.5, { y: -0.12, bend: 10, nod: 4, shR: 0.4, shL: 0.4, rf: [0.12, 0, 0.04], lf: [-0.11, 0, 0.0], kneeR: 0.15, kneeL: 0.15, hips: 0, r: at(1, 0.16, 0.6, 0.2, E_OUT), l: at(-1, -0.16, 0.6, 0.2, E_OUT), handR: 0.6, handL: 0.6 }],
-      [1, { y: -0.15, bend: 12, nod: 6, shR: 0.7, shL: 0.7, lf: [-0.12, 0, 0.07], rf: [0.11, 0.06, -0.02], kneeL: 0.2, kneeR: 0.1, hips: -0.02, l: at(-1, -0.18, 0.56, 0.24, E_OUT), r: at(1, 0.14, 0.62, 0.2, E_OUT), handR: 0.6, handL: 0.6 }],
-      [1.5, { y: -0.12, bend: 10, nod: 4, shR: 0.4, shL: 0.4, rf: [0.11, 0, 0.0], lf: [-0.12, 0, 0.04], kneeR: 0.15, kneeL: 0.15, hips: 0, r: at(1, 0.16, 0.6, 0.2, E_OUT), l: at(-1, -0.16, 0.6, 0.2, E_OUT), handR: 0.6, handL: 0.6 }],
+      [0, { y: -0.2, bend: 20, nod: 2, lean: 7, x: 0.015, hips: -0.03, tilt: -4, shR: 0.2, shL: 0.9, rf: [0.15, 0.08, 0.05], lf: [-0.14, 0, 0], kneeR: 0.35, kneeL: 0.3, r: at(1, 0.15, 0.42, 0.22, E_OUT), l: at(-1, -0.2, 0.5, 0.2, E_OUT), handR: 0.6, handL: 0.6 }],
+      [0.5, { y: -0.23, bend: 18, nod: 4, lean: 2, x: 0.005, hips: 0, tilt: 0, shR: 0.6, shL: 0.6, rf: [0.15, 0, 0.04], lf: [-0.14, 0, 0], kneeR: 0.35, kneeL: 0.35, r: at(1, 0.17, 0.46, 0.22, E_OUT), l: at(-1, -0.17, 0.46, 0.22, E_OUT), handR: 0.6, handL: 0.6 }],
+      [1, { y: -0.2, bend: 20, nod: 2, lean: -7, x: -0.015, hips: 0.03, tilt: 4, shR: 0.9, shL: 0.2, rf: [0.15, 0, 0.04], lf: [-0.15, 0.08, 0.05], kneeR: 0.3, kneeL: 0.35, l: at(-1, -0.15, 0.42, 0.22, E_OUT), r: at(1, 0.2, 0.5, 0.2, E_OUT), handR: 0.6, handL: 0.6 }],
+      [1.5, { y: -0.23, bend: 18, nod: 4, lean: -2, x: -0.005, hips: 0, tilt: 0, shR: 0.6, shL: 0.6, rf: [0.15, 0, 0.04], lf: [-0.15, 0, 0.05], kneeR: 0.35, kneeL: 0.35, r: at(1, 0.17, 0.46, 0.22, E_OUT), l: at(-1, -0.17, 0.46, 0.22, E_OUT), handR: 0.6, handL: 0.6 }],
     ],
   }),
   full({

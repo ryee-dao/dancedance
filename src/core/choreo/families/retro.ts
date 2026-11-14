@@ -173,14 +173,30 @@ const jigStep = (side: 1 | -1): PoseSpec => {
   return side > 0 ? s : mir(s);
 };
 
-/** Chicken Walk (jive): knees kept bent, one foot slides forward on its toe, hips and shoulders turn to that side. */
-const chicken = (side: 1 | -1): PoseSpec => ({
-  y: -0.07, bend: 4, twist: 14 * side, hipTwist: 10 * side, hips: 0.045 * side, tilt: 5 * side, shR: side > 0 ? 0.5 : 0, shL: side < 0 ? 0.5 : 0,
-  rf: side > 0 ? [0.07, 0, 0.1] : [0.06, 0, -0.02], lf: side < 0 ? [-0.07, 0, 0.1] : [-0.06, 0, -0.02],
-  pitchR: side > 0 ? 18 : 0, pitchL: side < 0 ? 18 : 0,
-  slideR: true, slideL: true, kneeR: -0.2, kneeL: -0.2,
-  r: [22, 20, 52, 60], l: [22, 20, 52, 60], handR: 0.5, handL: 0.5,
-});
+/**
+ * Chicken Walk (jive): sitting on the bent standing knee, the free leg reaches forward STRAIGHT on a
+ * pointed toe, the hips swivelling toward it; then the weight walks onto it and the other leg reaches.
+ * Restaged Nov 2026 (readability review): the old foot slid 0.1 straight at the camera with the knees
+ * bent, which read as standing still head-on; the reach now goes out on the diagonal with the body
+ * swivelled toward it, so a long straight leg on a pointed toe crosses the screen each beat.
+ */
+const chicken = (side: 1 | -1): PoseSpec => {
+  const s: PoseSpec = {
+    y: -0.08, spin: 16, bend: 3, twist: 8, hipTwist: 12, hips: -0.045, tilt: -5, lean: 2, shR: 0.4, shL: 0,
+    rf: [0.15, 0, 0.17], lf: [-0.06, 0, -0.02], pitchR: 45, pitchL: 0, kneeR: 0, kneeL: -0.2, slideR: true, slideL: true,
+    r: [22, 20, 52, 60], l: [22, 20, 52, 60], handR: 0.5, handL: 0.5,
+  };
+  return side > 0 ? s : mir(s);
+};
+/** Weight walked onto the reaching foot, knees together, squaring up. */
+const chickenOn = (side: 1 | -1): PoseSpec => {
+  const s: PoseSpec = {
+    y: -0.06, spin: 6, bend: 3, twist: 2, hipTwist: 4, hips: 0.03, tilt: 3, lean: 0, shR: 0, shL: 0,
+    rf: [0.06, 0, 0.04], lf: [-0.05, 0, -0.02], pitchR: 0, pitchL: 20, kneeR: -0.15, kneeL: -0.25, slideR: true, slideL: true,
+    r: [22, 20, 52, 60], l: [22, 20, 52, 60], handR: 0.5, handL: 0.5,
+  };
+  return side > 0 ? s : mir(s);
+};
 
 const strollSnap: PoseSpec = { l: at(-1, -0.27, 0.96, 0.06, [1, -0.2, -0.2]), r: [20, -10, 30, 0], handL: 0, handR: 1 };
 
@@ -201,11 +217,12 @@ const loco = (k: number): PoseSpec => {
 // ---------------------------------------------------------------------------
 // Ballroom (solo, frame arms) and country
 
-const TANGO: PoseSpec = {
-  l: [74, 35, 128, 65],
-  r: [68, 50, 76, 140],
-  handR: 1, handL: 0.4,
-};
+/**
+ * Solo tango hold: the left hand up and out at head height (the joined hands), the right arm curved
+ * across the front of the chest (the partner's back). Restaged Nov 2026: the old angles drew both
+ * forearms upright, a double-biceps flex rather than a hold (same shape as latin2.ts EMBRACE).
+ */
+const TANGO: PoseSpec = { l: at(-1, -0.34, 0.9, 0.12, [1, -0.6, -0.2]), r: at(1, -0.04, 0.8, 0.23, [1, -0.1, 0]), handR: 1, handL: 0.7 };
 
 /** Hooked elbow out for an elbow swing. */
 const HOOK_R = at(1, 0.24, 0.92, 0.2, [1, 0, 0]);
@@ -336,8 +353,8 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'chicken-walk', name: 'Chicken Walk', tags: 'pop rock | hips legs | swing walk hips', beats: 2, level: 'mid', d: 2, parts: ['hips', 'legs'],
-    desc: 'Jive / swing chicken walk: knees kept bent, slide one foot forward with the toe on the floor and shift onto it, hips and shoulders turning to that side, then the other.',
-    keys: [[0, chicken(1)], [0.5, { ...chicken(1), hips: 0, tilt: 0, y: -0.05, rf: [0.06, 0, -0.03], lf: [-0.06, 0, -0.03] }], [1, chicken(-1)], [1.5, { ...chicken(-1), hips: 0, tilt: 0, y: -0.05, rf: [0.06, 0, -0.03], lf: [-0.06, 0, -0.03] }]],
+    desc: 'Jive / swing chicken walk: sit on one bent knee and reach the other leg forward on the diagonal, straight, on a pointed toe, hips swivelling toward it; walk onto it and reach with the other.',
+    keys: [[0, chicken(1)], [0.5, chickenOn(1)], [1, chicken(-1)], [1.5, chickenOn(-1)]],
   }),
   full({
     id: 'the-stroll', name: 'The Stroll', tags: 'pop rock | legs hips | swing walk', beats: 4, level: 'low', d: 2, parts: ['legs', 'hips'], mirror: true, travel: 0.14,
@@ -387,13 +404,16 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'tango-walk', name: 'Tango Walk', tags: 'latin pop | legs | walk', beats: 4, level: 'mid', d: 2, parts: ['legs', 'torso'], mirror: true,
-    desc: 'Low, stalking walks in a compact tango frame: slow step, slow step, then close the feet sharply and snap the head round to the other side.',
+    desc: 'Low, stalking walks in a tango hold, turned along the diagonal: slow step, slow step, quick step, sharply close the feet facing front and snap the head round to the other side.',
+    // Restaged (Nov 2026 readability review): forward walks are depth and read as standing still head-on,
+    // so the walks go along a diagonal (spin) where each step crosses the screen, and the close snaps
+    // square to the front with the head flick, the tango accent.
     keys: [
-      [0, { y: -0.1, bend: -3, twist: 6, turn: -28, hips: 0.02, rf: [0.08, 0, 0.12], lf: [-0.09, 0, -0.02], kneeL: 0.1, ...TANGO }],
-      [1, { y: -0.11, bend: -3, twist: 6, turn: -28, hips: -0.02, rf: [0.08, 0, 0.12], lf: [-0.07, 0, 0.14], ...TANGO }],
-      [2, { y: -0.1, bend: -3, twist: 4, turn: -26, rf: [0.09, 0, 0.0], lf: [-0.07, 0, 0.14], ...TANGO }],
-      [2.5, { y: -0.12, bend: -4, twist: 4, turn: -26, rf: [0.08, 0, 0.0], lf: [-0.07, 0, 0.0], ...TANGO }],
-      [3, { y: -0.12, bend: -5, twist: -6, turn: 30, nod: -3, rf: [0.08, 0, 0.0], lf: [-0.07, 0, 0.0], ...TANGO }],
+      [0, { y: -0.1, spin: -32, bend: -3, turn: -14, hips: 0.02, rf: [0.07, 0, 0.17], lf: [-0.07, 0, -0.05], pitchL: 25, kneeR: 0.04, kneeL: 0.14, ...TANGO }],
+      [1, { y: -0.11, spin: -32, bend: -3, turn: -14, hips: -0.02, rf: [0.07, 0, -0.05], lf: [-0.07, 0, 0.17], pitchR: 25, pitchL: 0, kneeL: 0.04, kneeR: 0.14, ...TANGO }],
+      [2, { y: -0.1, spin: -18, bend: -3, turn: -10, rf: [0.13, 0, 0.07], lf: [-0.07, 0, 0.02], pitchR: 0, kneeR: 0.08, kneeL: 0.1, ...TANGO }],
+      [2.5, { y: -0.12, spin: 0, bend: -4, turn: -6, rf: [0.06, 0, 0.0], lf: [-0.06, 0, 0.0], kneeR: 0.1, kneeL: 0.1, ...TANGO }],
+      [3, { y: -0.12, spin: 0, bend: -5, twist: -4, turn: 34, nod: -3, rf: [0.06, 0, 0.0], lf: [-0.06, 0, 0.0], kneeR: 0.1, kneeL: 0.1, ...TANGO }],
     ],
   }),
   full({
@@ -574,12 +594,16 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'kalinka-heel-toe', name: 'Kalinka Heel-Toe', tags: 'party pop | legs | folk', beats: 2, level: 'mid', d: 2, parts: ['legs'],
-    desc: 'Arms folded high across the chest, bounce and dig one heel forward, tap the same toe back beside the other foot, then the other side.',
+    desc: 'Arms folded high across the chest, bounce and dig one heel out on the forward diagonal, toes up, then tap the same toe in beside the other foot with the knee turned in; then the other side.',
     keys: [
-      [0, { y: -0.06, bend: -3, rf: [0.11, 0.03, 0.17], lf: [-0.09, 0, 0], ...FOLDED }],
-      [0.5, { y: -0.03, rf: [0.08, 0.05, -0.05], lf: [-0.09, 0, 0], kneeR: -0.15, ...FOLDED }],
-      [1, { y: -0.06, bend: -3, rf: [0.09, 0, 0], lf: [-0.11, 0.03, 0.17], ...FOLDED }],
-      [1.5, { y: -0.03, rf: [0.09, 0, 0], lf: [-0.08, 0.05, -0.05], kneeL: -0.15, ...FOLDED }],
+      // Restaged (Nov 2026 readability review): the heel went straight at the camera and the toe tap
+      // was a small lift, so head-on the feet barely moved. The heel now digs out on the forward
+      // diagonal, toes up, and the toe taps in beside the standing foot with the knee turned in
+      // (the Russian heel-and-toe), both shapes that show across the screen.
+      [0, { y: -0.07, bend: -3, rf: [0.2, 0.02, 0.15], pitchR: -30, kneeR: 0.1, lf: [-0.09, 0, 0], ...FOLDED }],
+      [0.5, { y: -0.03, rf: [0.03, 0.02, -0.03], pitchR: 45, kneeR: -0.45, lf: [-0.09, 0, 0], ...FOLDED }],
+      [1, { y: -0.07, bend: -3, rf: [0.09, 0, 0], pitchR: 0, kneeR: 0, lf: [-0.2, 0.02, 0.15], pitchL: -30, kneeL: 0.1, ...FOLDED }],
+      [1.5, { y: -0.03, rf: [0.09, 0, 0], lf: [-0.03, 0.02, -0.03], pitchL: 45, kneeL: -0.45, ...FOLDED }],
     ],
   }),
   full({

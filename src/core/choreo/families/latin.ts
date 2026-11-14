@@ -171,10 +171,13 @@ export const patterns: PatternSet = {
     salsaBack: {
       beats: 4, parts: ['legs', 'hips'], mirror: true, torso: true,
       keys: [
-        [0, { rf: [0.1, 0, -0.15], hips: 0.045, tilt: 4, y: -0.04, bend: 4, kneeL: -0.08 }],
-        [1, { rf: [0.1, 0, -0.15], hips: -0.045, tilt: -4, y: -0.025, bend: -2, kneeR: -0.06 }],
-        [2, { rf: [0.09, 0, 0], hips: 0.035, tilt: 3, y: -0.035, bend: 0 }],
-        [3, { hips: 0.01, y: -0.015 }],
+        // Restaged (Nov 2026 readability review): a straight back break is depth and vanished head-on,
+        // so the hip on the breaking side draws back with it (the body opens ~30 deg away from the
+        // foot), which carries the foot out to the side and up the screen; replace squares up again.
+        [0, { spin: -30, rf: [0.13, 0, -0.19], pitchR: 25, hips: 0.045, tilt: 4, y: -0.04, bend: 4, kneeL: -0.08 }],
+        [1, { spin: -14, rf: [0.13, 0, -0.19], pitchR: 25, hips: -0.045, tilt: -4, y: -0.025, bend: -2, kneeR: -0.06 }],
+        [2, { spin: 0, rf: [0.09, 0, 0], pitchR: 0, hips: 0.035, tilt: 3, y: -0.035, bend: 0 }],
+        [3, { spin: 0, hips: 0.01, y: -0.015 }],
       ],
     },
     salsaSide: {

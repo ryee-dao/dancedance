@@ -134,7 +134,9 @@ export const patterns: PatternSet = {
         [0.5, { r: [80, 10, 160, 20], l: [80, 10, 160, 20], handR: 1, handL: 1 }],
       ],
     },
-    shoulderBounce: { beats: 1, parts: ['torso'], keys: [[0, { shR: 1.3, shL: 1.3, nod: 6, r: [20, 10, 64, 75], l: [20, 10, 64, 75] }], [0.5, { r: [16, 10, 56, 75], l: [16, 10, 56, 75] }]] },
+    // Restaged Nov 2026 (readability review): the shrug alone barely showed head-on; the bent elbows
+    // now lift out with the shoulders on the beat and drop on the and, so the whole upper body bounces.
+    shoulderBounce: { beats: 1, parts: ['torso'], keys: [[0, { shR: 1.3, shL: 1.3, nod: 6, r: [38, 6, 84, 70], l: [38, 6, 84, 70], handR: 0.2, handL: 0.2 }], [0.5, { shR: 0, shL: 0, r: [12, 10, 52, 75], l: [12, 10, 52, 75], handR: 0.2, handL: 0.2 }]] },
     shoulderRoll: {
       beats: 2, parts: ['torso'], mirror: true, torso: true,
       keys: [
@@ -517,10 +519,13 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'krump-chest-pop', name: 'Krump Chest Pop', tags: 'hiphop | full |', beats: 1, level: 'mid', d: 2, parts: ['torso', 'arms'],
-    desc: 'Pop the chest up and out on every beat as both arms flare down and back with open hands, then recoil.',
+    desc: 'Arms bent in front of the chest, pop the chest up and out on every beat so the elbows jerk back and the open hands fly out to the sides at chest height, chin up, then recoil hunched with the hands back together in front.',
+    // Restaged (Nov 2026 readability review, krump drill footage): the arms used to flare down by the
+    // hips, which head-on read as flapping, not a chest pop. Krumpers keep the arms bent at chest
+    // height and the chest hit throws them open; the pop also lifts the shoulders and the body.
     keys: [
-      [0, wide(-0.05, { bend: -9, nod: -8, shR: 0.8, shL: 0.8, r: at(1, 0.32, 0.5, -0.1, [1, 0, -0.5]), l: at(-1, -0.32, 0.5, -0.1, [1, 0, -0.5]), ...OPEN })],
-      [0.5, wide(-0.1, { bend: 8, nod: 6, r: at(1, 0.14, 0.62, 0.2, [1, -0.3, 0]), l: at(-1, -0.14, 0.62, 0.2, [1, -0.3, 0]), handR: 0.2, handL: 0.2 })],
+      [0, wide(-0.04, { bend: -10, nod: -9, shR: 1, shL: 1, r: at(1, 0.3, 0.76, 0.02, [1, -0.2, -0.3]), l: at(-1, -0.3, 0.76, 0.02, [1, -0.2, -0.3]), ...OPEN })],
+      [0.5, wide(-0.1, { bend: 9, nod: 7, r: at(1, 0.1, 0.68, 0.22, [1, -0.3, 0]), l: at(-1, -0.1, 0.68, 0.22, [1, -0.3, 0]), handR: 0.2, handL: 0.2 })],
     ],
   }),
   // Party dances (added Nov 2026)
