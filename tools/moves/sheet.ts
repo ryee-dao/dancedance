@@ -38,8 +38,12 @@
  *   --at <rev>         render the app as it was at that revision (before / after,
  *                      e.g. --at HEAD~1 --name before); ids are looked up there
  *   --url <http://..>  use a running dev server instead of starting one
- *   --param k=v,k2=v2  extra bench parameters, e.g. camera experiments
- *                      (--param rise=0,cam=4.2 = the old flat front view)
+ *   --param k=v,k2=v2  extra bench parameters (a value can't contain a comma):
+ *                      cam=4.2,piv=0.55,feet=0   the old camera (before the eye-height view)
+ *                      "cams=4.2/0.55/0/0;2.6/0.95/0/1"  one row per camera (before / after
+ *                                                in one sheet; 5th field 1 = hand ghost trail)
+ *                      ghost=1                   hand ghost trail (motion cue, off in the app)
+ *                      form=fingers|point|horns  preview a hand form on every frame
  *
  * Prints the written paths. Images are scratch output: never commit them.
  */

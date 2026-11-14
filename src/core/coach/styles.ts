@@ -72,26 +72,36 @@ export function duoBuilds(chosen: CoachBuild): readonly [CoachBuild, CoachBuild]
   return [chosen, partnerBuild(chosen)];
 }
 
-// Projection shared by every style (mild perspective around a pivot height).
+// The old projection (eye 4.2 away at hip height): the duo stage still places
+// whole figures in depth with it (duoRenderer DEPTH_RISE), and ?cam=4.2&piv=0.55
+// &feet=0 on the bench shows the old look.
 export const CAM = 4.2;
 export const PIV_Y = 0.55;
 
 /**
  * The stage camera, shared by every look, the stage, the duo stage and the
- * thumbnails. Set once at start-up (the demo bench reads ?cam= / ?rise= for
- * comparisons): sprites are cached per look, not per camera.
+ * thumbnails. Set once at start-up (the demo bench reads ?cam= / ?piv= /
+ * ?rise= / ?feet= / ?ghost= for comparisons): sprites are cached per look,
+ * not per camera.
  *
- *   cam   distance of the eye (figure units): perspective scale CAM / (CAM - z).
+ *   cam   distance of the eye (figure units): perspective scale cam / (cam - z).
  *   piv   eye height: points off the picture plane scale about it, so below
- *         it a point coming toward the viewer drops, above it it rises.
- *   rise  how far a point moves UP the screen per unit of depth AWAY from the
- *         viewer (an oblique, slightly-from-above view): a foot stepping
- *         toward the viewer moves down the screen, a step back moves up, a
- *         forward bend drops the head. 0 = the old flat front view. Every
- *         joint at z = 0 (the neutral stance, side-to-side moves) is
- *         unchanged, so framing and proportions stay as authored.
+ *         it a point coming toward the viewer drops on the screen, above it
+ *         rises. At head height (0.95) with the eye 2.6 away, a foot stepping
+ *         0.15 toward the viewer lands ~0.06 lower (a step back ~0.06 higher)
+ *         while a hand at chest height moves under a third of that: depth
+ *         reads on the floor without moving the arms authors placed. Every
+ *         joint at z = 0 (the neutral stance, side-to-side moves) is exactly
+ *         where it was, so framing and proportions stay as authored. (The
+ *         old camera: 4.2 / 0.55, a foot step moved ~0.01.)
+ *   rise  extra oblique lift per unit of depth away from the viewer, applied
+ *         to every joint alike (a view from above). Evaluated and left at 0:
+ *         it shows floor depth but also drops every hand held in front of
+ *         the body (a chest-height point drew at the belly).
  *   feet  a contact shadow under each foot (on the floor at the foot's depth,
- *         shrinking as it lifts) on top of the body's soft shadow pool.
+ *         shrinking and fading as it lifts) on top of the body's soft shadow
+ *         pool: tells a foot stepped back (higher on screen, shadow under
+ *         it) from a lifted one (shadow left on the floor below).
  *   ghost a faint trail of each hand over the last half second (motion cue
  *         for circles the flat figure collapses; off by default).
  */

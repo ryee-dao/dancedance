@@ -34,6 +34,7 @@ import { PoseEvaluator } from '../core/coach/animator';
 import { loopPlan } from '../core/coach/loop';
 import { LOOKS } from '../core/coach/humanPainter';
 import { COLORS, FigurePainter, drawCoachPreview, StageRenderer2D, type StripInfo } from '../core/coach/renderer';
+import { sharedSpriteCache } from '../core/coach/sprites';
 import { CH, J, createPose, createSkeleton, solveSkeleton, type Skeleton } from '../core/coach/skeleton';
 import { COACH_STYLE_IDS, DEFAULT_COACH_BUILD, coachStyleInfo, parseCoachBuild, parseCoachStyle, VIEW, viewFromParams, type CoachStyle } from '../core/coach/styles';
 import { createCoachStage } from '../ui/coachStage';
@@ -718,10 +719,14 @@ function runBench(): void {
       for (const st of styles) {
         const painter = new FigurePainter();
         painter.style = st;
+        // &sprites=1: the sprite tiers' drawing (pass 0 makes every sprite, pass 1 measures blits).
+        const sp = q.get('sprites') === '1' ? sharedSpriteCache() : null;
+        painter.sprites = sp;
         const t0 = performance.now();
         let n = 0;
         for (let r = 0; r < reps; r++) {
           for (const sk of sks) {
+            sp?.beginFrame(pass === 0 ? 1e9 : 3);
             painter.draw(ctx, sk, 768, 930, scale, n * 0.016);
             n++;
           }

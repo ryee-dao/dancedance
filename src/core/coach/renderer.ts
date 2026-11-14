@@ -48,7 +48,9 @@ export const COLORS = {
 
 /** Widths in figure units. */
 /** How far the feet and their shadow reach below the floor line (× scale). */
-const FEET_BELOW_FLOOR = 0.05;
+// With the eye-height camera (styles.ts VIEW) a foot stepped toward the viewer
+// lands up to ~0.1 below the floor line (lunges); most moves stay within 0.07.
+const FEET_BELOW_FLOOR = 0.09;
 
 const FONT_STACK = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
 
