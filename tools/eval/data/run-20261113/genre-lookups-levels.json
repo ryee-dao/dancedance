@@ -1,0 +1,6056 @@
+{
+  "302980624": {
+    "genres": [
+      "Eurodance",
+      "euro house",
+      "house",
+      "dance",
+      "electronic",
+      "R&B"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "Eurodance",
+      "hip house",
+      "pop rock",
+      "pop"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "at": "2026-11-14T06:16:16.954Z",
+        "genres": [
+          "Eurodance"
+        ],
+        "ref": "Run Away (Real McCoy song)",
+        "links": {
+          "albumArticle": "Another Night (Real McCoy album)",
+          "artistArticle": "Real McCoy (band)"
+        },
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "at": "2026-11-14T06:18:01.110Z",
+        "genres": [
+          "Eurodance"
+        ],
+        "ref": "Q7379493",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "at": "2026-11-14T05:42:34.820Z",
+        "genres": [
+          "electronic",
+          "euro house",
+          "90s",
+          "dance",
+          "eurodance"
+        ],
+        "counts": [
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/67b63e81-1537-3f8e-8260-913a112fabaa",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "at": "2026-11-14T04:57:09.449Z",
+        "genres": [
+          "House"
+        ],
+        "ref": "track/33058438"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:57:09.273Z",
+        "genres": [
+          "R&B/Soul"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "reggae"
+        ],
+        "counts": [
+          1
+        ],
+        "ref": "release-group/e17eb24d-ea26-36d7-9a7f-2c3f6710ead0 (Asterix in Amerika; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "e17eb24d-ea26-36d7-9a7f-2c3f6710ead0",
+          "album": "Asterix in Amerika"
+        },
+        "at": "2026-11-14T08:37:05.576Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Platinum & Gold Collection: Real McCoy",
+        "at": "2026-11-14T08:37:09.821Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:37:09.821Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:37:05.576Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:42:33.990Z",
+        "genres": [
+          "R&B/Soul"
+        ],
+        "ref": "collection/302980621 (Platinum & Gold Collection: Real McCoy)",
+        "links": {
+          "album": "Platinum & Gold Collection: Real McCoy"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:42:37.444Z",
+        "genres": [
+          "eurodance",
+          "bubblegum dance",
+          "edm",
+          "electro",
+          "europop",
+          "german pop",
+          "germany",
+          "pop",
+          "schlager",
+          "synth-pop"
+        ],
+        "counts": [
+          3,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/7b0522f2-b808-4e48-82ce-fa9e32db06de (Real McCoy; credited on the song)",
+        "links": {
+          "mbArtist": "7b0522f2-b808-4e48-82ce-fa9e32db06de",
+          "wikidata": "Q41108"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Eurodance",
+          "hip house",
+          "pop"
+        ],
+        "ref": "Real McCoy (band)",
+        "links": {
+          "wikidata": "Q41108"
+        },
+        "at": "2026-11-14T08:37:13.972Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "Eurodance"
+        ],
+        "ref": "Q41108",
+        "at": "2026-11-14T08:37:16.522Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:42:30.652Z",
+        "genres": [
+          "House",
+          "Rock/Pop"
+        ],
+        "ref": "artist/115538"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:42:33.990Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "artist/1574695 (Real McCoy)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:37:16.522Z"
+  },
+  "304149133": {
+    "genres": [
+      "latin"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "salsa",
+      "tropical",
+      "latin"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:01:11.241Z",
+        "reason": "no article about this song",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:01:10.060Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:36:23.282Z",
+        "reason": "0 single(s) and 1 recording(s) found, none tagged",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T04:53:02.376Z",
+        "reason": "the track has no genre",
+        "ref": "track/34834960"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:53:02.121Z",
+        "genres": [
+          "Latin"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "the album has no tags",
+        "ref": "release-group/0e13f3bb-46c5-3251-95ab-a0b217e8b475 (A mi estilo...; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "0e13f3bb-46c5-3251-95ab-a0b217e8b475",
+          "album": "A mi estilo..."
+        },
+        "at": "2026-11-14T08:32:20.184Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album A Mi Estilo..",
+        "at": "2026-11-14T08:32:20.318Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:32:20.318Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:32:20.185Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:36:25.124Z",
+        "genres": [
+          "Latin"
+        ],
+        "ref": "collection/304149070 (A Mi Estilo..)",
+        "links": {
+          "album": "A Mi Estilo.."
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:36:26.143Z",
+        "genres": [
+          "latin",
+          "salsa"
+        ],
+        "counts": [
+          1,
+          1
+        ],
+        "ref": "artist/22bab6e2-1332-4eca-b07d-f12b9b038051 (Tito Rojas; credited on the song)",
+        "links": {
+          "mbArtist": "22bab6e2-1332-4eca-b07d-f12b9b038051",
+          "wikidata": "Q514485"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Salsa"
+        ],
+        "ref": "Tito Rojas",
+        "links": {
+          "wikidata": "Q514485"
+        },
+        "at": "2026-11-14T08:32:21.636Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "salsa"
+        ],
+        "ref": "Q514485",
+        "at": "2026-11-14T08:32:21.715Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:36:21.802Z",
+        "genres": [
+          "Latin",
+          "Latin"
+        ],
+        "ref": "artist/147546"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:36:25.124Z",
+        "genres": [
+          "Música tropical"
+        ],
+        "ref": "artist/7234716 (Tito Rojas)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:32:21.715Z"
+  },
+  "353859978": {
+    "genres": [
+      "hip hop",
+      "crunk",
+      "gangsta rap",
+      "conscious",
+      "R&B"
+    ],
+    "genreLevels": [
+      "song",
+      "album",
+      "album",
+      "album",
+      "album"
+    ],
+    "artistGenres": [
+      "pop rap",
+      "gangsta rap",
+      "southern hip hop",
+      "trap"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "at": "2026-11-14T06:18:01.279Z",
+        "genres": [
+          "Hip-hop"
+        ],
+        "ref": "All I Do Is Win",
+        "links": {
+          "albumArticle": "Victory (DJ Khaled album)",
+          "artistArticle": "DJ Khaled"
+        },
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "at": "2026-11-14T06:20:00.391Z",
+        "genres": [
+          "hip-hop"
+        ],
+        "ref": "Q1710029",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "at": "2026-11-14T05:43:10.682Z",
+        "genres": [
+          "hip hop",
+          "futuristic swag",
+          "pop rap",
+          "ratchet"
+        ],
+        "counts": [
+          2,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/70a2ba7f-3cc4-485a-b33a-be39447df998",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "at": "2026-11-14T04:57:34.041Z",
+        "genres": [
+          "Hip-Hop"
+        ],
+        "ref": "track/32816274"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:57:33.837Z",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "hip hop"
+        ],
+        "counts": [
+          3
+        ],
+        "ref": "release-group/16ea728d-2037-4d93-8fb2-692c9d5e9070 (Victory; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "16ea728d-2037-4d93-8fb2-692c9d5e9070",
+          "album": "Victory",
+          "discogsMaster": "1532710",
+          "wikidata": "Q2154190"
+        },
+        "at": "2026-11-14T08:37:25.527Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Hip-hop"
+        ],
+        "ref": "Victory (DJ Khaled album)",
+        "links": {
+          "wikidata": "Q2154190"
+        },
+        "at": "2026-11-14T08:37:33.977Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "hip-hop"
+        ],
+        "ref": "Q2154190",
+        "at": "2026-11-14T08:38:09.186Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Gangsta",
+          "Crunk",
+          "Contemporary R&B",
+          "Conscious",
+          "Hip Hop"
+        ],
+        "ref": "master/1532710 (Victory)",
+        "at": "2026-11-14T08:37:25.785Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "at": "2026-11-14T05:43:12.150Z",
+        "reason": "the release is the song's single",
+        "ref": "All I Do Is Win (feat. T-Pain, Ludacris, Snoop Dogg & Rick Ross) - Single",
+        "links": {
+          "album": "All I Do Is Win (feat. T-Pain, Ludacris, Snoop Dogg & Rick Ross) - Single"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:43:15.512Z",
+        "genres": [
+          "hip hop",
+          "pop rap",
+          "contemporary r&b",
+          "gangsta rap",
+          "southern hip hop",
+          "trap rap",
+          "another one",
+          "congratulations you played yourself",
+          "dirty south",
+          "english",
+          "we the best music"
+        ],
+        "counts": [
+          6,
+          3,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/081a2d60-9791-4e05-a075-f1890355eeee (DJ Khaled; credited on the song)",
+        "links": {
+          "mbArtist": "081a2d60-9791-4e05-a075-f1890355eeee",
+          "wikidata": "Q80805"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "the artist article lists no genre",
+        "ref": "DJ Khaled",
+        "links": {
+          "wikidata": "Q80805"
+        },
+        "at": "2026-11-14T08:37:25.841Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "hip-hop",
+          "pop rap"
+        ],
+        "ref": "Q80805",
+        "at": "2026-11-14T08:38:01.047Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:43:09.117Z",
+        "genres": [
+          "Hip-Hop",
+          "Urban/R&B"
+        ],
+        "ref": "artist/112356"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:43:12.150Z",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "artist/157749142 (DJ Khaled)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:38:09.186Z"
+  },
+  "550970575": {
+    "genres": [
+      "pop rock",
+      "pop",
+      "rap rock",
+      "rock",
+      "alternative rock",
+      "indie rock"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "song",
+      "album"
+    ],
+    "artistGenres": [
+      "pop rock",
+      "alternative rock",
+      "soft rock",
+      "pop"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "at": "2026-11-14T06:02:04.986Z",
+        "genres": [
+          "Rap rock",
+          "pop rock"
+        ],
+        "ref": "Hall of Fame (song)",
+        "links": {
+          "albumArticle": "3 (The Script album)",
+          "artistArticle": "the Script"
+        },
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "at": "2026-11-14T06:04:08.938Z",
+        "genres": [
+          "popular music",
+          "pop rock"
+        ],
+        "ref": "Q32455,Q110391335",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "at": "2026-11-14T05:37:05.310Z",
+        "genres": [
+          "pop",
+          "rock"
+        ],
+        "counts": [
+          2,
+          2
+        ],
+        "ref": "release-group/84aac05f-8a0b-4cf5-946d-b86914ffe6e0",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "at": "2026-11-14T04:53:08.676Z",
+        "genres": [
+          "Alternative Rock"
+        ],
+        "ref": "track/32880958"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:53:08.553Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "pop rock",
+          "rock",
+          "adult alternative pop/rock",
+          "alternative rock",
+          "alternative/indie rock",
+          "indie rock",
+          "pop/rock",
+          "soundtrack"
+        ],
+        "counts": [
+          4,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/79ff9689-de0d-4cfc-a7e2-55107a8da0d5 (#3; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "79ff9689-de0d-4cfc-a7e2-55107a8da0d5",
+          "album": "#3",
+          "discogsMaster": "473040",
+          "wikidata": "Q771966"
+        },
+        "at": "2026-11-14T08:33:04.180Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Pop rock",
+          "Hip-hop"
+        ],
+        "ref": "3 (The Script album)",
+        "links": {
+          "wikidata": "Q771966"
+        },
+        "at": "2026-11-14T08:33:06.402Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "pop rock"
+        ],
+        "ref": "Q771966",
+        "at": "2026-11-14T08:33:07.529Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Pop Rock",
+          "Indie Rock",
+          "Alternative Rock",
+          "Rock",
+          "Pop"
+        ],
+        "ref": "master/473040 (#3)",
+        "at": "2026-11-14T08:33:04.430Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "at": "2026-11-14T05:37:04.797Z",
+        "reason": "the release is the song's single",
+        "ref": "Hall of Fame (feat. will.i.am) - Single",
+        "links": {
+          "album": "Hall of Fame (feat. will.i.am) - Single"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:37:08.104Z",
+        "genres": [
+          "breakeven",
+          "pop rock",
+          "rock",
+          "soft rock",
+          "alternative rock",
+          "pop"
+        ],
+        "counts": [
+          2,
+          2,
+          2,
+          2,
+          1,
+          1
+        ],
+        "ref": "artist/4c98aa1b-34eb-4336-987f-5e50aa059c00 (The Script; credited on the song)",
+        "links": {
+          "mbArtist": "4c98aa1b-34eb-4336-987f-5e50aa059c00",
+          "wikidata": "Q459585"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Pop rock",
+          "soft rock",
+          "indie rock"
+        ],
+        "ref": "The Script",
+        "links": {
+          "wikidata": "Q459585"
+        },
+        "at": "2026-11-14T08:33:04.337Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "pop rock",
+          "alternative rock",
+          "pop music"
+        ],
+        "ref": "Q459585",
+        "at": "2026-11-14T08:33:06.444Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:37:01.350Z",
+        "genres": [
+          "Alternative Rock",
+          "Rock/Pop"
+        ],
+        "ref": "artist/111482"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:37:04.797Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "artist/277228393 (The Script)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:33:07.529Z"
+  },
+  "749752394": {
+    "genres": [
+      "swing",
+      "big band",
+      "vocal jazz",
+      "jazz",
+      "traditional pop",
+      "pop"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "album",
+      "song"
+    ],
+    "artistGenres": [
+      "swing",
+      "vocal jazz",
+      "big band",
+      "traditional pop"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:14:17.024Z",
+        "reason": "no article about this song (I've Got the World on a String: by another artist)",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:16:00.533Z",
+        "reason": "the item has no genre",
+        "ref": "Q5967316",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "at": "2026-11-14T05:41:45.351Z",
+        "genres": [
+          "jazz",
+          "swing",
+          "easy listening",
+          "ballad",
+          "big band",
+          "vocal jazz",
+          "jazz standard",
+          "pop",
+          "vocal"
+        ],
+        "counts": [
+          5,
+          5,
+          4,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        "ref": "recording/6b99030d-f06c-496e-9a0f-d6d009154690,34cb5d30-1b5a-4821-a5f1-78b0f77682ed,460ca64a-1c7e-401b-bf1f-27b827376654,a0a48f8e-1b53-404e-937c-08d40bb96b58",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "at": "2026-11-14T04:56:25.871Z",
+        "genres": [
+          "Swing"
+        ],
+        "ref": "track/33662022"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:56:25.693Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "jazz",
+          "pop",
+          "swing"
+        ],
+        "counts": [
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/a09f8f98-ade2-4498-bb83-8f5392e564af (Young-At-Heart; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "a09f8f98-ade2-4498-bb83-8f5392e564af",
+          "album": "Young-At-Heart"
+        },
+        "at": "2026-11-14T08:36:17.665Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Traditional pop"
+        ],
+        "ref": "The Complete Capitol Singles Collection",
+        "links": {
+          "wikidata": "Q3986377"
+        },
+        "at": "2026-11-14T08:36:17.790Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "traditional pop"
+        ],
+        "ref": "Q3986377",
+        "at": "2026-11-14T08:37:00.266Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:36:17.665Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:41:44.874Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "collection/749752194 (The Complete Capitol Singles Collection)",
+        "links": {
+          "album": "The Complete Capitol Singles Collection"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:41:48.411Z",
+        "genres": [
+          "jazz",
+          "swing",
+          "vocal jazz",
+          "traditional pop",
+          "big band",
+          "christmas music",
+          "easy listening",
+          "standards",
+          "acting",
+          "actors",
+          "christmas",
+          "lounge",
+          "motion picture producers and directors",
+          "motion pictures--production and direction",
+          "pop",
+          "singers",
+          "singing",
+          "ultimate",
+          "vocal"
+        ],
+        "counts": [
+          12,
+          9,
+          8,
+          7,
+          4,
+          3,
+          3,
+          3,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/197450cd-0124-4164-b723-3c22dd16494d (Frank Sinatra; credited on the song)",
+        "links": {
+          "mbArtist": "197450cd-0124-4164-b723-3c22dd16494d",
+          "wikidata": "Q40912"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "the artist article lists no genre",
+        "ref": "Frank Sinatra",
+        "links": {
+          "wikidata": "Q40912"
+        },
+        "at": "2026-11-14T08:36:21.924Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "vocal jazz",
+          "big band music",
+          "blues",
+          "jazz",
+          "traditional pop",
+          "swing",
+          "easy listening"
+        ],
+        "ref": "Q40912",
+        "at": "2026-11-14T08:36:26.095Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:41:41.445Z",
+        "genres": [
+          "Swing",
+          "Jazz"
+        ],
+        "ref": "artist/119238"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:41:44.874Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "artist/171366 (Frank Sinatra)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:37:00.266Z"
+  },
+  "841018314": {
+    "genres": [
+      "Latin pop",
+      "bachata",
+      "tropical",
+      "latin",
+      "R&B"
+    ],
+    "genreLevels": [
+      "song",
+      "album",
+      "song",
+      "song",
+      "album"
+    ],
+    "artistGenres": [
+      "bachata",
+      "pop",
+      "reggaeton",
+      "tropical"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:26:09.170Z",
+        "reason": "the article lists no genre",
+        "ref": "El Amor Que Perdimos",
+        "links": {
+          "albumArticle": "Prince Royce (album)",
+          "artistArticle": "Prince Royce"
+        },
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:28:01.069Z",
+        "reason": "the item has no genre",
+        "ref": "Q29831646",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "at": "2026-11-14T05:46:10.408Z",
+        "genres": [
+          "latin",
+          "latin pop",
+          "spanish"
+        ],
+        "counts": [
+          2,
+          1,
+          1
+        ],
+        "ref": "recording/5ffe7ec5-8cd6-4e9a-a631-92e4434b4bb5",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T04:59:46.937Z",
+        "reason": "the track has no genre",
+        "ref": "track/33505673"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:59:46.653Z",
+        "genres": [
+          "Música tropical"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "bachata"
+        ],
+        "counts": [
+          1
+        ],
+        "ref": "release-group/e135f25e-b721-4332-a3e7-50b00d5efbdc (Prince Royce; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "e135f25e-b721-4332-a3e7-50b00d5efbdc",
+          "album": "Prince Royce",
+          "wikidata": "Q5228607"
+        },
+        "at": "2026-11-14T08:40:10.120Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Latin pop",
+          "bachata",
+          "R&B"
+        ],
+        "ref": "Prince Royce (album)",
+        "links": {
+          "wikidata": "Q5228607"
+        },
+        "at": "2026-11-14T08:40:23.278Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "Latin pop"
+        ],
+        "ref": "Q5228607",
+        "at": "2026-11-14T08:40:23.278Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:40:10.120Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:46:12.386Z",
+        "genres": [
+          "Música tropical"
+        ],
+        "ref": "collection/841018262 (Prince Royce)",
+        "links": {
+          "album": "Prince Royce"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:46:15.704Z",
+        "genres": [
+          "bachata",
+          "latin",
+          "latin pop",
+          "pop"
+        ],
+        "counts": [
+          3,
+          2,
+          1,
+          1
+        ],
+        "ref": "artist/d1689304-23ac-4eae-a147-bd2e4100581a (Prince Royce; credited on the song)",
+        "links": {
+          "mbArtist": "d1689304-23ac-4eae-a147-bd2e4100581a",
+          "wikidata": "Q2636976"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "the artist article lists no genre",
+        "ref": "Prince Royce",
+        "links": {
+          "wikidata": "Q2636976"
+        },
+        "at": "2026-11-14T08:40:15.150Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "bachata",
+          "reggaeton",
+          "pop music",
+          "rhythm and blues"
+        ],
+        "ref": "Q2636976",
+        "at": "2026-11-14T08:40:31.341Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:46:08.870Z",
+        "genres": [
+          "Latin",
+          "Latin"
+        ],
+        "ref": "artist/122274"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:46:12.386Z",
+        "genres": [
+          "Música tropical"
+        ],
+        "ref": "artist/333299061 (Prince Royce)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:40:31.341Z"
+  },
+  "1223063406": {
+    "genres": [
+      "dream pop",
+      "synth-pop",
+      "adult contemporary",
+      "pop rock",
+      "pop",
+      "electronic"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "album",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "pop rock",
+      "pop"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "at": "2026-11-14T06:20:00.542Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "I Love You Always Forever",
+        "links": {
+          "albumArticle": "Now in a Minute",
+          "artistArticle": "Donna Lewis"
+        },
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "at": "2026-11-14T06:21:17.413Z",
+        "genres": [
+          "pop music"
+        ],
+        "ref": "Q5978247",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "at": "2026-11-14T05:43:43.743Z",
+        "genres": [
+          "pop",
+          "adult contemporary",
+          "dream pop",
+          "electronic",
+          "hip hop",
+          "synth-pop",
+          "synthpop",
+          "todd in the shadows"
+        ],
+        "counts": [
+          4,
+          3,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/922d6615-0d11-3dcd-ac0e-dac44db3cc64",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "at": "2026-11-14T04:58:08.715Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "track/33362252"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:58:08.448Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "pop",
+          "pop rock",
+          "adult contemporary",
+          "dream pop",
+          "electronic",
+          "rock",
+          "synth-pop",
+          "soft rock"
+        ],
+        "counts": [
+          7,
+          3,
+          2,
+          2,
+          2,
+          2,
+          2,
+          1
+        ],
+        "ref": "release-group/051c9d7e-e599-3a32-886e-9931d7165d3d (Now in a Minute; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "051c9d7e-e599-3a32-886e-9931d7165d3d",
+          "album": "Now in a Minute",
+          "discogsMaster": "83742",
+          "wikidata": "Q7065923"
+        },
+        "at": "2026-11-14T08:38:16.919Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Dream pop"
+        ],
+        "ref": "Now in a Minute",
+        "links": {
+          "wikidata": "Q7065923"
+        },
+        "at": "2026-11-14T08:38:25.613Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "pop music"
+        ],
+        "ref": "Q7065923",
+        "at": "2026-11-14T08:38:33.643Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Pop Rock",
+          "Synth-pop",
+          "Downtempo",
+          "Ballad",
+          "Electronic",
+          "Rock",
+          "Pop"
+        ],
+        "ref": "master/83742 (Now In A Minute)",
+        "at": "2026-11-14T08:38:17.158Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:43:45.985Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "collection/1223062682 (90s Hits)",
+        "links": {
+          "album": "90s Hits"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:43:46.048Z",
+        "genres": [
+          "pop",
+          "adult contemporary",
+          "dance",
+          "dream pop",
+          "edm",
+          "electronica",
+          "electropop",
+          "house",
+          "organic house",
+          "pop rock",
+          "progressive house",
+          "tech house",
+          "trance"
+        ],
+        "counts": [
+          3,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/ba7c4a1c-aa4e-488a-92dc-be92cb6bca6b (Donna Lewis; credited on the song)",
+        "links": {
+          "mbArtist": "ba7c4a1c-aa4e-488a-92dc-be92cb6bca6b",
+          "wikidata": "Q272578"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "the artist article lists no genre",
+        "ref": "Donna Lewis",
+        "links": {
+          "wikidata": "Q272578"
+        },
+        "at": "2026-11-14T08:38:17.538Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "pop music"
+        ],
+        "ref": "Q272578",
+        "at": "2026-11-14T08:38:33.643Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:43:41.791Z",
+        "genres": [
+          "Pop",
+          "Rock/Pop"
+        ],
+        "ref": "artist/119759"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:43:45.985Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "artist/177555 (Donna Lewis)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:38:33.643Z"
+  },
+  "1267525486": {
+    "genres": [
+      "alternative"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "alternative"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:32:16.897Z",
+        "reason": "no article about this song",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:32:00.711Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:48:28.947Z",
+        "reason": "no recording of this song by this artist",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:01:08.504Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:01:08.348Z",
+        "genres": [
+          "Alternative"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T08:41:41.223Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Wilt",
+        "at": "2026-11-14T08:41:52.645Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:41:52.645Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:41:41.223Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:48:28.539Z",
+        "genres": [
+          "Alternative"
+        ],
+        "ref": "collection/1267524844 (Wilt)",
+        "links": {
+          "album": "Wilt"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:48:35.060Z",
+        "reason": "the artist has no tags",
+        "ref": "artist/d03e2606-2f05-42c5-8a5a-8966a38f302f (Suburban Haze; the only artist of this name)",
+        "links": {
+          "mbArtist": "d03e2606-2f05-42c5-8a5a-8966a38f302f"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:41:44.508Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:41:44.508Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:48:25.275Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:48:28.539Z",
+        "genres": [
+          "Alternative"
+        ],
+        "ref": "artist/924627586 (Suburban Haze)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:41:52.645Z"
+  },
+  "1387817894": {
+    "genres": [
+      "classical"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "orchestra",
+      "classical"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:53:17.399Z",
+        "reason": "no article about this song",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:53:01.030Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:58:06.124Z",
+        "reason": "no recording of this song by this artist",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:07:08.855Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:07:08.681Z",
+        "genres": [
+          "Classical"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T08:46:41.895Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Handel: Messiah",
+        "at": "2026-11-14T08:46:53.091Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:46:53.091Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:46:41.895Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:58:08.253Z",
+        "genres": [
+          "Classical"
+        ],
+        "ref": "collection/1387816964 (Handel: Messiah)",
+        "links": {
+          "album": "Handel: Messiah"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:58:10.739Z",
+        "reason": "2 artists of this name; the song confirms none"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:46:44.984Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:46:44.984Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:58:04.649Z",
+        "genres": [
+          "Orchestra",
+          "Classical"
+        ],
+        "ref": "artist/114501"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:58:08.253Z",
+        "genres": [
+          "Classical"
+        ],
+        "ref": "artist/29893 (London Symphony Orchestra)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:46:53.091Z"
+  },
+  "1408996053": {
+    "genres": [
+      "cloud rap",
+      "jazz rap",
+      "hip hop",
+      "trap",
+      "jazzy hip hop",
+      "soul"
+    ],
+    "genreLevels": [
+      "song",
+      "album",
+      "song",
+      "album",
+      "album",
+      "album"
+    ],
+    "artistGenres": [
+      "East Coast hip hop",
+      "alternative hip hop",
+      "jazz rap",
+      "frat rap"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "at": "2026-11-14T06:29:17.092Z",
+        "genres": [
+          "Cloud rap"
+        ],
+        "ref": "Come Back to Earth",
+        "links": {
+          "albumArticle": "Swimming (Mac Miller album)",
+          "artistArticle": "Mac Miller"
+        },
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:31:00.731Z",
+        "reason": "no song item by this artist",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "at": "2026-11-14T05:47:18.643Z",
+        "genres": [
+          "hip-hop"
+        ],
+        "counts": [
+          1
+        ],
+        "ref": "recording/ba1b9b9f-c8a2-40a3-80ca-e1a09ce9d06e",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:00:35.785Z",
+        "reason": "the track has no genre",
+        "ref": "track/35039174"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:00:35.612Z",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "hip hop",
+          "alternative r&b",
+          "hip-hop",
+          "jazz rap",
+          "neo soul",
+          "pennsylvania",
+          "pop rap",
+          "synth funk"
+        ],
+        "counts": [
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/8bddc517-1322-40a9-b33b-c65248b52b54 (Swimming; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "8bddc517-1322-40a9-b33b-c65248b52b54",
+          "album": "Swimming",
+          "discogsMaster": "1403861",
+          "wikidata": "Q56153087"
+        },
+        "at": "2026-11-14T08:41:03.696Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Hip-hop",
+          "jazz rap"
+        ],
+        "ref": "Swimming (Mac Miller album)",
+        "links": {
+          "wikidata": "Q56153087"
+        },
+        "at": "2026-11-14T08:41:17.196Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "hip-hop"
+        ],
+        "ref": "Q56153087",
+        "at": "2026-11-14T08:41:17.196Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Jazzy Hip-Hop",
+          "Disco",
+          "Trap",
+          "Hip Hop",
+          "Funk / Soul"
+        ],
+        "ref": "master/1403861 (Swimming)",
+        "at": "2026-11-14T08:41:04.080Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:47:20.381Z",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "collection/1408996052 (Swimming)",
+        "links": {
+          "album": "Swimming"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:47:21.361Z",
+        "genres": [
+          "hip hop",
+          "abstract hip hop",
+          "jazz rap",
+          "pennsylvania",
+          "alternative hip hop",
+          "east coast hip hop",
+          "neo soul",
+          "pop rap",
+          "underground hip hop"
+        ],
+        "counts": [
+          6,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/a0e8a1b1-5f8f-475a-a253-17415c17d0ff (Mac Miller; credited on the song)",
+        "links": {
+          "mbArtist": "a0e8a1b1-5f8f-475a-a253-17415c17d0ff",
+          "wikidata": "Q324726"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "East Coast hip-hop",
+          "alternative hip-hop",
+          "jazz rap",
+          "frat rap"
+        ],
+        "ref": "Mac Miller",
+        "links": {
+          "wikidata": "Q324726"
+        },
+        "at": "2026-11-14T08:41:09.043Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "East Coast hip-hop",
+          "alternative hip-hop",
+          "jazz rap",
+          "frat rap",
+          "pop rap"
+        ],
+        "ref": "Q324726",
+        "at": "2026-11-14T08:41:25.136Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:47:17.131Z",
+        "genres": [
+          "Hip-Hop",
+          "Urban/R&B"
+        ],
+        "ref": "artist/114412"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:47:20.381Z",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "artist/419944559 (Mac Miller)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:41:25.136Z"
+  },
+  "1422648513": {
+    "genres": [
+      "europop",
+      "Euro disco",
+      "disco",
+      "synth-pop",
+      "pop",
+      "electronic"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "pop rock",
+      "europop",
+      "disco",
+      "Euro disco"
+    ],
+    "moods": [
+      "cheerful"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "at": "2026-11-14T06:23:16.846Z",
+        "genres": [
+          "Eurodisco",
+          "Europop"
+        ],
+        "ref": "Dancing Queen",
+        "links": {
+          "albumArticle": "Arrival (ABBA album)",
+          "artistArticle": "ABBA"
+        },
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:24:16.899Z",
+        "reason": "the item has no genre",
+        "ref": "Q109566031,Q870786",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "at": "2026-11-14T05:45:02.576Z",
+        "genres": [
+          "disco",
+          "electronic",
+          "europop",
+          "pop",
+          "rock",
+          "synth-pop"
+        ],
+        "counts": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/4ee9c48e-5b91-3d83-9899-5e94892d3230",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "at": "2026-11-14T04:58:57.596Z",
+        "genres": [
+          "Pop"
+        ],
+        "moods": [
+          "Cheerful"
+        ],
+        "ref": "track/32802723"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:58:57.409Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "disco",
+          "pop",
+          "am pop",
+          "europop",
+          "dance",
+          "euro-disco",
+          "pop rock",
+          "rock",
+          "electronic",
+          "synthpop"
+        ],
+        "counts": [
+          7,
+          6,
+          5,
+          5,
+          3,
+          2,
+          2,
+          2,
+          1,
+          1
+        ],
+        "ref": "release-group/e464e167-83ab-3b59-88bd-262cf552056e (Arrival; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "e464e167-83ab-3b59-88bd-262cf552056e",
+          "album": "Arrival",
+          "discogsMaster": "5649",
+          "wikidata": "Q162392"
+        },
+        "at": "2026-11-14T08:39:25.937Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Pop",
+          "Eurodisco"
+        ],
+        "ref": "Arrival (ABBA album)",
+        "links": {
+          "wikidata": "Q162392"
+        },
+        "at": "2026-11-14T08:39:34.504Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "pop music",
+          "Eurodisco"
+        ],
+        "ref": "Q162392",
+        "at": "2026-11-14T08:39:50.620Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Disco",
+          "Pop"
+        ],
+        "ref": "master/5649 (Arrival)",
+        "at": "2026-11-14T08:39:26.297Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:45:03.976Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "collection/1422648512 (ABBA Gold: Greatest Hits)",
+        "links": {
+          "album": "ABBA Gold: Greatest Hits"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:45:05.348Z",
+        "genres": [
+          "pop",
+          "disco",
+          "europop",
+          "glam rock",
+          "pop rock",
+          "swedish pop",
+          "1980s",
+          "1990s",
+          "am pop",
+          "contemporary pop/rock",
+          "dance",
+          "dance music",
+          "euro-disco",
+          "euro-pop",
+          "mainstream rock",
+          "music of sweden",
+          "palindrome",
+          "pop-rock",
+          "rock",
+          "scandinavian pop",
+          "sweden",
+          "swedish pop/rock",
+          "the name of the game"
+        ],
+        "counts": [
+          18,
+          16,
+          10,
+          3,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/d87e52c5-bb8d-4da8-b941-9f4928627dc8 (ABBA; credited on the song)",
+        "links": {
+          "mbArtist": "d87e52c5-bb8d-4da8-b941-9f4928627dc8",
+          "wikidata": "Q18233"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Pop",
+          "disco",
+          "pop rock",
+          "Europop"
+        ],
+        "ref": "ABBA",
+        "links": {
+          "wikidata": "Q18233"
+        },
+        "at": "2026-11-14T08:39:26.368Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "pop music",
+          "pop rock",
+          "Europop",
+          "Eurodisco",
+          "dance music",
+          "glam rock",
+          "music of Sweden",
+          "Scandinavian pop",
+          "disco"
+        ],
+        "ref": "Q18233",
+        "at": "2026-11-14T08:39:42.490Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:45:00.943Z",
+        "genres": [
+          "Pop",
+          "Rock/Pop"
+        ],
+        "ref": "artist/111258"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:45:03.976Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "artist/372976 (ABBA)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:39:50.620Z"
+  },
+  "1442209191": {
+    "genres": [
+      "hip hop",
+      "gangsta rap",
+      "trap"
+    ],
+    "genreLevels": [
+      "song",
+      "album",
+      "album"
+    ],
+    "artistGenres": [
+      "hip hop",
+      "urban",
+      "R&B"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:25:08.445Z",
+        "reason": "the article lists no genre",
+        "ref": "My President",
+        "links": {
+          "albumArticle": "The Recession"
+        },
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:26:09.021Z",
+        "reason": "no song item by this artist",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:45:39.214Z",
+        "reason": "0 single(s) and 4 recording(s) found, none tagged",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T04:59:22.405Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:59:22.204Z",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "hip hop"
+        ],
+        "counts": [
+          2
+        ],
+        "ref": "release-group/b6787057-a471-34a7-a523-51a84b6cb360 (The Recession; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "b6787057-a471-34a7-a523-51a84b6cb360",
+          "album": "The Recession",
+          "discogsMaster": "334486",
+          "wikidata": "Q684903"
+        },
+        "at": "2026-11-14T08:39:53.904Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Hip hop"
+        ],
+        "ref": "The Recession",
+        "links": {
+          "wikidata": "Q684903"
+        },
+        "at": "2026-11-14T08:40:06.997Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "hip-hop"
+        ],
+        "ref": "Q684903",
+        "at": "2026-11-14T08:40:06.997Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Gangsta",
+          "Trap",
+          "Hip Hop"
+        ],
+        "ref": "master/334486 (The Recession)",
+        "at": "2026-11-14T08:39:54.127Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:45:37.045Z",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "collection/1442208759 (The Recession (Bonus Track Version))",
+        "links": {
+          "album": "The Recession (Bonus Track Version)"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:45:43.838Z",
+        "reason": "no artist of this name"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:39:54.029Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:39:54.029Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:45:33.587Z",
+        "genres": [
+          "Hip-Hop",
+          "Urban/R&B"
+        ],
+        "ref": "artist/114275"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:45:37.045Z",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "artist/19627204 (Young Jeezy)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:40:06.997Z"
+  },
+  "1454357665": {
+    "genres": [
+      "world"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "hip hop"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:44:16.856Z",
+        "reason": "no article about this song",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:44:16.696Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:53:55.793Z",
+        "reason": "no recording of this song by this artist",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:04:25.571Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:04:25.389Z",
+        "genres": [
+          "Worldwide"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T08:44:37.484Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Epanalipsi",
+        "at": "2026-11-14T08:44:47.669Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:44:47.669Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:44:37.484Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:53:55.214Z",
+        "genres": [
+          "Worldwide"
+        ],
+        "ref": "collection/1454357520 (Epanalipsi)",
+        "links": {
+          "album": "Epanalipsi"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:53:58.315Z",
+        "reason": "3 artists of this name; the song confirms none"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:44:39.545Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:44:39.545Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:53:51.872Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:53:55.214Z",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "artist/73634948 (Mr. Z.)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:44:47.669Z"
+  },
+  "1458115406": {
+    "genres": [
+      "ambient"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "ambient"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:41:00.446Z",
+        "reason": "no article about this song",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:40:09.119Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:52:23.329Z",
+        "reason": "no recording of this song by this artist",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:03:25.354Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:03:25.146Z",
+        "genres": [
+          "Ambient"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T08:43:58.706Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Eristic Dialectics",
+        "at": "2026-11-14T08:44:06.972Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:44:06.972Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:43:58.706Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:52:25.106Z",
+        "genres": [
+          "Ambient"
+        ],
+        "ref": "collection/1458115221 (Eristic Dialectics)",
+        "links": {
+          "album": "Eristic Dialectics"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:52:27.091Z",
+        "reason": "the artist has no tags",
+        "ref": "artist/81c776ce-abd8-4ec4-ba37-2993328bb45a (Misantronics; the only artist of this name)",
+        "links": {
+          "mbArtist": "81c776ce-abd8-4ec4-ba37-2993328bb45a"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:43:58.838Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:43:58.838Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:52:21.843Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:52:25.106Z",
+        "genres": [
+          "Ambient"
+        ],
+        "ref": "artist/1412554900 (Misantronics)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:44:06.972Z"
+  },
+  "1464292596": {
+    "genres": [
+      "country"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "country",
+      "country pop",
+      "outlaw country",
+      "texas country"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:01:15.651Z",
+        "reason": "no article about this song (Heavy metal: disambiguation page)",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:01:14.588Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:36:30.909Z",
+        "reason": "0 single(s) and 1 recording(s) found, none tagged",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T04:53:06.135Z",
+        "reason": "the track has no genre",
+        "ref": "track/33425390"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:53:06.017Z",
+        "genres": [
+          "Country"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "the recordings are on no album or EP",
+        "at": "2026-11-14T08:32:26.585Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Great American Radio Vol.1",
+        "at": "2026-11-14T08:32:26.726Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:32:26.726Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:32:26.585Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:36:31.480Z",
+        "genres": [
+          "Country"
+        ],
+        "ref": "collection/1464292280 (Great American Radio Vol.1)",
+        "links": {
+          "album": "Great American Radio Vol.1"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:36:33.628Z",
+        "genres": [
+          "country",
+          "folk",
+          "singer-songwriter"
+        ],
+        "counts": [
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/e885f72e-4617-46de-9454-5485061f29b3 (Guy Clark; credited on the song)",
+        "links": {
+          "mbArtist": "e885f72e-4617-46de-9454-5485061f29b3",
+          "wikidata": "Q1386899"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Country",
+          "outlaw country",
+          "Texas country",
+          "folk"
+        ],
+        "ref": "Guy Clark",
+        "links": {
+          "wikidata": "Q1386899"
+        },
+        "at": "2026-11-14T08:33:00.896Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "country music",
+          "Americana"
+        ],
+        "ref": "Q1386899",
+        "at": "2026-11-14T08:33:01.041Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:36:27.581Z",
+        "genres": [
+          "Country Pop"
+        ],
+        "ref": "artist/120792"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:36:31.480Z",
+        "genres": [
+          "Country"
+        ],
+        "ref": "artist/193674 (Guy Clark)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:33:01.041Z"
+  },
+  "1469575893": {
+    "genres": [
+      "reggae",
+      "roots reggae",
+      "disco"
+    ],
+    "genreLevels": [
+      "song",
+      "album",
+      "song"
+    ],
+    "artistGenres": [
+      "ska",
+      "roots reggae",
+      "rocksteady",
+      "reggae"
+    ],
+    "moods": [
+      "carefree"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "at": "2026-11-14T06:04:09.079Z",
+        "genres": [
+          "Reggae",
+          "disco"
+        ],
+        "ref": "Could You Be Loved",
+        "links": {
+          "albumArticle": "Uprising (Bob Marley and the Wailers album)",
+          "artistArticle": "Bob Marley and the Wailers"
+        },
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "at": "2026-11-14T06:06:17.178Z",
+        "genres": [
+          "reggae"
+        ],
+        "ref": "Q1136945",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "at": "2026-11-14T05:37:11.870Z",
+        "genres": [
+          "reggae"
+        ],
+        "counts": [
+          3
+        ],
+        "ref": "release-group/1c132971-97eb-46f1-874b-d2aebfa6bd05",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "at": "2026-11-14T04:53:10.965Z",
+        "genres": [
+          "Reggae"
+        ],
+        "moods": [
+          "Carefree"
+        ],
+        "ref": "track/32755159"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:53:10.856Z",
+        "genres": [
+          "Reggae"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "reggae",
+          "roots reggae"
+        ],
+        "counts": [
+          14,
+          10
+        ],
+        "ref": "release-group/6dd29c00-7539-319d-98e0-b2f07e861497 (Uprising; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "6dd29c00-7539-319d-98e0-b2f07e861497",
+          "album": "Uprising",
+          "discogsMaster": "66044",
+          "wikidata": "Q1051420"
+        },
+        "at": "2026-11-14T08:33:16.778Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Reggae"
+        ],
+        "ref": "Uprising (Bob Marley and the Wailers album)",
+        "links": {
+          "wikidata": "Q1051420"
+        },
+        "at": "2026-11-14T08:34:01.211Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "reggae"
+        ],
+        "ref": "Q1051420",
+        "at": "2026-11-14T08:34:05.250Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Reggae"
+        ],
+        "ref": "master/66044 (Uprising)",
+        "at": "2026-11-14T08:33:17.053Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:37:13.569Z",
+        "genres": [
+          "Reggae"
+        ],
+        "ref": "collection/1469575763 (Legend – The Best Of Bob Marley & The Wailers)",
+        "links": {
+          "album": "Legend – The Best Of Bob Marley & The Wailers"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:37:14.594Z",
+        "genres": [
+          "reggae",
+          "singer-songwriter",
+          "jamaican",
+          "roots reggae",
+          "soul and reggae",
+          "the wailers",
+          "kaya",
+          "rock",
+          "ska"
+        ],
+        "counts": [
+          15,
+          8,
+          5,
+          4,
+          3,
+          2,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/ed2ac1e9-d51d-4eff-a2c2-85e81abd6360 (Bob Marley; credited on the song)",
+        "links": {
+          "mbArtist": "ed2ac1e9-d51d-4eff-a2c2-85e81abd6360",
+          "wikidata": "Q409"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "the artist article lists no genre",
+        "ref": "Bob Marley",
+        "links": {
+          "wikidata": "Q409"
+        },
+        "at": "2026-11-14T08:33:17.101Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "reggae",
+          "ska",
+          "rocksteady"
+        ],
+        "ref": "Q409",
+        "at": "2026-11-14T08:34:03.158Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:37:10.327Z",
+        "genres": [
+          "Reggae",
+          "Reggae"
+        ],
+        "ref": "artist/111462"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:37:13.569Z",
+        "genres": [
+          "Reggae"
+        ],
+        "ref": "artist/3174628 (Bob Marley & The Wailers)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:34:05.250Z"
+  },
+  "1502348947": {
+    "genres": [
+      "metal"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "metal"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:39:25.637Z",
+        "reason": "no article about this song (Taenia: disambiguation page)",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:39:09.440Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:51:50.971Z",
+        "reason": "no recording of this song by this artist",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:03:09.137Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:03:08.831Z",
+        "genres": [
+          "Metal"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T08:43:35.792Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Flame and Fraud",
+        "at": "2026-11-14T08:43:49.073Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:43:49.073Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:43:35.792Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:51:52.377Z",
+        "genres": [
+          "Metal"
+        ],
+        "ref": "collection/1502348878 (Flame and Fraud - EP)",
+        "links": {
+          "album": "Flame and Fraud - EP"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:51:53.489Z",
+        "reason": "no artist of this name"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:43:40.958Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:43:40.958Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:51:49.187Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:51:52.377Z",
+        "genres": [
+          "Metal"
+        ],
+        "ref": "artist/1465672622 (Gloria Victis)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:43:49.073Z"
+  },
+  "1515380130": {
+    "genres": [
+      "trance"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "techno",
+      "trance",
+      "hard trance",
+      "acid trance"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:46:00.593Z",
+        "reason": "no article about this song",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:45:09.331Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:54:34.059Z",
+        "reason": "0 single(s) and 1 recording(s) found, none tagged",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:04:42.146Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:04:41.822Z",
+        "genres": [
+          "Trance"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "the recordings are on no album or EP",
+        "at": "2026-11-14T08:44:49.090Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no album (the song is a single, or the album is unknown)",
+        "at": "2026-11-14T08:44:49.091Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:44:49.091Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:44:49.090Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "at": "2026-11-14T05:54:35.716Z",
+        "reason": "the release is the song's single",
+        "ref": "Inflator / Aural Border - Single",
+        "links": {
+          "album": "Inflator / Aural Border - Single"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:54:35.397Z",
+        "genres": [
+          "techno",
+          "trance",
+          "hard trance",
+          "acid techno",
+          "acid trance",
+          "discjockey",
+          "komponist",
+          "musikproduzent",
+          "singstimme",
+          "uplifting trance"
+        ],
+        "counts": [
+          3,
+          3,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/6546b116-81c8-4783-9219-19f6e8f3c020 (Kai Tracid; credited on the song)",
+        "links": {
+          "mbArtist": "6546b116-81c8-4783-9219-19f6e8f3c020",
+          "wikidata": "Q62945"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Trance",
+          "hard trance",
+          "acid trance",
+          "Techno"
+        ],
+        "ref": "Kai Tracid",
+        "links": {
+          "wikidata": "Q62945"
+        },
+        "at": "2026-11-14T08:45:03.946Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "trance"
+        ],
+        "ref": "Q62945",
+        "at": "2026-11-14T08:45:04.089Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:54:32.559Z",
+        "genres": [
+          "Techno"
+        ],
+        "ref": "artist/111820"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:54:35.716Z",
+        "genres": [
+          "Dance"
+        ],
+        "ref": "artist/17503195 (Kai Tracid)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:45:04.089Z"
+  },
+  "1519359697": {
+    "genres": [],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:52:17.527Z",
+        "reason": "no article about this song",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:52:01.184Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:57:33.441Z",
+        "reason": "no recording of this song by this artist",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:06:41.471Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:06:41.175Z",
+        "genres": [
+          "Soundtrack"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T08:46:23.501Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Eurovision Song Contest: The Story of Fire Saga (Music from the Netflix Film)",
+        "at": "2026-11-14T08:46:36.813Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:46:36.813Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:46:23.501Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:57:35.227Z",
+        "genres": [
+          "Soundtrack"
+        ],
+        "ref": "collection/1519359235 (Eurovision Song Contest: The Story of Fire Saga (Music from the Netflix Film))",
+        "links": {
+          "album": "Eurovision Song Contest: The Story of Fire Saga (Music from the Netflix Film)"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:57:35.941Z",
+        "reason": "no artist of this name"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:46:28.691Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:46:28.691Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:57:31.947Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:57:35.227Z",
+        "reason": "the artist has no genre"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:46:36.813Z"
+  },
+  "1548161468": {
+    "genres": [
+      "punk"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "punk"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:38:24.879Z",
+        "reason": "no article about this song",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:38:08.644Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:51:18.294Z",
+        "reason": "no recording of this song by this artist",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:02:41.610Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:02:41.385Z",
+        "genres": [
+          "Punk"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T08:43:19.678Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Zvýšená pozornosť",
+        "at": "2026-11-14T08:43:32.825Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:43:32.825Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:43:19.678Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:51:20.435Z",
+        "genres": [
+          "Punk"
+        ],
+        "ref": "collection/1548161304 (Zvýšená pozornosť)",
+        "links": {
+          "album": "Zvýšená pozornosť"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:51:22.247Z",
+        "reason": "the artist has no tags",
+        "ref": "artist/cf8a78dd-6668-47b0-a6df-1e5a76a9d985 (Prípad Ewi Burdovej; the only artist of this name)",
+        "links": {
+          "mbArtist": "cf8a78dd-6668-47b0-a6df-1e5a76a9d985"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:43:24.682Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:43:24.682Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:51:16.651Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:51:20.435Z",
+        "genres": [
+          "Punk"
+        ],
+        "ref": "artist/1548158812 (Prípad Ewi Burdovej)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:43:32.825Z"
+  },
+  "1561134392": {
+    "genres": [
+      "alternative"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:31:17.205Z",
+        "reason": "no article about this song",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:31:17.018Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:48:02.195Z",
+        "reason": "no recording of this song by this artist",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:00:52.111Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:00:51.931Z",
+        "genres": [
+          "Alternative"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T08:41:28.113Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Demos",
+        "at": "2026-11-14T08:41:36.382Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:41:36.382Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:41:28.113Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:48:03.761Z",
+        "genres": [
+          "Alternative"
+        ],
+        "ref": "collection/1561134389 (Demos - EP)",
+        "links": {
+          "album": "Demos - EP"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:48:06.850Z",
+        "reason": "no artist of this name"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:41:28.248Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:41:28.248Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:48:00.671Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:48:03.761Z",
+        "genres": [
+          "Soundtrack"
+        ],
+        "ref": "artist/1397138718 (Qsie)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:41:36.382Z"
+  },
+  "1570324269": {
+    "genres": [
+      "nu metal",
+      "rap rock",
+      "christian metal",
+      "rap metal",
+      "alternative rock",
+      "alternative metal"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "nu metal",
+      "alternative metal",
+      "christian metal",
+      "rap metal"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "at": "2026-11-14T06:08:17.489Z",
+        "genres": [
+          "Alternative rock",
+          "Christian metal",
+          "rap rock",
+          "nu metal"
+        ],
+        "ref": "Youth of the Nation",
+        "links": {
+          "albumArticle": "Satellite (P.O.D. album)",
+          "artistArticle": "P.O.D."
+        },
+        "v": 3
+      },
+      "wikidata": {
+        "status": "found",
+        "at": "2026-11-14T06:10:16.507Z",
+        "genres": [
+          "rap rock"
+        ],
+        "ref": "Q2403478",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "at": "2026-11-14T05:39:07.125Z",
+        "genres": [
+          "nu metal",
+          "alternative metal",
+          "alternative rock",
+          "pop",
+          "rap metal",
+          "rock"
+        ],
+        "counts": [
+          2,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/8c77d492-eebb-3ba1-af30-19969aa646f7",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "at": "2026-11-14T04:55:01.236Z",
+        "genres": [
+          "Metal"
+        ],
+        "ref": "track/32818405"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:55:01.025Z",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "nu metal",
+          "alternative metal",
+          "christian metal",
+          "rhythmic soul",
+          "christian rock",
+          "heavy metal",
+          "metal",
+          "nu-metal",
+          "pop/rock",
+          "rap metal",
+          "rap rock",
+          "rap-metal",
+          "rap-metal/pop/rock/nu metal/heavy metal/alternative metal",
+          "rap-metal/pop/rock/nu metal/metal/heavy metal",
+          "rock"
+        ],
+        "counts": [
+          6,
+          3,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/179769df-295c-3203-b946-2604775b8461 (Satellite; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "179769df-295c-3203-b946-2604775b8461",
+          "album": "Satellite",
+          "discogsMaster": "32890",
+          "wikidata": "Q666741"
+        },
+        "at": "2026-11-14T08:34:17.129Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Christian metal",
+          "nu metal",
+          "rap rock"
+        ],
+        "ref": "Satellite (P.O.D. album)",
+        "links": {
+          "wikidata": "Q666741"
+        },
+        "at": "2026-11-14T08:35:00.648Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "nu metal",
+          "rap metal",
+          "rap rock"
+        ],
+        "ref": "Q666741",
+        "at": "2026-11-14T08:35:08.841Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Nu Metal",
+          "Rock"
+        ],
+        "ref": "master/32890 (Satellite)",
+        "at": "2026-11-14T08:34:17.367Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:39:08.705Z",
+        "genres": [
+          "Hard Rock"
+        ],
+        "ref": "collection/1570324022 (Satellite (Expanded Edition) [2021 Remaster])",
+        "links": {
+          "album": "Satellite (Expanded Edition) [2021 Remaster]"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:39:10.128Z",
+        "genres": [
+          "nu metal",
+          "christian metal",
+          "rap metal",
+          "alternative metal",
+          "alternative rock",
+          "christian rock",
+          "rap rock",
+          "metal",
+          "rock"
+        ],
+        "counts": [
+          8,
+          5,
+          4,
+          3,
+          2,
+          2,
+          2,
+          1,
+          1
+        ],
+        "ref": "artist/57e79d57-b795-475e-9fa2-5dd9d5513b8c (P.O.D.; credited on the song)",
+        "links": {
+          "mbArtist": "57e79d57-b795-475e-9fa2-5dd9d5513b8c",
+          "wikidata": "Q494743"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Nu metal",
+          "rap rock",
+          "alternative metal",
+          "Christian metal",
+          "hardcore punk"
+        ],
+        "ref": "P.O.D.",
+        "links": {
+          "wikidata": "Q494743"
+        },
+        "at": "2026-11-14T08:34:17.462Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "alternative metal",
+          "nu metal",
+          "Christian metal",
+          "rap metal",
+          "rap rock",
+          "rapcore"
+        ],
+        "ref": "Q494743",
+        "at": "2026-11-14T08:35:04.660Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:39:05.286Z",
+        "genres": [
+          "Metal",
+          "Metal"
+        ],
+        "ref": "artist/112383"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:39:08.705Z",
+        "genres": [
+          "Hard Rock"
+        ],
+        "ref": "artist/626650 (P.O.D.)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:35:08.841Z"
+  },
+  "1597915671": {
+    "genres": [
+      "pop rock",
+      "hard rock",
+      "rock",
+      "psychedelic rock",
+      "progressive rock",
+      "pop"
+    ],
+    "genreLevels": [
+      "song",
+      "album",
+      "song",
+      "album",
+      "album",
+      "album"
+    ],
+    "artistGenres": [
+      "hard rock",
+      "progressive rock",
+      "symphonic prog",
+      "metal"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:33:16.679Z",
+        "reason": "no article about this song (Love Is All (Roger Glover song): not a song article (no infobox); Love Is All: disambiguation page)",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:34:00.858Z",
+        "reason": "the item has no genre",
+        "ref": "Q24283628",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "at": "2026-11-14T05:48:59.500Z",
+        "genres": [
+          "pop rock",
+          "rock"
+        ],
+        "counts": [
+          1,
+          1
+        ],
+        "ref": "release-group/c9ec37c3-c15c-3335-97b6-1f11800bcc03",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:01:24.889Z",
+        "reason": "the track has no genre",
+        "ref": "track/33873873"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:01:24.695Z",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "pop rock",
+          "hard rock",
+          "rock",
+          "pop"
+        ],
+        "counts": [
+          3,
+          2,
+          2,
+          1
+        ],
+        "ref": "release-group/a4fba61d-0e08-3ca5-9108-53caa9ff972a (The Butterfly Ball and the Grasshopper’s Feast; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "a4fba61d-0e08-3ca5-9108-53caa9ff972a",
+          "album": "The Butterfly Ball and the Grasshopper’s Feast",
+          "discogsMaster": "247447",
+          "wikidata": "Q1018091"
+        },
+        "at": "2026-11-14T08:41:57.808Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Pop rock",
+          "psychedelic rock",
+          "hard rock",
+          "progressive rock"
+        ],
+        "ref": "The Butterfly Ball and the Grasshopper's Feast",
+        "links": {
+          "wikidata": "Q1018091"
+        },
+        "at": "2026-11-14T08:42:14.336Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "psychedelic rock",
+          "pop rock",
+          "hard rock",
+          "progressive rock"
+        ],
+        "ref": "Q1018091",
+        "at": "2026-11-14T08:42:30.434Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Pop Rock",
+          "Rock"
+        ],
+        "ref": "master/247447 (The Butterfly Ball And The Grasshopper's Feast)",
+        "at": "2026-11-14T08:41:58.032Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:49:01.212Z",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "collection/1597915484 (The Butterfly Ball and the Grasshopper's Feast (Deluxe Edition))",
+        "links": {
+          "album": "The Butterfly Ball and the Grasshopper's Feast (Deluxe Edition)"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:49:02.161Z",
+        "genres": [
+          "symphonic prog",
+          "art rock",
+          "classic pop and rock",
+          "deep purple family",
+          "progressive rock"
+        ],
+        "counts": [
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/583944a8-d43b-42e9-8e3c-29eb89f53587 (Roger Glover; credited on the song)",
+        "links": {
+          "mbArtist": "583944a8-d43b-42e9-8e3c-29eb89f53587",
+          "wikidata": "Q216700"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Hard rock",
+          "heavy metal",
+          "pop rock",
+          "blues rock",
+          "progressive rock"
+        ],
+        "ref": "Roger Glover",
+        "links": {
+          "wikidata": "Q216700"
+        },
+        "at": "2026-11-14T08:42:06.180Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "hard rock",
+          "progressive rock"
+        ],
+        "ref": "Q216700",
+        "at": "2026-11-14T08:42:22.297Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:48:57.852Z",
+        "genres": [
+          "Hard Rock"
+        ],
+        "ref": "artist/112221"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:49:01.212Z",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "artist/5347912 (Roger Glover)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:42:30.434Z"
+  },
+  "1604871429": {
+    "genres": [
+      "alternative",
+      "R&B"
+    ],
+    "genreLevels": [
+      "song",
+      "song"
+    ],
+    "artistGenres": [
+      "R&B",
+      "alternative",
+      "pop rock"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:13:09.275Z",
+        "reason": "no article about this song (Punk: disambiguation page)",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:14:08.536Z",
+        "reason": "no song item by this artist",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:41:12.372Z",
+        "reason": "0 single(s) and 1 recording(s) found, none tagged",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "found",
+        "at": "2026-11-14T04:56:09.419Z",
+        "genres": [
+          "R&B"
+        ],
+        "moods": [
+          "..."
+        ],
+        "ref": "track/36532083"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:56:09.235Z",
+        "genres": [
+          "Alternative"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "the album has no tags",
+        "ref": "release-group/13903aa5-1694-4099-8f32-121a8452cbb8 (El sur; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "13903aa5-1694-4099-8f32-121a8452cbb8",
+          "album": "El sur"
+        },
+        "at": "2026-11-14T08:36:07.637Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album El sur",
+        "at": "2026-11-14T08:36:08.626Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:36:08.626Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:36:07.637Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "at": "2026-11-14T05:41:12.113Z",
+        "reason": "the release is the song's single",
+        "ref": "Punk - Single",
+        "links": {
+          "album": "Punk - Single"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:41:16.196Z",
+        "genres": [
+          "r&b"
+        ],
+        "counts": [
+          1
+        ],
+        "ref": "artist/722c286b-39aa-4757-ad40-d2e5550bd254 (Girl Ultra; the only artist of this name)",
+        "links": {
+          "mbArtist": "722c286b-39aa-4757-ad40-d2e5550bd254",
+          "wikidata": "Q63190449",
+          "enwiki": "Girl Ultra"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "R&B"
+        ],
+        "ref": "Girl Ultra",
+        "links": {
+          "wikidata": "Q63190449"
+        },
+        "at": "2026-11-14T08:36:12.686Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "the artist item has no genre",
+        "ref": "Q63190449",
+        "at": "2026-11-14T08:36:12.686Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:41:08.790Z",
+        "genres": [
+          "R&B",
+          "Rock/Pop"
+        ],
+        "ref": "artist/184561"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:41:12.113Z",
+        "genres": [
+          "Alternative"
+        ],
+        "ref": "artist/1207957662 (Girl Ultra)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:36:12.686Z"
+  },
+  "1649131355": {
+    "genres": [
+      "electronic"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "electronic"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:36:16.508Z",
+        "reason": "no article about this song (Digitigrade: not a song article (no infobox))",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:36:00.407Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:50:13.386Z",
+        "reason": "no recording of this song by this artist",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:02:08.900Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:02:08.722Z",
+        "genres": [
+          "Electronic"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T08:42:46.737Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Wonderful Life",
+        "at": "2026-11-14T08:43:00.281Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:43:00.281Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:42:46.737Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:50:14.680Z",
+        "genres": [
+          "Electronic"
+        ],
+        "ref": "collection/1649131354 (Wonderful Life)",
+        "links": {
+          "album": "Wonderful Life"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:50:15.901Z",
+        "reason": "no artist of this name"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:42:52.123Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:42:52.123Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:50:11.612Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:50:14.680Z",
+        "genres": [
+          "Electronic"
+        ],
+        "ref": "artist/1646897073 (Piotr Motak)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:43:00.281Z"
+  },
+  "1694793045": {
+    "genres": [
+      "future bass",
+      "electronic"
+    ],
+    "genreLevels": [
+      "album",
+      "song"
+    ],
+    "artistGenres": [
+      "future bass",
+      "drum and bass",
+      "big room house",
+      "dutch house"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:43:08.935Z",
+        "reason": "no article about this song (Take It Away: disambiguation page)",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:43:09.022Z",
+        "reason": "no song item by this artist",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:53:22.710Z",
+        "reason": "0 single(s) and 1 recording(s) found, none tagged",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:04:09.199Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:04:08.937Z",
+        "genres": [
+          "Electronic"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "electronic"
+        ],
+        "counts": [
+          1
+        ],
+        "ref": "release-group/3a18b776-9d95-423c-8321-b2b1df3cd8f6 (NOVA; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "3a18b776-9d95-423c-8321-b2b1df3cd8f6",
+          "album": "NOVA",
+          "wikidata": "Q56062292"
+        },
+        "at": "2026-11-14T08:44:17.876Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Future bass",
+          "electronic dance music"
+        ],
+        "ref": "Nova (RL Grime album)",
+        "links": {
+          "wikidata": "Q56062292"
+        },
+        "at": "2026-11-14T08:44:31.416Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "the album item has no genre",
+        "ref": "Q56062292",
+        "at": "2026-11-14T08:44:31.417Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:44:17.876Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:53:22.664Z",
+        "genres": [
+          "Electronic"
+        ],
+        "ref": "collection/1683433921 (NOVA)",
+        "links": {
+          "album": "NOVA"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:53:25.280Z",
+        "genres": [
+          "future bass",
+          "trap",
+          "trap edm",
+          "electronic",
+          "big room house",
+          "drum and bass",
+          "dutch house",
+          "edm",
+          "electro house",
+          "experimental",
+          "festival trap",
+          "hybrid trap",
+          "instrumental hip hop",
+          "uk garage",
+          "wonky"
+        ],
+        "counts": [
+          4,
+          4,
+          4,
+          3,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/c046b587-5e98-4631-a5c0-e5d8e18d6b13 (RL Grime; credited on the song)",
+        "links": {
+          "mbArtist": "c046b587-5e98-4631-a5c0-e5d8e18d6b13",
+          "wikidata": "Q16234136"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Trap",
+          "future bass",
+          "drum and bass",
+          "(as RL Grime)",
+          "Electro house",
+          "big room house",
+          "Dutch house",
+          "(as Clockwork)"
+        ],
+        "ref": "RL Grime",
+        "links": {
+          "wikidata": "Q16234136"
+        },
+        "at": "2026-11-14T08:44:23.245Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "electronic music"
+        ],
+        "ref": "Q16234136",
+        "at": "2026-11-14T08:44:34.263Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:53:19.114Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:53:22.664Z",
+        "genres": [
+          "Electronic"
+        ],
+        "ref": "artist/583453223 (RL Grime)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:44:34.263Z"
+  },
+  "1777704569": {
+    "genres": [
+      "electronic"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "electronic"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:37:17.186Z",
+        "reason": "no article about this song",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:37:01.005Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:50:45.599Z",
+        "reason": "no recording of this song by this artist",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:02:25.238Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:02:25.053Z",
+        "genres": [
+          "Electronic"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T08:43:03.741Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Paradise",
+        "at": "2026-11-14T08:43:16.565Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:43:16.565Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:43:03.741Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:50:47.313Z",
+        "genres": [
+          "Electronic"
+        ],
+        "ref": "collection/1777704561 (Paradise)",
+        "links": {
+          "album": "Paradise"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:50:51.611Z",
+        "reason": "the artist has no tags",
+        "ref": "artist/84833733-ce85-4622-a57a-a3b8327c0c83 (Kalibration; the only artist of this name)",
+        "links": {
+          "mbArtist": "84833733-ce85-4622-a57a-a3b8327c0c83"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:43:08.409Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:43:08.409Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:50:44.104Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:50:47.313Z",
+        "genres": [
+          "Electronic"
+        ],
+        "ref": "artist/1759044130 (Kalibration)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:43:16.565Z"
+  },
+  "1778224465": {
+    "genres": [
+      "hip hop"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "hip hop"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:50:09.181Z",
+        "reason": "no article about this song",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:50:01.073Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:56:38.491Z",
+        "reason": "no recording of this song by this artist",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:06:08.731Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:06:08.408Z",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T08:45:57.706Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no album (the song is a single, or the album is unknown)",
+        "at": "2026-11-14T08:45:57.706Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:45:57.706Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:45:57.706Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "at": "2026-11-14T05:56:38.177Z",
+        "reason": "the release is the song's single",
+        "ref": "Screwly G x Q50 beat (backs 2 back) - Single",
+        "links": {
+          "album": "Screwly G x Q50 beat (backs 2 back) - Single"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:56:39.747Z",
+        "reason": "no artist of this name"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:46:04.303Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:46:04.303Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:56:34.986Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:56:38.177Z",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "artist/1675299496 (CHIRAQ DUBO)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:46:04.303Z"
+  },
+  "1800785982": {
+    "genres": [
+      "tropical",
+      "vallenato",
+      "cumbia",
+      "latin"
+    ],
+    "genreLevels": [
+      "song",
+      "album",
+      "album",
+      "album"
+    ],
+    "artistGenres": [
+      "cumbia",
+      "mexican cumbia",
+      "cumbia sonidera",
+      "cumbia mexicana"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:10:20.880Z",
+        "reason": "no article about this song (Nunca Es Suficiente: by another artist)",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:12:00.290Z",
+        "reason": "no song item by this artist",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:40:02.145Z",
+        "reason": "0 single(s) and 1 recording(s) found, none tagged",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T04:55:13.567Z",
+        "reason": "the track has no genre",
+        "ref": "track/35351188"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:55:13.361Z",
+        "genres": [
+          "Música tropical"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "latin"
+        ],
+        "counts": [
+          1
+        ],
+        "ref": "release-group/680b54be-a54e-4572-b95a-58ad43539fa0 (Esto sí es cumbia; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "680b54be-a54e-4572-b95a-58ad43539fa0",
+          "album": "Esto sí es cumbia",
+          "discogsMaster": "2422489",
+          "wikidata": "Q56208868"
+        },
+        "at": "2026-11-14T08:35:11.857Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Esto Sí Es Cumbia",
+        "at": "2026-11-14T08:35:17.101Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "the album item has no genre",
+        "ref": "Q56208868",
+        "at": "2026-11-14T08:35:17.101Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "Cumbia",
+          "Vallenato",
+          "Latin"
+        ],
+        "ref": "master/2422489 (Esto Sí Es Cumbia)",
+        "at": "2026-11-14T08:35:12.073Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:40:03.641Z",
+        "genres": [
+          "Música tropical"
+        ],
+        "ref": "collection/1800785980 (Esto Sí Es Cumbia)",
+        "links": {
+          "album": "Esto Sí Es Cumbia"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:40:04.929Z",
+        "genres": [
+          "cumbia",
+          "cumbia mexicana",
+          "cumbia sonidera",
+          "latin"
+        ],
+        "counts": [
+          3,
+          2,
+          2,
+          2
+        ],
+        "ref": "artist/dcb5e5c6-5f21-4266-b5b6-556f54a6b6b5 (Los Ángeles Azules; credited on the song)",
+        "links": {
+          "mbArtist": "dcb5e5c6-5f21-4266-b5b6-556f54a6b6b5",
+          "wikidata": "Q5981294"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Mexican cumbia",
+          "Cumbia Sinfónica"
+        ],
+        "ref": "Los Ángeles Azules",
+        "links": {
+          "wikidata": "Q5981294"
+        },
+        "at": "2026-11-14T08:35:13.100Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "cumbia"
+        ],
+        "ref": "Q5981294",
+        "at": "2026-11-14T08:35:21.122Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:40:00.727Z",
+        "genres": [
+          "Latin",
+          "Latin"
+        ],
+        "ref": "artist/158444"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:40:03.641Z",
+        "genres": [
+          "Música Mexicana"
+        ],
+        "ref": "artist/3500477 (Los Ángeles Azules)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:35:21.122Z"
+  },
+  "1837074343": {
+    "genres": [
+      "rock"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:47:01.268Z",
+        "reason": "no article about this song (Mender: disambiguation page)",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:46:17.085Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:54:58.711Z",
+        "reason": "0 single(s) and 1 recording(s) found, none tagged",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:05:09.427Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:05:09.222Z",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "the album has no tags",
+        "ref": "release-group/db593ff1-da06-4529-a69e-7a5e533ba4fe (Patterner; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "db593ff1-da06-4529-a69e-7a5e533ba4fe",
+          "album": "Patterner"
+        },
+        "at": "2026-11-14T08:45:15.398Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Patterner",
+        "at": "2026-11-14T08:45:23.648Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:45:23.648Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:45:15.398Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:55:00.535Z",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "collection/1837074330 (Patterner)",
+        "links": {
+          "album": "Patterner"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:55:01.378Z",
+        "reason": "the artist has no tags",
+        "ref": "artist/24bd55c6-54bb-4ba7-bdeb-d7e26d00a03e (Golden Brown; credited on the song)",
+        "links": {
+          "mbArtist": "24bd55c6-54bb-4ba7-bdeb-d7e26d00a03e"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:45:15.531Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:45:15.531Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:54:57.206Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:55:00.535Z",
+        "genres": [
+          "Instrumental"
+        ],
+        "ref": "artist/163274552 (Golden Brown)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:45:23.648Z"
+  },
+  "1843605915": {
+    "genres": [
+      "folk"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "pop"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:35:16.904Z",
+        "reason": "no article about this song",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:35:16.702Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:49:40.419Z",
+        "reason": "no recording of this song by this artist",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:02:00.558Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:02:00.388Z",
+        "genres": [
+          "Folk"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T08:42:35.767Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Functioning Atrociously",
+        "at": "2026-11-14T08:42:43.997Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:42:43.997Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:42:35.767Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:49:42.162Z",
+        "genres": [
+          "Folk"
+        ],
+        "ref": "collection/1843605545 (Functioning Atrociously)",
+        "links": {
+          "album": "Functioning Atrociously"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:49:42.920Z",
+        "reason": "no artist of this name"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:42:35.886Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:42:35.886Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:49:38.907Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:49:42.162Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "artist/1839590220 (LingualX)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:42:43.997Z"
+  },
+  "1868481905": {
+    "genres": [
+      "pop rap",
+      "K-pop",
+      "pop",
+      "hip hop",
+      "pop rock",
+      "rock"
+    ],
+    "genreLevels": [
+      "song",
+      "song",
+      "song",
+      "song",
+      "album",
+      "album"
+    ],
+    "artistGenres": [
+      "K-pop",
+      "dance-pop",
+      "korean hip hop",
+      "hip hop"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "found",
+        "at": "2026-11-14T06:21:17.558Z",
+        "genres": [
+          "hip-hop",
+          "pop rap"
+        ],
+        "ref": "Body to Body (song)",
+        "links": {
+          "albumArticle": "Arirang (album)",
+          "artistArticle": "BTS"
+        },
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:23:16.699Z",
+        "reason": "the item has no genre",
+        "ref": "Q138859357",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "at": "2026-11-14T05:44:23.368Z",
+        "genres": [
+          "1–4 wochen",
+          "alternative pop",
+          "billboard hot 100",
+          "billboard hot 100 2026",
+          "boom bap",
+          "k-pop",
+          "offizielle charts",
+          "pop rap"
+        ],
+        "counts": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "recording/6dfdfc61-89ff-451a-a5e9-5319065beae7",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T04:58:33.213Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:58:32.919Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "found",
+        "genres": [
+          "k-pop",
+          "pop",
+          "pop rap"
+        ],
+        "counts": [
+          1,
+          1,
+          1
+        ],
+        "ref": "release-group/21159e3f-172e-43f6-aa7d-8e06a81fea49 (ARIRANG; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "21159e3f-172e-43f6-aa7d-8e06a81fea49",
+          "album": "ARIRANG",
+          "discogsMaster": "4169260",
+          "wikidata": "Q137787331",
+          "enwiki": "Arirang (album)"
+        },
+        "at": "2026-11-14T08:38:36.993Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "found",
+        "genres": [
+          "Hip-hop",
+          "pop"
+        ],
+        "ref": "Arirang (album)",
+        "links": {
+          "wikidata": "Q137787331"
+        },
+        "at": "2026-11-14T08:39:00.271Z"
+      },
+      "wikidata-album": {
+        "status": "found",
+        "genres": [
+          "K-pop"
+        ],
+        "ref": "Q137787331",
+        "at": "2026-11-14T08:39:14.397Z"
+      },
+      "discogs-album": {
+        "status": "found",
+        "genres": [
+          "K-pop",
+          "Pop Rock",
+          "Rock",
+          "Pop"
+        ],
+        "ref": "master/4169260 (Arirang)",
+        "at": "2026-11-14T08:38:37.192Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:44:20.845Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "collection/1868481904 (ARIRANG)",
+        "links": {
+          "album": "ARIRANG"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:44:28.215Z",
+        "genres": [
+          "k-pop",
+          "boy group",
+          "pop",
+          "dance",
+          "2010s",
+          "2020s",
+          "english",
+          "hip hop"
+        ],
+        "counts": [
+          11,
+          5,
+          5,
+          3,
+          2,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/0d79fe8e-ba27-4859-bb8c-2f255f346853 (BTS; credited on the song)",
+        "links": {
+          "mbArtist": "0d79fe8e-ba27-4859-bb8c-2f255f346853",
+          "wikidata": "Q13580495"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "K-pop",
+          "pop",
+          "hip-hop",
+          "R&B",
+          "EDM"
+        ],
+        "ref": "BTS",
+        "links": {
+          "wikidata": "Q13580495"
+        },
+        "at": "2026-11-14T08:38:42.051Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "K-pop",
+          "dance-pop",
+          "Korean hip-hop"
+        ],
+        "ref": "Q13580495",
+        "at": "2026-11-14T08:39:06.267Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:44:17.440Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:44:20.845Z",
+        "genres": [
+          "K-Pop"
+        ],
+        "ref": "artist/883131348 (BTS)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:39:14.397Z"
+  },
+  "1877197218": {
+    "genres": [
+      "rock"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "rock"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:42:09.276Z",
+        "reason": "no article about this song (Welcome Home (Sanitarium): by another artist; Sanitarium: disambiguation page)",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:41:16.899Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:52:56.017Z",
+        "reason": "no recording of this song by this artist",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:03:41.842Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:03:41.469Z",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T08:44:10.539Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no album (the song is a single, or the album is unknown)",
+        "at": "2026-11-14T08:44:10.539Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:44:10.539Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:44:10.539Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "at": "2026-11-14T05:52:57.760Z",
+        "reason": "the release is the song's single",
+        "ref": "Sanitarium - Single",
+        "links": {
+          "album": "Sanitarium - Single"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:52:57.267Z",
+        "reason": "3 artists of this name; the song confirms none"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:44:15.114Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:44:15.114Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:52:54.529Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:52:57.760Z",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "artist/1450529194 (Fencer)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:44:15.114Z"
+  },
+  "1886134248": {
+    "genres": [
+      "rock"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "rock"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:49:08.565Z",
+        "reason": "no article about this song",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:48:25.291Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:56:03.852Z",
+        "reason": "no recording of this song by this artist",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:05:42.146Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:05:41.970Z",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T08:45:44.948Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Each Time I Pass This Way Feels Safer",
+        "at": "2026-11-14T08:45:56.168Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:45:56.168Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:45:44.948Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:56:05.477Z",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "collection/1886134232 (Each Time I Pass This Way Feels Safer)",
+        "links": {
+          "album": "Each Time I Pass This Way Feels Safer"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:56:07.653Z",
+        "reason": "the artist has no tags",
+        "ref": "artist/53fdb0a2-8b5d-46c9-9a52-0f50fb4fc21d (Dogcatcher; the only artist of this name)",
+        "links": {
+          "mbArtist": "53fdb0a2-8b5d-46c9-9a52-0f50fb4fc21d"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:45:48.037Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:45:48.037Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:56:02.318Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:56:05.477Z",
+        "genres": [
+          "Rock"
+        ],
+        "ref": "artist/426187099 (Dogcatcher)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:45:56.168Z"
+  },
+  "6795661996": {
+    "genres": [
+      "blues"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "blues"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:06:19.497Z",
+        "reason": "no article about this song",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:07:00.434Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:38:09.053Z",
+        "reason": "1 single(s) and 1 recording(s) found, none tagged",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T04:54:05.468Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:54:05.279Z",
+        "genres": [
+          "Blues"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "the recordings are on no album or EP",
+        "at": "2026-11-14T08:34:07.277Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no album (the song is a single, or the album is unknown)",
+        "at": "2026-11-14T08:34:07.279Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:34:07.279Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:34:07.277Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "at": "2026-11-14T05:38:10.532Z",
+        "reason": "the release is the song's single",
+        "ref": "Take a Little - Single",
+        "links": {
+          "album": "Take a Little - Single"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:38:10.448Z",
+        "reason": "the artist has no tags",
+        "ref": "artist/b32ddd74-27ef-45f9-bfd9-554e65321a6a (Jaxson Blue; credited on the song)",
+        "links": {
+          "mbArtist": "b32ddd74-27ef-45f9-bfd9-554e65321a6a"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:34:07.401Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:34:07.401Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:38:07.212Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:38:10.532Z",
+        "genres": [
+          "Blues"
+        ],
+        "ref": "artist/1895707783 (Jaxson Blue)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:34:07.401Z"
+  },
+  "6827717041": {
+    "genres": [
+      "Latin pop"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "Latin pop",
+      "latin",
+      "pop rock",
+      "pop"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:07:02.731Z",
+        "reason": "no article about this song (Suave (song): by another artist; Suave: disambiguation page)",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:08:17.359Z",
+        "reason": "no song item by this artist",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:38:12.953Z",
+        "reason": "no recording of this song by this artist",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T04:54:07.780Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:54:07.641Z",
+        "genres": [
+          "Pop Latino"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T08:34:09.779Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no album (the song is a single, or the album is unknown)",
+        "at": "2026-11-14T08:34:09.782Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:34:09.782Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:34:09.779Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "at": "2026-11-14T05:38:16.888Z",
+        "reason": "the release is the song's single",
+        "ref": "Suave - Single",
+        "links": {
+          "album": "Suave - Single"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:38:15.666Z",
+        "genres": [
+          "latin",
+          "latin pop",
+          "pop",
+          "reggaeton",
+          "world"
+        ],
+        "counts": [
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        "ref": "artist/b73433e9-24bd-4446-bf0c-40826bd48b44 (Kany García; the only artist of this name)",
+        "links": {
+          "mbArtist": "b73433e9-24bd-4446-bf0c-40826bd48b44",
+          "wikidata": "Q670308"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Latin pop"
+        ],
+        "ref": "Kany García",
+        "links": {
+          "wikidata": "Q670308"
+        },
+        "at": "2026-11-14T08:34:10.033Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "Latin pop"
+        ],
+        "ref": "Q670308",
+        "at": "2026-11-14T08:34:12.042Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:38:11.751Z",
+        "genres": [
+          "Latin",
+          "Rock/Pop"
+        ],
+        "ref": "artist/127955"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:38:16.888Z",
+        "genres": [
+          "Pop Latino"
+        ],
+        "ref": "artist/251432197 (Kany García)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:34:12.042Z"
+  },
+  "6820114211": {
+    "genres": [
+      "hip hop"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "hip hop",
+      "electronic"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:12:12.783Z",
+        "reason": "no article about this song",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:12:16.575Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "found",
+        "at": "2026-11-14T05:40:14.449Z",
+        "genres": [
+          "5+ wochen",
+          "deutsch",
+          "german",
+          "hip hop",
+          "offizielle charts",
+          "rap"
+        ],
+        "counts": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "ref": "recording/3d4492c1-09aa-4cbf-a328-11f0714a7e93",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T04:55:26.136Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T04:55:25.794Z",
+        "genres": [
+          "Hip-Hop"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "the album has no tags",
+        "ref": "release-group/753ddf94-ad7d-46ae-a655-1cebb2d8f08e (Ski Aggu Musik; release of the matched recording)",
+        "links": {
+          "mbReleaseGroup": "753ddf94-ad7d-46ae-a655-1cebb2d8f08e",
+          "album": "Ski Aggu Musik"
+        },
+        "at": "2026-11-14T08:35:30.225Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Ski Aggu Musik",
+        "at": "2026-11-14T08:36:00.427Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:36:00.427Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:35:30.225Z"
+      },
+      "itunes-album": {
+        "status": "none",
+        "at": "2026-11-14T05:40:13.294Z",
+        "reason": "no matching track"
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:40:17.195Z",
+        "genres": [
+          "hip hop",
+          "pop rap"
+        ],
+        "counts": [
+          1,
+          1
+        ],
+        "ref": "artist/f1d46f29-34fd-4cd5-959f-0a213e1f1d8e (Ski Aggu; credited on the song)",
+        "links": {
+          "mbArtist": "f1d46f29-34fd-4cd5-959f-0a213e1f1d8e",
+          "wikidata": "Q114797166"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "found",
+        "genres": [
+          "Hip-hop",
+          "electronic"
+        ],
+        "ref": "Ski Aggu",
+        "links": {
+          "wikidata": "Q114797166"
+        },
+        "at": "2026-11-14T08:36:04.493Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "the artist item has no genre",
+        "ref": "Q114797166",
+        "at": "2026-11-14T08:36:04.493Z"
+      },
+      "theaudiodb-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:40:13.213Z",
+        "genres": [
+          "Unknown"
+        ],
+        "ref": "artist/187717"
+      },
+      "itunes-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:40:13.294Z",
+        "reason": "no matching track"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:36:04.493Z"
+  },
+  "6807077438": {
+    "genres": [
+      "pop"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "electronic pop",
+      "pop"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:28:09.430Z",
+        "reason": "no article about this song (Skeleton (disambiguation): disambiguation page; Skeleton: not a song article (anatomy))",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:29:08.834Z",
+        "reason": "no song item by this artist",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:46:35.979Z",
+        "reason": "0 single(s) and 2 recording(s) found, none tagged",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:00:11.353Z",
+        "reason": "the track has no genre",
+        "ref": "track/36745406"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:00:11.113Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "the album has no tags",
+        "ref": "release-group/20f91614-2cf5-4f28-97f9-bec315bc566b (eiskalte engel; album of this name by this artist)",
+        "links": {
+          "mbReleaseGroup": "20f91614-2cf5-4f28-97f9-bec315bc566b",
+          "album": "eiskalte engel"
+        },
+        "at": "2026-11-14T08:40:35.640Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album eiskalte engel",
+        "at": "2026-11-14T08:40:35.759Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:40:35.759Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:40:35.640Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:46:36.653Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "collection/6807077435 (eiskalte engel - EP)",
+        "links": {
+          "album": "eiskalte engel - EP"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:46:38.711Z",
+        "genres": [
+          "electropop"
+        ],
+        "counts": [
+          1
+        ],
+        "ref": "artist/7fb8e6bd-d8b3-4a77-9679-c54f7bcd1d93 (ClockClock; credited on the song)",
+        "links": {
+          "mbArtist": "7fb8e6bd-d8b3-4a77-9679-c54f7bcd1d93",
+          "wikidata": "Q107293576"
+        }
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:40:43.875Z"
+      },
+      "wikidata-artist": {
+        "status": "found",
+        "genres": [
+          "electronic pop"
+        ],
+        "ref": "Q107293576",
+        "at": "2026-11-14T08:41:00.726Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:46:33.425Z",
+        "reason": "the artist has no genre",
+        "ref": "artist/171375"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:46:36.653Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "artist/1259040409 (ClockClock)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:41:00.726Z"
+  },
+  "6763077853": {
+    "genres": [
+      "pop"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:48:08.936Z",
+        "reason": "no article about this song",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:47:17.702Z",
+        "reason": "no item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:55:33.277Z",
+        "reason": "no recording of this song by this artist",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:05:25.827Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:05:25.636Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T08:45:26.301Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Mengukir Kenangan",
+        "at": "2026-11-14T08:45:39.912Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:45:39.912Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:45:26.302Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:55:32.806Z",
+        "genres": [
+          "Pop"
+        ],
+        "ref": "collection/1895152195 (Mengukir Kenangan - EP)",
+        "links": {
+          "album": "Mengukir Kenangan - EP"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:55:35.767Z",
+        "reason": "no artist of this name"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:45:31.794Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:45:31.794Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:55:29.685Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:55:32.806Z",
+        "reason": "the artist has no genre"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:45:39.912Z"
+  },
+  "6780472953": {
+    "genres": [
+      "hip hop"
+    ],
+    "genreLevels": [
+      "song"
+    ],
+    "artistGenres": [
+      "hip hop"
+    ],
+    "sources": {
+      "wikipedia": {
+        "status": "none",
+        "at": "2026-11-14T06:51:08.719Z",
+        "reason": "no article about this song",
+        "v": 3
+      },
+      "wikidata": {
+        "status": "none",
+        "at": "2026-11-14T06:51:00.689Z",
+        "reason": "no song item with this title",
+        "v": 2
+      },
+      "musicbrainz": {
+        "status": "none",
+        "at": "2026-11-14T05:57:00.820Z",
+        "reason": "no recording of this song by this artist",
+        "v": 2
+      },
+      "theaudiodb": {
+        "status": "none",
+        "at": "2026-11-14T05:06:25.009Z",
+        "reason": "no track by this artist with this title"
+      },
+      "itunes": {
+        "status": "found",
+        "at": "2026-11-14T05:06:24.825Z",
+        "genres": [
+          "Hip-Hop"
+        ],
+        "ref": "stored"
+      },
+      "musicbrainz-album": {
+        "status": "none",
+        "reason": "no recording or album of this song by this artist",
+        "at": "2026-11-14T08:46:06.955Z",
+        "v": 2
+      },
+      "wikipedia-album": {
+        "status": "none",
+        "reason": "no article about the album Boutique Selection #4",
+        "at": "2026-11-14T08:46:20.573Z"
+      },
+      "wikidata-album": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+        "at": "2026-11-14T08:46:20.573Z"
+      },
+      "discogs-album": {
+        "status": "none",
+        "reason": "no Discogs master linked from the MusicBrainz album",
+        "at": "2026-11-14T08:46:06.955Z"
+      },
+      "itunes-album": {
+        "status": "found",
+        "at": "2026-11-14T05:57:02.487Z",
+        "genres": [
+          "Hip-Hop"
+        ],
+        "ref": "collection/6780472413 (Boutique Selection #4)",
+        "links": {
+          "album": "Boutique Selection #4"
+        }
+      },
+      "musicbrainz-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:57:03.332Z",
+        "reason": "9 artists of this name; the song confirms none"
+      },
+      "wikipedia-artist": {
+        "status": "none",
+        "reason": "no article about this artist",
+        "at": "2026-11-14T08:46:12.434Z"
+      },
+      "wikidata-artist": {
+        "status": "none",
+        "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+        "at": "2026-11-14T08:46:12.434Z"
+      },
+      "theaudiodb-artist": {
+        "status": "none",
+        "at": "2026-11-14T05:56:59.396Z",
+        "reason": "no artist of this name"
+      },
+      "itunes-artist": {
+        "status": "found",
+        "at": "2026-11-14T05:57:02.487Z",
+        "genres": [
+          "Hip-Hop/Rap"
+        ],
+        "ref": "artist/1451970164 (B-Side)"
+      }
+    },
+    "complete": true,
+    "at": "2026-11-14T08:46:20.573Z"
+  }
+}

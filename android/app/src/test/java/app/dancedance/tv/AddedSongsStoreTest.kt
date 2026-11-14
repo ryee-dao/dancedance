@@ -117,6 +117,44 @@ class AddedSongsStoreTest {
         assertEquals("", s.genreLookup)
     }
 
+    private val levelLookup = """{"genres":["hip hop","trap","drill"],"artistGenres":["rap"," Memphis rap "],"genreLevels":["song","album"," Artist "]}"""
+
+    @Test fun artistGenresAndLevelsRoundTrip() = withFile { f ->
+        f.writeText(oldFormat)
+        assertTrue(AddedSongsStore(f).updateGenres("AAAAAAAAAAA", levelLookup))
+        val reread = AddedSongsStore(f)
+        val s = reread.list()[0]
+        assertEquals(listOf("rap", "Memphis rap"), s.artistGenres)
+        assertEquals(listOf("song", "album", "artist"), s.genreLevels)
+        val page = reread.toJson().getJSONObject(0)
+        assertEquals("Memphis rap", page.getJSONArray("artistGenres").getString(1))
+        assertEquals("album", page.getJSONArray("genreLevels").getString(1))
+    }
+
+    @Test fun oldLookupsAndFilesHaveNoArtistGenresOrLevels() = withFile { f ->
+        f.writeText(oldFormat)
+        assertTrue(AddedSongsStore(f).list().all { it.artistGenres.isEmpty() && it.genreLevels.isEmpty() })
+        assertTrue(AddedSongsStore(f).updateGenres("AAAAAAAAAAA", lookup))
+        val reread = AddedSongsStore(f)
+        assertTrue(reread.list()[0].artistGenres.isEmpty())
+        assertTrue(reread.list()[0].genreLevels.isEmpty())
+        val page = reread.toJson().getJSONObject(0)
+        assertFalse(page.has("artistGenres"))
+        assertFalse(page.has("genreLevels"))
+    }
+
+    @Test fun mismatchedOrInvalidLevelsAreDroppedButGenresStay() = withFile { f ->
+        f.writeText(oldFormat)
+        val store = AddedSongsStore(f)
+        assertTrue(store.updateGenres("AAAAAAAAAAA", """{"genres":["hip hop","trap"],"genreLevels":["song"]}"""))
+        assertEquals(listOf("hip hop", "trap"), AddedSongsStore(f).list()[0].genres)
+        assertTrue(AddedSongsStore(f).list()[0].genreLevels.isEmpty())
+        assertTrue(store.updateGenres("AAAAAAAAAAA", """{"genres":["hip hop","trap"],"genreLevels":["song","track"]}"""))
+        assertEquals(listOf("hip hop", "trap"), AddedSongsStore(f).list()[0].genres)
+        assertTrue(AddedSongsStore(f).list()[0].genreLevels.isEmpty())
+        assertFalse(AddedSongsStore(f).toJson().getJSONObject(0).has("genreLevels"))
+    }
+
     @Test fun theItunesBackfillKeepsMultiSourceGenres() = withFile { f ->
         f.writeText(oldFormat)
         val store = AddedSongsStore(f)

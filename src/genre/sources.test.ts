@@ -68,7 +68,7 @@ describe('Wikipedia', () => {
     expect(pages.get('My Immortal (Evanescence song)')!.missing).toBe(true);
     expect(pages.get('My Immortal')!.disambiguation).toBe(true);
     expect(checkPage(MY_IMMORTAL, pages.get('My Immortal')!)).toEqual({ ok: false, reason: 'disambiguation page' });
-    expect(checkPage(MY_IMMORTAL, pages.get('My Immortal (song)')!)).toEqual({ ok: true, genres: ['Alternative rock'] });
+    expect(checkPage(MY_IMMORTAL, pages.get('My Immortal (song)')!)).toMatchObject({ ok: true, genres: ['Alternative rock'] });
   });
 
   it('rejects a song of the same name by another artist, and a non-song page', () => {
@@ -95,7 +95,7 @@ describe('Wikipedia', () => {
   it('returns the confirmed genres in one request when a form is the article', async () => {
     const seen: string[] = [];
     const a = await wikipedia.lookup({ artist: 'Michael Jackson', title: 'Billie Jean' }, fixtureHttp([[/titles=/, 'wp-billie-jean']], seen));
-    expect(a).toEqual({ status: 'found', genres: ['Post-disco', 'R&B', 'funk', 'dance-pop'], ref: 'Billie Jean' });
+    expect(a).toEqual({ status: 'found', genres: ['Post-disco', 'R&B', 'funk', 'dance-pop'], ref: 'Billie Jean', links: { albumArticle: 'Thriller (album)', artistArticle: 'Michael Jackson' } });
     expect(seen).toHaveLength(1);
     expect(seen[0]).toContain('origin=*');
   });

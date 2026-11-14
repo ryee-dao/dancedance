@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { synthClickTrack } from '../../src/core/analysis/synth.testutil';
 import { parseIndexSongs } from '../../src/beat/bpmIndex';
 import { cleanGenreList, parseSongsList, type AddedSong } from '../../src/beat/cloud';
-import type { GenreLookup, SongQuery } from '../../src/genre';
+import { DEFAULT_SOURCES, type GenreLookup, type SongQuery, type SourceOutcome } from '../../src/genre';
 import { catalogSongs, dueSongs, parseGenresFile, putRecord, renderGenresFile, type GenreRecord } from './genres';
 import { renderIndex } from './output';
 import { runBeatmaps, type Deps, type Paths, type RunOptions } from './pipeline';
@@ -17,12 +17,18 @@ import { renderSongs } from './songs';
 const NOW = new Date('2026-11-14T12:00:00Z');
 const AT = NOW.toISOString();
 
+/** Every source answered 'none' (at the current source version) unless given. */
+const allNone = (): Record<string, SourceOutcome> =>
+  Object.fromEntries(DEFAULT_SOURCES.map((s) => [s.id, { status: 'none', at: AT, reason: 'nothing', ...(s.version ? { v: s.version } : {}) } as SourceOutcome]));
+const v = (id: string) => DEFAULT_SOURCES.find((s) => s.id === id)?.version;
+
 const lookup = (genres: string[], complete = true): GenreLookup => ({
   genres,
   sources: {
-    wikipedia: genres.length ? { status: 'found', at: AT, genres, ref: 'Page' } : { status: 'none', at: AT, reason: 'no article about this song' },
-    wikidata: { status: 'none', at: AT, reason: 'no item with this title' },
-    musicbrainz: { status: 'none', at: AT, reason: 'no recording of this song by this artist' },
+    ...allNone(),
+    wikipedia: genres.length ? { status: 'found', at: AT, genres, ref: 'Page', v: v('wikipedia') } : { status: 'none', at: AT, reason: 'no article about this song', v: v('wikipedia') },
+    wikidata: { status: 'none', at: AT, reason: 'no item with this title', v: v('wikidata') },
+    musicbrainz: { status: 'none', at: AT, reason: 'no recording of this song by this artist', v: v('musicbrainz') },
     theaudiodb: { status: 'none', at: AT, reason: 'no track by this artist with this title' },
     itunes: complete ? { status: 'found', at: AT, genres: ['Pop'] } : { status: 'failed', at: AT, reason: 'HTTP 429' },
   },
@@ -42,6 +48,19 @@ describe('songs.json with and without genres', () => {
     expect(parseSongsList(withG)[0].genres).toEqual(['disco', 'nu-disco', 'dance-pop']);
     expect(renderSongs(withG, parseSongsList(withG), '2030-01-01T00:00:00Z')).toBe(withG); // stable
     expect(renderSongs(undefined, [song({ genres: [] })], AT)).toBe(renderSongs(undefined, [song()], AT));
+  });
+
+  it('levels and artist genres are stored next to genres; older files (without them) stay valid', () => {
+    const s = song({ genre: 'Alternative', genres: ['alternative', 'indie rock'], genreLevels: ['song', 'album'], artistGenres: ['R&B', 'neo soul'] });
+    const text = renderSongs(undefined, [s], AT);
+    expect(Object.keys(JSON.parse(text).songs[0]).slice(-3)).toEqual(['genres', 'genreLevels', 'artistGenres']);
+    expect(parseSongsList(text)[0]).toMatchObject({ genres: ['alternative', 'indie rock'], genreLevels: ['song', 'album'], artistGenres: ['R&B', 'neo soul'] });
+    // Levels that do not match the list are dropped; artist genres alone are fine.
+    const odd = JSON.stringify({ songs: [{ ...song(), genres: ['pop'], genreLevels: ['song', 'album'], artistGenres: ['pop'] }] });
+    expect(parseSongsList(odd)[0].genreLevels).toBeUndefined();
+    const onlyArtist = renderSongs(undefined, [song({ artistGenres: ['techno'] })], AT);
+    expect(parseSongsList(onlyArtist)[0]).toMatchObject({ artistGenres: ['techno'] });
+    expect(parseSongsList(onlyArtist)[0].genres).toBeUndefined();
   });
 
   it('bad stored lists are cleaned', () => {
@@ -67,6 +86,24 @@ describe('index.json with and without genres', () => {
     expect(parsed.bbbbbbbbbbb).toEqual({ bpm: 90, duration: 180 });
     expect(parseIndexSongs(plain).aaaaaaaaaaa.genres).toBeUndefined();
   });
+
+  it('levels and artist genres reach the page through the index', () => {
+    const text = renderIndex(
+      undefined,
+      'v',
+      maps,
+      AT,
+      undefined,
+      new Map([['aaaaaaaaaaa', ['cumbia', 'Latin pop']]]),
+      new Map([
+        ['aaaaaaaaaaa', { genreLevels: ['album', 'song'], artistGenres: ['cumbia'] }],
+        ['bbbbbbbbbbb', { artistGenres: ['techno'] }],
+      ]),
+    );
+    const parsed = parseIndexSongs(text);
+    expect(parsed.aaaaaaaaaaa).toEqual({ bpm: 120, duration: 200, genres: ['cumbia', 'Latin pop'], genreLevels: ['album', 'song'], artistGenres: ['cumbia'] });
+    expect(parsed.bbbbbbbbbbb).toEqual({ bpm: 90, duration: 180, artistGenres: ['techno'] });
+  });
 });
 
 describe('genres.json', () => {
@@ -91,7 +128,7 @@ describe('genres.json', () => {
     expect(dueSongs(catalog, records, NOW).map((c) => c.videoId)).toEqual(['lyricvid001', 'starter0001']);
     const full = (genres: string[]): GenreLookup => ({
       genres,
-      sources: Object.fromEntries(['wikipedia', 'wikidata', 'musicbrainz', 'theaudiodb', 'itunes'].map((id) => [id, { status: 'found', at: AT, genres }])),
+      sources: Object.fromEntries(DEFAULT_SOURCES.map((s) => [s.id, { status: 'found', at: AT, genres, ...(s.version ? { v: s.version } : {}) } as SourceOutcome])),
       complete: true,
       at: AT,
     });
@@ -159,13 +196,18 @@ afterEach(async () => {
 
 describe('pipeline', () => {
   it('looks genres up when it adds a song (only artist, title, length and the stored iTunes genre go in) and stores them everywhere', async () => {
-    const out = await runBeatmaps(paths, opts({ adds: [LEVITATING] }), deps((s) => lookup(s.artist === 'ABBA' ? ['Euro disco'] : ['disco', 'nu-disco'])));
+    const out = await runBeatmaps(
+      paths,
+      opts({ adds: [LEVITATING] }),
+      deps((s) => (s.artist === 'ABBA' ? lookup(['Euro disco']) : { ...lookup(['disco', 'nu-disco']), genreLevels: ['song', 'album'], artistGenres: ['dance-pop'] })),
+    );
     expect(out.exitCode).toBe(0);
     expect(asked[0].song).toEqual({ videoId: 'lyricvid001', key: 'dua lipa - levitating', artist: 'Dua Lipa', title: 'Levitating', durationSec: 203, itunesGenre: 'Pop', added: true });
     const songs = parseSongsList(await readFile(paths.songsFile!, 'utf8'));
-    expect(songs[0]).toMatchObject({ videoId: 'lyricvid001', genre: 'Pop', genres: ['disco', 'nu-disco'] });
+    expect(songs[0]).toMatchObject({ videoId: 'lyricvid001', genre: 'Pop', genres: ['disco', 'nu-disco'], genreLevels: ['song', 'album'], artistGenres: ['dance-pop'] });
     const index = parseIndexSongs(await readFile(join(paths.beatmapsDir, 'index.json'), 'utf8'));
     expect(index.lyricvid001.genres).toEqual(['disco', 'nu-disco']);
+    expect(index.lyricvid001.artistGenres).toEqual(['dance-pop']);
     const records = parseGenresFile(await readFile(paths.genresFile!, 'utf8'));
     expect(records['dua lipa - levitating'].sources.wikipedia).toMatchObject({ status: 'found', ref: 'Page' });
     // The starter song (no map yet in this run's add mode) is looked up too, as a due catalog song.

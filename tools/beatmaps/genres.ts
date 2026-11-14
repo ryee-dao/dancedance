@@ -3,12 +3,13 @@
  * catalog song, kept for debugging ("which source said what") and as the
  * lookup cache. Pure: no I/O.
  *
- *   { updatedAt, songs: { [songKey]: { artist, title, videoIds, genres, moods?, complete, at,
+ *   { updatedAt, songs: { [songKey]: { artist, title, videoIds, genres, genreLevels?, artistGenres?, moods?, complete, at,
  *                                      sources: { wikipedia: { status, at, genres? | reason, ref? }, ... } } } }
  *
- * Keys are songKey(artist, title), sorted. The combined `genres` list is
- * also written next to each song in songs.json and index.json (that is what
- * the app reads); this file is only for people and for later lookups.
+ * Keys are songKey(artist, title), sorted. The combined `genres` list (with
+ * `genreLevels`) and `artistGenres` are also written next to each song in
+ * songs.json and index.json (that is what the app reads); this file is only
+ * for people and for later lookups.
  */
 import { songKey, type AddedSong } from '../../src/beat/cloud';
 import { lookupDue, parseGenreLookup, type GenreLookup, type SongQuery } from '../../src/genre';
@@ -55,6 +56,8 @@ function normRecord(r: GenreRecord): GenreRecord {
     title: r.title,
     videoIds: [...new Set(r.videoIds)].sort(),
     genres: r.genres,
+    ...(r.genreLevels?.length && r.genreLevels.length === r.genres.length ? { genreLevels: r.genreLevels } : {}),
+    ...(r.artistGenres?.length ? { artistGenres: r.artistGenres } : {}),
     ...(r.moods?.length ? { moods: r.moods } : {}),
     complete: r.complete,
     at: r.at,

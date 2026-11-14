@@ -16,6 +16,8 @@
  * nationalities and "seen live"-style tags are dropped everywhere.
  */
 
+import { mbKnows, wdAncestors, wdKnows, wdSpecificity } from './hierarchy';
+
 /** [display name, parents, aliases]. Roots have no parents. */
 type Entry = readonly [name: string, parents: readonly string[], aliases?: readonly string[]];
 
@@ -32,7 +34,7 @@ const ENTRIES: readonly Entry[] = [
   ['electronic', [], ['electronic music', 'electronica', 'electronic/dance']],
   ['dance', [], ['dance music', 'club', 'club music']],
   ['country', [], ['country music']],
-  ['latin', [], ['latin music', 'latino', 'musica tropical', 'tropical', 'latin urban']],
+  ['latin', [], ['latin music', 'latino', 'latin urban']],
   ['reggae', [], ['reggae music']],
   ['jazz', [], ['jazz music']],
   ['blues', [], ['blues music']],
@@ -245,10 +247,11 @@ const ENTRIES: readonly Entry[] = [
   // --- latin / world / reggae ---
   ['reggaeton', ['latin'], ['reggaetón', 'reguetón', 'regueton']],
   ['urbano', ['latin', 'hip hop'], ['urbano latino', 'latin urbano', 'música urbana', 'musica urbana']],
-  ['salsa', ['latin']],
-  ['bachata', ['latin']],
-  ['merengue', ['latin']],
-  ['cumbia', ['latin']],
+  ['tropical', ['latin'], ['musica tropical', 'tropical music', 'latin tropical', 'salsa y tropical']],
+  ['salsa', ['tropical']],
+  ['bachata', ['tropical']],
+  ['merengue', ['tropical']],
+  ['cumbia', ['tropical']],
   ['dembow', ['latin']],
   ['bossa nova', ['latin', 'jazz']],
   ['flamenco', ['latin']],
@@ -404,7 +407,7 @@ export function canonicalGenre(raw: string, strict = false): GenreName | null {
   if (!k || JUNK.has(k) || /^\d+$/.test(k) || /^(?:\d0|\d{4}) ?s$/.test(k) || /^(?:19|20)\d0s?$/.test(k)) return null;
   const known = ALIASES.get(k);
   if (known) return { name: NODES.get(known)!.name, key: known, known: true };
-  if (strict && (k.split(' ').length > 3 || !endsInKnownGenre(k))) return null;
+  if (strict && (k.split(' ').length > 3 || !(endsInKnownGenre(k) || mbKnows(k) || wdKnows(k)))) return null;
   if (/\b(?:song|songs|album|single|ep|records|label|band|singer|rapper)\b/.test(k)) return null;
   return { name: k, key: k, known: false };
 }
@@ -432,27 +435,95 @@ export function canonicalGenres(raw: readonly string[], strict = false): GenreNa
   return out;
 }
 
-/** 0 for a broad family ("rock"), 1 for a genre ("hard rock"), 2+ for subgenres ("nu metal"); unknown names count as 1. */
+/** 0 for a broad family ("rock"), 1 for a genre ("hard rock"), 2+ for subgenres ("nu metal") in the hand tree; unknown names count as 1. */
 export function specificity(key: string): number {
   return NODES.has(key) ? depthOfKey(key) : 1;
 }
 
-/** Every broader genre of a known genre (not itself). */
+/** Every spelling of a key that the generated vocabulary may know it by: the key, its display name, its aliases. */
+const SPELLINGS = new Map<string, string[]>();
+for (const [alias, k] of ALIASES) SPELLINGS.set(k, [...(SPELLINGS.get(k) ?? []), alias]);
+function spellings(key: string): string[] {
+  return [key, ...(SPELLINGS.get(key) ?? []).filter((a) => a !== key)];
+}
+
+/**
+ * Broader genres Wikidata's subclass graph gives a key, in this file's
+ * spelling. Umbrellas over a third of all genres ("popular music", "regional
+ * music") are left out: they say nothing, and "popular music" would read as
+ * "pop".
+ */
+const wdAncCache = new Map<string, Set<string>>();
+function wdAncestorsCanon(key: string): Set<string> {
+  let out = wdAncCache.get(key);
+  if (out) return out;
+  out = new Set<string>();
+  for (const a of wdAncestors(spellings(key))) {
+    if (tooBroad(a)) continue;
+    const c = ALIASES.get(a) ?? a;
+    if (c !== key) out.add(c);
+  }
+  wdAncCache.set(key, out);
+  return out;
+}
+
+function tooBroad(wdKey: string): boolean {
+  const s = wdSpecificity(wdKey);
+  return s !== null && s < 0.05;
+}
+
+/** Every broader genre of a genre (not itself): the hand tree's, plus Wikidata's. */
+const allAncCache = new Map<string, ReadonlySet<string>>();
 export function ancestors(key: string): ReadonlySet<string> {
-  return ancestorsOfKey(key);
+  const cached = allAncCache.get(key);
+  if (cached) return cached;
+  const hand = ancestorsOfKey(key);
+  const wd = wdAncestorsCanon(key);
+  if (!wd.size) {
+    allAncCache.set(key, hand);
+    return hand;
+  }
+  const out = new Set(hand);
+  for (const a of wd) {
+    out.add(a);
+    for (const b of ancestorsOfKey(a)) out.add(b);
+  }
+  out.delete(key);
+  allAncCache.set(key, out);
+  return out;
 }
 
 /** Whether one genre is a broader or narrower form of the other (not the same). */
 export function related(a: string, b: string): boolean {
-  return a !== b && (ancestorsOfKey(a).has(b) || ancestorsOfKey(b).has(a));
+  return a !== b && (ancestors(a).has(b) || ancestors(b).has(a));
 }
 
-/** The broad families (roots) a known genre belongs to; empty for unknown names. */
+/** Whether `broad` is a broader form of `narrow`. */
+export function broaderThan(broad: string, narrow: string): boolean {
+  return broad !== narrow && ancestors(narrow).has(broad) && !ancestors(broad).has(narrow);
+}
+
+/** The broad families (roots of the hand tree) a genre belongs to, through either tree; empty when nothing places it. */
 export function families(key: string): string[] {
   const node = NODES.get(key);
-  if (!node) return [];
-  if (!node.parents.length) return [key];
-  return [...ancestorsOfKey(key)].filter((a) => !NODES.get(a)?.parents.length).sort();
+  if (node && !node.parents.length) return [key];
+  const out = new Set<string>();
+  for (const a of ancestors(key)) if (NODES.has(a) && !NODES.get(a)!.parents.length) out.add(a);
+  return [...out].sort();
+}
+
+/**
+ * How specific a genre is, 0..1: Wikidata's measure (hierarchy.ts: subclass
+ * depth and number of subgenres) when the generated vocabulary knows the
+ * name, else the hand tree's depth (root 0.1, genre 0.5, subgenre 0.75);
+ * 0.5 for names neither knows.
+ */
+export function genreSpecificity(key: string): number {
+  for (const s of spellings(key)) {
+    const wd = wdSpecificity(s);
+    if (wd !== null) return wd;
+  }
+  return NODES.has(key) ? [0.1, 0.5, 0.75][Math.min(2, depthOfKey(key))] : 0.5;
 }
 
 /** Display name of a key (vocabulary spelling, or the key itself). */

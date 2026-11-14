@@ -38,7 +38,9 @@ import org.json.JSONObject
  * Version 7 added: setSongGenres() (per-song genres for songs added on the TV). The page runs the
  * multi-source lookup itself (src/genre; every source allows the page's origin by CORS), so the
  * matching logic exists once; the shell only stores the result with the song ([AddedSongsStore]),
- * and getAddedSongs / addedSongsChanged then carry `genres` and `genreLookup`.
+ * and getAddedSongs / addedSongsChanged then carry `genres` and `genreLookup`, plus the optional
+ * `artistGenres` (the artist's usual genres, weak evidence) and `genreLevels` (per genre: song/album/artist);
+ * same method, so no version bump: the page feature-detects the fields.
  */
 class DanceBridge(private val app: DanceApp, private val host: Host) {
     interface Host {
@@ -144,7 +146,7 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
             .toString()
     }
 
-    /** JSON array of added songs, oldest first: {videoId, title, artist, addedAt, durationSec, note?, genre?, genres?, genreLookup?, videoTitle, channel, tier}. */
+    /** JSON array of added songs, oldest first: {videoId, title, artist, addedAt, durationSec, note?, genre?, genres?, genreLookup?, artistGenres?, genreLevels?, videoTitle, channel, tier}. */
     @JavascriptInterface
     fun getAddedSongs(): String = app.addedSongs.toJson().toString()
 

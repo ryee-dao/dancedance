@@ -2,12 +2,12 @@
  * Known tempos for song tiles ("124 BPM" badges): from beat maps cached on
  * this device (remembered in the store when cached), else from the cloud
  * index `<base>beatmaps/index.json`, whose optional `songs` field is
- * `{ [videoId]: { bpm, duration, genre?, genres? } }`. The index is fetched once per app open.
+ * `{ [videoId]: { bpm, duration, genre?, genres?, genreLevels?, artistGenres? } }`. The index is fetched once per app open.
  *
  * `bpmEvents` fires 'change' when either source learns something new.
  */
 import { store } from '../store';
-import { absoluteBase, cleanGenreList, type FetchLike } from './cloud';
+import { absoluteBase, cleanGenreLevels, cleanGenreList, type FetchLike, type GenreLevelName } from './cloud';
 
 export interface IndexSong {
   bpm: number;
@@ -16,6 +16,10 @@ export interface IndexSong {
   genre?: string;
   /** Multi-source genres of the song (src/genre), best first, when looked up. */
   genres?: string[];
+  /** Level of each `genres` entry ('song' / 'album'). */
+  genreLevels?: GenreLevelName[];
+  /** The artist's usual genres: weak evidence, kept apart from `genres`. */
+  artistGenres?: string[];
 }
 
 export const bpmEvents = new EventTarget();
@@ -40,11 +44,15 @@ export function parseIndexSongs(text: string): Record<string, IndexSong> {
     if (typeof bpm !== 'number' || !Number.isFinite(bpm) || bpm <= 0 || bpm > 1000) continue;
     const genre = (v as { genre?: unknown }).genre;
     const genres = cleanGenreList((v as { genres?: unknown }).genres);
+    const genreLevels = cleanGenreLevels((v as { genreLevels?: unknown }).genreLevels, genres);
+    const artistGenres = cleanGenreList((v as { artistGenres?: unknown }).artistGenres);
     out[id] = {
       bpm,
       duration: typeof duration === 'number' && Number.isFinite(duration) ? duration : 0,
       ...(typeof genre === 'string' && genre.trim() ? { genre: genre.trim().slice(0, 60) } : {}),
       ...(genres ? { genres } : {}),
+      ...(genreLevels ? { genreLevels } : {}),
+      ...(artistGenres ? { artistGenres } : {}),
     };
   }
   return out;
@@ -102,6 +110,16 @@ export function cloudGenre(videoId: string): string | undefined {
 /** The cloud index's multi-source genres for a song (catalog and starter songs), when known. */
 export function cloudGenres(videoId: string): string[] | undefined {
   return cloudSongs[videoId]?.genres;
+}
+
+/** The cloud index's artist-level genres for a song (weak evidence), when known. */
+export function cloudArtistGenres(videoId: string): string[] | undefined {
+  return cloudSongs[videoId]?.artistGenres;
+}
+
+/** The cloud index's level of each `genres` entry, when known. */
+export function cloudGenreLevels(videoId: string): GenreLevelName[] | undefined {
+  return cloudSongs[videoId]?.genreLevels;
 }
 
 /** Called by the beat-map cache after storing a map. */

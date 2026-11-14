@@ -9,10 +9,10 @@
  *    song, single, musical work or track (P31).
  * 3. `wbgetentities` (labels) for their performers (P175) and genres.
  *
- * An item counts only when a performer's label is the requested artist and
+ * An item counts only when a performer's label is the requested (first-billed) artist and
  * its label/description names no version the request did not ask for.
  */
-import { creditMatches, queryTitle, titleMatches, unaskedVersion } from '../match';
+import { leadCredited, queryTitle, titleMatches, unaskedVersion } from '../match';
 import type { GenreSource, SourceAnswer } from '../types';
 
 const API = 'https://www.wikidata.org/w/api.php';
@@ -131,6 +131,19 @@ export function parseClaims(json: unknown): ItemClaims[] {
   return out;
 }
 
+/** One item's claims and English Wikipedia sitelink (album and artist sources share this request). */
+export function itemUrl(id: string): string {
+  return api({ action: 'wbgetentities', ids: id, props: 'claims|sitelinks', sitefilter: 'enwiki' });
+}
+
+/** The item's genres (ids) and English Wikipedia article, from an itemUrl answer. */
+export function parseItem(json: unknown, id: string): { genres: string[]; enwiki: string; instanceOf: string[] } | null {
+  const e = (json as { entities?: Record<string, { claims?: Record<string, unknown>; sitelinks?: { enwiki?: { title?: unknown } }; missing?: unknown }> } | null)?.entities?.[id];
+  if (!e || e.missing !== undefined) return null;
+  const t = e.sitelinks?.enwiki?.title;
+  return { genres: claimIds(e.claims, 'P136'), instanceOf: claimIds(e.claims, 'P31'), enwiki: typeof t === 'string' ? t : '' };
+}
+
 export function parseLabels(json: unknown): Map<string, string> {
   const ents = (json as { entities?: Record<string, { labels?: unknown }> } | null)?.entities;
   const out = new Map<string, string>();
@@ -144,8 +157,11 @@ export function parseLabels(json: unknown): Map<string, string> {
 
 export const wikidata: GenreSource = {
   id: 'wikidata',
+  level: 'song',
   group: 'wikimedia',
   weight: 1,
+  // 2: the first-billed artist must be a performer.
+  version: 2,
   async lookup(song, http): Promise<SourceAnswer> {
     const cands = songCandidates(song.title, parseSearch(await http.getJson(searchUrl(song.title))));
     if (!cands.length) return { status: 'none', reason: 'no item with this title' };
@@ -157,7 +173,7 @@ export const wikidata: GenreSource = {
     const confirmed = items.filter((i) => {
       const names = i.performers.map((p) => labels.get(p) ?? '').filter(Boolean);
       const description = i.description || desc.get(i.id) || '';
-      return names.length > 0 && creditMatches(song.artist, names) && !unaskedVersion(song, i.label, description);
+      return names.length > 0 && leadCredited(song.artist, names) && !unaskedVersion(song, i.label, description);
     });
     if (!confirmed.length) return { status: 'none', reason: 'no song item by this artist' };
     // Songs and singles before tracks/recordings; then the items with genres.

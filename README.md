@@ -435,7 +435,7 @@ PLAYLIST_URL='https://www.youtube.com/playlist?list=…' npm run beatmaps
 
 (`--contributed-map` is used only by the cloud job to check and publish a shared map.)
 
-Where things are written: beat maps in `public/beatmaps/`; songs added by search in `public/songs.json` (fields: `videoId`, `title`, `artist`, `addedAt`, `durationSec`, `hasMap` — `false` until the map exists — then `note`, e.g. `"music-video"`, and `genre`, the iTunes genre, when known; `public/beatmaps/index.json` repeats the genre for songs with a map); songs that couldn't be added, and `map-pending` notes for listed songs still waiting for a map, in `public/songs-status.json`. Audio goes to a temporary folder and is deleted as soon as each song is analysed. To remove an added song for everyone, delete its entry in `public/songs.json`.
+Where things are written: beat maps in `public/beatmaps/`; songs added by search in `public/songs.json` (fields: `videoId`, `title`, `artist`, `addedAt`, `durationSec`, `hasMap` — `false` until the map exists — then `note`, e.g. `"music-video"`, and `genre`, the iTunes genre, when known; then `genres`, the multi-source genre list from `src/genre` with `genreLevels` saying whether each entry is about the song or its album, and `artistGenres`, the artist's usual genres, kept apart as weak evidence; `public/beatmaps/index.json` repeats these for songs with a map, and `public/genres.json` keeps what every source said); songs that couldn't be added, and `map-pending` notes for listed songs still waiting for a map, in `public/songs-status.json`. Audio goes to a temporary folder and is deleted as soon as each song is analysed. To remove an added song for everyone, delete its entry in `public/songs.json`.
 
 ### When a job goes red
 
