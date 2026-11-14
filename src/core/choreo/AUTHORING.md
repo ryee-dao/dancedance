@@ -22,7 +22,9 @@ exclusive to one GENRE set, listed by id in `genres.ts` (`GENRE_MOVES`) and
 `genreSets/*.ts`: rock, hip-hop, Latin, disco & funk, K-pop, country, swing,
 afro, Caribbean, South Asian, folk, belly dance, hula, capoeira, and the
 sub-style sets metal, punk, trap, drill, R&B, house, EDM, bass music,
-reggaeton, Brazilian, amapiano, lyrical (see "Genre sets" below). A genre-exclusive move is only
+reggaeton, Brazilian, amapiano, lyrical and the Latin dances salsa,
+merengue, cumbia, bachata, cha-cha, flamenco, tango, regional Mexican (see
+"Genre sets" below). A genre-exclusive move is only
 used on songs whose style opens that genre (`songGenres`: the style's
 tradition themes, its leading families, its sub-style scores, gated by the
 song's calm). When you add a move that only
@@ -37,9 +39,26 @@ arms of a genre move (that leaks the genre into every song's variations).
 
 A song's style comes from the song (`songStyle.ts`): its genre names (the
 song's own list, e.g. a Wikipedia infobox, then the iTunes tag as a
-tie-breaker), its absolute audio traits from the beat map (`songTraits.ts`:
-calm, drive, four-on-the-floor, half-time feel, sub-bass, hats, swing,
-syncopation, heaviness), tempo and title words; never the artist's name.
+tie-breaker: with a list, the tag's sub-style evidence counts at most
+`ITUNES_SUB` 0.4, below `SUB_OPEN`, and a list name's falls with its
+position to 0.4 from the fifth name on), its absolute audio traits from the
+beat map (`songTraits.ts`: calm, intensity, drive, four-on-the-floor,
+half-time feel, sub-bass, hats, swing, syncopation, heaviness, the tempo
+octave candidates), tempo and title words; never the artist's name. A
+scene name (K-pop, J-pop, C-pop ...) anywhere in the song's list leads the
+dancing (`SCENE_LEAD`). Trap and drill never open on a half-time feel alone
+(any song counted at double tempo shows one): they need a trap / drill
+name.
+
+The label the owner sees is the MUSIC's name, from the genre names
+(`styleLabel`: "Eurodance", "Blues", "K-pop", "Nu metal", "Classical"),
+with a sub-style the name doesn't say ("Hip-hop · Drill") or " · Ballad"
+when the audio says calm; families only when there are no genre names, as
+music words ("Dance", never "Aerobics"). Music that isn't dance music
+(classical, ambient, new age, spoken word: `still` in the lexicon) gets a
+neutral smooth mix under its own name. The reviewed vocabulary and what
+each name maps to: `genreVocab.testutil.ts`, `songStyle.vocab.test.ts`,
+`tools/eval/data/genre-vocabulary.md` (`npx tsx tools/eval/genreTable.ts`).
 The broad groups (rock, hip-hop, Latin, disco & funk, K-pop, the
 traditions) open from the song's family weights and themes; the sub-styles
 below open from the style's sub-style scores (genre words + traits,
@@ -48,7 +67,28 @@ dances rock and metal: `SUB_INFO` `withParent`, metal / punk / trap /
 drill) or REPLACES it (reggaeton never gets salsa). A set with fewer than
 `MIN_GENRE_SET` (6) moves falls back: its parent opens too. The song's calm
 closes showpiece sets (no headbangs on a ballad; `CALM_TOLERANCE` in
-`genres.ts`) and opens `lyrical`.
+`genres.ts`) and opens `lyrical` (from calm ~0.74 with analyser 1.4.0,
+`LYRICAL_CALM`; a loud, intense song never). A soft-but-steady song
+(`soft`: low audio intensity on a beat, or genre names like romantic
+bachata or soft rock) closes the showpiece sets the same way (`gateCalm`)
+but never opens lyrical: a smooth groove, not a ballad.
+
+### The Latin dances
+
+Latin is split by dance. `latin` keeps what the variation pool ties
+together (merengue, cha-cha and mambo share layers through named
+recombinations such as Merengue Side Cha-Cha Arm) and the percussion moves;
+`salsa`, `cumbia`, `bachata`, `flamenco` (with paso doble), `tango` and
+`mexican` (folklórico, hat dance) have their own sets, the samba steps are
+in `brazil`, and merengue and cha-cha are sub-styles without a set of their
+own. Genre names open them (salsa / mambo / timba -> salsa, bachata,
+cumbia / vallenato, cha-cha / danzón / rumba, flamenco / paso doble, tango,
+banda / norteño / mariachi / corridos -> mexican). Salsa, cumbia and bachata
+lean on Latin (a salsa song's families open it; the small sets open it
+outright), flamenco, tango and regional Mexican close it. A move NAMED for
+the song's leading Latin dance (`danceOf`) is favoured x `NAMED_DANCE`
+wherever it lives, which is how a merengue gets merengue first from the
+Latin set; the related dances fill in through the neighbours below.
 
 ### Thin sets borrow from their neighbours
 
@@ -123,7 +163,14 @@ borrow needs a `NEIGHBOURS` entry with the dance reason next to it.
 | `reggaeton` | perreo, dembow step, reggaeton bounce, hip rolls | reggaeton, dembow, urbano, Latin trap; dembow syncopation around 88-100 BPM | dancehall (caribbean: opens below 6 moves, then lends); Brazilian lends; replaces Latin | `genreSets/urban.ts` |
 | `brazil` | samba no pé, axé, frevo, passinho / quadradinho (funk carioca), forró | samba, axé, baile funk, sertanejo, forró, MPB, bossa nova | replaces Latin, which lends its samba-named steps; reggaeton lends | `genreSets/mood.ts` |
 | `amapiano` | vosho, pouncing cat, tshwala bam, slow knee bounces on the log drum | amapiano, gqom, kwaito, South African house; log-drum bass at ~108-116 BPM | borrows afro (parent; usually open by the theme) | `genreSets/mood.ts` |
-| `lyrical` | reaches, arm sweeps, port de bras, slow turns, arcing lunges, balances, contractions / releases, body waves | a calm song (`calm` trait ~0.55+), ballads, soft / piano rock, ambient, singer-songwriter, any family | none (smooth global moves) | `genreSets/mood.ts` |
+| `lyrical` | reaches, arm sweeps, port de bras, slow turns, arcing lunges, balances, contractions / releases, body waves | a calm song (`calm` ~0.74+ with analyser 1.4.0, and not intense), ballads, ambient, classical; any family | none (smooth global moves) | `genreSets/mood.ts` |
+| `salsa` | salsa basic, back basic, side salsa, right turn, New Yorker | salsa, mambo, timba, son cubano | Latin lends (mambo, cha-cha); cumbia | `genres.ts` RAW |
+| `bachata` | bachata side and forward basics (+ their own variations) | bachata | opens Latin while this small | `genres.ts` RAW |
+| `cumbia` | cumbia step, machete, sau, candle | cumbia, vallenato, champeta | opens Latin while small; regional Mexican | `genres.ts` RAW |
+| `flamenco` | flamenco arms, palmas, turn, paso doble cape | flamenco, rumba flamenca, paso doble, sevillanas | closes Latin; borrows tango | `genres.ts` RAW |
+| `tango` | tango walk | tango, nuevo tango, electrotango | closes Latin; borrows flamenco, lyrical (calm) | `genres.ts` RAW |
+| `mexican` | folklórico skirt, hat dance heels | regional Mexican, banda, norteño, mariachi, corridos, Tejano | closes Latin; borrows cumbia, folk (polka), country | `genres.ts` RAW |
+| `merengue`, `chacha` | (their steps are Latin's) | merengue; cha-cha, danzón, rumba, ballroom | open Latin; NAMED_DANCE favours their moves | - |
 
 Country is one set: its moves are line-dance / hoedown steps, which serve
 country-pop at tempo as well; a country ballad closes it by its calm (and
@@ -138,9 +185,34 @@ ids:
   sets never mix (`variations.ts`). A LAYERED move may only change set
   together with every move sharing its genre-specific foot / arm patterns
   (the layered headbangs share the power stance with air guitar, so they
-  stay in rock; the layered samba steps recombine with salsa layers in
-  `pool.json`, so they stay in Latin). Full-body moves move freely. Moving
-  layered moves means regenerating `pool.json` (`npx tsx tools/moves/pool.ts`).
+  stay in rock; merengue, cha-cha and mambo share layers through named
+  recombinations, so they stay in Latin together). Full-body moves move
+  freely. Moving layered moves means regenerating `pool.json` (`npx tsx
+  tools/moves/pool.ts`), and checking that no layer pattern ends up used by
+  two sets (it would count as global and leak into every song).
+
+## Character, jumps, tempo feel, free time
+
+- Character (`weights.ts calmFactor`): a calm song favours smooth moves and
+  quiets percussive, jumping and novelty moves (the party file / family and
+  the fad and cheer moves, `isNovelty`) at every level; Hard on a calm song
+  leans to big, smooth, controlled moves. A soft song loses jumps, kicks,
+  percussive and novelty moves without the ballad lean; a hard-hitting one
+  (`hard`, audio intensity) welcomes sharp hits.
+- Jumps (`generator.ts jumpCap`): a budget of the danced time, `JUMP_CAP`
+  (Easy 0, Medium 0.14, Hard 0.3) x the song's character (none from calm
+  0.65, a fifth on a soft song) x its felt tempo (45 % at 92 BPM and below,
+  full from 118). The kit casts a jump only while its slot's planned time
+  fits in the budget; the combo jumps in one of its two blocks at most.
+- Tempo feel (`danceFeel`): the whole song is danced at half / twice the
+  counted tempo when the analysis offers that octave (`TempoCandidates`,
+  traits halfTempo / doubleTempo >= 0.5) AND it is clearly closer to the
+  tempo the song's genre names are stepped to (lexicon `bpm`). The routine
+  then runs on the felt grid (`Routine.times`, `feel`).
+- Free time (`hasFreeTime`, `freeTimeMap`): a finished map with no beat
+  grid gets a slow flow on a nominal grid (56-96 BPM from the genre's tempo
+  and the calm), danced calm with the lyrical set open, marked
+  `Routine.freeTime` (the conductor plays it on `Routine.times`).
 
 ## Tempo: every move's speed limit
 

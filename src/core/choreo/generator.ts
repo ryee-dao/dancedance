@@ -21,7 +21,10 @@
  * move is actually danced at. A half-time move's units are twice as long, so
  * its repeats still land on bar and phrase lines. Above HALF_TIME_BPM the
  * COUNT is halved instead (Routine.half: phrases of 16 bars, units doubled),
- * whatever each move does.
+ * whatever each move does. When the audio offers another octave and the
+ * song's genre steps there (danceFeel), the whole song is danced on that
+ * felt grid (Routine.feel, times); a map with no grid at all gets a
+ * free-time flow on a nominal grid (Routine.freeTime).
  *
  * Assembly, in order (generateRoutine):
  *   1. plan the whole song: phrases, holds, and each hold's slot in the

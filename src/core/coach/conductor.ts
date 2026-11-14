@@ -8,8 +8,13 @@
  *     generic tempo.
  *   - Live (locked, no map): the beat grid grows from live beats and the
  *     LivePlanner appends phrases ahead of time.
- *   - Map: the generator's full routine. A `partial` map is followed by live
- *     beats (when present) and live-planned phrases after its end.
+ *   - Map: the generator's full routine, on the routine's own grid
+ *     (Routine.times: the map's beats, or a tempo-feel grid at half / twice
+ *     the count). A `partial` map is followed by live beats (when present)
+ *     and live-planned phrases after its end.
+ *   - A finished map with no beat grid (generator.ts hasFreeTime): the
+ *     generator's free-time flow on its nominal grid, rather than the idle
+ *     groove for the whole song (when no live beat locks first).
  *
  * When the desired plan changes (lock, map arrives, revision bump, intensity
  * change) the current move plays to its end, then the new plan takes over

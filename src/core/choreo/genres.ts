@@ -16,7 +16,9 @@
  * Genre groups and sub-styles. The broad groups (rock, hip-hop, Latin, afro,
  * disco & funk ...) open from the song's family weights and themes; their
  * SUB-STYLES (metal, punk, trap, drill, R&B, house, EDM, bass music,
- * reggaeton, Brazilian, amapiano, and the mood set lyrical) open from the
+ * reggaeton, Brazilian, amapiano, the Latin dances salsa, merengue, cumbia,
+ * bachata, cha-cha, flamenco, tango, regional Mexican, and the mood set
+ * lyrical) open from the
  * song style's sub-style scores (songStyle.ts: genre words, audio traits,
  * tempo). A sub-style either adds to its group (a metal song dances rock and
  * metal) or replaces it (reggaeton never opens the salsa steps of Latin).

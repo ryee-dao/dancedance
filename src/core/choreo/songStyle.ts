@@ -654,7 +654,10 @@ function genreEvidence(list: readonly string[] | undefined, tag: string | undefi
     if (r.calm !== null) (cw += w), (cs += w * r.calm);
     if (r.soft !== null) (sw += w), (ss += w * r.soft);
     if (r.name && !out.name) out.name = r.name;
-    if (r.label && w > labelW) (labelW = w), (out.label = r.label), (out.labelSpecific = !!r.scene || r.themes.size > 0 || Object.values(r.subs).some((v) => (v ?? 0) >= 0.45));
+    const specific = !!r.scene || r.themes.size > 0 || Object.values(r.subs).some((v) => (v ?? 0) >= 0.45);
+    if (r.label && w > labelW) (labelW = w), (out.label = r.label), (out.labelSpecific = specific);
+    // A bare umbrella first ("Pop", "Rock") and its own compound second ("Pop rock"): the compound says more.
+    else if (r.label && !it.tag && items.indexOf(it) === 1 && out.label && r.label.length > out.label.length && r.label.toLowerCase().includes(out.label.toLowerCase())) (out.label = r.label), (out.labelSpecific = specific);
     if (r.bpm) (lb += w * Math.log2(r.bpm)), (lw += w);
     if (r.scene && !it.tag && !scene) scene = r;
   }
