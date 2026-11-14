@@ -414,8 +414,12 @@ export function solveSkeleton(pose: Pose, sk: Skeleton): Skeleton {
 
   // Rib-cage isolation: the chest slides over the pelvis, shoulders level.
   const cx = pose[CH.CHEST_X];
-  place(p, J.WAIST, J.PELVIS, RT, cx * 0.45, BODY.torso * 0.45, 0);
   place(p, J.CHEST, J.PELVIS, RT, cx, BODY.torso, 0);
+  // Waist: on the spine curve (see spineBend), not the straight pelvis -> chest line.
+  spineBend(p, RT, RP, 0.45, V);
+  p[J.WAIST * 3] = p[0] + (p[J.CHEST * 3] - p[0]) * 0.45 + V[0];
+  p[J.WAIST * 3 + 1] = p[1] + (p[J.CHEST * 3 + 1] - p[1]) * 0.45 + V[1];
+  p[J.WAIST * 3 + 2] = p[2] + (p[J.CHEST * 3 + 2] - p[2]) * 0.45 + V[2];
   place(p, J.NECK, J.CHEST, RT, 0, BODY.neck, 0);
 
   rotation(RLOC, pose[CH.HEAD_ROLL], pose[CH.HEAD_NOD], pose[CH.HEAD_TURN]);
@@ -457,6 +461,30 @@ export function solveSkeleton(pose: Pose, sk: Skeleton): Skeleton {
     sk.rp.set(RP);
   }
   return sk;
+}
+
+/**
+ * How far the spine at fraction u (0 = pelvis, 1 = chest joint) bends off
+ * the straight pelvis -> chest line, into out[0..2]. The spine is drawn as a
+ * curve that leaves the pelvis along the pelvis frame's up axis and arrives
+ * at the chest along the chest frame's (cubic Hermite, tangents the
+ * spine's length): a side bend or forward bend becomes an arc, a rib-cage
+ * slide (chestX) or a hip shift against the shoulders an S, instead of a
+ * rigid box pivoting at the hips. Joint positions are untouched (renderers
+ * only use it for the torso outline / waist). p: solved joints; RT / RP:
+ * the torso / pelvis rotations in the same space.
+ */
+export function spineBend(p: Float64Array, RT: Float64Array, RP: Float64Array, u: number, out: Float64Array): void {
+  const c = J.CHEST * 3;
+  const dx = p[c] - p[0], dy = p[c + 1] - p[1], dz = p[c + 2] - p[2];
+  const L = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  const u2 = u * u, u3 = u2 * u;
+  const h10 = u3 - 2 * u2 + u, h11 = u3 - u2;
+  // Hermite minus the chord: h01 P1 + h00 P0 - (P0 + u (P1 - P0)) = (h01 - u)(P1 - P0).
+  const k = -2 * u3 + 3 * u2 - u;
+  out[0] = h10 * RP[1] * L + h11 * RT[1] * L + k * dx;
+  out[1] = h10 * RP[4] * L + h11 * RT[4] * L + k * dy;
+  out[2] = h10 * RP[7] * L + h11 * RT[7] * L + k * dz;
 }
 
 /** Distance between joint a and b. */

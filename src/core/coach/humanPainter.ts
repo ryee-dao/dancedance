@@ -24,7 +24,7 @@
  * polygons, no strokes). See the "Sprite mode" section at the end.
  */
 
-import { BODY, J, NUM_JOINTS, type Skeleton } from './skeleton';
+import { BODY, J, NUM_JOINTS, spineBend, type Skeleton } from './skeleton';
 import { VIEW, depthScale, screenUp, type CoachBuild } from './styles';
 import { scaleOf, spriteKey, type PieceArtist, type SpriteCache, type SpriteEntry } from './sprites';
 import { M, bandQuad, blitOrDraw, blitSegment, boneMatrix, fillClippedToQuad, fillGrown, flattenSmooth, frameMatrix, qFigure, segBucket, segLength, spriteEllipse, spriteLine } from './spriteParts';
@@ -119,6 +119,7 @@ const PASS_FILL = 2;
 // 3 pelvis (at PELVIS). x values are filled from the look at draw time.
 const SHIRT_N = 9;
 const WAIST_Y = -0.185; // chest frame; = BODY.torso + WAIST_Y in the pelvis frame
+const WAIST_U = (BODY.torso + WAIST_Y) / BODY.torso; // the waist's fraction up the spine
 const SHORTS_N = 4;
 
 // Limb layers (one fill each, in path order): outline, skin, covers.
@@ -256,6 +257,7 @@ export class HumanPainter implements PieceArtist {
   private pcOpen = 0;
   private pcHxy = 1;
   private pcAway = 0;
+  private readonly bend = new Float64Array(3);
   private pcHead = 0;
   private pcPhi = 0;
 
@@ -597,9 +599,11 @@ export class HumanPainter implements PieceArtist {
         this.torsoPt(p, RT, J.CHEST, side * L.waistW, WAIST_Y, 0, L.depth);
         const ax = this.wx, ay = this.wy, az = this.wz;
         this.torsoPt(p, RP, J.PELVIS, side * L.waistW, BODY.torso + WAIST_Y, 0, L.depth);
-        this.wx = (this.wx + ax) * 0.5;
-        this.wy = (this.wy + ay) * 0.5;
-        this.wz = (this.wz + az) * 0.5;
+        // ... bent with the spine (an arc / S instead of a straight box side).
+        spineBend(p, RT, RP, WAIST_U, this.bend);
+        this.wx = (this.wx + ax) * 0.5 + this.bend[0];
+        this.wy = (this.wy + ay) * 0.5 + this.bend[1];
+        this.wz = (this.wz + az) * 0.5 + this.bend[2];
         break;
       }
       case 7:
