@@ -66,6 +66,16 @@ describe('BeatMap serialisation', () => {
     expect(fine.traits).toEqual({ ...TRAITS, calm: 0.81 });
   });
 
+  it('keeps the optional 1.4.0 traits when present; 1.3.0 traits (without them) stay valid', () => {
+    const v14 = { ...TRAITS, intensity: 0.426, halfTempo: 0.9, doubleTempo: 0 };
+    expect(parse(serialize({ ...good(), traits: v14 })).traits).toEqual({ ...TRAITS, intensity: 0.43, halfTempo: 0.9, doubleTempo: 0 });
+    const v13 = parse(JSON.stringify({ ...good(), analyzerVersion: '1.3.0', traits: TRAITS }));
+    expect(v13.traits).toEqual(TRAITS);
+    expect(v13.traits && 'intensity' in v13.traits).toBe(false);
+    expect(() => parse(JSON.stringify({ ...good(), traits: { ...TRAITS, intensity: 1.5 } }))).toThrow(BeatMapError);
+    expect(() => parse(JSON.stringify({ ...good(), traits: { ...TRAITS, halfTempo: '0.5' } }))).toThrow(BeatMapError);
+  });
+
   it('drops unknown fields', () => {
     const json = JSON.stringify({ ...good(), extra: 'x' });
     expect('extra' in parse(json)).toBe(false);

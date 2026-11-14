@@ -40,6 +40,39 @@ describe('tempo: syncopated (tresillo / dotted) grooves are not read as their 2:
   }
 });
 
+describe('tempo: a dotted riff over a weak beat is not doubled', () => {
+  /** Onset envelope: a riff of hits 0, 0.75, 1.5, 2, 2.75, 3.5 beats into each bar, a weaker beat under it (2 and 4 stronger). */
+  function riffEnvelope(bpm: number, beat: number, seconds = 60): Float32Array {
+    const n = Math.round(seconds * FRAME_RATE);
+    const e = new Float32Array(n);
+    const P = (60 * FRAME_RATE) / bpm;
+    let seed = 11;
+    for (let bar = 0; ; bar++) {
+      const t0 = 10 + bar * 4 * P;
+      if (t0 + 4 * P >= n - 2) break;
+      for (const a of [0, 0.75, 1.5, 2, 2.75, 3.5]) {
+        const i = Math.round(t0 + a * P);
+        e[i] += 1;
+        e[i + 1] += 0.4;
+      }
+      for (let q = 0; q < 4; q++) e[Math.round(t0 + q * P)] += beat * (q % 2 ? 1 : 0.6);
+    }
+    for (let i = 0; i < n; i++) {
+      seed = (seed * 1103515245 + 12345) >>> 0;
+      e[i] += 0.08 * (seed / 4294967296);
+    }
+    return e;
+  }
+  // The riff's 16th-note hits make the pulses half-way between the beats look like
+  // beats of a twice-faster tempo; they are not 70 % as strong as the real beats.
+  // Analyser 1.3.0 (doubling at 60 %): 199.7, 180.2, 190.0 for 100 / 90 / 95 at beat 0.25.
+  for (const bpm of [90, 95, 100]) {
+    it(`${bpm} BPM`, () => {
+      for (const beat of [0.25, 0.35]) expect(Math.abs(estimateTempo(riffEnvelope(bpm, beat), FRAME_RATE).bpm / bpm - 1), `beat ${beat}`).toBeLessThan(0.01);
+    });
+  }
+});
+
 describe('tempo: dance range', () => {
   /** Onset envelope with pulses every beat; every second pulse has strength `weak`. */
   function envelope(bpm: number, weak: number, seconds = 40): Float32Array {

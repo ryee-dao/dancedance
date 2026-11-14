@@ -5,15 +5,16 @@
  * 2. Every candidate tempo on a fine log grid is scored by a comb over the
  *    first four multiples of its period (harmonic evidence) times a
  *    log-normal perceptual prior centred near 120 BPM.
- * 3. 3:2 guard: the best candidate is compared with x1.5 and /1.5 on a
- *    metrical score = beat-level comb + bar-level evidence (autocorrelation
- *    one and two 4/4 bars later, i.e. at 4 and 8 periods). Syncopated pop
- *    grooves (3+3+2 "tresillo" kicks, dotted-quarter stabs) put strong
- *    autocorrelation peaks at 1.5, 3, 5 and 6.5 beats, which the beat-level
- *    comb alone credits to the 2:3 relative (Thunder 168 -> 112, Shake It Off
- *    160 -> 107). The groove still repeats every bar, and only the true
- *    tempo's period divides that bar lag into 4 (or 8) parts, so the bar term
- *    separates them.
+ * 3. 3:2 and 4:3 guard: the best candidate is compared with x1.5, /1.5,
+ *    x4/3 and x3/4 on a metrical score = beat-level comb + bar-level evidence
+ *    (autocorrelation one and two 4/4 bars later, i.e. at 4 and 8 periods).
+ *    Syncopated pop grooves (3+3+2 "tresillo" kicks, dotted-quarter stabs)
+ *    put strong autocorrelation peaks at 1.5, 3, 5 and 6.5 beats, which the
+ *    beat-level comb alone credits to the 2:3 relative (Thunder 168 -> 112,
+ *    Shake It Off 160 -> 107); a riff in dotted 8ths puts them at 0.75 beat
+ *    and credits the 4:3 relative (Bring Me to Life 95 -> 127). The groove
+ *    still repeats every bar, and only the true tempo's period divides that
+ *    bar lag into 4 (or 8) parts, so the bar term separates them.
  * 4. Half/double guard: instead of trusting the top peak, the envelope is
  *    folded on the slower grid in short windows and the strength of the
  *    in-between pulses is compared with the on-grid pulses. Strong in-between
@@ -21,6 +22,11 @@
  * 5. Dance range: a result below ~72 BPM is doubled when the in-between
  *    pulses support the double (half-time feels with weak snares, e.g. rock
  *    with kick-heavy mixes, otherwise come out at 66-68 BPM).
+ * 6. Octave doubt: how close the in-between pulses came to flipping the
+ *    choice either way (`slower`, `faster`). 8th-note hats under a backbeat
+ *    look much like a beat at twice the tempo, so for many hip-hop, reggaeton
+ *    and drum-and-bass songs the octave cannot be decided from the onsets
+ *    alone; the doubt lets the caller decide with the genre.
  *
  * Pure TypeScript: no DOM, Web Audio or Node APIs.
  */
@@ -45,6 +51,10 @@ export interface TempoEstimate {
   confidence: number;
   /** Raw evidence (normalised autocorrelation) at the chosen period: beat-level comb or bar-level, whichever is larger. */
   evidence: number;
+  /** 0..1: how plausible half the tempo is as the pulse (in-between beats weak: 1, as strong as the beats: 0). */
+  slower: number;
+  /** 0..1: how plausible twice the tempo is (pulses half-way between the beats nearly as strong as the beats: 1). */
+  faster: number;
 }
 
 const COMB_MULTIPLES = 4;
@@ -155,18 +165,30 @@ export function alternationRatio(env: ArrayLike<number>, fastPeriod: number, fra
   return den > 0 ? num / den : 0;
 }
 
-/** Ratio above which the faster of an octave pair wins (grows for very fast tempi). */
+/**
+ * Ratio above which the faster of an octave pair wins (grows for very fast
+ * tempi). The in-between pulses must reach 70 % of the on-beat ones: 8th-note
+ * hats and off-beat chords under a backbeat reach 0.5-0.65 of it (All I Do Is
+ * Win 0.63 at 150, a blues groove 0.66 at 170), real beats more.
+ */
 function fastThreshold(fastBpm: number): number {
-  return 0.6 + 0.3 * Math.max(0, Math.log2(fastBpm / 150));
+  return 0.7 + 0.3 * Math.max(0, Math.log2(fastBpm / 150));
 }
+/** Width of the doubt band below the fast threshold / above the slow one (alternation ratio units). */
+const OCTAVE_DOUBT = 0.3;
+/** Alternatives outside this range are not offered as plausible (BPM). */
+const ALT_MIN_BPM = 55;
+const ALT_MAX_BPM = 200;
+const SLOW_DOUBT_LO = 0.2;
+const SLOW_DOUBT_HI = 0.45;
 /** Ratio below which the slower of an octave pair wins. */
 const SLOW_THRESHOLD = 0.35;
 /** In-between pulse ratio that is enough to double a tempo below the dance range. */
 const DANCE_DOUBLE_SUPPORT = 0.15;
 /** Weight of the bar-level term in the 3:2 metrical score. */
 const BAR_WEIGHT = 2;
-/** The 3:2 alternative must beat the incumbent's metrical score by this factor. */
-const RATIO_GUARD_MARGIN = 1.1;
+/** A 3:2 or 4:3 alternative must beat the incumbent's metrical score by this factor. */
+const RATIO_GUARD_MARGIN = 1.15;
 
 /**
  * Bar-level evidence for a beat period: mean autocorrelation at 4 and 8
@@ -195,7 +217,7 @@ export function estimateTempo(env: ArrayLike<number>, frameRate: number, opts: T
   const priorBpm = opts.priorBpm ?? 120;
   const priorOct = opts.priorOctaves ?? 1;
   const n = env.length;
-  const none: TempoEstimate = { bpm: 0, period: 0, confidence: 0, evidence: 0 };
+  const none: TempoEstimate = { bpm: 0, period: 0, confidence: 0, evidence: 0, slower: 0, faster: 0 };
   const minPeriodSlow = (60 * frameRate) / minBpm;
   if (n < Math.ceil(minPeriodSlow * 1.5)) return none;
 
@@ -228,9 +250,10 @@ export function estimateTempo(env: ArrayLike<number>, frameRate: number, opts: T
   {
     const base = best;
     let bestM = metrical(base);
-    for (const f of [1.5, 1 / 1.5]) {
+    for (const f of [1.5, 1 / 1.5, 4 / 3, 3 / 4]) {
       const alt = base * f;
-      if (alt < minBpm || alt > maxBpm || periodOf(alt) > maxUsable) continue;
+      // The bar term needs a whole bar of both candidates inside the usable lags.
+      if (alt < minBpm || alt > maxBpm || 4 * Math.max(periodOf(alt), periodOf(base)) > maxUsable) continue;
       const altRefined = refine(alt, comb);
       const m = metrical(altRefined);
       if (m > RATIO_GUARD_MARGIN * bestM && m > 0) {
@@ -273,7 +296,36 @@ export function estimateTempo(env: ArrayLike<number>, frameRate: number, opts: T
   // leave little on the beats themselves but still repeat every bar.
   const evidence = Math.max(comb(best), combScore(r, period, maxUsable), barScore(r, period, maxUsable));
   const confidence = Math.max(0, Math.min(1, (evidence - 0.08) / 0.4));
-  return { bpm: (60 * frameRate) / period, period, confidence, evidence };
+  const bpm = (60 * frameRate) / period;
+  return { bpm, period, confidence, evidence, ...octaveDoubt(env, bpm, frameRate) };
+}
+
+const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);
+
+/**
+ * Octave doubt of a tempo on an onset envelope, from the alternation ratios
+ * the half / double guard decides on: `slower` 1 when every other beat is
+ * at most 0.2 of the others (nearly absent), 0 from 0.45 up (a backbeat
+ * alternating strong and weak beats reads about 0.4); `faster` 0 when the
+ * pulses half-way between the beats are OCTAVE_DOUBT below the threshold for
+ * doubling, 1 at it. An alternative below ALT_MIN_BPM or above ALT_MAX_BPM
+ * gets 0.
+ */
+export function octaveDoubt(env: ArrayLike<number>, bpm: number, frameRate: number): { slower: number; faster: number } {
+  if (!(bpm > 0)) return { slower: 0, faster: 0 };
+  const period = (60 * frameRate) / bpm;
+  let slower = 0;
+  if (bpm / 2 >= ALT_MIN_BPM) {
+    // Only weak in-between beats say "half": a strong backbeat also makes every other beat weaker (r ~0.4).
+    const r = alternationRatio(env, period, frameRate);
+    slower = 1 - clamp01((r - SLOW_DOUBT_LO) / (SLOW_DOUBT_HI - SLOW_DOUBT_LO));
+  }
+  let faster = 0;
+  if (bpm * 2 <= ALT_MAX_BPM) {
+    const thr = fastThreshold(bpm * 2);
+    faster = clamp01((alternationRatio(env, period / 2, frameRate) - (thr - OCTAVE_DOUBT)) / OCTAVE_DOUBT);
+  }
+  return { slower, faster };
 }
 
 /**

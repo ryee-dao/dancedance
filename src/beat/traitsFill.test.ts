@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { BeatMap, SongTraits } from '../core/analysis';
+import { OPTIONAL_TRAIT_KEYS, TRAIT_KEYS, type BeatMap, type SongTraits } from '../core/analysis';
 import type { LiveDevices } from '../live/devices';
 import type { DecodedAudio } from './analyzeAudio';
 import { BeatMapCache, memoryStore } from './cache';
@@ -7,7 +7,9 @@ import { BeatSession, type SessionClock } from './session';
 import { mkMap } from './testMaps.testutil';
 import { fillTraits, gridOf, inlineTraitsRunner, needsTraits, type TraitsRunner } from './traitsFill';
 
-const TRAITS: SongTraits = { calm: 0.9, drive: 0.1, fourFloor: 0, halfFeel: 0, bass: 0.2, hats: 0, swing: 0, syncop: 0, heavy: 0, minor: 0.6 };
+/** Traits as analyser 1.4.0 computes them, and as 1.3.0 did (no optional keys). */
+const TRAITS: SongTraits = { calm: 0.9, drive: 0.1, fourFloor: 0, halfFeel: 0, bass: 0.2, hats: 0, swing: 0, syncop: 0, heavy: 0, minor: 0.6, intensity: 0.1, halfTempo: 0, doubleTempo: 0 };
+const OLD_TRAITS: SongTraits = { calm: 0.9, drive: 0.1, fourFloor: 0, halfFeel: 0, bass: 0.2, hats: 0, swing: 0, syncop: 0, heavy: 0, minor: 0.6 };
 const audio: DecodedAudio = { pcm: new Float32Array(1000), sampleRate: 22050, duration: 180 };
 const decode = async () => audio;
 
@@ -24,10 +26,11 @@ function fakeRunner(ms = 5, traits: SongTraits = TRAITS): TraitsRunner & { calls
 }
 
 describe('needsTraits / fillTraits', () => {
-  it('only complete maps without traits need them', () => {
+  it('only complete maps without traits (or with traits from before 1.4.0) need them', () => {
     expect(needsTraits(mkMap())).toBe(true);
     expect(needsTraits(mkMap({ partial: true, until: 30 }))).toBe(false);
     expect(needsTraits({ ...mkMap(), traits: TRAITS })).toBe(false);
+    expect(needsTraits({ ...mkMap(), traits: OLD_TRAITS })).toBe(true); // 1.3.0 traits: no intensity
     expect(needsTraits(null)).toBe(false);
   });
 
@@ -60,7 +63,7 @@ describe('needsTraits / fillTraits', () => {
 
   it('the main-thread runner computes real traits', async () => {
     const t = await inlineTraitsRunner({ pcm: new Float32Array(22050 * 3), sampleRate: 22050, duration: 3 }, { beats: [], downbeats: [], bpm: 0 }).promise;
-    expect(Object.keys(t)).toHaveLength(10);
+    expect(Object.keys(t).sort()).toEqual([...TRAIT_KEYS, ...OPTIONAL_TRAIT_KEYS].sort());
   });
 });
 

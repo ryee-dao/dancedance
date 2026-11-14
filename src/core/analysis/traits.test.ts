@@ -7,7 +7,9 @@ import { describe, expect, it } from 'vitest';
 import { parse, serialize } from './beatmap';
 import { analyzeOffline, computeTraits, extractFeatures } from './offline';
 import { synthMix, synthNoise, type MixOptions, type PatternEvent, type SynthResult } from './synth.testutil';
-import { TRAIT_KEYS, traitsFromFeatures, type SongTraits } from './traits';
+import { OPTIONAL_TRAIT_KEYS, TRAIT_KEYS, traitsFromFeatures, type SongTraits } from './traits';
+
+const ALL_KEYS = [...TRAIT_KEYS, ...OPTIONAL_TRAIT_KEYS];
 
 const K = (at: number, gain = 1): PatternEvent => ({ at, kind: 'kick', gain });
 const S = (at: number, gain = 1): PatternEvent => ({ at, kind: 'snare', gain });
@@ -31,11 +33,12 @@ function mix(o: MixOptions): { s: SynthResult; t: SongTraits } {
 }
 
 function expectValid(t: SongTraits) {
-  expect(Object.keys(t).sort()).toEqual([...TRAIT_KEYS].sort());
-  for (const k of TRAIT_KEYS) {
-    expect(t[k]).toBeGreaterThanOrEqual(0);
-    expect(t[k]).toBeLessThanOrEqual(1);
-    expect(Math.round(t[k] * 100) / 100).toBe(t[k]);
+  expect(Object.keys(t).sort()).toEqual([...ALL_KEYS].sort());
+  for (const k of ALL_KEYS) {
+    const v = t[k]!;
+    expect(v).toBeGreaterThanOrEqual(0);
+    expect(v).toBeLessThanOrEqual(1);
+    expect(Math.round(v * 100) / 100).toBe(v);
   }
 }
 
@@ -60,8 +63,15 @@ describe('song traits: calm piano vs dense distorted rock at the same tempo', ()
   it('the sparse, soft piano is calm; the drums and distorted guitars are not', () => {
     expect(piano.calm).toBeGreaterThan(0.8);
     expect(rock.calm).toBeLessThan(0.4);
-    expect(piano.drive).toBeLessThan(0.3);
-    expect(rock.drive).toBeGreaterThan(piano.drive + 0.2);
+    // Drive is the hardest hit of each bar plus the onset density: the synthetic piano's bass
+    // note enters from silence every bar, a hard low-end hit, but there are few onsets.
+    expect(piano.drive).toBeLessThan(0.5);
+    expect(rock.drive).toBeGreaterThan(piano.drive);
+  });
+
+  it('the distorted guitars sound hard, the piano soft', () => {
+    expect(rock.intensity!).toBeGreaterThan(0.6);
+    expect(piano.intensity!).toBeLessThan(0.1);
   });
 
   it('distortion reads as heavy, the piano not at all', () => {
@@ -81,6 +91,28 @@ describe('song traits: calm piano vs dense distorted rock at the same tempo', ()
     const r = analyzeOffline(synthMix(ROCK).pcm, 22050).traits!;
     expect(p.calm - r.calm).toBeGreaterThan(0.4);
     expect(r.heavy - p.heavy).toBeGreaterThan(0.3);
+  });
+});
+
+describe('song traits: two axes, how rhythmic and how hard', () => {
+  // The same steady beat under a soft pad, and under distorted guitars: a soft
+  // song on a programmed beat is not a banger (Donna Lewis read calm 0.05 in 1.3.0).
+  const drums = [K(0), K(2), S(1, 0.7), S(3, 0.7), ...every(8, 0.5, (a) => H(a, 0.4))];
+  const soft = mix({ bpm: 104, bars: 24, drums, pad: { ...PAD, level: 0.08 }, sub: SUB }).t;
+  const hard = mix({ bpm: 104, bars: 24, drums, guitar: { roots: [40, 40, 36, 38] }, sub: SUB }).t;
+
+  it('both are rhythmic; only the guitars sound hard', () => {
+    // The guitars still mask part of the drums' prominence (drive is lower under them), but both drive.
+    expect(soft.drive).toBeGreaterThan(0.4);
+    expect(hard.drive).toBeGreaterThan(0.3);
+    expect(soft.intensity!).toBeLessThan(0.35);
+    expect(hard.intensity!).toBeGreaterThan(0.6);
+  });
+
+  it('the soft one is in between: calmer than the hard one, not as calm as a ballad', () => {
+    expect(soft.calm).toBeGreaterThan(hard.calm + 0.25);
+    expect(soft.calm).toBeLessThan(0.85);
+    expect(hard.calm).toBeLessThan(0.3);
   });
 });
 
@@ -172,12 +204,12 @@ describe('song traits: robustness', () => {
     const ref = traitsOf(s, ROCK.bpm);
     for (const g of [0.02, 0.3, 2.5]) {
       const t = traitsOf({ ...s, pcm: s.pcm.map((x) => x * g) }, ROCK.bpm);
-      for (const k of TRAIT_KEYS) expect(Math.abs(t[k] - ref[k]), `${k} at gain ${g}`).toBeLessThanOrEqual(0.02);
+      for (const k of ALL_KEYS) expect(Math.abs(t[k]! - ref[k]!), `${k} at gain ${g}`).toBeLessThanOrEqual(0.02);
     }
     // End to end too (the beat grid itself is found again at each gain).
     const a = analyzeOffline(s.pcm, s.sampleRate).traits!;
     const b = analyzeOffline(s.pcm.map((x) => x * 0.05), s.sampleRate).traits!;
-    for (const k of TRAIT_KEYS) expect(Math.abs(a[k] - b[k]), k).toBeLessThanOrEqual(0.05);
+    for (const k of ALL_KEYS) expect(Math.abs(a[k]! - b[k]!), k).toBeLessThanOrEqual(0.05);
   });
 
   it('without a beat (noise) the grid traits are 0 and the rest stay in range', () => {
@@ -185,7 +217,7 @@ describe('song traits: robustness', () => {
     const m = analyzeOffline(pcm, 22050);
     expectValid(m.traits!);
     expect(m.beats.length).toBe(0);
-    for (const k of ['fourFloor', 'halfFeel', 'swing', 'syncop'] as const) expect(m.traits![k]).toBe(0);
+    for (const k of ['fourFloor', 'halfFeel', 'swing', 'syncop', 'halfTempo', 'doubleTempo'] as const) expect(m.traits![k]).toBe(0);
   });
 
   it('silence and very short input give defined traits', () => {
@@ -201,7 +233,7 @@ describe('computeTraits (fill-in for maps made before traits)', () => {
     const old = parse(serialize({ ...map, traits: undefined }));
     expect(old.traits).toBeUndefined();
     const t = computeTraits(s.pcm, s.sampleRate, old);
-    for (const k of TRAIT_KEYS) expect(Math.abs(t[k] - map.traits![k]), k).toBeLessThanOrEqual(0.02);
+    for (const k of ALL_KEYS) expect(Math.abs(t[k]! - map.traits![k]!), k).toBeLessThanOrEqual(0.02);
   });
 
   it('maps heard through the microphone carry none; other sources do', () => {

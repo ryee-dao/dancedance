@@ -1,0 +1,418 @@
+{
+  "seed": 20261114,
+  "createdAt": "2026-11-14T05:18:32.709Z",
+  "songs": [
+    {
+      "key": "6797924420",
+      "half": "known",
+      "artist": "Dalvin La Melodia",
+      "title": "Qué Fue Lo Que Me Hiciste",
+      "collection": "La Bachata Volvió",
+      "genre": "Música tropical",
+      "durationSec": 229,
+      "releaseYear": 2026,
+      "source": "chart us/12"
+    },
+    {
+      "key": "1652782418",
+      "half": "known",
+      "artist": "Sean Paul",
+      "title": "Get Busy",
+      "collection": "Dutty Rock (20th Anniversary)",
+      "genre": "Electronic",
+      "durationSec": 212,
+      "releaseYear": 2002,
+      "source": "chart us/7"
+    },
+    {
+      "key": "1440807415",
+      "half": "known",
+      "artist": "Stevie Wonder",
+      "title": "Don't You Worry 'Bout a Thing",
+      "collection": "Innervisions",
+      "genre": "Motown",
+      "durationSec": 285,
+      "releaseYear": 1973,
+      "source": "term 'motown'"
+    },
+    {
+      "key": "1817609509",
+      "half": "known",
+      "artist": "Olivia Dean",
+      "title": "Man I Need",
+      "collection": "The Art of Loving",
+      "genre": "Pop",
+      "durationSec": 184,
+      "releaseYear": 2025,
+      "source": "chart us/14"
+    },
+    {
+      "key": "6777857413",
+      "half": "known",
+      "artist": "BTS",
+      "title": "Come Over",
+      "collection": "Come Over - Single",
+      "genre": "Pop",
+      "durationSec": 179,
+      "releaseYear": 2026,
+      "source": "chart us/51"
+    },
+    {
+      "key": "1718320582",
+      "half": "known",
+      "artist": "Notch",
+      "title": "Nuttin Nuh Go So",
+      "collection": "Buy Out Riddim",
+      "genre": "Modern Dancehall",
+      "durationSec": 243,
+      "releaseYear": 2001,
+      "source": "term 'dancehall'"
+    },
+    {
+      "key": "1088788681",
+      "half": "known",
+      "artist": "Badshah, Amaal Mallik, Fazilpuria, Sukriti Kakar & Neha Kakkar",
+      "title": "Kar Gayi Chull",
+      "collection": "Kapoor & Sons (Since 1921) [Original Motion Picture Soundtrack]",
+      "genre": "Bollywood",
+      "durationSec": 188,
+      "releaseYear": 2016,
+      "source": "term 'bollywood'"
+    },
+    {
+      "key": "1820264147",
+      "half": "known",
+      "artist": "Saja Boys, Andrew Choi, Neckwav, Danny Chung, KEVIN WOO, samUIL Lee & KPop Demon Hunters Cast",
+      "title": "Soda Pop",
+      "collection": "KPop Demon Hunters (Soundtrack from the Netflix Film)",
+      "genre": "K-Pop",
+      "durationSec": 151,
+      "releaseYear": 2025,
+      "source": "chart us/51"
+    },
+    {
+      "key": "6793006406",
+      "half": "known",
+      "artist": "Kaskade, Glockenbach & Kaitlin Aragon",
+      "title": "Runaway",
+      "collection": "Runaway - Single",
+      "genre": "Dance",
+      "durationSec": 213,
+      "releaseYear": 2026,
+      "source": "chart us/17"
+    },
+    {
+      "key": "1440666111",
+      "half": "known",
+      "artist": "Evanescence",
+      "title": "Bring Me to Life",
+      "collection": "Fallen",
+      "genre": "Hard Rock",
+      "durationSec": 236,
+      "releaseYear": 2003,
+      "source": "term '2000s hits'"
+    },
+    {
+      "key": "1027465608",
+      "half": "known",
+      "artist": "Pixies",
+      "title": "Where Is My Mind? (2007 Remaster)",
+      "collection": "Surfer Rosa (2007 Remaster)",
+      "genre": "Alternative",
+      "durationSec": 235,
+      "releaseYear": 1988,
+      "source": "term 'blues'"
+    },
+    {
+      "key": "1203777163",
+      "half": "known",
+      "artist": "Daryl Hall & John Oates",
+      "title": "She's Gone",
+      "collection": "70s Hits Essentials",
+      "genre": "Rock",
+      "durationSec": 313,
+      "releaseYear": 1973,
+      "source": "term '70s hits'"
+    },
+    {
+      "key": "135132767",
+      "half": "known",
+      "artist": "Neil Young",
+      "title": "Harvest Moon",
+      "collection": "Greatest Hits",
+      "genre": "Rock",
+      "durationSec": 303,
+      "releaseYear": 1992,
+      "source": "chart us/21"
+    },
+    {
+      "key": "1467916990",
+      "half": "known",
+      "artist": "Ja Rule",
+      "title": "Between Me and You (feat. Christina Milian)",
+      "collection": "Rule 3:36",
+      "genre": "Hip-Hop/Rap",
+      "durationSec": 250,
+      "releaseYear": 2000,
+      "source": "term 'gangsta rap'"
+    },
+    {
+      "key": "6826994302",
+      "half": "known",
+      "artist": "Sarah Engels",
+      "title": "One More Sleep",
+      "collection": "One More Sleep - Single",
+      "genre": "Pop",
+      "durationSec": 242,
+      "releaseYear": 2026,
+      "source": "chart de"
+    },
+    {
+      "key": "486478435",
+      "half": "obscure",
+      "artist": "Ripp Donn",
+      "title": "Idiotology",
+      "collection": "Organic",
+      "genre": "Hip-Hop/Rap",
+      "durationSec": 191,
+      "releaseYear": 2011,
+      "source": "word 'idiobiology'"
+    },
+    {
+      "key": "1219328633",
+      "half": "obscure",
+      "artist": "Acid Hammer",
+      "title": "Lixiviation",
+      "collection": "Acid Hammer",
+      "genre": "Electronic",
+      "durationSec": 187,
+      "releaseYear": 2017,
+      "source": "word 'lixiviation'"
+    },
+    {
+      "key": "1743491042",
+      "half": "obscure",
+      "artist": "Ian Forkey",
+      "title": "Liverwort",
+      "collection": "Portrait of a Weird Man",
+      "genre": "Breakbeat",
+      "durationSec": 90,
+      "releaseYear": 2024,
+      "source": "word 'liverwort'"
+    },
+    {
+      "key": "343404596",
+      "half": "obscure",
+      "artist": "Big Head Todd & The Monsters",
+      "title": "Sister Sweetly",
+      "collection": "Sister Sweetly",
+      "genre": "Pop",
+      "durationSec": 273,
+      "releaseYear": 1993,
+      "source": "word 'sweetly'"
+    },
+    {
+      "key": "1525858164",
+      "half": "obscure",
+      "artist": "Sharq",
+      "title": "Jufti Halolim",
+      "collection": "Jufti Halolim - Single",
+      "genre": "Pop",
+      "durationSec": 194,
+      "releaseYear": 2020,
+      "source": "word 'jufti'"
+    },
+    {
+      "key": "1339955620",
+      "half": "obscure",
+      "artist": "Parallels and Lies",
+      "title": "Actuality (feat. Ashley Brundage)",
+      "collection": "Hibernation",
+      "genre": "Alternative",
+      "durationSec": 235,
+      "releaseYear": 2013,
+      "source": "word 'actuality'"
+    },
+    {
+      "key": "1862504866",
+      "half": "obscure",
+      "artist": "Angry Biracial",
+      "title": "Marry Me",
+      "collection": "Marry Me - Single",
+      "genre": "R&B/Soul",
+      "durationSec": 194,
+      "releaseYear": 2025,
+      "source": "word 'biradial'"
+    },
+    {
+      "key": "1809408764",
+      "half": "obscure",
+      "artist": "Putrid Aura",
+      "title": "Never Growing Old",
+      "collection": "Dimensions Ungathered - EP",
+      "genre": "Metal",
+      "durationSec": 126,
+      "releaseYear": 2025,
+      "source": "word 'ungarnered'"
+    },
+    {
+      "key": "1547047337",
+      "half": "obscure",
+      "artist": "M-zine",
+      "title": "Purloin",
+      "collection": "Eristic - EP",
+      "genre": "Electronic",
+      "durationSec": 313,
+      "releaseYear": 2021,
+      "source": "word 'veristic'"
+    },
+    {
+      "key": "958817343",
+      "half": "obscure",
+      "artist": "Crucify the Flesh",
+      "title": "Halal",
+      "collection": "Bear Fruit",
+      "genre": "Metal",
+      "durationSec": 269,
+      "releaseYear": 2015,
+      "source": "word 'halal'"
+    },
+    {
+      "key": "1637715947",
+      "half": "obscure",
+      "artist": "Primitive Baptist Church",
+      "title": "I Love My Savior God",
+      "collection": "Old Baptist Congregational Hymns, Vol. 1",
+      "genre": "Christian",
+      "durationSec": 219,
+      "releaseYear": 2022,
+      "source": "word 'pedobaptist'"
+    },
+    {
+      "key": "1501621010",
+      "half": "obscure",
+      "artist": "Owen Smith",
+      "title": "Cleek",
+      "collection": "Instructions",
+      "genre": "Electronic",
+      "durationSec": 178,
+      "releaseYear": 2020,
+      "source": "word 'cleek'"
+    },
+    {
+      "key": "1536106794",
+      "half": "obscure",
+      "artist": "AKB48",
+      "title": "Classmate(TeamK Version)",
+      "collection": "Team K 1st Stage \"Party Ga Hajimaruyo\" (Studio Recordings)",
+      "genre": "J-Pop",
+      "durationSec": 283,
+      "releaseYear": 2007,
+      "source": "word 'classmate'"
+    },
+    {
+      "key": "331454217",
+      "half": "obscure",
+      "artist": "Defacing",
+      "title": "Phobophile (Cryptopsy)",
+      "collection": "Spitting Savagery",
+      "genre": "Rock",
+      "durationSec": 257,
+      "releaseYear": 2009,
+      "source": "word 'phonophile'"
+    },
+    {
+      "key": "1813204296",
+      "half": "obscure",
+      "artist": "Superheroes",
+      "title": "Pediculosis",
+      "collection": "Game Over",
+      "genre": "Punk",
+      "durationSec": 155,
+      "releaseYear": 2000,
+      "source": "word 'pediculoid'"
+    }
+  ],
+  "skipped": [
+    {
+      "source": "chart us/17",
+      "artist": "Delerium, Sarah McLachlan & John Summit",
+      "title": "Silence (John Summit Remix)",
+      "genre": "Dance",
+      "why": "\"Remix\" in title / album / artist"
+    },
+    {
+      "source": "word 'entrainment'",
+      "artist": "Dr. Mick",
+      "title": "Entrainment",
+      "genre": "New Age",
+      "why": "length 703 s"
+    },
+    {
+      "source": "word 'entrainment'",
+      "artist": "Binaural Beats, Binaural Beats Brain Waves Isochronic Tones Brain Wave Entrainment & Binaural Beats Library",
+      "title": "Deep Sleep Aid",
+      "genre": "New Age",
+      "why": "\"Binaural\" in title / album / artist"
+    },
+    {
+      "source": "word 'entrainment'",
+      "artist": "Entrainment, Solfeggio Sound Bath & Source Vibrations",
+      "title": "396 Hz Dissolve Negativity",
+      "genre": "New Age",
+      "why": "\"396 Hz\" in title / album / artist"
+    },
+    {
+      "source": "word 'lixiviation'",
+      "artist": "Suzanne Ciani",
+      "title": "'Liberator' Atari TV Spot",
+      "genre": "Electronica",
+      "why": "length 31 s"
+    },
+    {
+      "source": "word 'lixiviation'",
+      "artist": "Suzanne Ciani",
+      "title": "Live Buchla Concert 1975",
+      "genre": "Electronica",
+      "why": "\"Live\" in title / album / artist"
+    },
+    {
+      "source": "word 'lanameter'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'veristic'",
+      "artist": "National Intercollegiate Band & Richard Clary",
+      "title": "Miniature Suite: III. Eristic Zeal (Live)",
+      "genre": "Classical",
+      "why": "\"Live\" in title / album / artist"
+    },
+    {
+      "source": "word 'opsonoid'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'odontolcous'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'transeptally'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'anocarpous'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'truantry'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'classmate'",
+      "artist": "Giuseppe Ottaviani",
+      "title": "Classmate (FSOE 694) [Dex Machina Extended Remix] {MIXED}",
+      "genre": "Trance",
+      "why": "\"Remix\" in title / album / artist"
+    }
+  ]
+}

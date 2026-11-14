@@ -1,0 +1,17 @@
+{
+ "_about": "The 14 famous songs the traits were first calibrated on (audio not kept in the repo; key = a short name). Character and tempo are common knowledge for these; the requirements: My Immortal very calm, Bring Me to Life and Faint driving and heavy, Mask Off half-time, Stayin' Alive four-on-the-floor, In the Mood swung, Billie Jean driving, Someone Like You very calm.",
+ "billiejean": { "artist": "Michael Jackson", "title": "Billie Jean", "character": "driving", "danceBpm": [115, 119], "pulse": "clear" },
+ "bringmetolife": { "artist": "Evanescence", "title": "Bring Me to Life", "character": "driving", "danceBpm": [92, 98], "pulse": "clear", "feels": ["heavy-distortion"] },
+ "essence": { "artist": "Wizkid", "title": "Essence", "character": "mid", "danceBpm": [100, 108], "pulse": "clear", "feels": ["syncopated"], "note": "mellow afrobeats" },
+ "faint": { "artist": "Linkin Park", "title": "Faint", "character": "driving", "danceBpm": [132, 138], "pulse": "clear", "feels": ["heavy-distortion"] },
+ "gasolina": { "artist": "Daddy Yankee", "title": "Gasolina", "character": "driving", "danceBpm": [93, 99], "pulse": "clear", "feels": ["syncopated"] },
+ "inthemood": { "artist": "Glenn Miller", "title": "In the Mood", "character": "mid", "pulse": "clear", "feels": ["swing"] },
+ "maskoff": { "artist": "Future", "title": "Mask Off", "character": "mid", "danceBpm": [147, 153], "altBpm": [73, 77], "pulse": "clear", "feels": ["half-time"] },
+ "myimmortal": { "artist": "Evanescence", "title": "My Immortal", "character": "calm", "pulse": "weak" },
+ "prideandjoy": { "artist": "Stevie Ray Vaughan", "title": "Pride and Joy", "character": "mid", "pulse": "clear", "feels": ["swing"] },
+ "scarymonsters": { "artist": "Skrillex", "title": "Scary Monsters and Nice Sprites", "character": "driving", "danceBpm": [138, 142], "altBpm": [69, 71], "pulse": "clear", "feels": ["half-time"] },
+ "someonelikeyou": { "artist": "Adele", "title": "Someone Like You", "character": "calm", "danceBpm": [65, 70], "pulse": "weak" },
+ "stayinalive": { "artist": "Bee Gees", "title": "Stayin' Alive", "character": "driving", "danceBpm": [102, 106], "pulse": "clear", "feels": ["four-on-the-floor"] },
+ "watercolour": { "artist": "Pendulum", "title": "Watercolour", "character": "driving", "danceBpm": [172, 176], "altBpm": [85, 89], "pulse": "clear", "feels": ["dense-hats"] },
+ "wefoundlove": { "artist": "Rihanna", "title": "We Found Love", "character": "driving", "danceBpm": [126, 130], "pulse": "clear", "feels": ["four-on-the-floor"] }
+}

@@ -562,7 +562,9 @@ export function synthMix(o: MixOptions): SynthResult {
   }
   if (o.guitar) {
     const lvl = o.guitar.level ?? 0.25;
-    let lp = 0;
+    // A speaker cabinet: four one-pole low-passes at 7 kHz (presence kept, ~24 dB / octave above).
+    const cab = [0, 0, 0, 0];
+    const ca = 1 - Math.exp((-2 * Math.PI * 7000) / sr);
     for (let b = 0; b < o.bars; b++) {
       const root = o.guitar.roots[b % o.guitar.roots.length];
       const fs = [midiHz(root), midiHz(root + 7), midiHz(root + 12)];
@@ -576,9 +578,10 @@ export function synthMix(o: MixOptions): SynthResult {
           let x = 0;
           for (let q = 0; q < 3; q++) x += 2 * (((fs[q] * t + ph[q]) % 1) - 0.5);
           x = Math.tanh(6 * x) + 0.05 * gauss(); // heavy clipping + fizz
-          lp += 0.8 * (x - lp); // gentle one-pole low-pass (a guitar cabinet's roll-off)
+          let y = x;
+          for (let q = 0; q < 4; q++) y = cab[q] += ca * (y - cab[q]);
           const env = Math.min(1, i / (0.003 * sr)) * (0.75 + 0.25 * Math.exp(-t / 0.05));
-          pcm[i0 + i] += lvl * lp * env;
+          pcm[i0 + i] += lvl * 1.6 * y * env;
         }
       }
     }

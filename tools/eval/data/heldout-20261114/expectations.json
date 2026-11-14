@@ -1,0 +1,964 @@
+{
+  "135132767": {
+    "memory": {
+      "family": "rock",
+      "sub": "folk rock / country rock",
+      "energy": "calm",
+      "rhythm": "slow, brushed drums, gentle waltz-ish sway"
+    },
+    "consensus": {
+      "family": "rock",
+      "sub": "folk rock",
+      "energy": "calm",
+      "rhythm": "4/4 about 113 BPM, gentle",
+      "line": "Gentle acoustic country-folk ballad, about 113 BPM in 4/4 (can be felt at half that)"
+    },
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Hooktheory",
+        "says": "113 BPM",
+        "url": "https://www.hooktheory.com/theorytab/view/neil-young/harvest-moon"
+      },
+      {
+        "site": "klang.io",
+        "says": "113 BPM, 4/4"
+      },
+      {
+        "site": "karaoke-version.com",
+        "says": "About 112 BPM"
+      },
+      {
+        "site": "chordu.com",
+        "says": "116.5 bpm"
+      },
+      {
+        "site": "musiciwant.com",
+        "says": "AI analysis: 80 BPM Andante (low reliability)"
+      }
+    ],
+    "disagreement": "Memory said waltz-like sway; sources say 4/4 at about 113 (no source supports a waltz).",
+    "known": true,
+    "audio": {
+      "character": "soft",
+      "danceBpm": [
+        108,
+        118
+      ],
+      "altBpm": [
+        54,
+        59
+      ],
+      "bpmSource": "Hooktheory, klang.io, karaoke-version (112-116)",
+      "pulse": "weak",
+      "feels": [
+        "acoustic"
+      ],
+      "note": "Soft brushed drums and acoustic guitar; a slow-dance couple would typically step at about 56 (half of 113)."
+    }
+  },
+  "331454217": {
+    "memory": {
+      "family": "metal",
+      "sub": "brutal death metal",
+      "energy": "driving",
+      "rhythm": "blast beats"
+    },
+    "consensus": {
+      "family": "metal",
+      "sub": "brutal/technical death metal",
+      "energy": "driving",
+      "rhythm": "fast blast-beat death metal",
+      "line": "Defacing's cover of Cryptopsy's Phobophile (None So Vile, 1996), closing track of Spitting Savagery (Xtreem Music)."
+    },
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Metal Crypt",
+        "says": "Spitting Savagery, Xtreem Music, closes with Phobophile cover; band closely modelled on None So Vile",
+        "url": "https://metalcrypt.com/pages/review.php?revid=2285"
+      },
+      {
+        "site": "Debaser",
+        "says": "track 9 Phobophile, Cryptopsy influence in riffs and tempos",
+        "url": "https://en.debaser.it/defacing/spitting-savagery/review"
+      },
+      {
+        "site": "Blabbermouth",
+        "says": "Phobophile is from Cryptopsy's None So Vile",
+        "url": "https://blabbermouth.net/news/cryptopsy-s-phobophile-gets-lego-treatment"
+      }
+    ],
+    "disagreement": "iTunes labels it Rock; sources show the album is extreme metal (album year 2005 per reviews vs 2009 in metadata).",
+    "known": true,
+    "audio": {
+      "character": "driving",
+      "pulse": "clear",
+      "feels": [
+        "heavy-distortion"
+      ],
+      "note": "No BPM found; fast, blast-beat heavy, tempo varies within the song."
+    }
+  },
+  "343404596": {
+    "memory": {
+      "family": "rock",
+      "sub": "blues rock / alt rock",
+      "energy": "mid",
+      "rhythm": "4/4 mid-tempo groove"
+    },
+    "consensus": {
+      "family": "rock",
+      "sub": "blues rock / roots rock",
+      "energy": "mid",
+      "rhythm": "4/4 steady groove",
+      "line": "Title track of the 1993 album, described by reviewers as steady and soulful 90s roots rock; no tempo for this track found"
+    },
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "Glide Magazine / Wikipedia (album)",
+        "says": "Album is steady and soulful; title track about 4:33; produced by David Z"
+      },
+      {
+        "site": "tunebat.com",
+        "says": "Only a tempo for 'Bittersweet' (117 BPM), a different song on the same album; not applied here"
+      }
+    ],
+    "known": true,
+    "audio": {
+      "character": "mid",
+      "pulse": "clear",
+      "note": "No BPM source for this track; danceBpm left out."
+    }
+  },
+  "486478435": {
+    "evidence": "none",
+    "sources": [
+      {
+        "site": "web search",
+        "says": "Nothing found for Ripp Donn / Idiotology / Organic; no artist- or album-level information"
+      }
+    ],
+    "known": false,
+    "audio": {
+      "note": "Unknown song; no tempo or character claims supported. Genre tag from iTunes only: Hip-Hop/Rap."
+    }
+  },
+  "958817343": {
+    "memory": {
+      "family": "metal",
+      "sub": "metalcore",
+      "energy": "driving",
+      "rhythm": "fast double-time with breakdowns"
+    },
+    "consensus": {
+      "family": "metal",
+      "sub": "Christian metalcore",
+      "energy": "driving",
+      "rhythm": "metalcore",
+      "line": "Track 4 (4:29 on the album listing) of Bear Fruit by Dallas Christian metalcore band that mixes raw aggression with worship melodies"
+    },
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "metalmusicarchives.com",
+        "says": "Crucify the Flesh is a Christian metalcore band from Dallas; Bear Fruit (2015) track 4 Halal; raw aggression with uplifting worship melodies",
+        "url": "https://metalmusicarchives.com/album/crucify-the-flesh/bear-fruit"
+      }
+    ],
+    "disagreement": "Memory was a guess from the genre tag only; the band was not known to me.",
+    "known": true,
+    "audio": {
+      "character": "driving",
+      "pulse": "clear",
+      "feels": [
+        "heavy-distortion"
+      ],
+      "note": "No BPM source; danceBpm left out. Metalcore tempos vary widely and often change within a song."
+    }
+  },
+  "1027465608": {
+    "memory": {
+      "family": "rock",
+      "sub": "alternative/indie",
+      "energy": "mid",
+      "rhythm": "slow-mid drum groove, about 80 BPM"
+    },
+    "consensus": {
+      "family": "rock",
+      "sub": "alternative",
+      "energy": "mid",
+      "rhythm": "about 81 BPM, 4/4",
+      "line": "Alt-rock at about 81 BPM; some analyzers report 160-164 (double-time)."
+    },
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "songs.klang.io / analysis pages",
+        "says": "81 BPM, also countable 162 or 40",
+        "url": "https://songs.klang.io/en/s/Pixies/Where%20Is%20My%20Mind%3F%20-%20Remastered/OJ62RzJkYUo"
+      },
+      {
+        "site": "Chord tab site",
+        "says": "79.95 BPM",
+        "url": "https://chordu.com/chords-tabs-pixies-where-is-my-mind-nme-song-stories-id_sMeZDlJ_YYM"
+      },
+      {
+        "site": "Other databases",
+        "says": "160-164 BPM (double-time reading)"
+      }
+    ],
+    "known": true,
+    "audio": {
+      "character": "mid",
+      "danceBpm": [
+        78,
+        84
+      ],
+      "altBpm": [
+        156,
+        168
+      ],
+      "bpmSource": "several databases ~81, double-time outliers ~162",
+      "pulse": "clear",
+      "note": "Steady drum groove, quiet-loud dynamics; guitars are not heavy-distortion for most of the song."
+    }
+  },
+  "1088788681": {
+    "memory": {
+      "family": "bollywood",
+      "sub": "Punjabi/Haryanvi party hip-hop",
+      "energy": "driving",
+      "rhythm": "hip-hop/dancehall party beat"
+    },
+    "consensus": {
+      "family": "bollywood",
+      "sub": "party hip-hop / Punjabi-Haryanvi",
+      "energy": "driving",
+      "rhythm": "party beat",
+      "line": "Club-party Bollywood track by Badshah (rap plus sung hook, Neha Kakkar), recreated by Amaal Mallik for Kapoor & Sons"
+    },
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "Wikipedia / soundtrack listings",
+        "says": "Film version 3:07, produced by Badshah and Amaal Mallik; sung by Fazilpuria, Sukriti Kakar, Neha Kakkar"
+      },
+      {
+        "site": "YouTube comments",
+        "says": "Described as addictive, still lit after 10 years"
+      }
+    ],
+    "known": true,
+    "audio": {
+      "character": "driving",
+      "pulse": "clear",
+      "feels": [
+        "syncopated"
+      ],
+      "note": "No BPM found in any searched source; danceBpm left out. Party/dance track with a steady beat."
+    }
+  },
+  "1203777163": {
+    "memory": {
+      "family": "rock",
+      "sub": "blue-eyed soul ballad",
+      "energy": "calm",
+      "rhythm": "slow soulful ballad, ~80 BPM"
+    },
+    "consensus": {
+      "family": "rock",
+      "sub": "blue-eyed soul ballad",
+      "energy": "mid",
+      "rhythm": "slow steady groove, about 78-80 BPM",
+      "line": "Slow Philly-soul-style ballad; sheet/karaoke sources give about 78-80 BPM, automated tools give 156 (double)."
+    },
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "karaoke-version.com",
+        "says": "Tempo variable, around 78 BPM"
+      },
+      {
+        "site": "supersimplepiano.com",
+        "says": "Key of E, 80 BPM"
+      },
+      {
+        "site": "AcousticBrainz / uwaterloo track page",
+        "says": "156 BPM (double-time reading)"
+      }
+    ],
+    "known": true,
+    "audio": {
+      "character": "soft",
+      "danceBpm": [
+        75,
+        82
+      ],
+      "bpmSource": "karaoke-version 78, supersimplepiano 80; 156 is double",
+      "pulse": "clear",
+      "feels": [],
+      "note": "Slow soul ballad with steady drums; a rubato feel is possible, so pulse may read weaker."
+    }
+  },
+  "1219328633": {
+    "evidence": "none",
+    "sources": [
+      {
+        "site": "WebSearch",
+        "says": "nothing found for Acid Hammer or Lixiviation (only an unrelated Suzanne Ciani release)"
+      }
+    ],
+    "known": false,
+    "audio": {
+      "note": "Nothing found; iTunes genre Electronic only. No tempo or character claims."
+    }
+  },
+  "1339955620": {
+    "evidence": "none",
+    "sources": [
+      {
+        "site": "web search",
+        "says": "No results for Parallels and Lies, Hibernation or Ashley Brundage"
+      }
+    ],
+    "known": false,
+    "audio": {
+      "note": "Only metadata (iTunes genre Alternative) is available."
+    }
+  },
+  "1440666111": {
+    "memory": {
+      "family": "rock",
+      "sub": "nu-metal / gothic rock",
+      "energy": "driving",
+      "rhythm": "4/4 mid-tempo, quiet verses and loud choruses"
+    },
+    "consensus": {
+      "family": "rock",
+      "sub": "nu-metal / gothic rock",
+      "energy": "driving",
+      "rhythm": "4/4 about 95 BPM",
+      "line": "Mid-tempo (about 95 BPM) E minor rock with piano verses, heavy-guitar choruses and rap vocal by Paul McCoy"
+    },
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Musicnotes sheet music (via Wikipedia mirror)",
+        "says": "Common time, 95 BPM, moderate tempo"
+      },
+      {
+        "site": "karaoke-version.com",
+        "says": "95 BPM, E minor",
+        "url": "https://www.karaoke-version.com/mp3-backingtrack/evanescence/bring-me-to-life.html"
+      },
+      {
+        "site": "chordu.com",
+        "says": "95 bpm"
+      },
+      {
+        "site": "Geerdes MIDI",
+        "says": "About 94-96 BPM with small tempo changes"
+      }
+    ],
+    "known": true,
+    "audio": {
+      "character": "driving",
+      "danceBpm": [
+        92,
+        98
+      ],
+      "bpmSource": "sheet music, karaoke-version, chordu all 95",
+      "pulse": "clear",
+      "feels": [
+        "heavy-distortion"
+      ],
+      "note": "Verses are sparse piano and strings; choruses are full distorted guitars. 95 BPM throughout."
+    }
+  },
+  "1440807415": {
+    "memory": {
+      "family": "funk",
+      "sub": "soul-funk",
+      "energy": "mid",
+      "rhythm": "mid-tempo Latin-tinged funk groove, clavinet/harmonica"
+    },
+    "consensus": {
+      "family": "funk",
+      "sub": "soul-funk",
+      "energy": "mid",
+      "rhythm": "steady syncopated groove around 126 BPM",
+      "line": "Latin-flavoured soul-funk with congas and a steady mid-tempo groove; tempo databases mostly read about 126 BPM, one reads 61 (half-time)."
+    },
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "musiciwant.com",
+        "says": "AI analysis 126 BPM, half-time 63"
+      },
+      {
+        "site": "sfrbeats.com",
+        "says": "61 BPM (likely half of the 122-127 reading)"
+      },
+      {
+        "site": "songbpm.com / getsongbpm (covers)",
+        "says": "Main Ingredient cover 122 BPM, John Legend cover 127 BPM"
+      },
+      {
+        "site": "YouTube comments",
+        "says": "Described as joyful, healing, with a late crescendo around 4:00"
+      }
+    ],
+    "known": true,
+    "audio": {
+      "character": "mid",
+      "danceBpm": [
+        121,
+        130
+      ],
+      "altBpm": [
+        60,
+        65
+      ],
+      "bpmSource": "musiciwant 126, covers 122-127; sfrbeats 61 is half",
+      "pulse": "clear",
+      "feels": [
+        "syncopated"
+      ],
+      "note": "Latin-tinged funk with congas; the 61 reading is a half-time count."
+    }
+  },
+  "1467916990": {
+    "memory": {
+      "family": "hip-hop",
+      "sub": "pop-rap/R&B",
+      "energy": "mid",
+      "rhythm": "mid-tempo hip-hop groove"
+    },
+    "consensus": {
+      "family": "hip-hop",
+      "sub": "pop-rap/R&B",
+      "energy": "mid",
+      "rhythm": "about 96 BPM",
+      "line": "Pop-rap/R&B crossover with sung chorus by Christina Milian at about 96 BPM (192 in Traktor)."
+    },
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "DJ track database (Waterloo/UBC mirror)",
+        "says": "96.1 BPM Mixmeister; Traktor 192.2",
+        "url": "https://cs.uwaterloo.ca/~dtompkin/music/track/CLUBCUTZ_404/CLUBCUTZ_404-01.html"
+      },
+      {
+        "site": "Wikipedia",
+        "says": "first single from Rule 3:36, produced by Irv Gotti and Lil' Rob, Hot 100 #11",
+        "url": "https://en.wikipedia.org/wiki/Between_Me_and_You"
+      }
+    ],
+    "known": true,
+    "audio": {
+      "character": "mid",
+      "danceBpm": [
+        93,
+        99
+      ],
+      "altBpm": [
+        186,
+        198
+      ],
+      "bpmSource": "one DJ database, 96.1 (Traktor doubled)",
+      "pulse": "clear",
+      "note": "Single tempo source; no feel claimed."
+    }
+  },
+  "1501621010": {
+    "evidence": "none",
+    "sources": [
+      {
+        "site": "web search",
+        "says": "No results for Owen Smith, Instructions or Cleek"
+      }
+    ],
+    "known": false,
+    "audio": {
+      "note": "Only metadata (iTunes genre Electronic) is available."
+    }
+  },
+  "1525858164": {
+    "evidence": "none",
+    "sources": [
+      {
+        "site": "WebSearch",
+        "says": "no results for Sharq 'Jufti Halolim'"
+      }
+    ],
+    "known": false,
+    "audio": {
+      "note": "Nothing found. iTunes genre Pop only."
+    }
+  },
+  "1536106794": {
+    "memory": {
+      "family": "pop",
+      "sub": "J-pop idol",
+      "energy": "mid",
+      "rhythm": "upbeat 4/4 idol pop"
+    },
+    "consensus": {
+      "family": "pop",
+      "sub": "J-pop idol stage song",
+      "energy": "mid",
+      "rhythm": "4/4 idol pop",
+      "line": "Stage song from the PARTY ga Hajimaru yo set (originated by Team A, Team K 2007 version), lyrics Akimoto Yasushi, music Uesugi Hiroshi, arranged by Yamazaki Ichinen"
+    },
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "generasia.com",
+        "says": "Classmate is on the Team K 1st Stage album (2007), track 6; six recorded versions exist; credits Akimoto, Uesugi, Yamazaki",
+        "url": "https://www.generasia.com/wiki/Classmate_(AKB48)"
+      }
+    ],
+    "known": true,
+    "audio": {
+      "character": "mid",
+      "pulse": "clear",
+      "note": "Only credits found, no description of sound or tempo; danceBpm left out. Character is an inference from the idol-stage-song genre."
+    }
+  },
+  "1547047337": {
+    "evidence": "single",
+    "consensus": {
+      "family": "electronic",
+      "energy": "mid",
+      "line": "Artist-level only: M-zine is a Belgian producer (works with Scepticz) with Dispatch Recordings releases (Diffraction EP, 2017), i.e. drum and bass territory. Eristic EP and Purloin not found."
+    },
+    "sources": [
+      {
+        "site": "dispatchrecordings.bandcamp.com / traxsource",
+        "says": "M-zine releases on Dispatch Recordings; no page for Eristic EP or Purloin found"
+      }
+    ],
+    "disagreement": "Artist-level information may not apply to this 2021 track; possible that the credit is a different M-zine.",
+    "known": false,
+    "audio": {
+      "note": "Do not score tempo; if drum and bass it would sit near 170-175 BPM (unverified, with a half-time 85-88 step)."
+    }
+  },
+  "1637715947": {
+    "memory": {
+      "family": "gospel",
+      "sub": "hymn/congregational",
+      "energy": "calm",
+      "rhythm": "free, unaccompanied congregational singing"
+    },
+    "consensus": {
+      "family": "gospel",
+      "sub": "hymn",
+      "energy": "calm",
+      "rhythm": "unmetered/slow hymn",
+      "line": "Old-school Primitive Baptist hymn text (tune MARTYRDOM in hymnals); this recording's album not found, assumed congregational singing."
+    },
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "Hymnary.org",
+        "says": "'I love my Savior God, Because He first loved me' in Primitive Baptist hymnals, tune MARTYRDOM",
+        "url": "https://hymnary.org/text/i_love_my_savior_god"
+      }
+    ],
+    "disagreement": "Recording style (a cappella vs accompanied) not confirmed.",
+    "known": true,
+    "audio": {
+      "character": "calm",
+      "pulse": "weak",
+      "feels": [
+        "acoustic",
+        "beatless"
+      ],
+      "note": "Primitive Baptist congregational singing is traditionally unaccompanied and slow; inferred, album not found."
+    }
+  },
+  "1652782418": {
+    "memory": {
+      "family": "dancehall",
+      "energy": "driving",
+      "rhythm": "dancehall riddim (Diwali-style), about 100 BPM"
+    },
+    "consensus": {
+      "family": "dancehall",
+      "energy": "driving",
+      "rhythm": "dancehall riddim around 100 BPM, syncopated",
+      "line": "Dancehall single (Diwali riddim) at about 100 BPM, countable at 200."
+    },
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Music Gateway",
+        "says": "100 BPM",
+        "url": "https://www.musicgateway.com/song-key-bpm/sean-paul/get-busy"
+      },
+      {
+        "site": "Karaoke-Version",
+        "says": "100.22 BPM",
+        "url": "https://www.karaoke-version.com/bass-backing-track/sean-paul/get-busy.html"
+      },
+      {
+        "site": "SongBPM",
+        "says": "about 100 BPM, can be counted double (200)",
+        "url": "https://songbpm.com/@sean-paul/get-busy"
+      },
+      {
+        "site": "Wikipedia",
+        "says": "dancehall single from Dutty Rock",
+        "url": "https://en.wikipedia.org/wiki/Get_Busy"
+      }
+    ],
+    "known": true,
+    "audio": {
+      "character": "mid",
+      "danceBpm": [
+        97,
+        103
+      ],
+      "altBpm": [
+        194,
+        206
+      ],
+      "bpmSource": "Music Gateway, Karaoke-Version, SongBPM agree on ~100",
+      "pulse": "clear",
+      "feels": [
+        "syncopated"
+      ],
+      "note": "Dancehall riddim; mid vs driving is a judgment call (party dancehall, sparse riddim)."
+    }
+  },
+  "1718320582": {
+    "memory": {
+      "family": "reggae",
+      "sub": "dancehall",
+      "energy": "mid",
+      "rhythm": "dancehall riddim, syncopated"
+    },
+    "consensus": {
+      "family": "reggae",
+      "sub": "dancehall",
+      "energy": "mid",
+      "rhythm": "Buy Out riddim dancehall groove",
+      "line": "Dancehall on Tony Kelly's Buy Out riddim (2001); no BPM found in sources. Same riddim as Sean Paul's Like Glue, which is commonly listed near 102 BPM (my inference, not confirmed)."
+    },
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "riddimsworld.com",
+        "says": "Buy Out riddim produced by Tony Kelly, released 2001; Notch's tune is on it alongside Sean Paul's Like Glue"
+      },
+      {
+        "site": "dancehallmag.com",
+        "says": "Notch's Nuttin Nuh Go So went silver in the UK"
+      },
+      {
+        "site": "YouTube comments",
+        "says": "A commenter says the main part sounds like Sean Paul, consistent with the shared riddim"
+      }
+    ],
+    "disagreement": "No tempo found; value inferred from riddim-mate.",
+    "known": true,
+    "audio": {
+      "character": "mid",
+      "danceBpm": [
+        96,
+        106
+      ],
+      "bpmSource": "inferred from Buy Out riddim (Like Glue ~102); unverified",
+      "pulse": "clear",
+      "feels": [
+        "syncopated"
+      ],
+      "note": "Dancehall riddim with offbeat accents; tempo is a low-confidence inference."
+    }
+  },
+  "1743491042": {
+    "evidence": "none",
+    "sources": [
+      {
+        "site": "web search",
+        "says": "No results for Ian Forkey or the album Portrait of a Weird Man"
+      }
+    ],
+    "known": false,
+    "audio": {
+      "note": "Only metadata (iTunes genre Breakbeat, 90 s) is available; nothing independent."
+    }
+  },
+  "1809408764": {
+    "consensus": {
+      "family": "metal",
+      "energy": "driving",
+      "line": "No info on Putrid Aura; iTunes genre Metal, band name and EP title suggest extreme/death metal."
+    },
+    "evidence": "none",
+    "sources": [
+      {
+        "site": "WebSearch",
+        "says": "nothing found for Putrid Aura or Dimensions Ungathered"
+      },
+      {
+        "site": "iTunes",
+        "says": "genre Metal"
+      }
+    ],
+    "known": false,
+    "audio": {
+      "character": "driving",
+      "feels": [
+        "heavy-distortion"
+      ],
+      "note": "Inferred only from iTunes genre Metal; no tempo supported."
+    }
+  },
+  "1813204296": {
+    "evidence": "none",
+    "sources": [
+      {
+        "site": "web search",
+        "says": "No results for the band Superheroes or the album Game Over; Pediculosis only matched an unrelated death-metal single"
+      }
+    ],
+    "known": false,
+    "audio": {
+      "character": "driving",
+      "note": "Genre tag Punk, 155 s; character is a genre guess only, no tempo or source."
+    }
+  },
+  "1817609509": {
+    "memory": {
+      "family": "pop",
+      "sub": "retro soul pop",
+      "energy": "mid",
+      "rhythm": "swung mid-tempo"
+    },
+    "consensus": {
+      "family": "pop",
+      "sub": "soul-pop",
+      "energy": "mid",
+      "rhythm": "swung 12/8 groove at 119 BPM",
+      "line": "Upbeat, danceable retro soul-pop with a shuffle feel, about 119 BPM in C-sharp major"
+    },
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Wikipedia",
+        "says": "Tempo 119 BPM, 12/8 time, C-sharp major; upbeat dance-oriented arrangement",
+        "url": "https://en.wikipedia.org/wiki/Man_I_Need"
+      },
+      {
+        "site": "karaoke-version.com",
+        "says": "Backing track at 119 BPM",
+        "url": "https://www.karaoke-version.com/mp3-backingtrack/olivia-dean/man-i-need.html"
+      },
+      {
+        "site": "musiciwant.com",
+        "says": "AI analysis: 110 BPM Moderato (lower reliability)"
+      },
+      {
+        "site": "YouTube comments",
+        "says": "Old-school vibe; like the opening song of a 90s romcom"
+      }
+    ],
+    "disagreement": "One automated analysis says 110; two sources say 119.",
+    "known": true,
+    "audio": {
+      "character": "mid",
+      "danceBpm": [
+        115,
+        123
+      ],
+      "bpmSource": "Wikipedia + karaoke-version (119)",
+      "pulse": "clear",
+      "feels": [
+        "swing"
+      ],
+      "note": "12/8 notation implies a triplet shuffle feel; a dancer could also count it slower in compound time."
+    }
+  },
+  "1820264147": {
+    "memory": {
+      "family": "pop",
+      "sub": "K-pop",
+      "energy": "mid",
+      "rhythm": "bouncy mid-tempo pop"
+    },
+    "consensus": {
+      "family": "pop",
+      "sub": "K-pop",
+      "energy": "mid",
+      "rhythm": "126 BPM bouncy pop",
+      "line": "Bouncy K-pop boy-band pop at 126 BPM, C major."
+    },
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Beatport",
+        "says": "126 BPM, C major, Pop/K-Pop",
+        "url": "https://www.beatport.com/track/21/21175031"
+      },
+      {
+        "site": "Music Will",
+        "says": "126 BPM, C, Pop",
+        "url": "https://jamzone.musicwill.org/songs/soda-pop"
+      }
+    ],
+    "known": true,
+    "audio": {
+      "character": "mid",
+      "danceBpm": [
+        122,
+        130
+      ],
+      "bpmSource": "Beatport and Music Will agree 126",
+      "pulse": "clear",
+      "note": "Playful, upbeat pop; not hard-hitting."
+    }
+  },
+  "1862504866": {
+    "evidence": "none",
+    "sources": [
+      {
+        "site": "web search",
+        "says": "Nothing found for Angry Biracial / 'Marry Me'; results were about the 2022 film"
+      }
+    ],
+    "known": false,
+    "audio": {
+      "note": "Unknown song; no audio claims supported. iTunes genre R&B/Soul only."
+    }
+  },
+  "6797924420": {
+    "memory": {
+      "family": "latin",
+      "sub": "bachata",
+      "energy": "mid",
+      "rhythm": "bachata 4/4 with guitar lead"
+    },
+    "consensus": {
+      "family": "latin",
+      "sub": "bachata",
+      "energy": "mid",
+      "rhythm": "bachata",
+      "line": "Modern romantic Dominican bachata (clean lead guitar, soft high vocal); no tempo source found"
+    },
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "lyricsfa / lyricsraag",
+        "says": "Track 4 of La Bachata Volvio (2026); a bachata about a former love that still draws the singer back"
+      },
+      {
+        "site": "elcaribe.com.do / hola.com (artist profile)",
+        "says": "Dalvin La Melodia is a Dominican bachata singer, modern romantic style"
+      }
+    ],
+    "known": true,
+    "audio": {
+      "character": "soft",
+      "pulse": "clear",
+      "feels": [
+        "syncopated"
+      ],
+      "note": "No BPM source found. Romantic bachata is typically about 120-135 BPM; danceBpm deliberately left out."
+    }
+  },
+  "6777857413": {
+    "memory": {
+      "family": "pop",
+      "sub": "R&B",
+      "energy": "mid",
+      "rhythm": "mid-tempo groove"
+    },
+    "consensus": {
+      "family": "pop",
+      "sub": "R&B",
+      "energy": "mid",
+      "rhythm": "melancholy R&B groove, partly rapped",
+      "line": "Hidden track of BTS ARIRANG; Songfacts calls it a classic R&B apology song with a melancholy groove; mostly rapped in Korean."
+    },
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "Songfacts",
+        "says": "classic R&B apology song, melancholy groove tinged with regret",
+        "url": "https://www.songfacts.com/facts/bts/come-over"
+      },
+      {
+        "site": "The Musical Hype",
+        "says": "fun bonus track from ARIRANG, mostly rapped in Korean",
+        "url": "https://themusicalhype.com/bts-come-over-song-review/"
+      },
+      {
+        "site": "Weverse Magazine",
+        "says": "an unnamed track described as four-on-the-floor at about 110 BPM; not confirmed to be this song",
+        "url": "https://magazine.weverse.io/article/view/162?lang=en"
+      }
+    ],
+    "disagreement": "No reliable BPM; the 110 figure is unattributed so not used.",
+    "known": true,
+    "audio": {
+      "character": "soft",
+      "pulse": "clear",
+      "note": "Tempo not established. Mellow R&B groove per Songfacts."
+    }
+  },
+  "6793006406": {
+    "consensus": {
+      "family": "electronic",
+      "sub": "house",
+      "energy": "driving",
+      "rhythm": "four-on-the-floor around 122 BPM",
+      "line": "Melodic dance/house single from Kaskade's album ORIGIN //, with vocal by Kaitlin Aragon; one set-analysis site lists 122 BPM."
+    },
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "mixprism.eu",
+        "says": "Kaskade ft. Kaitlin Aragon - Runaway listed at 122 BPM in a Coachella 2026 set analysis"
+      },
+      {
+        "site": "mixmagnl.com",
+        "says": "Fourth single from Kaskade's ORIGIN // album, premiered at Coachella with Aragon on stage"
+      },
+      {
+        "site": "traxsource.com",
+        "says": "Released 2026-07-31 on Arkade, 3:33"
+      }
+    ],
+    "known": true,
+    "audio": {
+      "character": "driving",
+      "danceBpm": [
+        118,
+        126
+      ],
+      "bpmSource": "single third-party detection, 122",
+      "pulse": "clear",
+      "feels": [
+        "four-on-the-floor"
+      ],
+      "note": "Genre-based; character is a judgment for club house."
+    }
+  },
+  "6826994302": {
+    "evidence": "none",
+    "sources": [
+      {
+        "site": "web search",
+        "says": "Nothing found for a Sarah Engels song of this title. One More Sleep is well known as a 2013 Leona Lewis Christmas song; Engels' 2026 single may be a cover or an unrelated song, unverified."
+      }
+    ],
+    "known": false,
+    "audio": {
+      "note": "No information; do not score tempo or character."
+    }
+  }
+}

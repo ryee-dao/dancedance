@@ -9,9 +9,9 @@
  */
 import { ANALYZER_VERSION, BEATMAP_VERSION, MAX_DROPS, quantiseReading, roundMs, type BeatMap, type BeatMapSource, type Section } from './beatmap';
 import { barReadings, type BarValues } from './bars';
-import { trackBeats } from './beats';
+import { refinePeak, trackBeats } from './beats';
 import { findDownbeats } from './downbeats';
-import { FeatureExtractor, FeatureStore, FRAME_RATE, frameTime, onsetEnvelope, SAMPLE_RATE, type Features } from './onset';
+import { beatEnvelope, FeatureExtractor, FeatureStore, FRAME_RATE, frameTime, onsetEnvelope, SAMPLE_RATE, type Features } from './onset';
 import { Resampler } from './resample';
 import { segmentSections } from './sections';
 import { estimateTempo } from './tempo';
@@ -22,8 +22,12 @@ import { traitsFromFeatures, type SongTraits, type TraitGrid } from './traits';
  * lands a few ms before the acoustic onset (measured on synthetic kicks).
  */
 export const BEAT_TIME_OFFSET = 0.004;
-/** Below this autocorrelation evidence the input is treated as having no beat. */
-export const MIN_TEMPO_EVIDENCE = 0.1;
+/**
+ * Below this autocorrelation evidence (on the beat envelope) the input is
+ * treated as having no beat. Beatless recordings (a recitative, a rubato
+ * piano ballad) stay under ~0.04; a slow, sparse groove reaches ~0.08.
+ */
+export const MIN_TEMPO_EVIDENCE = 0.06;
 /** Minimum analysable length (seconds). */
 const MIN_SECONDS = 2;
 
@@ -50,7 +54,9 @@ export interface AnalyzeFeaturesOptions {
 export function analyzeFeatures(features: Features, opts: AnalyzeFeaturesOptions = {}): AnalysisResult {
   const featureSeconds = features.frames > 0 ? frameTime(features.frames - 1) : 0;
   const duration = opts.duration ?? featureSeconds;
+  // Sections and bar readings use the flux envelope; tempo and beats the beat envelope (flux + drum rises).
   const env = onsetEnvelope(features);
+  const benv = beatEnvelope(features);
   const empty = (confidence: number): AnalysisResult => ({
     bpm: 0,
     confidence,
@@ -60,10 +66,12 @@ export function analyzeFeatures(features: Features, opts: AnalyzeFeaturesOptions
     traits: traitsFromFeatures(features, { beats: [], downbeats: [], bpm: 0 }),
   });
   if (features.frames < MIN_SECONDS * FRAME_RATE) return empty(0);
-  const tempo = estimateTempo(env, FRAME_RATE);
+  const tempo = estimateTempo(benv, FRAME_RATE);
   if (tempo.bpm === 0 || tempo.evidence < MIN_TEMPO_EVIDENCE) return empty(tempo.confidence);
 
-  const frames = trackBeats(env, tempo.period);
+  // The chain comes from the beat envelope; each beat's sub-frame position from the flux peak next to it.
+  const frames = trackBeats(benv, tempo.period).map((b) => refinePeak(env, Math.round(b)));
+  for (let k = 1; k < frames.length; k++) if (frames[k] <= frames[k - 1]) frames[k] = frames[k - 1] + 0.5;
   if (frames.length < 2) return empty(tempo.confidence);
   let times = Array.from(frames, (fr) => frameTime(fr) + BEAT_TIME_OFFSET);
   times = fixOutliers(times);
