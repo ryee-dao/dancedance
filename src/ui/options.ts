@@ -24,6 +24,7 @@ import { h, type Nav, type Screen } from './dom';
 import { focusEl, type Scope } from './focusNav';
 import { connectionLabel, disconnectGithub, githubConnection, openConnectDialog } from './githubConnect';
 import { library } from './library';
+import { createHealthPanel } from './songHealth';
 import { toast } from './toast';
 
 const PREVIEW_MOVE = 'step-clap';
@@ -259,6 +260,8 @@ export function createOptions(nav: Nav, opts: { focusAction?: string } = {}): Sc
 
   // --- links -------------------------------------------------------------------
   const ghLine = h('div', { class: 'opt-row' });
+  // Whether adding songs works: the relay, the last song job, the site update, YouTube, and whether the site is behind.
+  const health = createHealthPanel();
 
   const section = (title: string, ...children: (Node | null | false)[]) =>
     h('section', { class: 'opt-section' }, h('h2', { class: 'opt-title' }, title), ...children);
@@ -324,6 +327,8 @@ export function createOptions(nav: Nav, opts: { focusAction?: string } = {}): Sc
         h('button', { class: 'btn', type: 'button', 'data-action': 'link' }, library.link() ? 'Change playlist' : 'Link playlist'),
       ),
       !platform.isTV && ghLine,
+      h('h3', { class: 'opt-subtitle' }, 'Is adding songs working?'),
+      health.el,
     ),
     updateSection,
   );
@@ -548,6 +553,7 @@ export function createOptions(nav: Nav, opts: { focusAction?: string } = {}): Sc
       raf = requestAnimationFrame(draw);
     },
     destroy() {
+      health.destroy();
       offUpdate?.();
       // Leaving Options stops a download that nobody can see any more.
       if (updates && ['downloading', 'verifying'].includes(updates.state().phase)) updates.cancel();

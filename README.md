@@ -44,7 +44,8 @@ The link is saved in your browser. The playlist is read again every time you ope
 
 1. Press **Add a song** on the home screen (website only; on the TV, use your phone, see [below](#find-a-song-from-your-phone)).
 2. Type a song or artist, pick the right one from the list and press **Add song**.
-3. The song shows as "Being added… usually 3–5 minutes", then appears under **My added songs**. The TV app sees it too.
+3. The song shows under **My added songs** with a progress bar: what the cloud job is doing ("Finding the song and working out its beats", "Putting it on the site"), a percentage and a cautious time left ("about 5 min left", "any moment now"; "taking longer than usual" if it overruns). A job waiting behind another says so instead of counting. It reaches 100% only when the song is on the site, and then it appears as a tile. The TV app sees it too. If the job fails, or the beat map is made but the site doesn't update, the card says so.
+4. **Is adding songs working?** The top of the **Add a song** screen lists anything wrong with song adding, and **Options → Songs** shows every check: the relay (reachable, up to date), the last song job, the last site update, whether YouTube is blocking the cloud job, and whether a song that was added isn't on the site yet. Each problem comes with what to do. It checks when the screen opens; **Check again** asks again. It reads public data only (the site's own files, the repository's copies on GitHub, and the run status from the relay or, failing that, from GitHub, which allows a browser only a few such questions an hour, so answers are reused for a few minutes and "couldn't check" is shown instead of an error).
 
 A GitHub job finds the right YouTube video and lists the song as soon as it has found it. You can play it right away, even if it has no beat map yet: the tile then says **Learning the beat** instead of a tempo, and the beat is found as described in [How the beat is found](#how-the-beat-is-found).
 
@@ -74,7 +75,7 @@ The **Options** button on the home screen has:
 | **Audio offset** | Moves the coach earlier or later (see below). |
 | **Songs without a beat map** | Website only. **Ask first** (explain, then ask), **Microphone** (listen straight away) or **Off** (no live listening). See [How the beat is found](#how-the-beat-is-found). |
 | **Helper app** | Website on a computer. Shows whether the [helper app](#helper-app-for-computers) is running, with **Get the helper** and **Check again**. |
-| **Songs** | **Link playlist** or **Change playlist**. On the website, also how songs are added (on this site: "Songs are added through your relay"). |
+| **Songs** | **Link playlist** or **Change playlist**. On the website, also how songs are added (on this site: "Songs are added through your relay"). **Is adding songs working?** lists the song-adding checks (see [Add a single song](#add-a-single-song)). |
 | **App update** | TV app only. The installed version and **Up to date**, **Update available: 0.6.0** with an **Update** button, or **Couldn't check (reason)** with **Retry**. See [Updating the TV app](#updating-the-tv-app). |
 
 Everything applies as soon as you choose it.
@@ -241,7 +242,7 @@ Your playlist and settings are kept. The app asks GitHub at most once each time 
 
 ### At a glance: things only the owner can do
 
-- [ ] **Redeploy the relay** (`npx wrangler deploy` in `cloudflare/add-song-worker`). On 2026-11-11 the live relay's `/health` did not yet report `mapDailyLimit`, which the current code does, so it looks older than the code and may not accept shared beat maps (`POST /map`). The current code also accepts the per-bar readings and song traits shared maps now carry (an older relay refuses them; the app then shares the map without them, traits first). The relay code now also accepts the optional traits of analyser 1.4.0 (`intensity`, `halfTempo`, `doubleTempo`; `OPTIONAL_TRAIT_KEYS` in `src/core/analysis/traits.ts`, numbers 0..1, and its tests check its key lists equal the app's), but until it is redeployed the live relay refuses them and shared 1.4.0 maps go up without traits. After deploying, check `https://dancedance-add-song.ryee.workers.dev/health?probe=1`.
+- [ ] **Redeploy the relay** (`npx wrangler deploy` in `cloudflare/add-song-worker`). On 2026-11-11 the live relay's `/health` did not yet report `mapDailyLimit`, which the current code does, so it looks older than the code and may not accept shared beat maps (`POST /map`). The current code also accepts the per-bar readings and song traits shared maps now carry (an older relay refuses them; the app then shares the map without them, traits first). The relay code now also accepts the optional traits of analyser 1.4.0 (`intensity`, `halfTempo`, `doubleTempo`; `OPTIONAL_TRAIT_KEYS` in `src/core/analysis/traits.ts`, numbers 0..1, and its tests check its key lists equal the app's), but until it is redeployed the live relay refuses them and shared 1.4.0 maps go up without traits. After deploying, check `https://dancedance-add-song.ryee.workers.dev/health?probe=1`. The relay now also has `GET /runs` and reports `"version": 2`; until it is redeployed, **Options → Songs** says "The relay works, but it's an older version than this app" and the app reads run status from GitHub directly (fewer checks an hour).
 - [ ] **Publish the first helper release** (tag `helper-v0.1.0`). Until then the helper download links don't work.
 - [ ] **Keep the repository settings and variables below in place**, especially `ADD_SONG_URL`.
 - [ ] **Run `npm run beatmaps:local -- --push`** on your Mac now and then, to turn pending songs into proper beat maps while GitHub's runners are blocked.
@@ -292,7 +293,8 @@ What it accepts:
 
 - `POST /add`: add a song. The app sends the song's Apple track ID (plus artist, title and length); the Worker looks it up with Apple itself and starts **Beat maps**, using the app's details only if Apple's lookup fails. Soft limit `DAILY_LIMIT`, default 30 a day (it counts manual runs of the job in the last 24 hours).
 - `POST /map`: a shared beat map. It checks the map and starts a short "Contributed beat map" run. Soft limit `MAP_DAILY_LIMIT`, default 60 a day, counted separately.
-- `GET /health`: shows it's running. `GET /health?probe=1` also looks up one well-known song with Apple and shows `"apple": "ok"` or what went wrong (`apple-403` if Apple refuses the Worker, `apple-timeout`, `apple-bad-json`). Either way it still adds songs using the details the app sends.
+- `GET /runs`: read-only status of the latest **Beat maps** and **Deploy site** runs (state, conclusion, times, job names and the running or failed step; never run titles, inputs or logs), cached for a minute. The app's song-adding check and progress bar use it; with an older relay they ask GitHub directly instead, which allows only 60 such questions an hour per network.
+- `GET /health`: shows it's running, and its `version` (the app says "redeploy the relay" while it is older than the app expects). `GET /health?probe=1` also looks up one well-known song with Apple and shows `"apple": "ok"` or what went wrong (`apple-403` if Apple refuses the Worker, `apple-timeout`, `apple-bad-json`). Either way it still adds songs using the details the app sends.
 
 It only accepts requests from `ALLOWED_ORIGINS`. If you set the optional `ADD_PASSPHRASE` secret, the app asks for it once per browser (**Options → Relay passphrase**), for adding songs and sharing maps.
 
@@ -439,7 +441,7 @@ Where things are written: beat maps in `public/beatmaps/`; songs added by search
 
 ### When a job goes red
 
-A failed run shows a red ✗ under **Actions**. Open it: the summary at the top says what went wrong. One song failing (private, removed or region-locked) doesn't turn the run red; something affecting every song does.
+The app shows most of these too: **Options → Songs → Is adding songs working?** (and the top of **Add a song**) says when the last song job or site update failed, when YouTube is blocking or has rejected the job's cookies, and when an added song isn't on the site yet, with what to do. A failed run shows a red ✗ under **Actions**. Open it: the summary at the top says what went wrong. One song failing (private, removed or region-locked) doesn't turn the run red; something affecting every song does.
 
 **"YouTube is bot-blocking this runner".** This is the current, expected state: YouTube refuses GitHub's servers. Songs still get listed and play (see [How the beat is found](#how-the-beat-is-found)). Either run `npm run beatmaps:local -- --push` on your Mac, or give the cloud job cookies:
 

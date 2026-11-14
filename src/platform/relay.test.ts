@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { explainRelayError, parseRelayUrl, relayAdd, relayBody, relayDetails, relayHealth, RELAY_MAX_BODY_BYTES } from './relay';
+import { explainRelayError, parseRelayUrl, relayAdd, relayBody, relayDetails, relayHealth, relayRuns, RELAY_MAX_BODY_BYTES } from './relay';
 
 const SONG = { trackId: 5, artist: 'a-ha', title: 'Take On Me', durationSec: 225 };
 const one = (trackId: number) => ({ trackId, artist: 'x', title: 'y', durationSec: 200 });
@@ -107,8 +107,18 @@ describe('relay client', () => {
     expect(explainRelayError('passphrase').error).toBe('passphrase');
   });
   it('health', async () => {
-    expect(await relayHealth('https://x.dev', fake(200, { ok: true, repo: 'jo/dd', passphrase: true }))).toEqual({ ok: true, repo: 'jo/dd', passphrase: true });
+    expect(await relayHealth('https://x.dev', fake(200, { ok: true, repo: 'jo/dd', passphrase: true }))).toEqual({ ok: true, repo: 'jo/dd', passphrase: true, version: 1 });
     expect(await relayHealth('https://x.dev', fake(404, {}))).toBeNull();
+    expect((await relayHealth('https://x.dev', fake(200, { ok: true, version: 2 })))?.version).toBe(2);
+  });
+  it('runs: an older relay without /runs is "unsupported"; odd entries are dropped', async () => {
+    expect(await relayRuns('https://x.dev', fake(404, { ok: false, error: 'bad-request' }))).toBe('unsupported');
+    expect(await relayRuns('https://x.dev', fake(502, { ok: false, error: 'github-500' }))).toBeNull();
+    expect(await relayRuns('https://x.dev', fake(200, '<html>'))).toBeNull();
+    const run = { id: 5, workflow: 'beatmaps', kind: 'add', status: 'completed', conclusion: 'failure', createdAt: '2026-11-14T22:10:18Z', startedAt: '2026-11-14T22:10:18Z', updatedAt: '2026-11-14T22:17:31Z', jobs: [{ name: 'deploy / build', part: 'deploy', status: 'completed', conclusion: 'failure', startedAt: null, completedAt: null, failedStep: 'Run npm test' }] };
+    const f = fake(200, { ok: true, runs: [run, { id: 'x' }, { ...run, id: 6, workflow: 'android' }] });
+    expect(await relayRuns('https://x.dev', f)).toEqual([run]);
+    expect(f.calls[0].url).toBe('https://x.dev/runs');
   });
 });
 

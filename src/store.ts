@@ -25,6 +25,7 @@ export const STORE_KEYS = {
   addPassphrase: 'dd.addPassphrase', // string: the relay's optional shared passphrase
   addPending: 'dd.addPending', // PendingAdd[]: songs sent to the cloud that haven't appeared in songs.json yet
   addedHidden: 'dd.addedHidden', // string[]: video IDs removed from "My added songs" on this device only
+  healthRuns: 'dd.healthRuns', // { state, at, until?, runs? }: last look at the Beat maps / Deploy site runs (public data; limits GitHub calls)
   plays: 'dd.plays', // Record<videoId, number>: how many times each song has started playing (least recently played first)
 } as const;
 
@@ -398,6 +399,13 @@ export const store = {
   },
   setHiddenAdded(ids: Set<string>): void {
     writeJson(STORE_KEYS.addedHidden, ids.size ? [...ids] : null);
+  },
+  /** Last look at GitHub's runs for the song-adding check (raw object; src/ui/songHealth.ts validates it). */
+  healthRuns(): Record<string, unknown> | null {
+    return readJson<Record<string, unknown> | null>(STORE_KEYS.healthRuns, null, isObj);
+  },
+  setHealthRuns(v: Record<string, unknown> | null): void {
+    writeJson(STORE_KEYS.healthRuns, v);
   },
 
   // --- settings -----------------------------------------------------------

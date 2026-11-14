@@ -10,6 +10,7 @@ import { addedSongs } from './addedSongs';
 import { formatTime, h, type Nav, type Screen } from './dom';
 import { ensureFocus, focusEl, popScope, pushScope, type Scope } from './focusNav';
 import { connectionLabel, disconnectGithub, githubConnection, isConnected, openConnectDialog, sendSong } from './githubConnect';
+import { createHealthPanel } from './songHealth';
 import { findItunesTrackId, searchSongs, SongSearchError, type SongHit } from './songSearch';
 import { toast } from './toast';
 
@@ -42,6 +43,8 @@ export function createAddSong(nav: Nav): Screen {
   const status = h('p', { id: 'search-status', class: 'search-status', role: 'status', 'aria-live': 'polite' });
   const list = h('div', { id: 'search-results', class: 'results', role: 'list', 'aria-label': 'Songs found' });
   const connLine = h('div', { class: 'conn-line' });
+  // Is adding songs working right now? Checked when this screen opens; problems are listed here.
+  const health = createHealthPanel({ compact: true });
 
   const el = h(
     'main',
@@ -52,6 +55,7 @@ export function createAddSong(nav: Nav): Screen {
       h('button', { class: 'btn btn-small', type: 'button', 'data-action': 'back' }, '← Back'),
       h('h1', { class: 'panel-title add-title' }, 'Add a song'),
     ),
+    health.el,
     h('label', { class: 'field-label', for: 'song-search' }, 'Find a song'),
     input,
     status,
@@ -92,8 +96,15 @@ export function createAddSong(nav: Nav): Screen {
     list.replaceChildren(
       ...hits.map((hit, i) => {
         const state = have(hit);
+        const percent = state === 'pending' ? addedSongs.pending().find((p) => p.key === hit.key)?.progress?.percent : undefined;
         const badge =
-          state === 'added' || state === 'starter' ? 'In your songs' : state === 'pending' ? 'Being added' : null;
+          state === 'added' || state === 'starter'
+            ? 'In your songs'
+            : state === 'pending'
+              ? percent !== undefined && percent > 0
+                ? `Being added · ${percent}%`
+                : 'Being added'
+              : null;
         return h(
           'button',
           {
@@ -207,7 +218,7 @@ export function createAddSong(nav: Nav): Screen {
         'p',
         { class: 'dialog-text' },
         already ??
-          'Your GitHub repository’s beat-map job finds this song on YouTube and works out its beats. It usually appears on the home screen in 3–5 minutes.',
+          'Your GitHub repository’s beat-map job finds this song on YouTube and works out its beats. It usually appears on the home screen in 5–10 minutes.',
       ),
       msg,
       h(
@@ -279,7 +290,7 @@ export function createAddSong(nav: Nav): Screen {
         renderResults();
         const again = list.querySelector<HTMLElement>(`[data-index="${hits.indexOf(hit)}"]`);
         if (again) focusEl(again, { instant: true });
-        toast(`“${hit.title}” is being added. It usually takes 3–5 minutes. You’ll find it on the home screen.`, 6000);
+        toast(`“${hit.title}” is being added. It usually takes 5–10 minutes. You’ll find it on the home screen.`, 6000);
         return;
       }
       if (res.needs) {
@@ -367,6 +378,7 @@ export function createAddSong(nav: Nav): Screen {
     scope,
     destroy() {
       alive = false;
+      health.destroy();
       closeDialog?.();
       ctl?.abort();
       if (timer !== null) clearTimeout(timer);

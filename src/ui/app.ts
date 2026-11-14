@@ -11,6 +11,7 @@ import type { Nav, Screen } from './dom';
 import { initFocusNav, setScreenScope } from './focusNav';
 import { createHome } from './home';
 import { library, songArtistGenres, songGenre, songGenreLevels, songGenres } from './library';
+import { songHealth } from './songHealth';
 import { createLinkPlaylist } from './linkPlaylist';
 import { createAddSong } from './addSong';
 import { store } from '../store';
@@ -168,6 +169,8 @@ export function startApp(root: HTMLElement): void {
   if (getPlatform().canPlayFiles) setupDrop(playFile);
 
   void library.refresh();
+  // Follows songs on their way (progress, a failed job, a site that didn't update); see songHealth.ts.
+  songHealth.start();
   void loadCloudIndex(getPlatform().beatmapBase);
   // Web + helper app: find beats of map-less songs in the background (see helperFill.ts).
   const localHelper = getPlatform().localHelper;

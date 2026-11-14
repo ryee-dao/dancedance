@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { songKey } from '../beat/cloud';
+import { addRunDeployFailed, addRunOk, addRunUpdateFailed } from '../platform/pipelineHealth.fixtures';
 import { AddedSongs, bust, pollDelayMs, reconcile } from './addedSongs';
 import { Backoff, itunesUrl, parseItunesResults, searchSongs, SongSearchError } from './songSearch';
 
@@ -11,7 +12,7 @@ describe('reconcile', () => {
   it('pending songs appear when songs.json lists them (by artist + title, any case)', () => {
     const r = reconcile([pend('a-ha', 'Take On Me'), pend('ABBA', 'Waterloo')], [song('abcdefghijk', 'A-HA', 'take on me')], {}, T + 60_000);
     expect(r.appeared.map((a) => a.song.videoId)).toEqual(['abcdefghijk']);
-    expect(r.views).toMatchObject([{ title: 'Waterloo', state: 'waiting', message: 'Being added… usually 3–5 minutes' }]);
+    expect(r.views).toMatchObject([{ title: 'Waterloo', state: 'waiting', message: 'Being added… usually 5–10 minutes' }]);
   });
   it('shows cloud failures for this attempt, ignores older ones, and flags slow requests', () => {
     const k = songKey('ABBA', 'Waterloo');
@@ -28,6 +29,38 @@ describe('reconcile', () => {
     const r = reconcile([pend('spice girls', 'wannabe (remastered)')], [listed], note, T);
     expect(r.appeared.map((a) => a.song.videoId)).toEqual(['abcdefghijk']);
     expect(r.views).toEqual([]);
+  });
+  it('with cloud facts: progress, a failed job, a song made but not on the site, a job that finished without it', () => {
+    const p = pend('Evanescence', 'My Immortal', Date.parse('2026-11-14T22:10:00Z'));
+    const repoSongs = [song('5anLPw0Efmo', 'Evanescence', 'My Immortal')];
+    // The real 2026-11-14 case: committed, then the deploy's tests failed.
+    const stuck = reconcile([p], [], {}, Date.parse('2026-11-14T22:20:00Z'), { runs: [addRunDeployFailed()], repoSongs, inRepoSince: {} });
+    expect(stuck.views[0]).toMatchObject({ state: 'site-failed', progress: { failure: 'site' } });
+    expect(stuck.views[0].message).toMatch(/^Its beat map is ready, but the site didn’t update/);
+    // Made, no failure known, but not live long after: still said.
+    const late = reconcile([p], [], {}, Date.parse('2026-11-14T22:40:00Z'), { runs: null, repoSongs, inRepoSince: { [p.key]: Date.parse('2026-11-14T22:15:00Z') } });
+    expect(late.views[0].state).toBe('site-failed');
+    // The update job failed before the song got in.
+    const q = pend('Evanescence', 'My Immortal', Date.parse('2026-11-14T22:39:50Z'));
+    const bad = reconcile([q], [], {}, Date.parse('2026-11-14T22:46:00Z'), { runs: [addRunUpdateFailed()], repoSongs: [], inRepoSince: {} });
+    expect(bad.views[0]).toMatchObject({ state: 'failed', message: 'The song job failed before it could add this song. Options → Songs says why.' });
+    // A specific cloud status (YouTube blocked) still wins over the general failure.
+    const st = { [q.key]: { state: 'blocked' as const, artist: 'Evanescence', title: 'My Immortal', attempts: 1, lastTried: '2026-11-14T22:44:00Z' } };
+    expect(reconcile([q], [], st, Date.parse('2026-11-14T22:46:00Z'), { runs: [addRunUpdateFailed()], repoSongs: [], inRepoSince: {} }).views[0].state).toBe('retrying');
+    // A good run that finished long ago without this song.
+    const r = pend('ABBA', 'Waterloo', Date.parse('2026-11-14T22:29:00Z'));
+    const without = reconcile([r], [], {}, Date.parse('2026-11-14T22:50:00Z'), { runs: [addRunOk()], repoSongs: [], inRepoSince: {} });
+    expect(without.views[0]).toMatchObject({ state: 'slow', message: 'The song job finished, but this song wasn’t added. Send it again to retry.' });
+    // Waiting with progress: the message carries the stage, percentage and time left.
+    const going = reconcile([r], [], {}, Date.parse('2026-11-14T22:29:30Z'), { runs: [], repoSongs: [], inRepoSince: {} });
+    expect(going.views[0]).toMatchObject({ state: 'waiting', progress: { stage: 'starting' } });
+    expect(going.views[0].message).toMatch(/^Starting the song job: \d+%, about \d+ min left$/);
+    // A run still going isn't "dropped", however long it takes.
+    const slowRun = { ...addRunOk(), status: 'in_progress' as const, conclusion: null, jobs: undefined };
+    expect(reconcile([r], [], {}, Date.parse('2026-11-14T22:55:00Z'), { runs: [slowRun], repoSongs: [], inRepoSince: {} }).views[0]).toMatchObject({
+      state: 'waiting',
+      progress: { eta: 'taking longer than usual' },
+    });
   });
   it('polls politely and busts the CDN cache once per interval', () => {
     expect([0, 9 * 60_000, 11 * 60_000, 31 * 60_000].map(pollDelayMs)).toEqual([30_000, 30_000, 60_000, 300_000]);

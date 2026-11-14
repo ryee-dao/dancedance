@@ -6,7 +6,9 @@
  * own token, so no token is needed in the browser.
  */
 
-export const PASS_HEADER = 'X-Add-Passphrase';
+import { parseRunSummaries, type RunSummary } from '../../cloudflare/add-song-worker/src/runs';
+
+export const PASS_HEADER ='X-Add-Passphrase';
 /** The Worker's request size limit (bytes). */
 export const RELAY_MAX_BODY_BYTES = 2048;
 export const RELAY_MAX_QUEUE = 9;
@@ -211,16 +213,46 @@ export async function relayAdd(
   return { ok: false, code, ...(detail ? { detail } : {}), ...explainRelayError(code, detail) };
 }
 
-/** GET /health: whether the relay is set up and needs a passphrase. Null when unreachable. */
+/**
+ * GET /health: whether the relay is set up, needs a passphrase, and which
+ * version it is (relays from before the field report none: version 1). Null when unreachable.
+ */
 export async function relayHealth(
   relay: string,
   fetchFn: FetchFn = (u, i) => fetch(u, i),
-): Promise<{ ok: boolean; repo: string | null; passphrase: boolean } | null> {
+): Promise<{ ok: boolean; repo: string | null; passphrase: boolean; version: number } | null> {
   try {
     const res = await fetchFn(`${relay}/health`, { method: 'GET', credentials: 'omit', cache: 'no-store' });
     if (!res.ok) return null;
     const b = JSON.parse(await res.text()) as Record<string, unknown>;
-    return { ok: b.ok === true, repo: typeof b.repo === 'string' ? b.repo : null, passphrase: b.passphrase === true };
+    const v = b.version;
+    return {
+      ok: b.ok === true,
+      repo: typeof b.repo === 'string' ? b.repo : null,
+      passphrase: b.passphrase === true,
+      version: typeof v === 'number' && Number.isInteger(v) && v >= 1 && v < 1000 ? v : 1,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * GET /runs (relay version 2+): the latest Beat maps / Deploy site runs, already
+ * reduced (cloudflare/add-song-worker/src/runs.ts). 'unsupported' when the relay
+ * is older and has no such endpoint; null when it couldn't answer.
+ */
+export async function relayRuns(
+  relay: string,
+  fetchFn: FetchFn = (u, i) => fetch(u, i),
+): Promise<RunSummary[] | 'unsupported' | null> {
+  try {
+    const res = await fetchFn(`${relay}/runs`, { method: 'GET', credentials: 'omit', cache: 'no-store' });
+    if (res.status === 404 || res.status === 405) return 'unsupported';
+    if (!res.ok) return null;
+    const b = JSON.parse(await res.text()) as { ok?: unknown; runs?: unknown };
+    if (b?.ok !== true) return null;
+    return parseRunSummaries(b.runs);
   } catch {
     return null;
   }
