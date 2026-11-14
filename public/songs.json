@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-11T22:36:33.524Z",
+  "updatedAt": "2026-11-14T03:24:29.998Z",
   "songs": [
     {
       "videoId": "_Vj092UgKwQ",
@@ -7,7 +7,8 @@
       "artist": "Bee Gees",
       "addedAt": "2026-11-11T04:49:10.285Z",
       "durationSec": 283,
-      "hasMap": true
+      "hasMap": true,
+      "genre": "Pop"
     },
     {
       "videoId": "fw-QRyQcFH8",
@@ -15,7 +16,8 @@
       "artist": "Spice Girls",
       "addedAt": "2026-11-11T05:44:26.169Z",
       "durationSec": 176,
-      "hasMap": true
+      "hasMap": true,
+      "genre": "Pop"
     },
     {
       "videoId": "s8ZXJ5QUYvQ",

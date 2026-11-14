@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ANALYZER_VERSION, analyzeOffline, parse, serialize } from '../../src/core/analysis';
 import { synthClickTrack } from '../../src/core/analysis/synth.testutil';
-import { runBeatmaps, sanitizeMessage, type Deps, type Paths, type RunOptions } from './pipeline';
+import { runBeatmaps, sanitizeMessage, songGenres, type Deps, type Paths, type RunOptions } from './pipeline';
 import { ToolFailure, f32leToFloat32, type DownloadResult } from './youtube';
 import { classifyYtDlpError } from './classify';
 import { renderAnnotations, renderSummary } from './summary';
@@ -294,6 +294,20 @@ describe('runBeatmaps end to end (stubbed YouTube, real analyser)', () => {
     const pauses: number[] = [];
     await runBeatmaps(paths, opts(), deps(okDownload(), { sleep: async (ms) => void pauses.push(ms) }));
     expect(pauses).toEqual([5500, 5500]);
+  });
+});
+
+describe('songGenres', () => {
+  const prev = JSON.stringify({ songs: { aaaaaaaaaaa: { bpm: 100, duration: 200, genre: 'Pop' }, bbbbbbbbbbb: { bpm: 90, duration: 180, genre: 'Rock' }, ccccccccccc: { bpm: 80, duration: 150 } } });
+  const song = (videoId: string, genre?: string) => ({ videoId, title: 't', artist: 'a', addedAt: '2026-01-01T00:00:00Z', durationSec: 1, hasMap: true, ...(genre ? { genre } : {}) });
+  it('keeps genres stored in the previous index and lets songs.json override them', () => {
+    expect([...songGenres([song('bbbbbbbbbbb', 'Dance'), song('ddddddddddd', 'Latin'), song('ccccccccccc')], prev)]).toEqual([
+      ['aaaaaaaaaaa', 'Pop'], ['bbbbbbbbbbb', 'Dance'], ['ddddddddddd', 'Latin'],
+    ]);
+  });
+  it('works without a previous index or with an unreadable one', () => {
+    expect([...songGenres([song('a', 'Pop')])]).toEqual([['a', 'Pop']]);
+    expect(songGenres([], '{oops').size).toBe(0);
   });
 });
 

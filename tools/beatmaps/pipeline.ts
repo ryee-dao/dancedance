@@ -574,7 +574,8 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     const now = nowIso();
     await mkdir(paths.beatmapsDir, { recursive: true });
     // Rebuilt from the map files on disk every run, so it cannot drift from them.
-    const idx = renderIndex(await readText(indexPath), ANALYZER_VERSION, await scanMaps(paths.beatmapsDir), now, songGenres(songs));
+    const prevIndexText = await readText(indexPath);
+    const idx = renderIndex(prevIndexText, ANALYZER_VERSION, await scanMaps(paths.beatmapsDir), now, songGenres(songs, prevIndexText));
     if (await writeIfChanged(indexPath, idx)) written.push(indexPath);
     const st = renderStatus(prevStatusText, status, now);
     if (await writeIfChanged(statusPath, st)) written.push(statusPath);
@@ -641,9 +642,21 @@ async function writeSongFiles(
   }
 }
 
-/** index.json `genre` values: the iTunes genre of every song in songs.json that has one (with or without a map yet). */
-function songGenres(songs: AddedSong[]): Map<string, string> {
-  return new Map(songs.filter((x) => x.genre).map((x) => [x.videoId, x.genre!]));
+/**
+ * index.json `genre` values: the genres already stored in the previous index
+ * (starter-pack songs are not in songs.json), overridden by the iTunes genre of
+ * every song in songs.json that has one (with or without a map yet).
+ */
+export function songGenres(songs: AddedSong[], prevIndexText?: string): Map<string, string> {
+  const out = new Map<string, string>();
+  try {
+    const prev = (JSON.parse(prevIndexText ?? '{}') as { songs?: Record<string, { genre?: unknown }> }).songs;
+    if (prev && typeof prev === 'object') for (const [id, v] of Object.entries(prev)) if (typeof v?.genre === 'string' && v.genre) out.set(id, v.genre);
+  } catch {
+    // no or unreadable previous index
+  }
+  for (const x of songs) if (x.genre) out.set(x.videoId, x.genre);
+  return out;
 }
 
 /** Songs a contributed map may belong to: starter pack, songs.json and the published playlist. */
@@ -688,7 +701,8 @@ async function runContribution(
     if (await writeIfChanged(out, `${serialize(map)}\n`)) written.push(out);
     const now = deps.now().toISOString();
     const maps = await scanMaps(paths.beatmapsDir);
-    const idx = renderIndex(await readText(st.indexPath), ANALYZER_VERSION, maps, now, songGenres(st.songs));
+    const prevIndexText = await readText(st.indexPath);
+    const idx = renderIndex(prevIndexText, ANALYZER_VERSION, maps, now, songGenres(st.songs, prevIndexText));
     if (await writeIfChanged(st.indexPath, idx)) written.push(st.indexPath);
     await writeSongFiles(paths, { ...st, mapIds: new Set(maps.keys()), now, written });
   }

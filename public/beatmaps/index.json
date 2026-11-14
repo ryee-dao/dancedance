@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.2.0",
-  "generatedAt": "2026-11-11T22:36:33.524Z",
+  "generatedAt": "2026-11-14T03:24:29.998Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -108,31 +108,38 @@
   "songs": {
     "-7XnDlYY9qw": {
       "bpm": 158.8,
-      "duration": 236
+      "duration": 236,
+      "genre": "Hip-Hop/Rap"
     },
     "-qZxMY7FZf8": {
       "bpm": 110,
-      "duration": 188
+      "duration": 188,
+      "genre": "Hard Rock"
     },
     "-sVB91NTa4A": {
       "bpm": 100.6,
-      "duration": 234
+      "duration": 234,
+      "genre": "Pop"
     },
     "0Bl8dDFsAQU": {
       "bpm": 120,
-      "duration": 198
+      "duration": 198,
+      "genre": "Pop"
     },
     "0Ui-QzihJGo": {
       "bpm": 113,
-      "duration": 236
+      "duration": 236,
+      "genre": "Soundtrack"
     },
     "1j_XvebOg4c": {
       "bpm": 103,
-      "duration": 208
+      "duration": 208,
+      "genre": "Pop"
     },
     "4-TbQnONe_w": {
       "bpm": 134.3,
-      "duration": 194
+      "duration": 194,
+      "genre": "Alternative"
     },
     "47NhAUUnIjs": {
       "bpm": 108,
@@ -140,191 +147,238 @@
     },
     "4AqjqOqNrjw": {
       "bpm": 168,
-      "duration": 187
+      "duration": 187,
+      "genre": "Alternative"
     },
     "4ZI8AC4AR5A": {
       "bpm": 162,
-      "duration": 214
+      "duration": 214,
+      "genre": "Hard Rock"
     },
     "53tgVlXBZVg": {
       "bpm": 94.9,
-      "duration": 255
+      "duration": 255,
+      "genre": "Alternative"
     },
     "5y_KJAg8bHI": {
       "bpm": 124.1,
-      "duration": 251
+      "duration": 251,
+      "genre": "House"
     },
     "7-x3uD5z1bQ": {
       "bpm": 95.2,
-      "duration": 174
+      "duration": 174,
+      "genre": "Pop"
     },
     "7CTJcHjkq0E": {
       "bpm": 117.2,
-      "duration": 294
+      "duration": 294,
+      "genre": "Pop"
     },
     "7Ya2U8XN_Zw": {
       "bpm": 115,
-      "duration": 271
+      "duration": 271,
+      "genre": "Pop"
     },
     "8YMkAW9TxDM": {
       "bpm": 126,
-      "duration": 245
+      "duration": 245,
+      "genre": "Dance"
     },
     "8xG7mH8i-WE": {
       "bpm": 160,
-      "duration": 218
+      "duration": 218,
+      "genre": "Pop"
     },
     "9lybsz-7TFM": {
       "bpm": 130.6,
-      "duration": 285
+      "duration": 285,
+      "genre": "Pop"
     },
     "AMNNqQpU-i4": {
       "bpm": 120,
-      "duration": 190
+      "duration": 190,
+      "genre": "Alternative"
     },
     "BerNfXSuvJ0": {
       "bpm": 100,
-      "duration": 199
+      "duration": 199,
+      "genre": "Pop"
     },
     "D8j5Fm94_CE": {
       "bpm": 104,
-      "duration": 176
+      "duration": 176,
+      "genre": "Pop"
     },
     "DlSsIKn3HTU": {
       "bpm": 126.4,
-      "duration": 215
+      "duration": 215,
+      "genre": "R&B/Soul"
     },
     "EQzXwcZS-FU": {
       "bpm": 130,
-      "duration": 205
+      "duration": 205,
+      "genre": "Pop"
     },
     "FHo-g6DCTv4": {
       "bpm": 99.3,
-      "duration": 240
+      "duration": 240,
+      "genre": "Soundtrack"
     },
     "GT1lysg-Kw4": {
       "bpm": 120,
-      "duration": 195
+      "duration": 195,
+      "genre": "Pop"
     },
     "GcHHjq8pXec": {
       "bpm": 96.9,
-      "duration": 330
+      "duration": 330,
+      "genre": "Rock"
     },
     "GchEVSx9XEA": {
       "bpm": 128,
-      "duration": 217
+      "duration": 217,
+      "genre": "Pop"
     },
     "GhH4rTap48M": {
       "bpm": 120,
-      "duration": 235
+      "duration": 235,
+      "genre": "Pop"
     },
     "HbzZPpWr4MI": {
       "bpm": 90,
-      "duration": 225
+      "duration": 225,
+      "genre": "Pop"
     },
     "HhwTF97OyX8": {
       "bpm": 79,
-      "duration": 173
+      "duration": 173,
+      "genre": "Pop"
     },
     "IgCHFfDFivc": {
       "bpm": 120,
-      "duration": 207
+      "duration": 207,
+      "genre": "Hard Rock"
     },
     "IhP3J0j9JmY": {
       "bpm": 125,
-      "duration": 203
+      "duration": 203,
+      "genre": "Alternative"
     },
     "JDHoc9qzC5I": {
       "bpm": 120.8,
-      "duration": 216
+      "duration": 216,
+      "genre": "Rock"
     },
     "JTBoLANhyVA": {
       "bpm": 81.5,
-      "duration": 232
+      "duration": 232,
+      "genre": "Pop"
     },
     "LhZ5GXCZtEw": {
       "bpm": 107,
-      "duration": 226
+      "duration": 226,
+      "genre": "Pop"
     },
     "Mr_uHJPUlO8": {
       "bpm": 183.3,
-      "duration": 273
+      "duration": 273,
+      "genre": "Rock"
     },
     "Mzk6KkyxXC8": {
       "bpm": 114,
-      "duration": 198
+      "duration": 198,
+      "genre": "K-Pop"
     },
     "NU61CbO9u6o": {
       "bpm": 134.9,
-      "duration": 163
+      "duration": 163,
+      "genre": "Hard Rock"
     },
     "NaQ083rNUwc": {
       "bpm": 169.3,
-      "duration": 228
+      "duration": 228,
+      "genre": "Pop"
     },
     "OjX4Fpb7LX8": {
       "bpm": 128,
-      "duration": 201
+      "duration": 201,
+      "genre": "Pop"
     },
     "PdKKoOiEgqY": {
       "bpm": 79.1,
-      "duration": 163
+      "duration": 163,
+      "genre": "Alternative"
     },
     "Pmv8aQKO6k0": {
       "bpm": 130.6,
-      "duration": 340
+      "duration": 340,
+      "genre": "Alternative"
     },
     "RwTwd5tAq1U": {
       "bpm": 100.2,
-      "duration": 197
+      "duration": 197,
+      "genre": "Alternative"
     },
     "SRdlnO9gMIY": {
       "bpm": 147,
-      "duration": 194
+      "duration": 194,
+      "genre": "Pop"
     },
     "TIUwLfpufs0": {
       "bpm": 183.4,
-      "duration": 271
+      "duration": 271,
+      "genre": "Alternative"
     },
     "UOQlKBlobRY": {
       "bpm": 90,
-      "duration": 325
+      "duration": 325,
+      "genre": "Alternative"
     },
     "UfM-nM762ec": {
       "bpm": 119,
-      "duration": 219
+      "duration": 219,
+      "genre": "Pop"
     },
     "V1Z586zoeeE": {
       "bpm": 174,
-      "duration": 166
+      "duration": 166,
+      "genre": "Pop"
     },
     "WzsYtW8zyXU": {
       "bpm": 143.7,
-      "duration": 232
+      "duration": 232,
+      "genre": "Pop"
     },
     "XQG89cwhmJU": {
       "bpm": 80,
-      "duration": 232
+      "duration": 232,
+      "genre": "Pop"
     },
     "XZe_pV2rXuk": {
       "bpm": 85,
-      "duration": 203
+      "duration": 203,
+      "genre": "Alternative"
     },
     "YgCYsJicgEU": {
       "bpm": 117,
-      "duration": 186
+      "duration": 186,
+      "genre": "Pop"
     },
     "_Vj092UgKwQ": {
       "bpm": 103.6,
-      "duration": 283
+      "duration": 283,
+      "genre": "Pop"
     },
     "_dK2tDK9grQ": {
       "bpm": 96,
-      "duration": 235
+      "duration": 235,
+      "genre": "Pop"
     },
     "aAizT0NOWkM": {
       "bpm": 117.9,
-      "duration": 199
+      "duration": 199,
+      "genre": "Pop"
     },
     "aF18NehJxos": {
       "bpm": 106,
@@ -333,23 +387,28 @@
     },
     "aeZnkEMIxBM": {
       "bpm": 124.2,
-      "duration": 259
+      "duration": 259,
+      "genre": "Alternative"
     },
     "ahvkAPbPGKw": {
       "bpm": 127,
-      "duration": 240
+      "duration": 240,
+      "genre": "Alternative"
     },
     "b3bkpyNiv8Y": {
       "bpm": 124,
-      "duration": 226
+      "duration": 226,
+      "genre": "Pop"
     },
     "bOq67Poe95w": {
       "bpm": 110,
-      "duration": 167
+      "duration": 167,
+      "genre": "K-Pop"
     },
     "bSwzZoLCoZ0": {
       "bpm": 140,
-      "duration": 164
+      "duration": 164,
+      "genre": "Hard Rock"
     },
     "dWErisOfeyE": {
       "bpm": 100,
@@ -358,107 +417,133 @@
     },
     "egpE0ysQ21Q": {
       "bpm": 105.1,
-      "duration": 335
+      "duration": 335,
+      "genre": "Alternative"
     },
     "fH_OnJk6QqU": {
       "bpm": 164,
-      "duration": 192
+      "duration": 192,
+      "genre": "Alternative"
     },
     "fw-QRyQcFH8": {
       "bpm": 110,
-      "duration": 175
+      "duration": 175,
+      "genre": "Pop"
     },
     "g9j5UzxEhEM": {
       "bpm": 105,
-      "duration": 216
+      "duration": 216,
+      "genre": "Alternative"
     },
     "gx7GyiDZQms": {
       "bpm": 116,
-      "duration": 370
+      "duration": 370,
+      "genre": "Pop"
     },
     "hCLkVrp_4CE": {
       "bpm": 110,
-      "duration": 178
+      "duration": 178,
+      "genre": "Pop"
     },
     "hn6lonvIRsI": {
       "bpm": 130,
-      "duration": 162
+      "duration": 162,
+      "genre": "Pop"
     },
     "hyzGXmPQzEg": {
       "bpm": 75,
-      "duration": 215
+      "duration": 215,
+      "genre": "Alternative"
     },
     "iFaKc8Bvk4Y": {
       "bpm": 122,
-      "duration": 221
+      "duration": 221,
+      "genre": "Alternative"
     },
     "iSF26HsmeRI": {
       "bpm": 132,
-      "duration": 217
+      "duration": 217,
+      "genre": "Pop"
     },
     "i_SsnRdgitA": {
       "bpm": 148.6,
-      "duration": 170
+      "duration": 170,
+      "genre": "Pop"
     },
     "ic8j13piAhQ": {
       "bpm": 85,
-      "duration": 179
+      "duration": 179,
+      "genre": "Pop"
     },
     "id2-K3daNRQ": {
       "bpm": 118.8,
-      "duration": 291
+      "duration": 291,
+      "genre": "Pop"
     },
     "j5n5YzMm5LY": {
       "bpm": 109,
-      "duration": 192
+      "duration": 192,
+      "genre": "Pop"
     },
     "jRr5EasAq84": {
       "bpm": 120.6,
-      "duration": 235
+      "duration": 235,
+      "genre": "Pop"
     },
     "jgh8owCuX78": {
       "bpm": 113,
-      "duration": 227
+      "duration": 227,
+      "genre": "Pop"
     },
     "jz7C2W4m26U": {
       "bpm": 116,
-      "duration": 176
+      "duration": 176,
+      "genre": "Pop"
     },
     "mgT0N3tMP74": {
       "bpm": 122,
-      "duration": 257
+      "duration": 257,
+      "genre": "Pop"
     },
     "mwL1cohnHNE": {
       "bpm": 180,
-      "duration": 224
+      "duration": 224,
+      "genre": "Pop"
     },
     "niR2qJ3mGEE": {
       "bpm": 194,
-      "duration": 175
+      "duration": 175,
+      "genre": "Alternative"
     },
     "nx3-XCtnEqU": {
       "bpm": 128,
-      "duration": 200
+      "duration": 200,
+      "genre": "Alternative"
     },
     "o6Tf-xcVB_o": {
       "bpm": 168.2,
-      "duration": 179
+      "duration": 179,
+      "genre": "Pop"
     },
     "o6ytLPKscrU": {
       "bpm": 171,
-      "duration": 204
+      "duration": 204,
+      "genre": "R&B/Soul"
     },
     "pd1_SxHh2vo": {
       "bpm": 85.4,
-      "duration": 142
+      "duration": 142,
+      "genre": "Pop"
     },
     "qJ_Tw0w3lLA": {
       "bpm": 184,
-      "duration": 302
+      "duration": 302,
+      "genre": "Alternative"
     },
     "qX0cPZT3Lzg": {
       "bpm": 115.3,
-      "duration": 164
+      "duration": 164,
+      "genre": "Alternative"
     },
     "s8ZXJ5QUYvQ": {
       "bpm": 129.2,
@@ -467,19 +552,23 @@
     },
     "sKtl7-_6AjE": {
       "bpm": 95.1,
-      "duration": 156
+      "duration": 156,
+      "genre": "Hard Rock"
     },
     "sLqdRmwY6vc": {
       "bpm": 119.4,
-      "duration": 208
+      "duration": 208,
+      "genre": "Pop"
     },
     "t19wM1gn1Wo": {
       "bpm": 118,
-      "duration": 269
+      "duration": 269,
+      "genre": "Soundtrack"
     },
     "u6lihZAcy4s": {
       "bpm": 118,
-      "duration": 217
+      "duration": 217,
+      "genre": "R&B/Soul"
     },
     "vXlyuCzZc4E": {
       "bpm": 92.4,
@@ -487,35 +576,43 @@
     },
     "w4Xfg_MRH10": {
       "bpm": 96.1,
-      "duration": 280
+      "duration": 280,
+      "genre": "Alternative"
     },
     "w5i-cwLH7s0": {
       "bpm": 130,
-      "duration": 234
+      "duration": 234,
+      "genre": "Alternative"
     },
     "xjiYBGs0TUA": {
       "bpm": 124,
-      "duration": 186
+      "duration": 186,
+      "genre": "Pop"
     },
     "yvvamodXZbw": {
       "bpm": 122,
-      "duration": 203
+      "duration": 203,
+      "genre": "Pop"
     },
     "zIh5AHxh-Ok": {
       "bpm": 129.8,
-      "duration": 264
+      "duration": 264,
+      "genre": "Pop"
     },
     "zLxXqEZ5OoA": {
       "bpm": 146,
-      "duration": 258
+      "duration": 258,
+      "genre": "Hip-Hop/Rap"
     },
     "zd-h01o7LtI": {
       "bpm": 133,
-      "duration": 187
+      "duration": 187,
+      "genre": "Pop"
     },
     "zgEKLhvCCVA": {
       "bpm": 110,
-      "duration": 233
+      "duration": 233,
+      "genre": "Hard Rock"
     }
   }
 }
