@@ -5,7 +5,7 @@
  *
  * The coach's look comes from `deps.getStyle()` (read every frame, so a
  * setting change applies live), overridden by a `?coach=<style>` URL
- * parameter for quick comparisons; default 'classic'.
+ * parameter for quick comparisons; default 'human'.
  *
  * Reads from the play screen's per-frame info: `info.beats: BeatSource | null`
  * (song time; `timeSec` is already shifted by the audio offset) and
@@ -42,7 +42,7 @@ import { createPlayersStage, hudTopFraction, urlPlayers } from './duoStage'; // 
 export interface CoachStageDeps {
   getIntensity(): Intensity;
   isTV: boolean;
-  /** The coach's look (default 'classic'). A `?coach=<style>` URL parameter wins. */
+  /** The coach's look (default 'human'). A `?coach=<style>` URL parameter wins. */
   getStyle?: () => CoachStyle;
   /**
    * Which version of the look dances (default 'female'), read every frame.

@@ -24,7 +24,7 @@ export const COACH_STYLES: readonly CoachStyleInfo[] = [
 /** Style ids in menu order. */
 export const COACH_STYLE_IDS: readonly CoachStyle[] = COACH_STYLES.map((s) => s.id);
 
-export const DEFAULT_COACH_STYLE: CoachStyle = 'classic';
+export const DEFAULT_COACH_STYLE: CoachStyle = 'human';
 
 /** Display info for a style id. */
 export function coachStyleInfo(id: CoachStyle): CoachStyleInfo {

@@ -36,7 +36,7 @@ import { LOOKS } from '../core/coach/humanPainter';
 import { COLORS, FigurePainter, drawCoachPreview, StageRenderer2D, type StripInfo } from '../core/coach/renderer';
 import { sharedSpriteCache } from '../core/coach/sprites';
 import { CH, J, createPose, createSkeleton, solveSkeleton, type Skeleton } from '../core/coach/skeleton';
-import { COACH_STYLE_IDS, DEFAULT_COACH_BUILD, coachStyleInfo, parseCoachBuild, parseCoachStyle, VIEW, viewFromParams, type CoachStyle } from '../core/coach/styles';
+import { COACH_STYLE_IDS, DEFAULT_COACH_BUILD, DEFAULT_COACH_STYLE, coachStyleInfo, parseCoachBuild, parseCoachStyle, VIEW, viewFromParams, type CoachStyle } from '../core/coach/styles';
 import { createCoachStage } from '../ui/coachStage';
 import type { FrameInfo } from '../ui/play';
 import { SECTION_PLAN, SYNTH_MAX_BPM, SYNTH_MIN_BPM, SimSource, type SimMode } from './synth';
@@ -50,7 +50,7 @@ let bpm = clampBpm(Number(q.get('bpm') ?? 120));
 let level = (q.get('level') ?? 'cardio') as Intensity;
 const showUi = q.get('ui') !== '0';
 const compare = q.get('compare') === '1';
-let style: CoachStyle = parseCoachStyle(q.get('style')) ?? parseCoachStyle(q.get('coach')) ?? 'classic';
+let style: CoachStyle = parseCoachStyle(q.get('style')) ?? parseCoachStyle(q.get('coach')) ?? DEFAULT_COACH_STYLE;
 // The coach stage honours ?coach= as a hard override; the bench owns the style instead.
 if (q.has('coach')) {
   q.delete('coach');
