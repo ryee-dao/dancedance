@@ -163,6 +163,8 @@ export interface Move {
   mirrorKeys: readonly MoveKey[];
   /** Plan-time piece of a move (its first / last beats, or a pause on its first pose), shown under the move's name (cards.ts). */
   part?: boolean;
+  /** For a part of a move: the whole move it was cut from (it shares that move's speed limit, speed.ts). */
+  whole?: Move;
 }
 
 /**

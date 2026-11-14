@@ -10,9 +10,18 @@
  *   ONE move (alternating sides, units returning to centre); a unit may
  *   instead play the signature combo. Every chorus / drop opens with the
  *   song's signature combo (one 8-beat sequence, shown as one move). The
- *   start warms up with a gentle move, the outro cools down. Above ~150 BPM
- *   every move is performed at half time (1 move beat = 2 song beats);
- *   phrases, holds and units double so they stay musically aligned.
+ *   start warms up with a gentle move, the outro cools down.
+ *
+ * Tempo feasibility (speed.ts): every move has a speed limit derived from its
+ * own keyframes. On a song faster than a move's limit (at the level's share
+ * of it), THAT move is performed at half time (1 move beat = 2 song beats,
+ * MoveInstance.half); a move too fast even at half time, or a jump that
+ * would float at half time, is not used. Simple on-the-beat moves stay full
+ * time, so fast songs still feel fast. The tempo weights use the tempo a
+ * move is actually danced at. A half-time move's units are twice as long, so
+ * its repeats still land on bar and phrase lines. Above HALF_TIME_BPM the
+ * COUNT is halved instead (Routine.half: phrases of 16 bars, units doubled),
+ * whatever each move does.
  *
  * Assembly, in order (generateRoutine):
  *   1. plan the whole song: phrases, holds, and each hold's slot in the
@@ -40,6 +49,14 @@
  * Difficulty, impact and tempo are soft weights (weights.ts, levelFactor):
  * they multiply with the style and energy lean, never exclude.
  *
+ * Character (the song's calm, from the audio traits; songStyle.ts): a calm
+ * song favours smooth, flowing, low-impact moves, loses percussive accents
+ * and jumps (weights.ts calmFactor), holds moves longer, and its showpiece
+ * genre sets close (genres.ts). The level still sets how hard the player
+ * works: Hard on a ballad keeps big, deep, sustained moves (no jumps), Easy
+ * on a banger keeps small moves on the beat (busyFactor, a stricter speed
+ * limit).
+ *
  * Tiers (genres.ts): genre-exclusive moves are used only when the song's
  * style opens their genre, as the kit's accents (GENRE_MIN..GENRE_MAX of the
  * danced time); global moves everywhere. Signature nods open their own
@@ -60,20 +77,25 @@
 
 import type { BeatMap, SectionType } from '../analysis/beatmap';
 import type { Pose } from '../coach/skeleton';
-import { FAMILIES } from './families';
-import { FAMILY_GENRE, THEME_GENRES, songGenres, type Genre } from './genres';
+import { genreOpenness as styleOpenness, songGenres, type Genre } from './genres';
 import { IDLE_MOVE, MOVES, keysOf, type Level, type Move } from './moves';
 import { getPool, warmPool } from './pool';
 import { BALANCED_POP, styleKey, type SongStyle } from './songStyle';
-import { difficultyFactor, impactFactor, moveVigour, moveWeights, poseStepCost, tempoFactor } from './weights';
+import { busyFactor, calmFactor, difficultyFactor, impactFactor, moveVigour, moveWeights, poseStepCost, tempoFactor } from './weights';
+import { moveTempoMode, readsAtHalf, type TempoMode } from './speed';
 import { enforceCards, partOf, pauseOf, renamed, tileMove } from './cards';
 import { smoothSteps } from './flow';
 
 export { moveVigour, moveWeights, tempoFactor } from './weights';
+export { moveSpeed, moveTempoMode, speedLimit, type TempoMode } from './speed';
 
 export type Intensity = 'chill' | 'cardio' | 'sweaty';
 
-/** Above this tempo, moves are performed at half time. */
+/**
+ * Above this tempo the routine COUNTS in half time (Routine.half: phrases of
+ * 16 bars, units doubled). Whether a move is danced at half time is its own
+ * matter (speed.ts moveTempoMode, MoveInstance.half).
+ */
 export const HALF_TIME_BPM = 150;
 
 export interface MoveInstance {
@@ -83,6 +105,7 @@ export interface MoveInstance {
   start: number;
   /** Song beats covered (move.beats, doubled at half time). */
   span: number;
+  /** This move is danced at half time (1 move beat = 2 song beats): its tempo is above its speed limit. */
   half: boolean;
   /** Floor x origin at the start (travelling moves shift it). */
   origin: number;
@@ -112,7 +135,10 @@ export interface SigStep {
 export interface Routine {
   instances: MoveInstance[];
   signature: readonly SigStep[];
+  /** The routine counts in half time (phrases and units doubled; HALF_TIME_BPM). Each instance has its own `half`. */
   half: boolean;
+  /** Tempo the routine was planned for (the map's), when known. */
+  bpm?: number;
   /** Number of beats covered (instances partition [0, beats)). */
   beats: number;
   /** Beat times (s) of the map, when known (wall-time checks). */
@@ -187,17 +213,11 @@ export function genreFits(m: Move, open: ReadonlySet<Genre>): boolean {
   return !m.genre || open.has(m.genre);
 }
 
-/** How strongly a song opens each of its genres (theme genres fully, family genres by family weight). */
+/** How strongly a song opens each of its genres (genres.ts genreOpenness: themes, families, sub-styles, calm). */
 function genreOpenness(style: SongStyle, open: ReadonlySet<Genre>): Map<Genre, number> {
+  const all = styleOpenness(style);
   const out = new Map<Genre, number>();
-  let max = 0;
-  for (const f of FAMILIES) max = Math.max(max, style.families[f] ?? 0);
-  for (const g of open) {
-    let w = 0;
-    for (const t of style.themes) if (THEME_GENRES[t] === g) w = 1;
-    for (const f of FAMILIES) if (FAMILY_GENRE[f] === g && max > 0) w = Math.max(w, (style.families[f] ?? 0) / max);
-    out.set(g, w || 1);
-  }
+  for (const g of open) out.set(g, all.get(g) ?? 1);
   return out;
 }
 
@@ -461,6 +481,8 @@ const HOLD_ENERGY_W = 1.8;
 /** ... and below HOLD_CALM_BELOW (so do quiet, gentle ones). */
 const HOLD_CALM_W = 2;
 const HOLD_CALM_BELOW = 0.35;
+/** Extra log-odds per unit of the song's calm above 0.5 (x2): a ballad holds its moves longer. */
+const HOLD_CALM_SONG_W = 1.6;
 /** Extra log-odds when the block starts with a drop. */
 const HOLD_DROP = 1.2;
 /** Extra log-odds by section type. */
@@ -672,6 +694,10 @@ export class Choreographer {
   private openness: Map<Genre, number>;
   /** Display name of the song combo (one card). */
   private comboName = '';
+  /** How each move is danced on this song at this level (speed.ts), cached. */
+  private modes = new Map<Move, TempoMode>();
+  /** Song beats per move beat of the song combo (half time when any of its moves needs it). */
+  private sigMult = 1;
 
   constructor(seedKey: string, intensity: Intensity, half: boolean, opts: RoutineOpts = {}, bpm?: number) {
     this.intensity = intensity;
@@ -709,7 +735,7 @@ export class Choreographer {
       }
       // Easy keeps to simple variations (base moves stay soft-weighted).
       if (isVar[i] && intensity === 'chill' && m.difficulty > 1) continue;
-      this.base[i] = staticWeight(m, this.style, bpm, none);
+      this.base[i] = staticWeight(m, this.style, bpm, none, intensity);
       const w = this.base[i] * this.levelF[i];
       if (isVar[i]) mv += w;
       else mb += w;
@@ -725,16 +751,41 @@ export class Choreographer {
       if (list) list.push(m);
       else this.varsByBase.set(m.base, [m]);
     }
-    for (const g of open) if (DANCE_MOVES.some((m) => m.genre === g && levelFactor(m, intensity) > 0)) this.genreOk.push(g);
+    for (const g of open) if (moves.some((m, i) => m.genre === g && this.base[i] > 0 && this.levelF[i] > 0)) this.genreOk.push(g);
     for (const m of DANCE_MOVES) {
       if (m.beats > 2 || m.travel !== 0 || m.genre || levelFactor(m, intensity) <= 0) continue;
+      const w = staticWeight(m, this.style, bpm, none, intensity) * levelFactor(m, intensity) * (m.beats === 1 ? 2 : 1);
+      if (!(w > 0)) continue;
       this.gapMoves.push(m);
-      this.gapW.push(staticWeight(m, this.style, bpm, none) * levelFactor(m, intensity) * (m.beats === 1 ? 2 : 1));
+      this.gapW.push(w);
     }
     // The chorus combo keeps the stable seed (same in 'fresh' mode).
     const genreK = genreScale(this.style, open, intensity, bpm);
     this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}|${sk}`)), intensity, this.style, open, bpm, genreK);
     this.comboName = comboName(this.signature);
+    this.sigMult = this.signature.some((x) => this.mode(x.move) === 'half') ? 2 : 1;
+  }
+
+  /** How a move is danced on this song at this level: 'full', 'half' or 'out' (speed.ts moveTempoMode; cached). */
+  mode(m: Move): TempoMode {
+    let x = this.modes.get(m);
+    if (!x) this.modes.set(m, (x = moveTempoMode(m, this.bpm, this.intensity)));
+    return x;
+  }
+
+  /** Song beats per move beat of a move here (2 at half time). */
+  multOf(m: Move): number {
+    return this.mode(m) === 'half' ? 2 : 1;
+  }
+
+  /** Bars per unit of the song combo (twice as many when it is danced at half time). */
+  private sigUnitBars(): number {
+    return this.sigMult === 2 && !this.half ? this.unitBars * 2 : this.unitBars;
+  }
+
+  /** Bars per unit of a move: a half-time move gets twice as many (its repeats are twice as long), unless the count is already halved. */
+  private unitBarsOf(m: Move): number {
+    return this.multOf(m) === 2 && !this.half ? this.unitBars * 2 : this.unitBars;
   }
 
   /** Whether the song combo is the song's curated signature nod (outside the tier accounting). */
@@ -767,7 +818,7 @@ export class Choreographer {
     }
     let from = 0;
     if (o.signature && this.signature.length) {
-      let take = Math.min(bars.length, Math.max(1, o.sigUnits ?? (this.intensity === 'chill' ? 1 : 2)) * unitBars);
+      let take = Math.min(bars.length, Math.max(1, o.sigUnits ?? (this.intensity === 'chill' ? 1 : 2)) * this.sigUnitBars());
       if (bars.length - take < unitBars) take = bars.length;
       items.push({ kind: 'sig', bars: bars.slice(0, take), section: o.section, phraseNo });
       from = take;
@@ -948,7 +999,7 @@ export class Choreographer {
   /** Dance one planned item. */
   emit(out: MoveInstance[], it: Item): void {
     if (it.kind === 'sig') {
-      for (const ub of this.units(it.bars)) this.fillSig(out, ub[0].start, barsEnd(ub), it.section, it.phraseNo);
+      for (const ub of this.units(it.bars, this.sigUnitBars())) this.fillSig(out, ub[0].start, barsEnd(ub), it.section, it.phraseNo);
       return;
     }
     const move = it.slot ? this.moveFor(it) : this.choose(it.o, null, it.target);
@@ -1097,7 +1148,7 @@ export class Choreographer {
     }
     for (const v of this.varsByBase.get(m.base) ?? []) if (v !== m && this.allowed(v, o)) list.push(v);
     const min = 0.5 * levelFactor(m, this.intensity);
-    return list.filter((v) => v.genre === m.genre && levelFactor(v, this.intensity) >= min);
+    return list.filter((v) => v.genre === m.genre && levelFactor(v, this.intensity) >= min && this.mode(v) !== 'out');
   }
 
   /** One variation of `m` (evenly), or null. */
@@ -1107,8 +1158,7 @@ export class Choreographer {
   }
 
   /** Bars cut into units of `unitBars` (a short tail joins the last unit). */
-  private units(bars: readonly Bar[]): Bar[][] {
-    const unitBars = this.unitBars;
+  private units(bars: readonly Bar[], unitBars = this.unitBars): Bar[][] {
     const units: Bar[][] = [];
     for (let i = 0; i < bars.length; i += unitBars) units.push(bars.slice(i, i + unitBars) as Bar[]);
     if (units.length > 1 && units[units.length - 1].length < unitBars / 2 + 0.5 && unitBars > 1) {
@@ -1154,7 +1204,8 @@ export class Choreographer {
           HOLD_ENERGY_W * Math.max(0, tv - 0.5) +
           HOLD_CALM_W * Math.max(0, HOLD_CALM_BELOW - tv) +
           (feels[lo].drop ? HOLD_DROP : 0) +
-          HOLD_SECTION[o.section] -
+          HOLD_SECTION[o.section] +
+          HOLD_CALM_SONG_W * Math.max(0, (this.style.calm ?? 0.5) - 0.5) * 2 -
           HOLD_CONTRAST_W * Math.max(0, contrast - 0.15);
         if (this.planRng() < 1 / (1 + Math.exp(-x))) {
           out.push({ a: lo, len: hi - lo });
@@ -1190,7 +1241,7 @@ export class Choreographer {
    * move's own name (same card).
    */
   private emitHold(out: MoveInstance[], bars: readonly Bar[], move: Move, o: PhraseOpts, phraseNo: number, phraseEnd: boolean): void {
-    const units = this.units(bars);
+    const units = this.units(bars, this.unitBarsOf(move));
     const n = units.length;
     const calm = !!(o.warmup || o.cooldown);
     let second = move;
@@ -1206,7 +1257,9 @@ export class Choreographer {
     for (let u = 0; u < n; u++) {
       const m = u >= Math.ceil(n / 2) ? second : move;
       const flourish = phraseEnd && u === n - 1 && n > 1 ? this.ornament(m, ['spin', 'hit4', 'clap4'], FLOURISH_P[this.intensity]) : null;
-      this.fillUnit(out, units[u], m, o.section, phraseNo, flourish, side && m.mirror);
+      // A unit holding an odd number of repeats (a half-time move) hands the next unit the other side.
+      const last = this.fillUnit(out, units[u], m, o.section, phraseNo, flourish, side && m.mirror);
+      if (m.mirror && last !== null) side = !last;
     }
   }
 
@@ -1217,17 +1270,18 @@ export class Choreographer {
    */
   filler(out: MoveInstance[], start: number, end: number, section: SectionType): void {
     let b = start;
-    const mult = this.half ? 2 : 1;
     const w = this.gapMoves.map((m, i) => (m.level === 'low' ? this.gapW[i] : 0));
     const g = pickWeighted(this.rng, this.gapMoves, w);
     if (g) {
-      for (const i of tileMove(g, start, end, mult, [], { half: this.half, section, sig: false, phrase: -1, fill: true })) out.push(i);
+      const mult = this.multOf(g);
+      for (const i of tileMove(g, start, end, mult, [], { half: mult === 2, section, sig: false, phrase: -1, fill: true })) out.push(i);
       b = end;
     }
     for (; b < end; b++) out.push({ move: IDLE_MOVE, mirror: false, start: b, span: 1, half: false, origin: 0, section, sig: false, unitStart: false, phrase: -1, fill: true });
   }
 
   private allowed(m: Move, o: PhraseOpts): boolean {
+    if (this.mode(m) === 'out') return false;
     if (o.cooldown) return COOLDOWN_MOVES.includes(m) && (m.cooldown || levelFactor(m, this.intensity) > 0);
     if (m.cooldown || m.idle) return false;
     if (this.outside.has(m)) return false;
@@ -1243,7 +1297,7 @@ export class Choreographer {
     const prev = this.lastMove;
     const prevPose = prev ? lastKeyPose(prev, this.lastMirror) : null;
     const weights = pool.map((m, i) => {
-      if (m === avoid || m === prev) return 0;
+      if (m === avoid || m === prev || this.mode(m) === 'out') return 0;
       let w = o.cooldown ? (m.cooldown || levelFactor(m, this.intensity) > 0 ? 1 : 0) : lw[m.level] * levelFactor(m, this.intensity) * this.base[i];
       if (w <= 0) return 0;
       if (!o.cooldown && (this.outside.has(m) || m.genre)) return 0;
@@ -1258,24 +1312,30 @@ export class Choreographer {
       if (o.cooldown) this.kit.add(picked);
       return picked;
     }
-    const fallback = pool.filter((m) => m !== prev && m !== avoid && !this.outside.has(m) && (o.cooldown || levelFactor(m, this.intensity) > 0));
-    return fallback.length ? fallback[Math.floor(this.rng() * fallback.length)] : pool[0];
+    const fallback = pool.filter((m) => m !== prev && m !== avoid && !this.outside.has(m) && this.mode(m) !== 'out' && (o.cooldown || levelFactor(m, this.intensity) > 0));
+    return fallback.length ? fallback[Math.floor(this.rng() * fallback.length)] : IDLE_MOVE;
   }
 
   /** An ornamented version of `m` of one of the given types, or null. */
   private ornament(m: Move, types: readonly string[], p: number): Move | null {
     if (p <= 0 || this.rng() >= p) return null;
     const min = 0.5 * levelFactor(m, this.intensity);
-    const list = (this.ornaments?.get(m.id) ?? []).filter((v) => types.includes(v.id.slice(v.id.lastIndexOf('~') + 1)) && levelFactor(v, this.intensity) >= min && levelFactor(v, this.intensity) > 0);
+    const list = (this.ornaments?.get(m.id) ?? []).filter(
+      (v) => types.includes(v.id.slice(v.id.lastIndexOf('~') + 1)) && levelFactor(v, this.intensity) >= min && levelFactor(v, this.intensity) > 0 && this.mode(v) !== 'out' && this.multOf(v) === this.multOf(m),
+    );
     return list.length ? list[Math.floor(this.rng() * list.length)] : null;
   }
 
-  /** One unit of a hold: the move repeated (tileMove), its last 4 move beats a flourish when given (same card name). */
-  private fillUnit(out: MoveInstance[], bars: readonly Bar[], m: Move, section: SectionType, phrase: number, flourish: Move | null, mirror = false): void {
-    const mult = this.half ? 2 : 1;
+  /**
+   * One unit of a hold: the move repeated (tileMove, at its own speed), its
+   * last 4 move beats a flourish when given (same card name). Returns the side
+   * of its last whole repeat (null: none).
+   */
+  private fillUnit(out: MoveInstance[], bars: readonly Bar[], m: Move, section: SectionType, phrase: number, flourish: Move | null, mirror = false): boolean | null {
+    const mult = this.multOf(m);
     const start = bars[0].start;
     const end = barsEnd(bars);
-    const tiles = tileMove(m, start, end, mult, bars.map((b) => b.start), { half: this.half, section, sig: false, phrase }, { unitStart: true, mirror });
+    const tiles = tileMove(m, start, end, mult, bars.map((b) => b.start), { half: mult === 2, section, sig: false, phrase }, { unitStart: true, mirror });
     // Phrase-end flourish: replaces the last 4 move beats when they are whole repeats of an in-place move.
     if (flourish && m.travel === 0 && (4 / m.beats) % 1 === 0) {
       const fl = 4 / m.beats;
@@ -1292,17 +1352,20 @@ export class Choreographer {
       this.lastMirror = lastI.mirror;
       if (lastI.move.part) this.lastMove = m;
     }
+    let side: boolean | null = null;
+    for (const i of tiles) if (i.move === m) side = i.mirror;
+    return side;
   }
 
   /** The song combo over [start, end): whole combos while they fit, then its steps in order, the last one in part; one card. */
   private fillSig(out: MoveInstance[], start: number, end: number, section: SectionType, phrase: number): void {
-    const mult = this.half ? 2 : 1;
+    const mult = this.sigMult;
     let b = start;
     let origin = 0;
     let first = true;
     const name = this.comboName;
     const push = (move: Move, mirror: boolean, span: number) => {
-      out.push({ move: renamed(move, name), mirror, start: b, span, half: this.half, origin, section, sig: true, unitStart: first, phrase });
+      out.push({ move: renamed(move, name), mirror, start: b, span, half: mult === 2, origin, section, sig: true, unitStart: first, phrase });
       first = false;
       b += span;
       this.lastMove = move;
@@ -1402,7 +1465,7 @@ function genreScale(style: SongStyle, open: ReadonlySet<Genre>, intensity: Inten
   let global = 0;
   for (const m of DANCE_MOVES) {
     if (!genreFits(m, open)) continue;
-    const w = styleFactor(m, style) * tempoFactor(m, bpm) * levelFactor(m, intensity);
+    const w = staticWeight(m, style, bpm, new Map(), intensity) * levelFactor(m, intensity);
     if (m.genre) mass.set(m.genre, (mass.get(m.genre) ?? 0) + w);
     else global += w;
   }
@@ -1419,9 +1482,21 @@ function genreScale(style: SongStyle, open: ReadonlySet<Genre>, intensity: Inten
   return out;
 }
 
-/** A move's static weight for a song: style x tempo x its genre set's scale. */
-function staticWeight(m: Move, style: SongStyle, bpm: number | undefined, genreK: ReadonlyMap<Genre, number>): number {
-  return styleFactor(m, style) * tempoFactor(m, bpm) * (m.genre ? (genreK.get(m.genre) ?? 1) : 1);
+/** The tempo a move is danced at on a song of `bpm` (half of it at half time); undefined when the tempo is unknown. */
+export function dancedBpm(m: Move, bpm: number | undefined, intensity: Intensity): number | undefined {
+  if (!bpm || !Number.isFinite(bpm)) return undefined;
+  return moveTempoMode(m, bpm, intensity) === 'half' ? bpm / 2 : bpm;
+}
+
+/**
+ * A move's static weight for a song: style x tempo (at the tempo it is
+ * danced at) x the song's character (calm) x Easy's on-the-beat lean x its
+ * genre set's scale; 0 when it can't be danced at this tempo (speed.ts).
+ */
+function staticWeight(m: Move, style: SongStyle, bpm: number | undefined, genreK: ReadonlyMap<Genre, number>, intensity: Intensity = 'cardio'): number {
+  if (moveTempoMode(m, bpm, intensity) === 'out') return 0;
+  const eff = dancedBpm(m, bpm, intensity);
+  return styleFactor(m, style) * tempoFactor(m, eff) * calmFactor(m, style.calm, intensity) * busyFactor(m, eff, intensity) * (m.genre ? (genreK.get(m.genre) ?? 1) : 1);
 }
 
 /**
@@ -1435,15 +1510,19 @@ function pickSignature(
   rng: () => number, intensity: Intensity, style: SongStyle = BALANCED_POP, open: ReadonlySet<Genre> = styleGenres(style),
   bpm?: number, genreK: ReadonlyMap<Genre, number> = new Map(),
 ): SigStep[] {
-  const fits = (m: Move) => m.beats <= 4 && levelFactor(m, intensity) > 0 && !(m.travel !== 0 && m.beats === 4);
+  const mode = (m: Move) => moveTempoMode(m, bpm, intensity);
+  const fits = (m: Move) => m.beats <= 4 && levelFactor(m, intensity) > 0 && !(m.travel !== 0 && m.beats === 4) && mode(m) !== 'out';
   const pool = DANCE_MOVES.filter((m) => fits(m) && genreFits(m, open) && (m.level !== 'low' || intensity === 'chill'));
   const weight = (m: Move) =>
-    (m.level === 'high' ? (intensity === 'chill' ? 0.3 : intensity === 'cardio' ? 1 : 1.8) : 1.2) * (m.beats === 2 ? 2 : 1) * levelFactor(m, intensity) * staticWeight(m, style, bpm, genreK);
+    (m.level === 'high' ? (intensity === 'chill' ? 0.3 : intensity === 'cardio' ? 1 : 1.8) : 1.2) * (m.beats === 2 ? 2 : 1) * levelFactor(m, intensity) * staticWeight(m, style, bpm, genreK, intensity);
+  // The combo is danced at one speed: half time when either move needs it, so a full-time move in it must read at half time.
+  const together = (a: Move, b: Move) => mode(a) === mode(b) || (mode(a) === 'full' ? readsAtHalf(a, bpm ?? 0) : readsAtHalf(b, bpm ?? 0));
   const nods = (style.signature ?? []).map((id) => DANCE_MOVES.find((m) => m.id === id)).filter((m): m is Move => !!m && fits(m));
   const a = nods[0] ?? pickWeighted(rng, pool, pool.map(weight));
   if (!a) return [];
-  const rest = pool.filter((m) => m !== a);
-  const b = (nods[1] && nods[1] !== a ? nods[1] : null) ?? pickWeighted(rng, rest, rest.map((m) => weight(m) * (1 - 0.7 * partsOverlap(a, m)))) ?? rest[0];
+  const rest = pool.filter((m) => m !== a && together(a, m));
+  const nb = nods[1] && nods[1] !== a && together(a, nods[1]) ? nods[1] : null;
+  const b = nb ?? pickWeighted(rng, rest, rest.map((m) => weight(m) * (1 - 0.7 * partsOverlap(a, m)) * (mode(m) === mode(a) ? 1 : 0.3))) ?? rest[0] ?? a;
   const steps: SigStep[] = [];
   for (const m of [a, b]) {
     const reps = 4 / m.beats;
@@ -1502,6 +1581,7 @@ function medianInterval(beats: readonly number[]): number {
   return d[d.length >> 1];
 }
 
+/** Whether a tempo counts in half time (phrases and units doubled; HALF_TIME_BPM). Moves decide their own speed (speed.ts). */
 export function isHalfTime(bpm: number): boolean {
   return bpm > HALF_TIME_BPM;
 }
@@ -1657,16 +1737,17 @@ export function generateRoutine(map: BeatMap, intensity: Intensity, opts: Routin
   // Bad data (absurd tempo, non-increasing or non-finite beats): no routine;
   // the conductor dances the idle groove instead.
   const N = isUsableBeatMap(map) ? map.beats.length : 0;
-  const half = isHalfTime(mapTempo(map));
-  const ch = new Choreographer(map.videoId, intensity, half, opts, mapTempo(map));
+  const bpm = mapTempo(map);
+  const half = isHalfTime(bpm);
+  const ch = new Choreographer(map.videoId, intensity, half, opts, bpm);
   const out: MoveInstance[] = [];
-  if (N === 0) return { instances: out, signature: ch.signature, half, beats: 0 };
+  if (N === 0) return { instances: out, signature: ch.signature, half, bpm, beats: 0 };
 
   const { pickup, bars } = buildBars(N, map.downbeats);
   const firstType = map.sections[0]?.type ?? 'intro';
   if (bars.length === 0) {
     if (pickup > 0) ch.filler(out, 0, pickup, firstType);
-    return { instances: out, signature: ch.signature, half, beats: N };
+    return { instances: out, signature: ch.signature, half, bpm, beats: N };
   }
 
   const runs = sectionRuns(map, bars);
@@ -1766,7 +1847,7 @@ export function generateRoutine(map: BeatMap, intensity: Intensity, opts: Routin
   const instances = enforceCards(out, { times: map.beats, bars: bars.map((b) => b.start), drops, mult: half ? 2 : 1 });
   // 5. No dash across the floor from one move into the next.
   smoothSteps(instances, map.beats);
-  return { instances, signature: ch.signature, half, beats: N, times: map.beats };
+  return { instances, signature: ch.signature, half, bpm, beats: N, times: map.beats };
 }
 
 // ---------------------------------------------------------------------------

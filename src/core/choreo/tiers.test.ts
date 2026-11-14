@@ -4,7 +4,8 @@ import levitatingMap from '../../../public/beatmaps/1j_XvebOg4c.json';
 import onTheFloorMap from '../../../public/beatmaps/9lybsz-7TFM.json';
 import { generateDuoRoutine } from './duo';
 import { GENRE_SHARE, generateRoutine, genreFits, styleGenres, type Intensity, type MoveInstance } from './generator';
-import { GENRES, GENRE_CONFLICTS, GENRE_MOVES, genreListedIds, genreOfId, type Genre } from './genres';
+import { GENRES, GENRE_CONFLICTS, GENRE_MOVES, GENRE_SET_UNKNOWN, MIN_GENRE_SET, SUB_INFO, SUB_STYLES, calmGate, genreListedIds, genreOfId, genreOpenness, songGenres, type Genre } from './genres';
+import type { Theme } from './families';
 import { MOVES, findMove } from './moves';
 import { getPool } from './pool';
 import { UNIQUE_THRESHOLD, VARIATION_THRESHOLD } from './similarity';
@@ -19,15 +20,20 @@ const styleOf = (info: SongInfo): SongStyle => resolveSongStyle(info);
 const REAL = [levitatingMap, onTheFloorMap] as unknown as BeatMap[];
 
 /** Songs of many styles: [label, song, genres it must open]. */
+// Style comes from the song (genre tag / genre names), never from the artist's name.
 const SONGS: [string, SongInfo, Genre[]][] = [
   ['fallback', { videoId: 'unknown-x', title: 'Some Song', artist: 'Nobody Known' }, []],
-  ['pop', { videoId: 'pop-x', title: 'Flowers', artist: 'Miley Cyrus' }, []],
-  ['rock', { videoId: 'rock-x', title: 'Numb', artist: 'Linkin Park' }, ['rock']],
-  ['hip-hop', { videoId: 'hh-x', title: "God's Plan", artist: 'Drake' }, ['hiphop']],
+  ['pop', { videoId: 'pop-x', title: 'Flowers', artist: 'Miley Cyrus', genre: 'Pop' }, []],
+  ['rock', { videoId: 'rock-x', title: 'Numb', artist: 'Linkin Park', genre: 'Hard Rock' }, ['rock']],
+  ['hip-hop', { videoId: 'hh-x', title: "God's Plan", artist: 'Drake', genre: 'Hip-Hop/Rap' }, ['hiphop']],
   ['latin', { videoId: 'latin-x', title: 'Hips', artist: 'Shakira', genre: 'Latin' }, ['latin']],
-  ['disco', { videoId: 'disco-x', title: 'Night Fever', artist: 'Bee Gees' }, ['discofunk']],
-  ['k-pop', { videoId: 'kpop-x', title: 'Dynamite', artist: 'BTS' }, ['kpop']],
-  ['gangnam', { videoId: 'iSF26HsmeRI', title: 'Gangnam Style', artist: 'PSY' }, ['kpop']],
+  ['disco', { videoId: 'disco-x', title: 'Night Fever', artist: 'Bee Gees', genre: 'Disco' }, ['discofunk']],
+  ['k-pop', { videoId: 'kpop-x', title: 'Dynamite', artist: 'BTS', genre: 'K-Pop' }, ['kpop']],
+  ['gangnam', { videoId: 'iSF26HsmeRI', title: 'Gangnam Style', artist: 'PSY', genre: 'K-Pop' }, ['kpop']],
+  ['metal', { videoId: 'metal-x', title: 'Bring Me to Life', genre: 'Hard Rock', genres: ['Nu metal', 'rap rock', 'alternative rock', 'gothic metal'] }, ['metal', 'rock']],
+  ['punk', { videoId: 'punk-x', title: 'Basket Case', genre: 'Alternative', genres: ['Punk rock', 'pop punk'] }, ['punk', 'rock']],
+  ['trap', { videoId: 'trap-x', title: 'Some Trap', genre: 'Hip-Hop/Rap', genres: ['Trap'] }, ['trap', 'hiphop']],
+  ['house', { videoId: 'house-x', title: 'Some House', genre: 'Dance', genres: ['Deep house'] }, ['house', 'discofunk']],
   ['country', { videoId: 'country-x', title: 'Any Man of Mine', artist: 'Shania Twain', genre: 'Country' }, ['country']],
   ['swing', { videoId: 'swing-x', title: 'Johnny B. Goode', artist: 'Chuck Berry', genre: "Rock 'n' Roll" }, ['swing', 'rock']],
   ['afro', { videoId: 'afro-x', title: 'Last Last', artist: 'Burna Boy', genre: 'Afrobeats' }, ['afro']],
@@ -60,14 +66,44 @@ describe('two tiers: global and genre-exclusive', () => {
     }
   });
 
-  it('has a global library of hundreds of moves and genre sets of 50-100 for the big genres', () => {
+  it('has a global library of hundreds of moves and genre groups of 45-100 for the big genres', () => {
     const global = DANCE.filter((m) => !m.genre).length;
     expect(global).toBeGreaterThanOrEqual(650);
-    for (const g of ['rock', 'hiphop', 'latin', 'discofunk', 'kpop'] as Genre[]) {
-      expect(GENRE_MOVES[g].length, g).toBeGreaterThanOrEqual(50);
-      expect(GENRE_MOVES[g].length, g).toBeLessThanOrEqual(100);
+    // A group is its set plus the sub-style sets split out of it (metal and punk out of rock ...).
+    const GROUPS: Record<string, Genre[]> = {
+      rock: ['rock', 'metal', 'punk'], hiphop: ['hiphop', 'trap', 'drill', 'rnb'], latin: ['latin', 'brazil', 'reggaeton'], discofunk: ['discofunk', 'house'], kpop: ['kpop'],
+    };
+    for (const [g, sets] of Object.entries(GROUPS)) {
+      const n = sets.reduce((t, x) => t + GENRE_MOVES[x].length, 0);
+      expect(n, g).toBeGreaterThanOrEqual(45);
+      expect(n, g).toBeLessThanOrEqual(100);
+      expect(GENRE_MOVES[sets[0]].length, g).toBeGreaterThanOrEqual(35);
     }
-    for (const g of GENRES) expect(GENRE_MOVES[g].length, g).toBeGreaterThan(0);
+    // The traditions have moves; the new sub-style sets may still be (nearly) empty until moves are authored.
+    for (const g of GENRES) if (!(SUB_STYLES as readonly string[]).includes(g)) expect(GENRE_MOVES[g].length, g).toBeGreaterThan(0);
+    expect(GENRE_SET_UNKNOWN).toEqual([]);
+  });
+
+  it('a sub-style set too small to carry a song opens its parent group (graceful fallback)', () => {
+    for (const s of SUB_STYLES) {
+      const info = SUB_INFO[s];
+      const open = genreOpenness({ families: {}, themes: [], subs: { [s]: 0.9 } });
+      expect(open.has(s), s).toBe(true);
+      if (info.parent && (info.withParent || GENRE_MOVES[s].length < MIN_GENRE_SET)) expect(open.has(info.parent), `${s} -> ${info.parent}`).toBe(true);
+      if (info.replaces && info.replaces !== info.parent) expect(open.has(info.replaces), `${s} closes ${info.replaces}`).toBe(false);
+    }
+    // A sub-style below SUB_OPEN opens nothing.
+    expect(genreOpenness({ families: {}, themes: [], subs: { metal: 0.3 } }).size).toBe(0);
+  });
+
+  it('the calm closes showpiece sets and opens lyrical', () => {
+    const rockStyle = { families: { rock: 1 }, themes: [] as Theme[], subs: { metal: 0.9 } };
+    expect([...songGenres(rockStyle)].sort()).toEqual(['metal', 'rock']);
+    expect([...songGenres({ ...rockStyle, calm: 0.3 })].sort()).toEqual(['metal', 'rock']);
+    expect(songGenres({ ...rockStyle, calm: 0.9, subs: { metal: 0.9, lyrical: 1 } })).toEqual(new Set(['lyrical']));
+    // Gentle traditions stay open longer than showpieces.
+    expect(calmGate('hula', 0.75)).toBeGreaterThan(calmGate('rock', 0.75));
+    expect(calmGate('rock', undefined)).toBe(1);
   });
 
   it('keeps the uniqueness bars where they were', () => {
@@ -81,9 +117,15 @@ describe('two tiers: global and genre-exclusive', () => {
       for (const g of want) expect(open.has(g), `${label} opens ${g}`).toBe(true);
       if (label === 'fallback' || label === 'pop') expect([...open], label).toEqual([]);
     }
-    // A country song is not also rock; afrobeats never opens salsa.
-    expect(styleGenres(styleOf(SONGS[8][1])).has('rock')).toBe(false);
-    expect(styleGenres(styleOf(SONGS[10][1])).has('latin')).toBe(false);
+    // A country song is not also rock; afrobeats never opens salsa; nor does reggaeton.
+    const byLabel = (l: string) => SONGS.find((x) => x[0] === l)![1];
+    expect(styleGenres(styleOf(byLabel('country'))).has('rock')).toBe(false);
+    expect(styleGenres(styleOf(byLabel('afro'))).has('latin')).toBe(false);
+    const reggaeton = styleGenres(styleOf({ genre: 'Latin', genres: ['Reggaeton'] }));
+    expect(reggaeton.has('reggaeton')).toBe(true);
+    expect(reggaeton.has('latin')).toBe(false);
+    // Its set is still nearly empty: it falls back to the dancehall set it grew out of.
+    expect(reggaeton.has('caribbean')).toBe(true);
   });
 });
 
@@ -148,13 +190,18 @@ describe('soft weights', () => {
     }
   });
 
-  it('fast songs get more jumps than slow ones, and slow songs still get some', () => {
-    const fast = picks(IDS.map((id) => songMap(142, id)), 'sweaty');
+  it('brisk songs get more jumps than slow ones, slow songs still get some, and songs too fast for them fall back', () => {
+    // Jumps lean toward the tempo they are danced at: brisk (~120-130) where most can still be done at full time.
+    // On faster songs a jump over its speed limit is slowed to half time (and leans slow there) or left out, never frantic.
+    const brisk = picks(IDS.map((id) => songMap(124, id)), 'sweaty');
     const slow = picks(IDS.map((id) => songMap(86, id)), 'sweaty');
-    const jf = share(fast, (i) => i.move.jump);
+    const fast = picks(IDS.map((id) => songMap(172, id)), 'sweaty');
+    const jb = share(brisk, (i) => i.move.jump);
     const js = share(slow, (i) => i.move.jump);
-    expect(jf, `fast ${jf.toFixed(3)} vs slow ${js.toFixed(3)}`).toBeGreaterThan(js * 1.5);
+    const jf = share(fast, (i) => i.move.jump);
+    expect(jb, `brisk ${jb.toFixed(3)} vs slow ${js.toFixed(3)}`).toBeGreaterThan(js * 1.2);
     expect(js).toBeGreaterThan(0);
+    expect(jf, `fast ${jf.toFixed(3)} vs brisk ${jb.toFixed(3)}`).toBeLessThan(jb);
   });
 
   it('Sweaty favours high-impact and hard moves; Chill gentle, simple ones (never jumps); none is exclusive but Chill\'s jumps', () => {

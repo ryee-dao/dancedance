@@ -234,3 +234,53 @@ export function impactFactor(m: Move, level: LevelName): number {
   if (level === 'cardio') return Math.exp(-0.9 * Math.max(0, i - 0.3));
   return 0.7 + 0.9 * i;
 }
+
+// ---------------------------------------------------------------------------
+// The song's character (calm, from the audio traits) x the level
+
+/** Percussive accents of a move: jumps, stomps / kicks / punches, and (below Hard) the impact flag. */
+function percussive(m: Move, level: LevelName): number {
+  return clamp((m.jump ? 0.6 : 0) + (m.themes.some((t) => FAST_THEMES.has(t)) ? 0.3 : 0) + (m.impact && level !== 'sweaty' ? 0.3 : 0));
+}
+
+/** How smooth / flowing a move is, 0..1, from its tempo lean (slow-leaning moves are the flowing ones). */
+export function moveSmoothness(m: Move): number {
+  const [s, , f] = moveWeights(m).tempo;
+  return clamp(0.5 + 0.5 * Math.tanh(Math.log(s / f)));
+}
+
+/**
+ * Character multiplier of a move for a song's calm (0..1; undefined = 1).
+ * A calm song (above 0.5) favours smooth, flowing moves and loses
+ * percussive accents and jumps; below Hard it also loses vigorous moves, on
+ * Hard it keeps them (big, deep, sustained flowing moves: the level still
+ * sets how hard you work, the song how it looks). A driving song (below 0.5)
+ * leans mildly toward vigorous moves. Continuous, never 0.
+ */
+export function calmFactor(m: Move, calm: number | undefined, level: LevelName): number {
+  if (calm === undefined || !Number.isFinite(calm)) return 1;
+  const c = clamp(calm);
+  const smooth = moveSmoothness(m);
+  const vig = moveVigour(m);
+  if (c >= 0.5) {
+    const up = 2 * (c - 0.5);
+    const vigK = level === 'sweaty' ? 0 : level === 'cardio' ? 1.2 : 2;
+    let f = Math.exp(2.2 * up * (smooth - 0.5) * 2 - 3.2 * up * percussive(m, level) - vigK * up * Math.max(0, vig - 0.5) * 2);
+    // A calm song never really jumps, whatever the level.
+    if (m.jump) f *= Math.exp(-3 * up);
+    return f;
+  }
+  const dn = 2 * (0.5 - c);
+  return Math.exp(0.9 * dn * (vig - 0.5) * 2 - 0.6 * dn * (smooth - 0.5) * 2);
+}
+
+/**
+ * Easy on a fast song stays on the beat: moves busier than a key per beat
+ * lose weight as the tempo they are danced at rises past 115 BPM (Medium and
+ * Hard: 1).
+ */
+export function busyFactor(m: Move, effBpm: number | undefined, level: LevelName): number {
+  if (level !== 'chill' || !effBpm || !Number.isFinite(effBpm)) return 1;
+  const kpb = m.keys.length / m.beats;
+  return Math.exp(-1.5 * clamp((effBpm - 115) / 30) * Math.max(0, kpb - 1));
+}

@@ -5,7 +5,9 @@ import levitatingMap from '../../../public/beatmaps/1j_XvebOg4c.json';
 import partyRockMap from '../../../public/beatmaps/zIh5AHxh-Ok.json';
 import onTheFloorMap from '../../../public/beatmaps/9lybsz-7TFM.json';
 import { generateDuoRoutine } from './duo';
-import { LivePlanner, MAX_NAME, generateRoutine, shortName, type Intensity, type MoveInstance, type Routine } from './generator';
+import { LivePlanner, MAX_NAME, generateRoutine, mapTempo, shortName, type Intensity, type MoveInstance, type Routine } from './generator';
+import { publishedSongs } from './published.testutil';
+import { LEVEL_SPEED, moveTempoMode, speedLimit } from './speed';
 import { MIN_CARD_BEATS, cardsOf } from './cards';
 import { findMove } from './moves';
 import { getPool } from './pool';
@@ -56,6 +58,26 @@ describe('generateRoutine', () => {
       for (const i of r.instances) {
         if (i.unitStart) expect(downbeats.has(i.start)).toBe(true);
         if (i.move.beats === 4 && !i.half) expect(downbeats.has(i.start)).toBe(true);
+      }
+    }
+  });
+
+  it('lands half-time and full-time moves alike on bar lines (mixed speeds on one song)', () => {
+    // 144 BPM: some moves are over their speed limit (half time), the simple ones are not.
+    for (const lv of LEVELS) {
+      const m = songMap(144, `mixed-${lv}`);
+      const db = new Set(m.downbeats);
+      const r = generateRoutine(m, lv);
+      covered(r);
+      const whole = r.instances.filter((i) => !i.move.idle && !i.move.part && !i.sig);
+      // (Easy keeps to simple moves: it may have nothing over its limit here.)
+      if (lv !== 'chill') expect(whole.some((i) => i.half), lv).toBe(true);
+      expect(whole.some((i) => !i.half), lv).toBe(true);
+      for (const i of r.instances) {
+        if (i.unitStart) expect(db.has(i.start), `${lv} unit @${i.start}`).toBe(true);
+        // A 4-beat move (8 song beats at half time) starts on a downbeat either way.
+        if (i.move.beats === 4 && !i.move.part) expect(db.has(i.start), `${lv} ${i.move.id} @${i.start}`).toBe(true);
+        expect(i.span, i.move.id).toBe(i.move.beats * (i.half ? 2 : 1));
       }
     }
   });
@@ -192,19 +214,52 @@ describe('generateRoutine', () => {
     expect(key(generateRoutine(songMap(120, 'same'), 'chill'))).not.toBe(key(generateRoutine(songMap(120, 'same'), 'sweaty')));
   });
 
-  it('performs moves at half time above 150 BPM', () => {
+  it('performs each move at half time on its own, when the song is over its speed limit', () => {
+    let full = 0, half = 0;
     for (const lv of LEVELS) {
+      // Above 150 BPM the routine counts in half time (phrases / units doubled) ...
       const r = generateRoutine(songMap(170, 'fast'), lv);
       expect(r.half).toBe(true);
+      expect(r.bpm).toBeCloseTo(170, 0);
       for (const i of r.instances) {
-        if (!i.move.idle) {
-          expect(i.half).toBe(true);
-          expect(i.span).toBe(i.move.beats * 2);
-        }
+        if (i.move.idle || i.move.part || i.sig) continue;
+        // ... but each move runs at its own speed: half time only when 170 is over its limit.
+        expect(moveTempoMode(i.move, 170, lv), i.move.id).not.toBe('out');
+        expect(i.half, i.move.id).toBe(moveTempoMode(i.move, 170, lv) === 'half');
+        expect(i.span).toBe(i.move.beats * (i.half ? 2 : 1));
+        if (i.half) half += i.span;
+        else full += i.span;
       }
       const slow = generateRoutine(songMap(128, 'fast'), lv);
       expect(slow.half).toBe(false);
+      for (const i of slow.instances) if (!i.move.idle && !i.move.part && !i.sig) expect(i.half, i.move.id).toBe(moveTempoMode(i.move, 128, lv) === 'half');
     }
+    // Simple on-the-beat moves keep fast songs fast: most of a 170 BPM routine is full time.
+    expect(full).toBeGreaterThan(1.5 * half);
+  });
+
+  it('never dances a move over its speed limit, on any published map, at any level', () => {
+    const bad: string[] = [];
+    let n = 0, halfN = 0;
+    for (const s of publishedSongs()) {
+      const bpm = mapTempo(s.map);
+      for (const lv of LEVELS) {
+        const r = generateRoutine(s.map, lv, { style: s.style });
+        for (const i of r.instances) {
+          if (i.move.idle) continue;
+          n++;
+          if (i.half) halfN++;
+          const danced = i.half ? bpm / 2 : bpm;
+          // Parts of a move share their whole move's limit.
+          const lim = speedLimit(i.move) * LEVEL_SPEED[lv];
+          if (danced > lim + 1e-6) bad.push(`${s.id} ${lv} ${i.move.id} @${danced.toFixed(0)} > ${lim.toFixed(0)}`);
+        }
+      }
+    }
+    expect(bad.slice(0, 20)).toEqual([]);
+    expect(n).toBeGreaterThan(10000);
+    // Half time is the exception, not the rule.
+    expect(halfN / n).toBeLessThan(0.3);
   });
 
   it('never repeats the same move across a phrase boundary (Medium/Hard)', () => {

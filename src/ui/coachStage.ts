@@ -24,6 +24,7 @@ import type { BeatSource } from '../beat/beatSource';
 import type { Intensity } from '../core/choreo/generator';
 import { READY_POSE, type Move } from '../core/choreo/moves';
 import { resolveSongStyle, styleKey, styleLabel, type SongStyle, type StyleOverride } from '../core/choreo/songStyle';
+import { traitsOf } from '../core/choreo/songTraits';
 import { PoseEvaluator } from '../core/coach/animator';
 import { Conductor, type Plan } from '../core/coach/conductor';
 import { timeOfBeat } from '../core/coach/animator';
@@ -52,8 +53,12 @@ export interface CoachStageDeps {
   getRoutineMode?: () => RoutineMode;
   /** Completed plays of a song so far (mixed into the seed in 'fresh' mode). Read once per song. */
   getPlayCount?: (videoId: string) => number;
-  /** iTunes primary genre of a song, when known (added songs). Read once per song. */
+  /** iTunes primary genre of a song, when known (added songs). Read once per song. Fallback / tie-breaker. */
   getGenre?: (videoId: string) => string | undefined;
+  /** The song's own genre names, most important first (e.g. its Wikipedia infobox), when known. Read once per song. Primary evidence. */
+  getGenres?: (videoId: string) => readonly string[] | undefined;
+  /** The artist's usual genre, when known: a small blended score only. Read once per song. */
+  getArtistGenre?: (videoId: string) => string | undefined;
   /** Dev bench: force a song style (families / themes / signature). */
   getStyleOverride?: () => StyleOverride | undefined;
   /** Two-player mode (duoStage.ts): 1 or 2 players, read every frame. `?players=2` wins. */
@@ -209,7 +214,7 @@ class CoachStageImpl implements CoachStage {
   }
 
   /** Routine personalisation, cached per song (and per beat-map arrival). */
-  private routineFor(item: FrameInfo['item'], videoId: string, map: { bpm: number; sections: readonly { energy: number }[] } | null): RoutineInfo {
+  private routineFor(item: FrameInfo["item"], videoId: string, map: { bpm: number; sections: readonly { energy: number }[]; traits?: unknown } | null): RoutineInfo {
     const ov = this.deps.getStyleOverride?.();
     const k = `${videoId}|${item.title}|${map ? 'map' : 'nomap'}${ov ? `|${JSON.stringify(ov)}` : ''}`;
     if (this.routine && k === this.songKey) return this.routine;
@@ -424,27 +429,37 @@ export interface RoutineInfo {
 }
 
 /**
- * The routine personalisation for a song: its style (title / artist / genre,
- * plus tempo / energy priors once the beat map is known) and, in 'fresh'
- * mode, the play number. Pure apart from the deps it reads.
+ * The routine personalisation for a song: its style, from the song itself
+ * (curated style, its genre names, the genre tag, title words; once the beat
+ * map is known, its tempo and absolute audio traits; the artist's genre only
+ * as a small blended score) and, in 'fresh' mode, the play number. Pure
+ * apart from the deps it reads.
  */
 export function routineInfo(
   item: FrameInfo['item'],
-  map: { bpm: number; sections: readonly { energy: number }[] } | null,
-  deps: Pick<CoachStageDeps, 'getRoutineMode' | 'getPlayCount' | 'getGenre' | 'getStyleOverride'>,
+  map: { bpm: number; sections: readonly { energy: number }[]; traits?: unknown } | null,
+  deps: Pick<CoachStageDeps, 'getRoutineMode' | 'getPlayCount' | 'getGenre' | 'getGenres' | 'getArtistGenre' | 'getStyleOverride'>,
 ): RoutineInfo {
   const videoId = item.kind === 'youtube' ? item.videoId : undefined;
   const artist = item.kind === 'youtube' ? item.artist : undefined;
-  let genre: string | undefined;
-  try {
-    genre = videoId ? deps.getGenre?.(videoId) : undefined;
-  } catch {
-    genre = undefined;
-  }
+  const read = <T>(f: ((id: string) => T | undefined) | undefined): T | undefined => {
+    try {
+      return videoId && f ? f(videoId) : undefined;
+    } catch {
+      return undefined;
+    }
+  };
+  const genre = read(deps.getGenre);
+  const list = read(deps.getGenres);
+  const genres = Array.isArray(list) ? list.filter((g): g is string => typeof g === 'string') : undefined;
+  const artistGenre = read(deps.getArtistGenre);
   const secs = map?.sections ?? [];
   const energy = secs.length ? secs.reduce((a, s) => a + s.energy, 0) / secs.length : undefined;
   const override = deps.getStyleOverride?.();
-  const style = resolveSongStyle({ videoId, title: item.title, artist, genre, ...(override ? { style: override } : {}) }, map ? { bpm: map.bpm, energy } : undefined);
+  const style = resolveSongStyle(
+    { videoId, title: item.title, artist, genre, ...(genres?.length ? { genres } : {}), ...(typeof artistGenre === 'string' ? { artistGenre } : {}), ...(override ? { style: override } : {}) },
+    map ? { bpm: map.bpm, energy, traits: traitsOf(map) } : undefined,
+  );
   let fresh: number | undefined;
   if ((deps.getRoutineMode?.() ?? 'same') === 'fresh') {
     let n = 0;

@@ -124,7 +124,7 @@ export function partOf(m: Move, from: number, to: number): Move {
   if (!p) {
     const tracks = m.tracks.map((t) => cutTrack(t, from, to)) as unknown as [Track, Track, Track];
     const comp = cutTrack({ keys: m.keys, mirrorKeys: m.mirrorKeys }, from, to);
-    p = { ...m, id: `${m.id}~part${from}-${to}`, beats: (to - from) as Move['beats'], travel: 0, tracks, keys: comp.keys, mirrorKeys: comp.mirrorKeys, icon: 0, part: true };
+    p = { ...m, id: `${m.id}~part${from}-${to}`, beats: (to - from) as Move['beats'], travel: 0, tracks, keys: comp.keys, mirrorKeys: comp.mirrorKeys, icon: 0, part: true, whole: m.whole ?? m };
     PARTS.set(key, p);
   }
   return p;
@@ -137,7 +137,7 @@ export function pauseOf(m: Move, beats: number): Move {
   if (!p) {
     const one = (t: Track): Track => ({ keys: [{ at: 0, pose: t.keys[0].pose }], mirrorKeys: [{ at: 0, pose: t.mirrorKeys[0].pose }] });
     const tracks = m.tracks.map(one) as unknown as [Track, Track, Track];
-    p = { ...m, id: `${m.id}~pause${beats}`, beats: beats as Move['beats'], travel: 0, tracks, keys: [{ at: 0, pose: m.keys[0].pose }], mirrorKeys: [{ at: 0, pose: m.mirrorKeys[0].pose }], icon: 0, part: true };
+    p = { ...m, id: `${m.id}~pause${beats}`, beats: beats as Move['beats'], travel: 0, tracks, keys: [{ at: 0, pose: m.keys[0].pose }], mirrorKeys: [{ at: 0, pose: m.mirrorKeys[0].pose }], icon: 0, part: true, whole: m.whole ?? m };
     PARTS.set(key, p);
   }
   return p;
@@ -239,9 +239,16 @@ export interface CardContext {
   bars: readonly number[];
   /** Beats where a drop starts (a card there keeps its start). */
   drops: ReadonlySet<number>;
-  /** Song beats per move beat (2 at half time). */
-  mult: number;
+  /**
+   * Song beats per move beat of the whole routine. Unused: moves are half
+   * time each on their own (MoveInstance.half), so a card is stretched at
+   * its own instances' speed. Kept for callers.
+   */
+  mult?: number;
 }
+
+/** Song beats per move beat of an instance (2 at half time). */
+const multOf = (i: MoveInstance) => (i.half ? 2 : 1);
 
 /** The move a card dances (its first whole repeat; a combo or the groove can't be stretched). */
 function mainOf(ins: readonly MoveInstance[], c: Card): Move | null {
@@ -261,7 +268,7 @@ function extendForward(ins: MoveInstance[], c: Card, to: number, ctx: CardContex
   let lastFull: MoveInstance | null = null;
   for (let k = c.to - 1; k >= c.from && !lastFull; k--) if (ins[k].move === m) lastFull = ins[k];
   const last = ins[c.to - 1];
-  return tileMove(m, c.end, to, ctx.mult, ctx.bars, baseOf(last), { mirror: m.mirror && lastFull ? !lastFull.mirror : false, origin: endOffset(last) });
+  return tileMove(m, c.end, to, multOf(lastFull ?? last), ctx.bars, baseOf(lastFull ?? last), { mirror: m.mirror && lastFull ? !lastFull.mirror : false, origin: endOffset(last) });
 }
 
 /** The move of card `c` starting early, at `from` (a lead-in of its last beats, then whole repeats). */
@@ -270,7 +277,7 @@ function extendBackward(ins: MoveInstance[], c: Card, from: number, ctx: CardCon
   const first = ins[c.from];
   const want = m.mirror ? !first.mirror : false;
   for (const mirror of [false, true]) {
-    const t = tileMove(m, from, c.start, ctx.mult, ctx.bars, baseOf(first), { mirror, origin: first.origin, tail: true, unitStart: first.unitStart });
+    const t = tileMove(m, from, c.start, multOf(first), ctx.bars, baseOf(first), { mirror, origin: first.origin, tail: true, unitStart: first.unitStart });
     let lastFull: MoveInstance | undefined;
     for (const i of t) if (i.move === m) lastFull = i;
     if (!m.mirror || !lastFull || lastFull.mirror === want) {
@@ -286,12 +293,12 @@ function extendBackward(ins: MoveInstance[], c: Card, from: number, ctx: CardCon
  * from the first, round and round) or, `lead`, leading into it (its last
  * steps). A step that doesn't fit is danced in part. Same card (name, combo flag).
  */
-function comboSteps(ins: readonly MoveInstance[], c: Card, from: number, to: number, ctx: CardContext, lead: boolean): MoveInstance[] {
+function comboSteps(ins: readonly MoveInstance[], c: Card, from: number, to: number, lead: boolean): MoveInstance[] {
   const steps = ins.slice(c.from, c.to).filter((i) => !i.move.part);
   if (!steps.length) return [];
   const out: MoveInstance[] = [];
   const piece = (i: MoveInstance, len: number, tail: boolean): Move => {
-    const mb = len / ctx.mult;
+    const mb = len / multOf(i);
     if (i.move.travel !== 0) return pauseOf(i.move, mb);
     return tail ? partOf(i.move, i.move.beats - mb, i.move.beats) : partOf(i.move, 0, mb);
   };
@@ -348,7 +355,7 @@ export function enforceCards(input: readonly MoveInstance[], ctx: CardContext): 
       let e = longEnd(c.start, N.end);
       if (e < 0 || !ok(e, N.end)) e = N.end;
       const grow = extendForward(ins, c, e, ctx);
-      const rest = e < N.end ? tileMove(nm, e, N.end, ctx.mult, ctx.bars, baseOf(ins[N.from]), { unitStart: true }) : [];
+      const rest = e < N.end ? tileMove(nm, e, N.end, multOf(ins[N.from]), ctx.bars, baseOf(ins[N.from]), { unitStart: true }) : [];
       next = [...ins.slice(0, c.to), ...grow, ...rest, ...ins.slice(N.to)];
     }
     // 2. The previous move carries on (unless the next is a better fit: in place vs travelling, or the song's first card).
@@ -363,18 +370,18 @@ export function enforceCards(input: readonly MoveInstance[], ctx: CardContext): 
     //     its last steps lead in, same card.
     if (!next && N && ins[N.from].sig && (!P || !pm || onDrop)) {
       const head = { ...ins[N.from], unitStart: false };
-      next = [...ins.slice(0, c.from), ...comboSteps(ins, N, c.start, N.start, ctx, true), head, ...ins.slice(N.from + 1)];
+      next = [...ins.slice(0, c.from), ...comboSteps(ins, N, c.start, N.start, true), head, ...ins.slice(N.from + 1)];
     }
     // 4. Fallbacks: grow the card itself into the next one, or let the previous one carry on regardless.
     if (!next && cm && N && nm) {
       let e = longEnd(c.start, N.end);
       if (e < 0 || !ok(e, N.end)) e = N.end;
-      const rest = e < N.end ? tileMove(nm, e, N.end, ctx.mult, ctx.bars, baseOf(ins[N.from]), { unitStart: true }) : [];
+      const rest = e < N.end ? tileMove(nm, e, N.end, multOf(ins[N.from]), ctx.bars, baseOf(ins[N.from]), { unitStart: true }) : [];
       next = [...ins.slice(0, c.to), ...extendForward(ins, c, e, ctx), ...rest, ...ins.slice(N.to)];
     }
     if (!next && P && pm) next = [...ins.slice(0, P.to), ...extendForward(ins, P, c.end, ctx), ...ins.slice(c.to)];
     // 5. The song combo carries on.
-    if (!next && P && ins[P.from].sig) next = [...ins.slice(0, P.to), ...comboSteps(ins, P, c.start, c.end, ctx, false), ...ins.slice(c.to)];
+    if (!next && P && ins[P.from].sig) next = [...ins.slice(0, P.to), ...comboSteps(ins, P, c.start, c.end, false), ...ins.slice(c.to)];
     if (!next) break;
     ins = next;
   }

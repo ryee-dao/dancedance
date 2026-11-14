@@ -1,14 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import starterData from '../../data/starter.json';
 import { FAMILIES, THEMES } from './families';
+import { songGenres } from './genres';
 import {
-  ARTIST_TABLE_SIZE,
+  ARTIST_SHARE,
   artistCandidates,
   artistKey,
   BALANCED_POP,
   genreFamilies,
   keywordThemes,
   resolveSongStyle,
+  songSignature,
   styleKey,
   styleLabel,
   type SongStyle,
@@ -19,29 +21,31 @@ const top = (s: SongStyle) => Object.entries(s.families).sort((a, b) => (b[1] ??
 const starter = starterData as { videoId: string; title: string; artist: string }[];
 
 describe('resolution order', () => {
-  it('override beats artist beats genre beats fallback', () => {
+  it('override beats genre names beats traits beats fallback; the artist name never decides', () => {
     const base = { title: 'Some Song', artist: 'Shakira', genre: 'Rock' };
     const o = resolveSongStyle({ ...base, style: { families: { disco: 1 } } });
     expect(o.source).toBe('override');
     expect(o.families).toEqual({ disco: 1 });
-    const a = resolveSongStyle(base);
-    expect(a.source).toBe('artist');
-    expect(top(a)).toBe('latin');
-    const g = resolveSongStyle({ ...base, artist: 'Nobody Known' });
+    // A famous Latin artist on a song tagged Rock: the song's tag decides.
+    const g = resolveSongStyle(base);
     expect(g.source).toBe('genre');
     expect(top(g)).toBe('rock');
-    const f = resolveSongStyle({ title: 'Some Song', artist: 'Nobody Known' });
+    expect(resolveSongStyle({ ...base, artist: 'Nobody Known' })).toEqual(g);
+    const t = resolveSongStyle({ title: 'Some Song', artist: 'Shakira' }, { traits: { heavy: 0.9, drive: 0.9, calm: 0.1 } });
+    expect(t.source).toBe('traits');
+    expect(top(t)).toBe('rock');
+    const f = resolveSongStyle({ title: 'Some Song', artist: 'Shakira' });
     expect(f.source).toBe('fallback');
     expect(f.families).toEqual(BALANCED_POP.families);
   });
 
   it('later layers fill what earlier layers left open, and themes are unioned', () => {
-    // Override decides families only: focus comes from the artist, themes from override + artist + title.
-    const s = resolveSongStyle({ title: 'Twist', artist: 'Shakira', style: { families: { pop: 1 }, themes: ['wave', 'nonsense'] } });
+    // Override decides families only: focus comes from the genre names, themes from override + genre + title.
+    const s = resolveSongStyle({ title: 'Twist', artist: 'Shakira', genre: 'Afrobeats', style: { families: { pop: 1 }, themes: ['wave', 'nonsense'] } });
     expect(s.source).toBe('override');
     expect(s.families).toEqual({ pop: 1 });
-    expect(s.focus).toEqual({ hips: 1.6 });
-    expect(s.themes).toEqual(['hips', 'twist', 'wave']);
+    expect(s.focus).toEqual({ hips: 1.3 });
+    expect(s.themes).toEqual(['twist', 'wave', 'afro']);
   });
 
   it('a starter song uses its curated style by videoId; an explicit style wins over it', () => {
@@ -54,8 +58,8 @@ describe('resolution order', () => {
   });
 
   it('invalid override weights fall through to the next layer', () => {
-    const s = resolveSongStyle({ artist: 'Linkin Park', style: { families: { latin: -1, bogus: 3 } as never } });
-    expect(s.source).toBe('artist');
+    const s = resolveSongStyle({ artist: 'Linkin Park', genre: 'Alternative', style: { families: { latin: -1, bogus: 3 } as never } });
+    expect(s.source).toBe('genre');
     expect(top(s)).toBe('rock');
   });
 
@@ -70,9 +74,10 @@ describe('resolution order', () => {
       { title: 'Y', genre: 'Reggaeton' },
       { title: 'Z' },
       { title: 'W', style: { families: { rock: 3, funk: 1 } } },
+      { title: 'V', genre: 'Pop', genres: ['Post-disco', 'R&B', 'funk', 'dance-pop'], artistGenre: 'Funk' },
     ];
     for (const s of songs) {
-      for (const p of [undefined, { bpm: 95 }, { bpm: 170, energy: 0.9 }, { energy: 0.1 }]) {
+      for (const p of [undefined, { bpm: 95 }, { bpm: 170, energy: 0.9 }, { energy: 0.1 }, { bpm: 140, traits: { calm: 0.2, halfFeel: 0.8, hats: 0.9 } }, { traits: { calm: 'x', heavy: NaN } }]) {
         const a = resolveSongStyle(s, p);
         expect(sum(a)).toBeCloseTo(1, 9);
         expect(resolveSongStyle(s, p)).toEqual(a);
@@ -82,57 +87,53 @@ describe('resolution order', () => {
   });
 });
 
-describe('artist normalisation', () => {
-  it('matches any credited artist', () => {
-    const s = resolveSongStyle({ title: 'Hips Don’t Lie', artist: 'Shakira feat. Wyclef Jean' });
-    expect(s.source).toBe('artist');
-    expect(top(s)).toBe('latin');
-    expect(s.focus?.hips).toBeGreaterThan(1);
-    expect(resolveSongStyle({ artist: 'Wyclef Jean ft. Shakira' }).source).toBe('artist');
-    expect(resolveSongStyle({ artist: 'Someone & Bruno Mars' }).source).toBe('artist');
-    expect(resolveSongStyle({ artist: 'Someone x J Balvin' }).source).toBe('artist');
-    expect(resolveSongStyle({ artist: 'Someone with Pitbull' }).source).toBe('artist');
+describe('artist credits (signature nods only)', () => {
+  it('match a song\'s nod by any credited artist', () => {
+    expect(songSignature('Hips Don’t Lie', 'Shakira feat. Wyclef Jean')).toEqual(['hip-sway', 'hip-shake']);
+    expect(songSignature('Hips Don’t Lie', 'Wyclef Jean ft. Shakira')).toEqual(['hip-sway', 'hip-shake']);
+    expect(songSignature('Gangnam Style', 'Someone x PSY')).toEqual(['gallop', 'lasso']);
+    expect(songSignature('Hips Don’t Lie', 'Someone Else')).toBeUndefined();
   });
 
   it('strips accents, punctuation, "&"/"and" and a leading "the"', () => {
     expect(artistKey('Beyoncé')).toBe(artistKey('Beyonce'));
-    expect(resolveSongStyle({ artist: 'Beyonce' }).source).toBe('artist');
-    expect(resolveSongStyle({ artist: 'BEYONCÉ' }).source).toBe('artist');
+    expect(artistKey('BEYONCÉ')).toBe('beyonce');
     expect(artistKey('The Weeknd')).toBe('weeknd');
     expect(artistKey('Weeknd')).toBe('weeknd');
-    expect(resolveSongStyle({ artist: 'Weeknd' }).source).toBe('artist');
     expect(artistKey('Earth, Wind & Fire')).toBe(artistKey('Earth Wind and Fire'));
-    expect(top(resolveSongStyle({ artist: 'Earth Wind and Fire' }))).toBe('funk');
+    expect(songSignature('September', 'Earth Wind and Fire')).toEqual(['disco-point']);
     expect(artistKey('Ke$ha')).toBe('kesha');
   });
 
   it('keeps whole names that contain separators', () => {
     expect(artistCandidates('AC/DC')[0]).toBe('acdc');
-    expect(resolveSongStyle({ artist: 'AC/DC' }).source).toBe('artist');
-    expect(resolveSongStyle({ artist: 'TOMORROW X TOGETHER' }).families.kpop).toBeGreaterThan(0.5);
-    expect(resolveSongStyle({ artist: 'Lil Nas X' }).source).toBe('artist');
-    expect(top(resolveSongStyle({ artist: 'Kool and the Gang' }))).toBe('funk');
+    expect(artistCandidates('TOMORROW X TOGETHER')[0]).toBe('tomorrowxtogether');
+    expect(artistCandidates('Lil Nas X')[0]).toBe('lilnasx');
+    expect(artistCandidates('Kool and the Gang')[0]).toBe(artistKey('Kool & the Gang'));
   });
 
-  it('knows a generous set of artists', () => {
-    expect(ARTIST_TABLE_SIZE).toBeGreaterThan(200);
-    for (const [artist, fam] of [
-      ['Michael Jackson', 'funk'],
-      ['Linkin Park', 'rock'],
-      ['Dua Lipa', 'disco'],
-      ['BLACKPINK', 'kpop'],
-      ['PSY', 'kpop'],
-      ['Bee Gees', 'disco'],
-      ['Daddy Yankee', 'latin'],
-      ['Red Hot Chili Peppers', 'rock'],
-    ] as const) {
-      expect(top(resolveSongStyle({ artist })), artist).toBe(fam);
+  it('never decide a style: well-known names alone resolve to the fallback mix', () => {
+    for (const artist of ['Michael Jackson', 'Linkin Park', 'Dua Lipa', 'BLACKPINK', 'PSY', 'Daddy Yankee', 'Evanescence', 'Billie Eilish']) {
+      const s = resolveSongStyle({ title: 'Untitled', artist });
+      expect(s.source, artist).toBe('fallback');
+      expect(s.families, artist).toEqual(BALANCED_POP.families);
     }
-    expect(resolveSongStyle({ artist: 'Red Hot Chili Peppers' }).families.funk).toBeGreaterThan(0.3);
-    expect(resolveSongStyle({ artist: 'Michael Jackson' }).themes).toEqual(expect.arrayContaining(['kick', 'spin', 'point']));
-    expect(resolveSongStyle({ artist: 'LMFAO' }).families.party).toBeGreaterThan(0.2);
     expect(BALANCED_POP.families.party).toBeGreaterThan(0);
-    expect(resolveSongStyle({ videoId: 'zIh5AHxh-Ok' }).families.party).toBeGreaterThan(0.2); // Party Rock Anthem
+    expect(resolveSongStyle({ videoId: 'zIh5AHxh-Ok' }).families.party).toBeGreaterThan(0.2); // Party Rock Anthem (curated)
+  });
+
+  it('an artist genre is a small blended score at most, never the base', () => {
+    const plain = resolveSongStyle({ title: 'Z', genre: 'Pop' });
+    const withArtist = resolveSongStyle({ title: 'Z', genre: 'Pop', artistGenre: 'Heavy Metal' });
+    expect(withArtist.source).toBe('genre');
+    expect(top(withArtist)).toBe('pop');
+    for (const f of FAMILIES) expect(Math.abs((withArtist.families[f] ?? 0) - (plain.families[f] ?? 0)), f).toBeLessThanOrEqual(0.15 + 1e-9);
+    expect(withArtist.subs?.metal ?? 0).toBeLessThanOrEqual(ARTIST_SHARE + 1e-9);
+    expect(songGenres(withArtist).has('metal')).toBe(false);
+    // Alone it is not a base either: the fallback mix, nudged.
+    const alone = resolveSongStyle({ title: 'Z', artistGenre: 'Heavy Metal' });
+    expect(alone.source).toBe('fallback');
+    expect(top(alone)).toBe('pop');
   });
 });
 
@@ -158,7 +159,33 @@ describe('genre mapping', () => {
     expect(t('Singer/Songwriter')).toBe('pop');
     expect(t('Soundtrack')).toBe('pop');
     expect(t('Country')).toBe('pop');
+    expect(resolveSongStyle({ genre: 'Country' }).themes).toContain('country');
     expect(resolveSongStyle({ genre: 'Reggaeton' }).focus?.hips).toBeGreaterThan(1);
+  });
+
+  it('reads genre names by words and compounds, blends a list, and ignores names it cannot place', () => {
+    const t = (genres: string[], genre?: string) => top(resolveSongStyle({ genres, genre }));
+    expect(t(['Southern hip hop'])).toBe('hiphop');
+    expect(t(['Nu metal', 'rap rock'])).toBe('rock');
+    expect(t(['Drum and bass', 'liquid funk'])).toBe('aerobic');
+    expect(t(['Country pop'])).toBe('pop');
+    expect(resolveSongStyle({ genres: ['Country pop'] }).themes).toContain('country');
+    expect(t(['Bedroom pop'])).toBe('pop');
+    expect(resolveSongStyle({ genres: ['Phonk'] }).subs?.bass).toBeGreaterThanOrEqual(0.9);
+    expect(styleLabel(resolveSongStyle({ genres: ['Phonk'] }))).toBe('Electronic · Phonk');
+    expect(styleLabel(resolveSongStyle({ genres: ['Dubstep'] }))).toBe('Electronic · Dubstep');
+    expect(resolveSongStyle({ genres: ['UK drill'] }).subs?.drill).toBeGreaterThanOrEqual(0.9);
+    expect(resolveSongStyle({ genres: ['Amapiano'] }).subs?.amapiano).toBeGreaterThanOrEqual(0.9);
+    // A list blends: the first names weigh most, the tag is a tie-breaker.
+    const mixed = resolveSongStyle({ genres: ['Latin pop', 'reggaeton'], genre: 'Pop' });
+    expect(top(mixed)).toBe('latin');
+    expect(mixed.subs?.reggaeton).toBeGreaterThan(0.5);
+    // Names nothing places are ignored (the tag, then the fallback, decide).
+    expect(resolveSongStyle({ genres: ['Zzyzx wave of nothing'], genre: 'Hip-Hop/Rap' }).source).toBe('genre');
+    expect(top(resolveSongStyle({ genres: ['Zzyzx wave of nothing'], genre: 'Hip-Hop/Rap' }))).toBe('hiphop');
+    expect(resolveSongStyle({ genres: ['Zzyzx'] }).source).toBe('fallback');
+    // "Hardcore hip hop" is hip-hop, not hardcore punk.
+    expect(resolveSongStyle({ genres: ['Hardcore hip hop'] }).subs?.punk).toBeUndefined();
   });
 
   it('is case and accent insensitive, guesses from words, and ignores unknown genres', () => {
@@ -225,6 +252,93 @@ describe('priors', () => {
   });
 });
 
+describe('style comes from the song (owner examples)', () => {
+  it('"Hip-Hop/Rap" with no artist resolves to hip-hop', () => {
+    const s = resolveSongStyle({ title: 'Back in Blood', genre: 'Hip-Hop/Rap' });
+    expect(top(s)).toBe('hiphop');
+    expect(styleLabel(s)).toBe('Hip-hop');
+    expect(songGenres(s).has('hiphop')).toBe(true);
+  });
+
+  it('Back in Blood (Hip hop, drill, trap) opens drill and trap and never resolves to pop', () => {
+    for (const p of [undefined, { bpm: 140 }, { bpm: 140, traits: { calm: 0.25, halfFeel: 0.8, hats: 0.8, bass: 0.85, syncop: 0.6 } }]) {
+      const s = resolveSongStyle({ title: 'Back in Blood', genre: 'Hip-Hop/Rap', genres: ['Hip hop', 'drill', 'trap'] }, p);
+      expect(top(s)).toBe('hiphop');
+      const open = songGenres(s);
+      expect(open.has('drill')).toBe(true);
+      expect(open.has('trap')).toBe(true);
+      expect(open.has('hiphop')).toBe(true);
+      // Drill leads the names; trap-like audio may tip the label to its sibling.
+      expect(styleLabel(s)).toMatch(p?.traits ? /^Hip-hop · (Drill|Trap)$/ : /^Hip-hop · Drill$/);
+    }
+  });
+
+  it('My Immortal ("Hard Rock" or ["Alternative rock"], calm ~0.9) is a ballad: no rock showpiece sets', () => {
+    for (const info of [{ title: 'My Immortal', genre: 'Hard Rock' }, { title: 'My Immortal', genre: 'Hard Rock', genres: ['Alternative rock'] }]) {
+      const s = resolveSongStyle(info, { bpm: 78, traits: { calm: 0.9, heavy: 0.2, drive: 0.15 } });
+      expect(s.calm).toBeGreaterThan(0.85);
+      expect(styleLabel(s)).toBe('Rock · Ballad');
+      const open = songGenres(s);
+      for (const g of ['rock', 'metal', 'punk'] as const) expect(open.has(g), g).toBe(false);
+      expect(open.has('lyrical')).toBe(true);
+    }
+    // The same band's banger stays rock (and metal).
+    const loud = resolveSongStyle({ title: 'Bring Me to Life', genre: 'Hard Rock', genres: ['Nu metal', 'rap rock', 'alternative rock', 'gothic metal'] }, { traits: { calm: 0.3, heavy: 0.85, drive: 0.8 } });
+    expect(styleLabel(loud)).toBe('Rock · Metal');
+    expect(songGenres(loud).has('rock')).toBe(true);
+    expect(songGenres(loud).has('metal')).toBe(true);
+  });
+
+  it('Billie Jean (Post-disco, R&B, funk, dance-pop) leans disco / funk, not plain pop', () => {
+    const s = resolveSongStyle({ title: 'Billie Jean', genre: 'Pop', genres: ['Post-disco', 'R&B', 'funk', 'dance-pop'] });
+    expect(['disco', 'funk']).toContain(top(s));
+    expect((s.families.disco ?? 0) + (s.families.funk ?? 0)).toBeGreaterThan(2 * (s.families.pop ?? 0));
+    expect(styleLabel(s)).not.toMatch(/^Pop/);
+    expect(songGenres(s).has('discofunk')).toBe(true);
+    expect(songGenres(s).has('hiphop')).toBe(false);
+  });
+
+  it('a bad genre tag is only a tie-breaker when the song has genre names (Crazy in Love: "Soundtrack")', () => {
+    const s = resolveSongStyle({ title: 'Crazy in Love', genre: 'Soundtrack', genres: ['Pop', 'hip-hop', 'R&B'] });
+    expect(['pop', 'hiphop']).toContain(top(s));
+    expect(s.families.hiphop ?? 0).toBeGreaterThan(0.25);
+    expect(s.subs?.rnb).toBeGreaterThan(0.5);
+  });
+
+  it('TV ("Alternative", no article, calm) is a ballad, not upbeat pop', () => {
+    const s = resolveSongStyle({ title: 'TV', genre: 'Alternative' }, { bpm: 72, traits: { calm: 0.85, drive: 0.2 } });
+    expect(styleLabel(s)).toMatch(/Ballad$/);
+    expect(songGenres(s).has('rock')).toBe(false);
+  });
+
+  it('no genre at all: the traits and tempo decide the lean, not a pop mix', () => {
+    const trap = resolveSongStyle({ title: 'X' }, { bpm: 140, traits: { calm: 0.25, halfFeel: 0.85, hats: 0.8, bass: 0.8, drive: 0.6, heavy: 0.1, fourFloor: 0.1 } });
+    expect(trap.source).toBe('traits');
+    expect(top(trap)).toBe('hiphop');
+    expect(top(trap)).not.toBe('pop');
+    expect(songGenres(trap).has('trap')).toBe(true);
+    expect(styleLabel(trap)).toBe('Hip-hop · Trap');
+    const house = resolveSongStyle({ title: 'X' }, { bpm: 124, traits: { calm: 0.3, fourFloor: 0.9, drive: 0.7 } });
+    expect(styleLabel(house)).toBe('Electronic · House');
+    const metal = resolveSongStyle({ title: 'X' }, { bpm: 170, traits: { calm: 0.15, heavy: 0.9, drive: 0.9 } });
+    expect(top(metal)).toBe('rock');
+    expect(songGenres(metal).has('metal')).toBe(true);
+    const ballad = resolveSongStyle({ title: 'X' }, { bpm: 70, traits: { calm: 0.9, drive: 0.1 } });
+    expect(top(ballad)).toBe('pop');
+    expect(styleLabel(ballad)).toBe('Pop · Ballad');
+    // Partial traits are fine; missing traits are neutral.
+    expect(resolveSongStyle({ title: 'X' }, { traits: { heavy: 0.95 } }).source).toBe('traits');
+    expect(resolveSongStyle({ title: 'X' }, { traits: {} }).source).toBe('fallback');
+  });
+
+  it('traits are read defensively: non-numbers dropped, values clamped', () => {
+    const s = resolveSongStyle({ title: 'X', genre: 'Rock' }, { traits: { calm: 7, heavy: 'loud', drive: -3, bass: Infinity } });
+    expect(s.calm).toBe(1);
+    expect(resolveSongStyle({ title: 'X', genre: 'Rock' }, { traits: 'nonsense' })).toEqual(resolveSongStyle({ title: 'X', genre: 'Rock' }));
+    expect(resolveSongStyle({ title: 'X', genre: 'Rock' }, { traits: null })).toEqual(resolveSongStyle({ title: 'X', genre: 'Rock' }));
+  });
+});
+
 describe('fallback', () => {
   it('an unknown song still gets a varied mix led by pop', () => {
     const s = resolveSongStyle({ title: 'Untitled', artist: 'Some Garage Band' });
@@ -266,13 +380,27 @@ describe('labels and keys', () => {
     expect(styleLabel(st({ funk: 0.45, disco: 0.45, pop: 0.1 }))).toBe('Disco · Funk');
     expect(styleLabel(st({ kpop: 0.6, pop: 0.3, hiphop: 0.1 }))).toBe('K-pop');
     expect(styleLabel(BALANCED_POP)).toBe('Pop');
-    expect(styleLabel(resolveSongStyle({ artist: 'Shakira' }))).toBe('Latin groove');
-    expect(styleLabel(resolveSongStyle({ artist: 'Linkin Park' }))).toBe('Rock');
+    expect(styleLabel(resolveSongStyle({ genre: 'Latin' }))).toBe('Latin groove');
+    expect(styleLabel(resolveSongStyle({ genre: 'Rock' }))).toBe('Rock');
+  });
+
+  it('styleLabel names the sub-style when one clearly applies, and the ballad when the song is calm', () => {
+    expect(styleLabel(st({ hiphop: 1 }))).toBe('Hip-hop');
+    expect(styleLabel({ ...st({ hiphop: 1 }), subs: { drill: 0.9 } })).toBe('Hip-hop · Drill');
+    expect(styleLabel({ ...st({ hiphop: 1 }), subs: { drill: 0.4 } })).toBe('Hip-hop');
+    expect(styleLabel({ ...st({ rock: 1 }), calm: 0.85 })).toBe('Rock · Ballad');
+    expect(styleLabel({ ...st({ rock: 1 }), subs: { metal: 0.9 }, calm: 0.85 })).toBe('Rock · Ballad');
+    expect(styleLabel({ ...st({ latin: 1 }), subs: { reggaeton: 1 } })).toBe('Latin · Reggaeton');
+    // A sub-style whose group doesn't lead the song doesn't name it.
+    expect(styleLabel({ ...st({ funk: 0.6, disco: 0.4 }), subs: { rnb: 0.9 } })).toBe('Funk · Disco');
+    expect(styleLabel(st({ pop: 0.6, rock: 0.4 }, ['country']))).toBe('Country');
   });
 
   it('styleKey is short, sorted and stable', () => {
     expect(styleKey(st({ funk: 0.5, disco: 0.5 }, ['spin', 'kick']))).toBe('disco:0.50,funk:0.50|kick,spin');
     expect(styleKey(st({ disco: 0.5, funk: 0.5 }, ['kick', 'spin']))).toBe(styleKey(st({ funk: 0.5, disco: 0.5 }, ['spin', 'kick'])));
     expect(styleKey(BALANCED_POP)).toBe('aerobic:0.11,disco:0.13,funk:0.10,hiphop:0.15,kpop:0.04,latin:0.09,party:0.06,pop:0.28,rock:0.04|');
+    // Sub-styles and the calm seed too (a ballad and a banger of the same family differ).
+    expect(styleKey({ ...st({ rock: 1 }), subs: { metal: 0.9 }, calm: 0.3 })).toBe('rock:1.00||metal:0.90|c0.30');
   });
 });
