@@ -1,0 +1,98 @@
+{
+ "url": "https://musicbrainz.org/ws/2/recording?query=recording%3A%22TV%22+AND+artist%3A%22Billie+Eilish%22&fmt=json&limit=50",
+ "body": {
+  "count": 4,
+  "recordings": [
+   {
+    "id": "a83dd452-6962-4f94-ad7c-2467ba74bc71",
+    "score": 100,
+    "title": "TV",
+    "length": 264000,
+    "disambiguation": "live: Cloud Forest, Gardens by the Bay, Kallang, SG",
+    "video": true,
+    "artist-credit": [
+     {
+      "name": "Billie Eilish",
+      "joinphrase": "",
+      "artist": {
+       "name": "Billie Eilish"
+      }
+     }
+    ]
+   },
+   {
+    "id": "516c9705-3be4-4b6b-bfb4-5d51d0105406",
+    "score": 100,
+    "title": "TV",
+    "disambiguation": "live, 2025-07: Co‐op Live, Manchester, England, UK",
+    "video": null,
+    "artist-credit": [
+     {
+      "name": "Billie Eilish",
+      "joinphrase": "",
+      "artist": {
+       "name": "Billie Eilish"
+      }
+     }
+    ],
+    "tags": [
+     {
+      "count": 1,
+      "name": "acoustic"
+     },
+     {
+      "count": 1,
+      "name": "indie pop"
+     }
+    ]
+   },
+   {
+    "id": "59bc7111-4973-4335-9d60-1773ebcda7bb",
+    "score": 99,
+    "title": "TV",
+    "length": 281380,
+    "video": null,
+    "artist-credit": [
+     {
+      "name": "Billie Eilish",
+      "joinphrase": "",
+      "artist": {
+       "name": "Billie Eilish"
+      }
+     }
+    ],
+    "tags": [
+     {
+      "count": 1,
+      "name": "singer-songwriter"
+     },
+     {
+      "count": 1,
+      "name": "indie folk"
+     },
+     {
+      "count": 1,
+      "name": "contemporary folk"
+     }
+    ]
+   },
+   {
+    "id": "f1c0a7ee-a44e-4e90-b6ca-aa01359b9988",
+    "score": 99,
+    "title": "TV",
+    "length": 281380,
+    "disambiguation": "Dolby Atmos mix",
+    "video": null,
+    "artist-credit": [
+     {
+      "name": "Billie Eilish",
+      "joinphrase": "",
+      "artist": {
+       "name": "Billie Eilish"
+      }
+     }
+    ]
+   }
+  ]
+ }
+}

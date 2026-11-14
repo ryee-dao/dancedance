@@ -32,6 +32,8 @@ import { fileURLToPath } from 'node:url';
 import { normalizeCookies } from './output';
 import { runBeatmaps, type Deps } from './pipeline';
 import { lookupOfficial } from './itunes';
+import { genreHttp } from './genreClient';
+import { lookupGenres } from '../../src/genre';
 import { cleanRequest, MAX_ADDS, parseQueue, splitArtistTitle } from './pick';
 import { VIDEO_ID_RE } from './select';
 import type { AddRequest } from './songs';
@@ -223,11 +225,13 @@ async function main(): Promise<number> {
       console.log('Using cookies from YT_COOKIES');
     }
 
+    const genres = genreHttp((s) => console.log(s));
     const deps: Deps = {
       fetchPlaylist: (url) => fetchFlatPlaylist(url, ytOpts),
       searchVideos: (q) => searchVideos(q, ytOpts),
       checkEmbed: (id) => checkEmbed(id),
       lookupOfficial: (req) => lookupOfficial(req),
+      lookupGenres: (song, previous) => lookupGenres(song, { http: genres, previous }),
       downloadAudio: (id, dir) => downloadAudio(id, dir, ytOpts),
       decode: decodeWithFfmpeg,
       makeTempDir: async () => {
@@ -253,6 +257,7 @@ async function main(): Promise<number> {
         starterFile: join(root, 'src', 'data', 'starter.json'),
         songsFile: join(root, 'public', 'songs.json'),
         songsStatusFile: join(root, 'public', 'songs-status.json'),
+        genresFile: join(root, 'public', 'genres.json'),
       },
       {
         playlistUrl,

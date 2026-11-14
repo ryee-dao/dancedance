@@ -1,0 +1,282 @@
+{
+ "url": "https://www.wikidata.org/w/api.php?format=json&origin=*&action=wbgetentities&ids=Q113233217%7CQ115786780%7CQ289%7CQ672%7CQ18175583%7CQ10706741%7CQ58725&props=claims%7Clabels%7Cdescriptions&languages=en&languagefallback=1",
+ "body": {
+  "entities": {
+   "Q113233217": {
+    "type": "item",
+    "id": "Q113233217",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "TV"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "2022 song by Billie Eilish"
+     }
+    },
+    "claims": {
+     "P175": [
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q29564107"
+         }
+        }
+       },
+       "rank": "normal"
+      }
+     ],
+     "P31": [
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q105543609"
+         }
+        }
+       },
+       "rank": "normal"
+      }
+     ]
+    }
+   },
+   "Q115786780": {
+    "type": "item",
+    "id": "Q115786780",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "TV"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "vocal track by Billie Eilish; 2022 studio recording"
+     }
+    },
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q55850593"
+         }
+        }
+       },
+       "rank": "normal"
+      }
+     ],
+     "P175": [
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q29564107"
+         }
+        }
+       },
+       "rank": "normal"
+      }
+     ]
+    }
+   },
+   "Q289": {
+    "type": "item",
+    "id": "Q289",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "television"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "telecommunication medium for transmitting and receiving moving images"
+     }
+    },
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q121132955"
+         }
+        }
+       },
+       "rank": "normal"
+      }
+     ]
+    }
+   },
+   "Q672": {
+    "type": "item",
+    "id": "Q672",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Tuvalu"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "country in Oceania"
+     }
+    },
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q112099"
+         }
+        }
+       },
+       "rank": "normal"
+      },
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q3624078"
+         }
+        }
+       },
+       "rank": "normal"
+      },
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q202686"
+         }
+        }
+       },
+       "rank": "normal"
+      },
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q6256"
+         }
+        }
+       },
+       "rank": "normal"
+      },
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q11815167"
+         }
+        }
+       },
+       "rank": "normal"
+      }
+     ]
+    }
+   },
+   "Q18175583": {
+    "type": "item",
+    "id": "Q18175583",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Lockheed T-33A Shooting Star"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "military trainer aircraft model by Lockheed"
+     }
+    },
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q15056993"
+         }
+        }
+       },
+       "rank": "normal"
+      }
+     ]
+    }
+   },
+   "Q10706741": {
+    "type": "item",
+    "id": "Q10706741",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "TV"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "Swedish website"
+     }
+    },
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q35127"
+         }
+        }
+       },
+       "rank": "normal"
+      }
+     ]
+    }
+   },
+   "Q58725": {
+    "type": "item",
+    "id": "Q58725",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Lockheed T-33 Shooting Star"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "military trainer aircraft family by Lockheed"
+     }
+    },
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q15056993"
+         }
+        }
+       },
+       "rank": "normal"
+      }
+     ]
+    }
+   }
+  },
+  "success": 1
+ }
+}

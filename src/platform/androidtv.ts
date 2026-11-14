@@ -9,7 +9,7 @@
  * then the cloud (GitHub Pages), then on-device analysis of that file.
  *
  * ===========================================================================
- * Bridge contract, version 6. Mirrored in
+ * Bridge contract, version 7. Mirrored in
  * android/app/src/main/java/app/dancedance/tv/DanceBridge.kt; keep in sync.
  * ===========================================================================
  *
@@ -33,6 +33,14 @@
  * or failed mid-song and reloading didn't help), so the shell forgets it and
  * the next play downloads it again. Feature-detected (older shells: no-op;
  * the shell also checks every cached file's structure before using it).
+ * v7: setSongGenres(): per-song genres for songs added on the TV. The lookup
+ * (src/genre) runs here in the page, in the background (never while a song
+ * plays or its audio is being prepared), because every source answers the
+ * page's origin with `Access-Control-Allow-Origin: *` (Wikipedia/Wikidata
+ * with `origin=*`, MusicBrainz, TheAudioDB, iTunes; checked 2026-11). The
+ * shell only stores the result with the song (`genres`, and the whole
+ * lookup as `genreLookup`, which is the cache for later lookups), so the
+ * matching logic exists once. Feature-detected (older shells: no lookup).
  *
  * Beat alignment. Cloud maps are made from YouTube's WebM/Opus stream, so the
  * shell downloads that by default: WebView decodes and plays it sample-aligned
@@ -44,6 +52,9 @@
  */
 
 import type { AddedSong } from '../beat/cloud';
+import { GenreRunner } from '../genre/background';
+import { parseGenreLookup } from '../genre/lookup';
+import type { GenreLookup } from '../genre/types';
 import { parseUpdateState, type AppUpdates, type UpdateState } from './appUpdate';
 import { fetchVideoInfo, limitConcurrency, cleanTitle } from '../player/playlistReader';
 import { ANALYSIS_RATE } from '../beat/analyzeAudio';
@@ -57,7 +68,7 @@ import type { DeviceAnalysisNote, Platform, PlaylistEntry } from './platform';
 // ---------------------------------------------------------------------------
 // Contract types
 
-export const BRIDGE_VERSION = 6;
+export const BRIDGE_VERSION = 7;
 
 /** The raw object the shell injects as `window.DanceBridge`. */
 export interface DanceBridgeNative {
@@ -99,6 +110,11 @@ export interface DanceBridgeNative {
   takeUpdatedNotice?(): string;
   /** v6: forget a song's cached audio (it didn't play cleanly); returns the files removed. */
   dropAudio?(videoId: string): number;
+  /**
+   * v7: store a song's multi-source genre lookup (JSON GenreLookup) with the added song.
+   * True when saved; emits 'addedSongsChanged' (added: null) with the song's new `genres`.
+   */
+  setSongGenres?(videoId: string, lookupJson: string): boolean;
   // async: answer delivered later by request id
   /** value: BridgePlaylistEntry[] in playlist order (all pages). */
   getPlaylist(requestId: string, listIdOrUrl: string): void;
@@ -177,6 +193,8 @@ export interface TvAddedSong extends AddedSong {
   channel: string;
   /** Which rule picked it: 'official' | 'lyric' | 'topic' | 'music-video'. */
   tier: string;
+  /** v7: the stored multi-source lookup behind `genres` (what each source said; the lookup's cache). */
+  genreLookup?: GenreLookup;
 }
 
 export interface BridgePlaylistEntry {
@@ -388,6 +406,7 @@ export function createAndroidTvPlatform(): Platform {
   void configureAudioFormats(b);
   installLifecycle(b);
   installAddedSongs(b);
+  installGenreLookups(b);
   installFrameSampler();
   const appUpdates = createAppUpdates(b);
 
@@ -530,6 +549,44 @@ function installAddedSongs(b: BridgeClient): void {
     localAdded = Array.isArray(songs) ? songs : [];
     for (const fn of addedListeners) fn();
     if (added) toast(`Added: ${added.title}`, 5000);
+  });
+}
+
+/**
+ * v7: genres for songs added on the TV, looked up in the background by the
+ * page (src/genre) and stored natively with the song. Starts 20 s after app
+ * open (songs still lacking genres, or due again) and 5 s after a song is added.
+ */
+function installGenreLookups(b: BridgeClient): void {
+  const n = b.native;
+  if (typeof n.setSongGenres !== 'function') return;
+  const root = document.getElementById('app');
+  const runner = new GenreRunner({
+    songs: () =>
+      localAdded.map((s) => ({
+        videoId: s.videoId,
+        artist: s.artist,
+        title: s.title,
+        ...(s.durationSec > 0 ? { durationSec: s.durationSec } : {}),
+        ...(s.genre ? { itunesGenre: s.genre } : {}),
+        genreLookup: parseGenreLookup(s.genreLookup),
+      })),
+    save(videoId, lookup) {
+      try {
+        return n.setSongGenres?.(videoId, JSON.stringify(lookup)) === true;
+      } catch (err) {
+        console.warn('[dd:tv] setSongGenres failed', err);
+        return false;
+      }
+    },
+    // Never while a song plays or its audio is being downloaded / prepared.
+    busy: () => preparing.size > 0 || !!root?.querySelector(':scope > .screen.play'),
+    fetch: (url, init) => fetch(url, init),
+    log: (line) => console.info(line),
+  });
+  runner.kick(20_000);
+  b.on('addedSongsChanged', ({ added }) => {
+    if (added) runner.kick(5000);
   });
 }
 

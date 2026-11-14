@@ -9,7 +9,9 @@
 import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ANALYZER_VERSION, analyzeOffline, beatSpan, parse, serialize, type BeatMap } from '../../src/core/analysis';
+import type { GenreLookup, SongQuery } from '../../src/genre';
 import { decideContribution, parseContribution, type KnownSongs } from './contribute';
+import { catalogSongs, dueSongs, genreListsFor, parseGenresFile, putRecord, renderGenresFile, type CatalogSong, type GenreRecord } from './genres';
 import type { Classification } from './classify';
 import { classifyYtDlpError } from './classify';
 import { parseFlatPlaylist, parseStatus, renderIndex, renderPlaylist, renderStatus, type MapInfo, type PlaylistInfo } from './output';
@@ -17,6 +19,7 @@ import type { OfficialSong } from './itunes';
 import { mergeSearches, parseSearch, rankCandidates, searchQueries, type SearchEntry } from './pick';
 import { planWork, preflightSkip, unionCandidates, type Candidate, type StatusReason, type VideoStatus, type WorkItem, type WorkReason } from './select';
 import { parseSongsList, parseSongsStatus, planAdds, renderSongs, renderSongsStatus, songKey, type AddedSong, type AddRequest, type SongRequestStatus } from './songs';
+import { cleanGenreList } from '../../src/beat/cloud';
 import type { AddResult, Fatal, ResultKind, RunReport, SongResult } from './summary';
 import { PCM_RATE, ToolFailure, type DownloadResult, type EmbedCheck } from './youtube';
 
@@ -31,6 +34,8 @@ export interface Paths {
   songsFile?: string;
   /** public/songs-status.json (add requests that failed). */
   songsStatusFile?: string;
+  /** public/genres.json (multi-source genre lookups; see genres.ts). Without it (or lookupGenres), no genres are looked up. */
+  genresFile?: string;
 }
 
 export interface Deps {
@@ -53,6 +58,8 @@ export interface Deps {
   checkEmbed?(videoId: string): Promise<EmbedCheck>;
   /** Official length from iTunes, for requests without one. */
   lookupOfficial?(req: { artist: string; title: string }): Promise<OfficialSong | null>;
+  /** Genres from several public sources (src/genre); `previous` is the song's stored lookup, which serves as the cache. */
+  lookupGenres?(song: SongQuery, previous: GenreLookup | null): Promise<GenreLookup>;
 }
 
 export interface RunOptions {
@@ -80,6 +87,8 @@ export interface RunOptions {
   contributed?: string;
   /** Retry songs that failed with 'blocked'/'outdated' now, ignoring their backoff (local sync). */
   retryBlocked?: boolean;
+  /** Catalog songs whose genre lookup is missing or due (a source failed or an old 'none' expired) looked up per run (default 5). */
+  genreRetries?: number;
 }
 
 export interface RunOutcome {
@@ -196,8 +205,10 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
   const prevSongsStatusText = paths.songsStatusFile ? await readText(paths.songsStatusFile) : undefined;
   const songs: AddedSong[] = prevSongsText ? parseSongsList(prevSongsText) : [];
   const songsStatus: Record<string, SongRequestStatus> = prevSongsStatusText ? parseSongsStatus(prevSongsStatusText) : {};
+  const prevGenresText = paths.genresFile ? await readText(paths.genresFile) : undefined;
+  const genreRecords = parseGenresFile(prevGenresText);
   if (opts.contributed !== undefined) {
-    return runContribution(paths, opts, deps, { existing, songs, songsStatus, prevSongsText, prevSongsStatusText, starter, indexPath });
+    return runContribution(paths, opts, deps, { existing, songs, songsStatus, prevSongsText, prevSongsStatusText, starter, indexPath, genreRecords });
   }
   const addMode = (opts.adds?.length ?? 0) > 0;
   const addPlan = paths.songsFile ? planAdds(opts.adds ?? [], songs, songsStatus, deps.now(), opts.retryBlocked) : { todo: [], skipped: [] };
@@ -407,6 +418,27 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
       return result;
     };
 
+    /** Multi-source genres for one catalog song (never fails the run; a failed source is retried on a later run). */
+    const lookupSongGenres = async (c: CatalogSong) => {
+      if (!deps.lookupGenres || !paths.genresFile) return;
+      try {
+        const l = await deps.lookupGenres(c, genreRecords[c.key] ?? null);
+        putRecord(genreRecords, c, l);
+        deps.log(`  genres for ${c.artist} - ${c.title}: ${l.genres.length ? l.genres.join(', ') : 'none found'}${l.complete ? '' : ' (some sources will be asked again)'}`);
+      } catch (e) {
+        deps.log(`  genres for ${c.artist} - ${c.title}: lookup failed (${(e as Error)?.message ?? e})`);
+      }
+    };
+    const catalogEntry = (s: AddedSong): CatalogSong => ({
+      videoId: s.videoId,
+      key: songKey(s.artist, s.title),
+      artist: s.artist,
+      title: s.title,
+      ...(s.durationSec ? { durationSec: s.durationSec } : {}),
+      ...(s.genre ? { itunesGenre: s.genre } : {}),
+      added: true,
+    });
+
     // --- Add by search ------------------------------------------------------
     for (const item of addPlan.todo) {
       const label = `${item.req.artist} - ${item.req.title}`;
@@ -496,6 +528,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
           };
           songs.push(song);
           delete songsStatus[item.key];
+          await lookupSongGenres(catalogEntry(song));
           outcome = { ...base, kind: 'added', ...pick, bpm: res.bpm, seconds: deps.clock() - t0, message: res.message };
           break;
         }
@@ -504,7 +537,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
           // song now (the app finds its beat by listening) and keep trying to
           // make its map on later runs, with the usual backoff in status.json.
           status[id] = toStatus(res.kind, res.kind, res.message, status[id], nowIso());
-          songs.push({
+          const listed: AddedSong = {
             videoId: id,
             title: req.title,
             artist: req.artist,
@@ -513,7 +546,9 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
             hasMap: false,
             ...(r.tier === 'music-video' ? { note: 'music-video' as const } : {}),
             ...(req.genre ? { genre: req.genre } : {}),
-          });
+          };
+          songs.push(listed);
+          await lookupSongGenres(catalogEntry(listed));
           const prev = songsStatus[item.key];
           songsStatus[item.key] = {
             state: 'map-pending',
@@ -570,13 +605,22 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
       if (successes === 0) fatal = stoppedEarly;
     }
 
+    // --- Genres of catalog songs still missing them (or due again) -------------
+    const prevIndexText = await readText(indexPath);
+    if (deps.lookupGenres && paths.genresFile) {
+      const catalog = catalogSongs(songs, starter, songGenres(songs, prevIndexText));
+      // failedRetryMs 0: a source that failed is asked again on the next run.
+      for (const c of dueSongs(catalog, genreRecords, deps.now(), opts.genreRetries ?? 5, 0)) await lookupSongGenres(c);
+    }
+    applyGenreLists(songs, genreRecords);
+
     // --- Shared files -----------------------------------------------------
     const now = nowIso();
     await mkdir(paths.beatmapsDir, { recursive: true });
     // Rebuilt from the map files on disk every run, so it cannot drift from them.
-    const prevIndexText = await readText(indexPath);
-    const idx = renderIndex(prevIndexText, ANALYZER_VERSION, await scanMaps(paths.beatmapsDir), now, songGenres(songs, prevIndexText));
+    const idx = renderIndex(prevIndexText, ANALYZER_VERSION, await scanMaps(paths.beatmapsDir), now, songGenres(songs, prevIndexText), songGenreLists(songs, starter, genreRecords, prevIndexText));
     if (await writeIfChanged(indexPath, idx)) written.push(indexPath);
+    await writeGenresFile(paths, prevGenresText, genreRecords, now, written);
     const st = renderStatus(prevStatusText, status, now);
     if (await writeIfChanged(statusPath, st)) written.push(statusPath);
     if (playlist) {
@@ -659,6 +703,41 @@ export function songGenres(songs: AddedSong[], prevIndexText?: string): Map<stri
   return out;
 }
 
+/** songs.json `genres`: each added song gets its lookup's combined list (when it found any). */
+export function applyGenreLists(songs: AddedSong[], records: Readonly<Record<string, GenreRecord>>): void {
+  for (const s of songs) {
+    const g = records[songKey(s.artist, s.title)]?.genres;
+    if (g?.length) s.genres = [...g];
+  }
+}
+
+/**
+ * index.json `genres` lists: those already stored in the previous index, then
+ * every catalog song's lookup (songs.json and starter pack), then songs.json's own.
+ */
+export function songGenreLists(songs: AddedSong[], starter: Candidate[], records: Readonly<Record<string, GenreRecord>>, prevIndexText?: string): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  try {
+    const prev = (JSON.parse(prevIndexText ?? '{}') as { songs?: Record<string, { genres?: unknown }> }).songs;
+    if (prev && typeof prev === 'object') {
+      for (const [id, v] of Object.entries(prev)) {
+        const g = cleanGenreList(v?.genres);
+        if (g) out.set(id, g);
+      }
+    }
+  } catch {
+    // no or unreadable previous index
+  }
+  for (const [id, g] of genreListsFor(catalogSongs(songs, starter), records)) out.set(id, g);
+  for (const x of songs) if (x.genres?.length) out.set(x.videoId, x.genres);
+  return out;
+}
+
+async function writeGenresFile(paths: Paths, prevText: string | undefined, records: Readonly<Record<string, GenreRecord>>, now: string, written: string[]): Promise<void> {
+  if (!paths.genresFile || (prevText === undefined && !Object.keys(records).length)) return;
+  if (await writeIfChanged(paths.genresFile, renderGenresFile(prevText, records, now))) written.push(paths.genresFile);
+}
+
 /** Songs a contributed map may belong to: starter pack, songs.json and the published playlist. */
 export function knownSongs(starter: Candidate[], songs: AddedSong[], playlistText: string | undefined): KnownSongs {
   const ids = new Set<string>([...starter.map((c) => c.videoId), ...songs.map((s) => s.videoId)]);
@@ -684,6 +763,7 @@ async function runContribution(
     prevSongsStatusText: string | undefined;
     starter: Candidate[];
     indexPath: string;
+    genreRecords: Readonly<Record<string, GenreRecord>>;
   },
 ): Promise<RunOutcome> {
   const written: string[] = [];
@@ -702,7 +782,8 @@ async function runContribution(
     const now = deps.now().toISOString();
     const maps = await scanMaps(paths.beatmapsDir);
     const prevIndexText = await readText(st.indexPath);
-    const idx = renderIndex(prevIndexText, ANALYZER_VERSION, maps, now, songGenres(st.songs, prevIndexText));
+    applyGenreLists(st.songs, st.genreRecords);
+    const idx = renderIndex(prevIndexText, ANALYZER_VERSION, maps, now, songGenres(st.songs, prevIndexText), songGenreLists(st.songs, st.starter, st.genreRecords, prevIndexText));
     if (await writeIfChanged(st.indexPath, idx)) written.push(st.indexPath);
     await writeSongFiles(paths, { ...st, mapIds: new Set(maps.keys()), now, written });
   }

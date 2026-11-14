@@ -53,9 +53,10 @@ export interface MapInfo {
 }
 
 /**
- * index.json: `{ analyzerVersion, generatedAt, ids, songs: { [id]: { bpm, duration, genre? } } }`.
+ * index.json: `{ analyzerVersion, generatedAt, ids, songs: { [id]: { bpm, duration, genre?, genres? } } }`.
  * IDs and song keys are sorted; bpm has 1 decimal, duration whole seconds.
- * `genre` (iTunes primary genre) is only present for songs listed in `genres`.
+ * `genre` (iTunes primary genre) is only present for songs listed in `genres`,
+ * `genres` (the multi-source list, src/genre) for songs listed in `genreLists`.
  */
 export function renderIndex(
   prevText: string | undefined,
@@ -63,13 +64,20 @@ export function renderIndex(
   maps: ReadonlyMap<string, MapInfo>,
   now: string,
   genres?: ReadonlyMap<string, string>,
+  genreLists?: ReadonlyMap<string, readonly string[]>,
 ): string {
   const ids = [...maps.keys()].sort();
-  const songs: Record<string, { bpm: number; duration: number; genre?: string }> = {};
+  const songs: Record<string, { bpm: number; duration: number; genre?: string; genres?: string[] }> = {};
   for (const id of ids) {
     const m = maps.get(id)!;
     const genre = genres?.get(id);
-    songs[id] = { bpm: Math.round(m.bpm * 10) / 10, duration: Math.round(m.duration), ...(genre ? { genre } : {}) };
+    const list = genreLists?.get(id);
+    songs[id] = {
+      bpm: Math.round(m.bpm * 10) / 10,
+      duration: Math.round(m.duration),
+      ...(genre ? { genre } : {}),
+      ...(list?.length ? { genres: [...list] } : {}),
+    };
   }
   return renderStable(prevText, 'generatedAt', now, (generatedAt) => toJsonText({ analyzerVersion, generatedAt, ids, songs }));
 }

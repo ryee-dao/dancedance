@@ -1,0 +1,115 @@
+{
+ "url": "https://musicbrainz.org/ws/2/release-group?query=releasegroup%3A%22Billie+Jean%22+AND+artist%3A%22Michael+Jackson%22&fmt=json&limit=15",
+ "body": {
+  "count": 4,
+  "release-groups": [
+   {
+    "id": "d42503ec-54fd-3ac7-83ac-a5e37425509c",
+    "score": 100,
+    "title": "Billie Jean",
+    "artist-credit": [
+     {
+      "name": "Michael Jackson",
+      "joinphrase": "",
+      "artist": {
+       "name": "Michael Jackson"
+      }
+     }
+    ],
+    "tags": [
+     {
+      "count": 2,
+      "name": "electronic"
+     },
+     {
+      "count": 7,
+      "name": "pop"
+     },
+     {
+      "count": 1,
+      "name": "dance"
+     },
+     {
+      "count": 1,
+      "name": "funk"
+     },
+     {
+      "count": 1,
+      "name": "disco"
+     }
+    ],
+    "primary-type": "Single"
+   },
+   {
+    "id": "205fd257-da6e-4f9b-afdd-015886523c07",
+    "score": 82,
+    "title": "Billie Jean (Nicolas Jaar rework)",
+    "artist-credit": [
+     {
+      "name": "Michael Jackson",
+      "joinphrase": "",
+      "artist": {
+       "name": "Michael Jackson"
+      }
+     }
+    ],
+    "tags": [
+     {
+      "count": 1,
+      "name": "electronic"
+     },
+     {
+      "count": 1,
+      "name": "downtempo"
+     },
+     {
+      "count": 1,
+      "name": "house"
+     }
+    ],
+    "primary-type": "Other"
+   },
+   {
+    "id": "8fc78ebd-ee8b-4e43-81af-fc22b65161be",
+    "score": 78,
+    "title": "You Can't Win / Billie Jean",
+    "disambiguation": "From the series Mixed Masters",
+    "artist-credit": [
+     {
+      "name": "Michael Jackson",
+      "joinphrase": "",
+      "artist": {
+       "name": "Michael Jackson"
+      }
+     }
+    ],
+    "tags": [
+     {
+      "count": 1,
+      "name": "electronic"
+     },
+     {
+      "count": 1,
+      "name": "disco"
+     }
+    ],
+    "primary-type": "Single"
+   },
+   {
+    "id": "7e9f60b0-204b-4dd9-9d6f-1790cbfbd33c",
+    "score": 25,
+    "title": "Michael Jackson – Off The Wall Don't Stop 'Til You Get Enough 6:02 Rock With You 3:38 Working Day And Night 5:12 Get On The Floor 4:44 Off The Wall 4:04 Girlfriend 3:04 She's Out Of My Life 3:36 I Can't Help It 4:27 It's The Falling In Love 3:46 Burn This Disco Out 3:38 Michael Jackson – Thriller Wanna Be Startin' Somethin' 6:02 Baby Be Mine 4:20 The Girl Is Mine 3:42 Thriller 5:57 Beat It 4:17 Billie Jean 4:57 Human Nature 4:05 P.Y.T. (Pretty Young Thing) 3:58 The Lady In My Life 4:57",
+    "artist-credit": [
+     {
+      "name": "Michael Jackson Is The World's Greatest Shotacon",
+      "joinphrase": "",
+      "artist": {
+       "name": "Michael Jackson Is The World's Greatest Shotacon"
+      }
+     }
+    ],
+    "primary-type": "Single"
+   }
+  ]
+ }
+}

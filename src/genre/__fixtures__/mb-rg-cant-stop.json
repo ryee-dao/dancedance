@@ -1,0 +1,40 @@
+{
+ "url": "https://musicbrainz.org/ws/2/release-group?query=releasegroup%3A%22Can%27t+Stop+the+Feeling%21%22+AND+artist%3A%22Justin+Timberlake%22&fmt=json&limit=15",
+ "body": {
+  "count": 1,
+  "release-groups": [
+   {
+    "id": "96ad7a58-71b2-46ad-944f-cfd683568773",
+    "score": 100,
+    "title": "CAN’T STOP THE FEELING!",
+    "artist-credit": [
+     {
+      "name": "Justin Timberlake",
+      "joinphrase": "",
+      "artist": {
+       "name": "Justin Timberlake"
+      }
+     }
+    ],
+    "tags": [
+     {
+      "count": 3,
+      "name": "pop"
+     },
+     {
+      "count": 1,
+      "name": "funk"
+     },
+     {
+      "count": 3,
+      "name": "r&b"
+     }
+    ],
+    "primary-type": "Single",
+    "secondary-types": [
+     "Soundtrack"
+    ]
+   }
+  ]
+ }
+}

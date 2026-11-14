@@ -1,0 +1,50 @@
+{
+ "url": "https://en.wikipedia.org/w/api.php?format=json&formatversion=2&origin=*&action=query&redirects=1&prop=pageprops%7Crevisions&ppprop=disambiguation&rvprop=content&rvslots=main&rvsection=0&titles=My+Immortal+%28Evanescence+song%29%7CMy+Immortal+%28song%29%7CMy+Immortal",
+ "body": {
+  "batchcomplete": true,
+  "query": {
+   "pages": [
+    {
+     "ns": 0,
+     "title": "My Immortal (Evanescence song)",
+     "missing": true
+    },
+    {
+     "pageid": 2638962,
+     "ns": 0,
+     "title": "My Immortal (song)",
+     "revisions": [
+      {
+       "slots": {
+        "main": {
+         "contentmodel": "wikitext",
+         "contentformat": "text/x-wiki",
+         "content": "{{Short description|2003 song by Evanescence}}\n{{Good article}}\n{{Infobox song\n| name          = My Immortal\n| cover         = Evanescence - My Immortal (Official Single Cover).png\n| alt           = \n| type          = single\n| artist        = [[Evanescence]]\n| album         = [[Fallen (Evanescence album)|Fallen]]\n| released      = {{start date|2003|12|8}}\n| recorded      = 1997 (first demo)<br> 2000 (''Origin'' demo)<br> 2002 (\"band\" version)\n| studio        = [[NRG Recording Studios|NRG Recording]] (North Hollywood)\n| genre         = <!-- Genre(s) most commonly cited by reliable sources. Do not add unsourced genres. Genre is cited in Composition section --> [[Alternative rock]]\n| length        = {{duration|m=4|s=33}} (\"band\" version)<br>{{duration|m=4|s=22}} (album version)\n| label         = [[Wind-up Records|Wind-up]]\n| writer        = {{hlist|[[Amy Lee]]|[[Ben Moody]]}}\n| producer      = {{hlist|[[Dave Fortman]]|Moody}}\n| prev_title    = [[Going Under (Evanescence song)|Going Under]]\n| prev_year     = 2003\n| next_title    = [[Everybody's Fool]]\n| next_year     = 2004\n| misc          = {{External music video|{{YouTube|5anLPw0Efmo|\"My Immortal\"}}}}\n}}\n\n\"'''My Immortal'''\" is a song by the American [[rock music|rock]] band [[Evanescence]] from their debut album, ''[[Fallen (Evanescence album)|Fallen]]'' (2003). It was released by [[Wind-up Records]] on December 8, 2003, as the album's third single, following its inclusion on [[Daredevil: The Album|the soundtrack]] to the film ''[[Daredevil (film)|Daredevil]]''. The song was written by singer and pianist [[Amy Lee]] and guitarist [[Ben Moody]] when they were 15 years old. Several versions were recorded, with the earliest in 1997. Wind-up used the recording from their 2000 [[Origin (Evanescence demo album)|demo CD]] on ''Fallen'' against Lee's wishes, which featured her demo vocals and a [[MIDI]] keyboard. [[String instrument|Strings]] from ''Daredevil'' composer [[Graeme Revell]] were added during the production of ''Fallen''. The single, dubbed \"band version\", is the re-recording Lee and Moody made for ''Fallen'', featuring guitar, drums and bass and a string arrangement by [[David Campbell (composer)|David Campbell]]. An alternate version of the song appears on the band's fourth studio album, ''[[Synthesis (Evanescence album)|Synthesis]]'' (2017).\n\n\"My Immortal\" is a piano [[power ballad]], with lyrics about a fictional story of a lingering spirit that haunts someone. The song received generally positive reviews. It was commercially successful, peaking within the top ten in over ten countries. It charted at number seven on the US [[Billboard Hot 100|''Billboard'' Hot 100]] and topped the charts in Canada, Greece and Portugal. The single was certified Platinum in the United States, Australia, Denmark, Italy, New Zealand, and the United Kingdom. In 2005, it received a nomination for [[Grammy Award for Best Pop Performance by a Duo or Group with Vocals|Best Pop Performance by a Duo or Group with Vocals]] at the [[47th Grammy Awards]]. The music video directed by David Mould was filmed in black-and-white in the [[Gothic Quarter, Barcelona|Gothic Quarter]] in [[Barcelona]]. The video was nominated for the [[MTV Video Music Award for Best Rock Video]]."
+        }
+       }
+      }
+     ]
+    },
+    {
+     "pageid": 74617824,
+     "ns": 0,
+     "title": "My Immortal",
+     "pageprops": {
+      "disambiguation": ""
+     },
+     "revisions": [
+      {
+       "slots": {
+        "main": {
+         "contentmodel": "wikitext",
+         "contentformat": "text/x-wiki",
+         "content": "'''My Immortal''' can refer to:\n\n*[[My Immortal (song)|\"My Immortal\" (song)]], 2003 song by Evanescence \n*[[My Immortal (fan fiction)|''My Immortal'' (fan fiction)]], fan-fiction novel in the Harry Potter universe\n\n{{disambiguation}}"
+        }
+       }
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

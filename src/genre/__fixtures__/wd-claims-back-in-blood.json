@@ -1,0 +1,92 @@
+{
+ "url": "https://www.wikidata.org/w/api.php?format=json&origin=*&action=wbgetentities&ids=Q105038558&props=claims%7Clabels%7Cdescriptions&languages=en&languagefallback=1",
+ "body": {
+  "entities": {
+   "Q105038558": {
+    "type": "item",
+    "id": "Q105038558",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Back in Blood"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "2020 single by Pooh Shiesty featuring Lil Durk"
+     }
+    },
+    "claims": {
+     "P175": [
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q105105274"
+         }
+        }
+       },
+       "rank": "normal"
+      },
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q2899818"
+         }
+        }
+       },
+       "rank": "normal"
+      }
+     ],
+     "P31": [
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q105543609"
+         }
+        }
+       },
+       "rank": "normal"
+      }
+     ],
+     "P136": [
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q15697534"
+         }
+        }
+       },
+       "rank": "normal"
+      },
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q2913982"
+         }
+        }
+       },
+       "rank": "normal"
+      },
+      {
+       "mainsnak": {
+        "datavalue": {
+         "value": {
+          "id": "Q11401"
+         }
+        }
+       },
+       "rank": "normal"
+      }
+     ]
+    }
+   }
+  },
+  "success": 1
+ }
+}

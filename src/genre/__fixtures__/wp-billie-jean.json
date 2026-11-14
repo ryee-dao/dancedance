@@ -1,0 +1,36 @@
+{
+ "url": "https://en.wikipedia.org/w/api.php?format=json&formatversion=2&origin=*&action=query&redirects=1&prop=pageprops%7Crevisions&ppprop=disambiguation&rvprop=content&rvslots=main&rvsection=0&titles=Billie+Jean+%28Michael+Jackson+song%29%7CBillie+Jean+%28song%29%7CBillie+Jean",
+ "body": {
+  "batchcomplete": true,
+  "query": {
+   "redirects": [
+    {
+     "from": "Billie Jean (song)",
+     "to": "Billie Jean"
+    },
+    {
+     "from": "Billie Jean (Michael Jackson song)",
+     "to": "Billie Jean"
+    }
+   ],
+   "pages": [
+    {
+     "pageid": 298538,
+     "ns": 0,
+     "title": "Billie Jean",
+     "revisions": [
+      {
+       "slots": {
+        "main": {
+         "contentmodel": "wikitext",
+         "contentformat": "text/x-wiki",
+         "content": "{{short description|1983 single by Michael Jackson}}\n{{pp-pc|small=yes}} \n{{Other uses}}\n{{Good article}}{{Infobox song\n| name          = Billie Jean\n| image         = Billie Jean Single.jpg\n| alt           = \n| border        = yes\n| caption       = UK single picture sleeve, reused for Spotify reissue\n| type          = single\n| artist        = [[Michael Jackson]]\n| album         = [[Thriller (album)|Thriller]]\n| B-side        = [[You Can't Win (song)|Can't Get Outta the Rain]]\n| released      = January 2, 1983<ref>{{cite web|url=https://www.michaeljackson.com/news/michael-jacksons-billie-jean-released-this-day-in-1983/|title=Michael Jackson’s 'Billie Jean' Released This Day In 1983|archive-url=https://web.archive.org/web/20190419141916/https://www.michaeljackson.com/news/michael-jacksons-billie-jean-released-this-day-in-1983/|url-status=dead|archive-date=April 19, 2019|website=Michael Jackson Official Website|access-date=April 16, 2026}}</ref>\n| recorded      = 1982\n| studio        = [[Westlake Recording Studios|Westlake]] (Los Angeles, California)<ref>{{cite news|first= Randall |last= Roberts |title= Michael Jackson's 'Human Nature': An NYC classic on his birthday |newspaper= [[Los Angeles Times]] |date= August 29, 2012 |access-date= December 6, 2019 |url= https://www.latimes.com/entertainment/music/la-xpm-2012-aug-29-la-et-ms-michael-jacksons-human-nature-a-classic-on-his-birthday-20120829-story.html}}</ref>\n| genre         = * [[Post-disco]]\n* [[Contemporary R&B|R&B]]\n* [[funk]]\n* [[dance-pop]]\n| length        = * 4:57 (original album/European single version)<ref>{{cite web|url=https://mjofficialversions.blogspot.com/2012/01/billie-jean.html|publisher=[[Michael Jackson]]: Official Versions|access-date=October 26, 2023|title=Billie Jean|language=en|date=October 26, 2023}}</ref>\n* 4:52 (album reissue/US single version with early fade out)\n* 6:21 (12-inch version)\n| label         = [[Epic Records|Epic]]\n| writer        = Michael Jackson\n| producer      = * [[Quincy Jones]]\n* Michael Jackson\n| prev_title    = [[The Girl Is Mine]]\n| prev_year     = 1982\n| next_title    = [[Beat It]]\n| next_year     = 1983\n| misc          = {{External music video|{{YouTube|Zi_XLOBDo_Y|\"Billie Jean\"}}}}\n{{Extra album cover\n| type    = single\n| cover   = Billlie jean michael jackson US 7-inch vinyl side-A.webp\n| border  =\n| alt     = \n| caption = Side A of the US 7-inch vinyl single\n}}\n}}\n\n\"'''Billie Jean'''\" is a song by the American singer [[Michael Jackson]], released by [[Epic Records]] on January 2, 1983, as the second single from Jackson's sixth studio album, ''[[Thriller (album)|Thriller]]'' (1982). It was written by Jackson and produced by Jackson and [[Quincy Jones]]. \"Billie Jean\" blends [[post-disco]], [[Contemporary R&B|R&B]], [[funk]] and [[dance-pop]]. The lyrics describe a young woman, Billie Jean, who claims that the narrator is the father of her newborn son, which he denies. Jackson said that the lyrics were based on [[groupie]]s' claims about Jackson's older brothers when Jackson toured with them as members of [[the Jackson 5]].\n\n\"Billie Jean\" reached number one on the [[Billboard Hot 100|''Billboard'' Hot 100]], topped the [[Hot R&B/Hip-Hop Songs|''Billboard'' Hot Black Singles]] chart within three weeks, and became Jackson's fastest-rising number one single since his time as a member of the Jackson 5. It reached number one in the UK, Australia, Canada, France, Ireland, Switzerland and Belgium, and the top ten of the music charts in many other countries. \"Billie Jean\" was one of the best-selling singles of 1983, helping ''Thriller'' become the [[List of best-selling albums|best-selling album of all time]], and became Jackson's best-selling solo single. \"Billie Jean\" is [[RIAA certification|certified diamond]] in the US and with 18 million copies worldwide, is one of the [[List of best-selling singles#Highest-certified singles|highest-selling singles of all time]]. In 2026, following the release of the biopic ''[[Michael (2026 film)|Michael]]'', \"Billie Jean\" surged on streaming platforms globally<ref>{{cite web|url=https://www.msn.com/en-ca/entertainment/music/michael-jackson-s-billie-jean-peaks-again-on-spotify-global-chart-43-years-after-release/ar-AA21JkRJ?gemSnapshotKey=GM698A82CF-snapshot-1&cvid=6a15ff5dbe2f431d94a080f66bb66e3a&ei=19|title=Michael Jackson’s 'Billie Jean' peaks again on Spotify global chart 43 years after release|publisher=Inde News |access-date=2026-05-15 }}</ref> and became Jackson's first number-one single on the [[Billboard Global 200|''Billboard'' Global 200]] chart.<ref name=global/>\n\nJackson's performance of \"Billie Jean\" on the TV special ''[[Motown 25: Yesterday, Today, Forever]]'' was nominated for an [[Primetime Emmy Award for Outstanding Individual Performance in a Variety or Music Program|Emmy Award]]. It introduced a number of Jackson's signatures, including the [[moonwalk (dance)|moonwalk]], rhinestone glove, black sequined jacket, and high-water pants, and was widely imitated. The \"Billie Jean\" [[music video]], which was directed by [[Steve Barron]], was the first performance by a black artist to be aired in heavy rotation on [[MTV]]. Along with the other videos produced for ''Thriller'', it helped establish MTV and make videos an integral part of [[popular music]] marketing. The spare, bass-driven arrangement helped pioneer what one critic called \"sleek, post-soul pop music\".<ref name=\"Blender\"/>\n\n\"Billie Jean\" received honors including two [[Grammy Award]]s and an [[American Music Awards|American Music Award]]. ''[[Billboard (magazine)|Billboard]]'' ranked it as the No. 2 song for 1983. A list compiled by ''[[Rolling Stone]]'' and MTV in 2000 ranked \"Billie Jean\" the sixth-greatest pop song since 1963. ''Rolling Stone'' placed it at number 58 on its list of [[Rolling Stone's 500 Greatest Songs of All Time|The 500 Greatest Songs of All Time]] in 2004, and at number 44 in its updated 2021 list. The song was also included in the [[Rock and Roll Hall of Fame]]'s [[500 Songs that Shaped Rock and Roll]].<ref>{{cite web|title= Experience the Music: One Hit Wonders and the Songs that Shaped Rock and Roll |publisher= Rock and Roll Hall of Fame and Museum |url= http://rockhall.com/exhibits/one-hit-wonders-songs-that-shaped-rock-and-roll/ |archive-date= May 9, 2012 |archive-url= https://web.archive.org/web/20120509180015/http://rockhall.com/exhibits/one-hit-wonders-songs-that-shaped-rock-and-roll/}}</ref>"
+        }
+       }
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

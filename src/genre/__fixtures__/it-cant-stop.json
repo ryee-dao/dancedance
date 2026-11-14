@@ -1,0 +1,112 @@
+{
+ "url": "https://itunes.apple.com/search?term=Justin+Timberlake+Can%27t+Stop+the+Feeling%21&entity=song&limit=25",
+ "body": {
+  "resultCount": 13,
+  "results": [
+   {
+    "artistName": "Justin Timberlake",
+    "trackName": "CAN'T STOP THE FEELING!",
+    "collectionName": "TROLLS (Original Motion Picture Soundtrack)",
+    "trackTimeMillis": 237544,
+    "primaryGenreName": "Soundtrack",
+    "releaseDate": "2016-05-06T07:00:00Z"
+   },
+   {
+    "artistName": "KIDZ BOP Kids",
+    "trackName": "Can't Stop The Feeling (Live In Concert / 2021)",
+    "collectionName": "KIDZ BOP Live In Concert",
+    "trackTimeMillis": 222419,
+    "primaryGenreName": "Children's Music",
+    "releaseDate": "2021-06-11T12:00:00Z"
+   },
+   {
+    "artistName": "Justin Timberlake, Anna Kendrick, Gwen Stefani, James Corden, Zooey Deschanel, Ron Funches, Caroline Hjelt, Aino Jawo, Christopher Mintz-Plasse & Kunal Nayyar",
+    "trackName": "Can't Stop the Feeling! (Film Version)",
+    "collectionName": "TROLLS (Original Motion Picture Soundtrack)",
+    "trackTimeMillis": 237400,
+    "primaryGenreName": "Soundtrack",
+    "releaseDate": "2016-05-06T07:00:00Z"
+   },
+   {
+    "artistName": "Rockabye Baby!",
+    "trackName": "Can't Stop the Feeling!",
+    "collectionName": "Lullaby Renditions of Justin Timberlake",
+    "trackTimeMillis": 203400,
+    "primaryGenreName": "Lullabies",
+    "releaseDate": "2017-08-18T12:00:00Z"
+   },
+   {
+    "artistName": "The Piano Guys",
+    "trackName": "Can't Stop the Feeling",
+    "collectionName": "Uncharted (Deluxe Edition)",
+    "trackTimeMillis": 182750,
+    "primaryGenreName": "Classical",
+    "releaseDate": "2016-10-28T12:00:00Z"
+   },
+   {
+    "artistName": "KIDZ BOP Kids",
+    "trackName": "Can't Stop the Feeling!",
+    "collectionName": "Kidz Bop 33",
+    "trackTimeMillis": 210747,
+    "primaryGenreName": "Children's Music",
+    "releaseDate": "2016-10-14T12:00:00Z"
+   },
+   {
+    "artistName": "The Piano Guys",
+    "trackName": "Can't Stop the Feeling",
+    "collectionName": "Uncharted",
+    "trackTimeMillis": 182750,
+    "primaryGenreName": "Classical Crossover",
+    "releaseDate": "2016-10-28T07:00:00Z"
+   },
+   {
+    "artistName": "KIDZ BOP Kids",
+    "trackName": "Can't Stop The Feeling!",
+    "collectionName": "KIDZ BOP All-Time Greatest Hits",
+    "trackTimeMillis": 211949,
+    "primaryGenreName": "Children's Music",
+    "releaseDate": "2001-10-09T12:00:00Z"
+   },
+   {
+    "artistName": "Stark Sands, Betsy Wolfe & Original Broadway Cast of & Juliet",
+    "trackName": "CAN’T STOP THE FEELING!",
+    "collectionName": "& Juliet (Original Broadway Cast Recording)",
+    "trackTimeMillis": 113816,
+    "primaryGenreName": "Soundtrack",
+    "releaseDate": "2022-10-28T12:00:00Z"
+   },
+   {
+    "artistName": "KIDZ BOP Kids",
+    "trackName": "Can't Stop the Feeling! (Live)",
+    "collectionName": "KIDZ BOP World Tour",
+    "trackTimeMillis": 225534,
+    "primaryGenreName": "Children's Music",
+    "releaseDate": "2019-05-24T12:00:00Z"
+   },
+   {
+    "artistName": "Home Free",
+    "trackName": "Can't Stop the Feeling!",
+    "collectionName": "Can't Stop the Feeling! - Single",
+    "trackTimeMillis": 244733,
+    "primaryGenreName": "Country",
+    "releaseDate": "2016-06-21T12:00:00Z"
+   },
+   {
+    "artistName": "Can Feeling",
+    "trackName": "Can't Stop the Feeling",
+    "collectionName": "Can't Stop the Feeling - Single",
+    "trackTimeMillis": 236095,
+    "primaryGenreName": "Pop",
+    "releaseDate": "2016-07-05T12:00:00Z"
+   },
+   {
+    "artistName": "Fame on Fire",
+    "trackName": "Can't Stop the Feeling",
+    "collectionName": "Can't Stop the Feeling - Single",
+    "trackTimeMillis": 235752,
+    "primaryGenreName": "Rock",
+    "releaseDate": "2016-06-01T12:00:00Z"
+   }
+  ]
+ }
+}

@@ -1,0 +1,17 @@
+{
+ "url": "https://www.theaudiodb.com/api/v1/json/123/searchtrack.php?s=Billie+Eilish&t=TV",
+ "body": {
+  "track": [
+   {
+    "idTrack": "36682075",
+    "strTrack": "TV",
+    "strAlbum": "Guitar Songs",
+    "strArtist": "Billie Eilish",
+    "intDuration": "281380",
+    "strGenre": null,
+    "strMood": null,
+    "strStyle": null
+   }
+  ]
+ }
+}

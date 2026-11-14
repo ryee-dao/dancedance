@@ -35,6 +35,10 @@ import org.json.JSONObject
  * updateState event. Only status strings and progress numbers cross; never the token.
  * Version 6 added: dropAudio() (the page's playback watchdog gave up on a song's file: forget the
  * cached copy so the next play downloads it again). Feature-detected by the page.
+ * Version 7 added: setSongGenres() (per-song genres for songs added on the TV). The page runs the
+ * multi-source lookup itself (src/genre; every source allows the page's origin by CORS), so the
+ * matching logic exists once; the shell only stores the result with the song ([AddedSongsStore]),
+ * and getAddedSongs / addedSongsChanged then carry `genres` and `genreLookup`.
  */
 class DanceBridge(private val app: DanceApp, private val host: Host) {
     interface Host {
@@ -50,7 +54,7 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
     }
 
     companion object {
-        const val VERSION = 6
+        const val VERSION = 7
         private const val TAG = "DanceDance"
         private val ID_RE = Regex("^[A-Za-z0-9_-]{1,40}$")
         private val VIDEO_RE = Regex("^[A-Za-z0-9_-]{11}$")
@@ -140,7 +144,7 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
             .toString()
     }
 
-    /** JSON array of added songs, oldest first: {videoId, title, artist, addedAt, durationSec, note?, genre?, videoTitle, channel, tier}. */
+    /** JSON array of added songs, oldest first: {videoId, title, artist, addedAt, durationSec, note?, genre?, genres?, genreLookup?, videoTitle, channel, tier}. */
     @JavascriptInterface
     fun getAddedSongs(): String = app.addedSongs.toJson().toString()
 
@@ -150,6 +154,15 @@ class DanceBridge(private val app: DanceApp, private val host: Host) {
         val gone = app.addedSongs.remove(videoId) ?: return false
         addedListener(null, gone.videoId)
         return true
+    }
+
+    /** v7: store the page's genre lookup (JSON) for an added song. True if saved; emits addedSongsChanged. */
+    @JavascriptInterface
+    fun setSongGenres(videoId: String?, lookupJson: String?): Boolean {
+        if (videoId == null || !VIDEO_RE.matches(videoId) || lookupJson == null) return false
+        val ok = app.addedSongs.updateGenres(videoId, lookupJson)
+        if (ok) addedListener(null, null)
+        return ok
     }
 
     @JavascriptInterface
