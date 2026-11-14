@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parse, serialize, validateBeatMap, type BeatMap } from './beatmap';
+import { ANALYZER_VERSION, parse, serialize, validateBeatMap, type BeatMap } from './beatmap';
 import { analyzeOffline } from './offline';
 import { StreamingAnalyzer } from './streaming';
 import { mulberry32 } from './synth.testutil';
@@ -103,7 +103,7 @@ describe('per-bar readings', () => {
   const at = (name: string, offset = 0) => barIndexAt(map, SONG.sectionStartBar[name] + offset);
 
   it('are present, one digit per downbeat, and survive serialisation', () => {
-    expect(map.analyzerVersion).toBe('1.2.0');
+    expect(map.analyzerVersion).toBe(ANALYZER_VERSION);
     expect(map.bars).toBeDefined();
     const b = map.bars!;
     for (const s of [b.energy, b.bass, b.change]) {

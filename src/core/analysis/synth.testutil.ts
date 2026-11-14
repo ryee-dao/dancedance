@@ -451,3 +451,171 @@ export function synthSong(o: SongOptions): SynthResult & { sectionNames: string[
   addNoise(pcm, o.snrDb, gauss);
   return { pcm, sampleRate: sr, beats, downbeats, duration, sectionTimes, sectionNames: o.sections.map((s) => s.name) };
 }
+
+// ---------------------------------------------------------------------------
+// Mixes with tonal layers, for the song-trait tests (test-only).
+
+export interface MixOptions {
+  bpm: number;
+  bars: number;
+  /** Drum events per bar (beats from the bar start; 4 beats per bar). */
+  drums?: PatternEvent[];
+  /** Piano-like chords (decaying harmonic tones with a hammer click), one per `pianoEvery` beats. */
+  piano?: { chords: number[][]; every?: number; level?: number };
+  /** Distorted power chords (clipped saws), re-struck every 8th, root per bar (MIDI). */
+  guitar?: { roots: number[]; level?: number };
+  /** Sustained sub-bass sine, one note per bar (MIDI, e.g. 28 = E1 41 Hz). */
+  sub?: { notes: number[]; level?: number };
+  /** Sustained synth-pad chord (6 harmonics per note), one chord per bar: fills the midrange like a real mix. */
+  pad?: { chords: number[][]; level?: number };
+  /** Overall output gain. */
+  gain?: number;
+  sampleRate?: number;
+  seed?: number;
+  snrDb?: number;
+}
+
+const midiHz = (m: number) => 440 * Math.pow(2, (m - 69) / 12);
+
+/**
+ * Drums closer to a real kit than `drum` (whose kick has a white-noise click
+ * and whose snare reaches down into the kick range): a kick that is mostly a
+ * pitch-dropping sine with a small beater click, a snare / clap of
+ * high-passed noise over a short body tone, a high-passed hat.
+ */
+function mixDrum(pcm: Float32Array, sr: number, gauss: Gauss, kind: DrumKind, at: number, g: number): void {
+  const start = Math.round(at * sr);
+  if (kind === 'kick') {
+    let phase = 0;
+    for (let i = 0; i < 0.3 * sr && start + i < pcm.length; i++) {
+      const t = i / sr;
+      phase += (2 * Math.PI * (50 + 100 * Math.exp(-t / 0.015))) / sr;
+      let v = Math.sin(phase) * Math.exp(-t / 0.09) * Math.min(1, i / 16);
+      if (i < 0.002 * sr) v += 0.08 * gauss();
+      if (start + i >= 0) pcm[start + i] += 0.9 * g * v;
+    }
+    return;
+  }
+  const hat = kind === 'hat';
+  const decay = hat ? 0.015 : kind === 'clap' ? 0.04 : 0.07;
+  const body = kind === 'snare' ? 190 : 0;
+  let p1 = 0;
+  let p2 = 0;
+  for (let i = 0; i < Math.min(0.4, decay * 6) * sr && start + i < pcm.length; i++) {
+    const t = i / sr;
+    const w = gauss();
+    // Second difference: a steep high-pass (hat), or first difference (snare / clap).
+    const v = hat ? w - 2 * p1 + p2 : w - p1;
+    p2 = p1;
+    p1 = w;
+    let x = (hat ? 0.12 : 0.35) * v * Math.exp(-t / decay);
+    if (body) x += 0.35 * Math.sin(2 * Math.PI * body * t) * Math.exp(-t / 0.04);
+    if (start + i >= 0) pcm[start + i] += g * x;
+  }
+}
+
+/** A drum loop plus optional piano, distorted guitar and sub-bass layers. Beats / downbeats are the true grid. */
+export function synthMix(o: MixOptions): SynthResult {
+  const sr = o.sampleRate ?? 22050;
+  const rand = mulberry32(o.seed ?? 31);
+  const gauss = gaussian(rand);
+  const P = 60 / o.bpm;
+  const first = 0.25;
+  const duration = first + o.bars * 4 * P + 1;
+  const pcm = new Float32Array(Math.round(duration * sr));
+  const beats: number[] = [];
+  const downbeats: number[] = [];
+  for (let b = 0; b < o.bars; b++) {
+    const t0 = first + b * 4 * P;
+    downbeats.push(beats.length);
+    for (let k = 0; k < 4; k++) beats.push(t0 + k * P);
+    for (const e of o.drums ?? []) mixDrum(pcm, sr, gauss, e.kind, t0 + e.at * P, e.gain ?? 1);
+  }
+  if (o.piano) {
+    const every = o.piano.every ?? 2;
+    const lvl = o.piano.level ?? 0.15;
+    let c = 0;
+    for (let j = 0; j < beats.length; j += every, c++) {
+      const chord = o.piano.chords[c % o.piano.chords.length];
+      const i0 = Math.round(beats[j] * sr);
+      const len = Math.min(pcm.length - i0, Math.round(Math.min(2.5, every * P + 0.8) * sr));
+      for (const note of chord) {
+        const f0 = midiHz(note);
+        for (let h = 1; h <= 8; h++) {
+          const fh = f0 * h * Math.sqrt(1 + 0.0004 * h * h);
+          if (fh > sr / 2.2) break;
+          const a = lvl / h / chord.length;
+          const dec = 1.6 / Math.sqrt(h);
+          for (let i = 0; i < len; i++) {
+            const t = i / sr;
+            pcm[i0 + i] += a * Math.sin(2 * Math.PI * fh * t) * Math.exp(-t / dec) * Math.min(1, i / (0.004 * sr));
+          }
+        }
+      }
+      // Soft, dull hammer thud (low-passed noise).
+      let lp = 0;
+      for (let i = 0; i < 0.01 * sr && i0 + i < pcm.length; i++) {
+        lp += 0.1 * (gauss() - lp);
+        pcm[i0 + i] += 0.1 * lvl * lp * (1 - i / (0.01 * sr));
+      }
+    }
+  }
+  if (o.guitar) {
+    const lvl = o.guitar.level ?? 0.25;
+    let lp = 0;
+    for (let b = 0; b < o.bars; b++) {
+      const root = o.guitar.roots[b % o.guitar.roots.length];
+      const fs = [midiHz(root), midiHz(root + 7), midiHz(root + 12)];
+      for (let e = 0; e < 8; e++) {
+        const t0 = first + b * 4 * P + (e * P) / 2;
+        const i0 = Math.round(t0 * sr);
+        const len = Math.round((P / 2) * sr);
+        const ph = [rand(), rand(), rand()];
+        for (let i = 0; i < len && i0 + i < pcm.length; i++) {
+          const t = i / sr;
+          let x = 0;
+          for (let q = 0; q < 3; q++) x += 2 * (((fs[q] * t + ph[q]) % 1) - 0.5);
+          x = Math.tanh(6 * x) + 0.05 * gauss(); // heavy clipping + fizz
+          lp += 0.8 * (x - lp); // gentle one-pole low-pass (a guitar cabinet's roll-off)
+          const env = Math.min(1, i / (0.003 * sr)) * (0.75 + 0.25 * Math.exp(-t / 0.05));
+          pcm[i0 + i] += lvl * lp * env;
+        }
+      }
+    }
+  }
+  if (o.sub) {
+    const lvl = o.sub.level ?? 0.4;
+    for (let b = 0; b < o.bars; b++) {
+      const f0 = midiHz(o.sub.notes[b % o.sub.notes.length]);
+      const i0 = Math.round((first + b * 4 * P) * sr);
+      const len = Math.round(4 * P * sr);
+      for (let i = 0; i < len && i0 + i < pcm.length; i++) {
+        const t = i / sr;
+        pcm[i0 + i] += lvl * Math.sin(2 * Math.PI * f0 * t) * Math.min(1, i / (0.01 * sr), (len - i) / (0.01 * sr));
+      }
+    }
+  }
+  if (o.pad) {
+    const lvl = o.pad.level ?? 0.06;
+    for (let b = 0; b < o.bars; b++) {
+      const chord = o.pad.chords[b % o.pad.chords.length];
+      const i0 = Math.round((first + b * 4 * P) * sr);
+      const len = Math.round(4 * P * sr);
+      const fade = 0.03 * sr;
+      for (let i = 0; i < len && i0 + i < pcm.length; i++) {
+        const t = (i0 + i) / sr;
+        const env = Math.min(1, i / fade, (len - i) / fade);
+        let v = 0;
+        for (const note of chord) {
+          const f0 = midiHz(note);
+          for (let h = 1; h <= 6; h++) v += Math.sin(2 * Math.PI * f0 * h * t * (1 + 0.002 * h)) / h;
+        }
+        pcm[i0 + i] += (lvl * env * v) / chord.length;
+      }
+    }
+  }
+  addNoise(pcm, o.snrDb, gauss);
+  const g = o.gain ?? 1;
+  if (g !== 1) for (let i = 0; i < pcm.length; i++) pcm[i] *= g;
+  return { pcm, sampleRate: sr, beats, downbeats, duration, sectionTimes: [0, duration] };
+}

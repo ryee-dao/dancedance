@@ -296,11 +296,14 @@ function githubHeaders(token: string): Record<string, string> {
 // (src/core/analysis/shared.ts); a test checks both agree.
 
 export const MAP_MAX_BYTES = 40_000;
-const MAP_KEYS = new Set(['v', 'analyzerVersion', 'videoId', 'duration', 'bpm', 'beats', 'downbeats', 'sections', 'source', 'partial', 'bars']);
+const MAP_KEYS = new Set(['v', 'analyzerVersion', 'videoId', 'duration', 'bpm', 'beats', 'downbeats', 'sections', 'source', 'partial', 'bars', 'traits']);
 const SECTION_KEYS = new Set(['start', 'end', 'type', 'energy']);
 /** Optional per-bar readings (analyser 1.2.0+): one digit per downbeat, plus drop bar indices. */
 const BAR_KEYS = new Set(['energy', 'bass', 'change', 'drops']);
 const BAR_DIGIT_KEYS = ['energy', 'bass', 'change'] as const;
+/** Optional song traits (analyser 1.3.0+): every key a number in 0..1 (src/core/analysis/traits.ts TRAIT_KEYS). */
+const TRAIT_KEYS = ['calm', 'drive', 'fourFloor', 'halfFeel', 'bass', 'hats', 'swing', 'syncop', 'heavy', 'minor'] as const;
+const TRAIT_KEY_SET = new Set<string>(TRAIT_KEYS);
 const MAX_DROPS = 64;
 const SECTION_TYPES = ['intro', 'verse', 'chorus', 'drop', 'outro'];
 const MAP_SOURCES = ['tab', 'device'];
@@ -325,6 +328,7 @@ export interface SharedMap {
   sections: SharedSection[];
   source: 'tab' | 'device';
   bars?: SharedBars;
+  traits?: Record<(typeof TRAIT_KEYS)[number], number>;
 }
 
 export interface SharedBars {
@@ -350,6 +354,7 @@ export function validateSharedMap(x: unknown): { ok: true; map: SharedMap } | { 
     }
   }
   if (obj(x.bars)) for (const k of Object.keys(x.bars)) if (!BAR_KEYS.has(k)) return no('extra-field');
+  if (obj(x.traits)) for (const k of Object.keys(x.traits)) if (!TRAIT_KEY_SET.has(k)) return no('extra-field');
   if (x.v !== 1) return no('version');
   if (typeof x.analyzerVersion !== 'string' || !VERSION_RE.test(x.analyzerVersion)) return no('analyzer-version');
   if (typeof x.videoId !== 'string' || !VIDEO_ID_RE.test(x.videoId)) return no('video-id');
@@ -399,6 +404,17 @@ export function validateSharedMap(x: unknown): { ok: true; map: SharedMap } | { 
     }
     bars = { energy: b.energy as string, bass: b.bass as string, change: b.change as string, drops };
   }
+  let traits: SharedMap['traits'];
+  if (x.traits !== undefined) {
+    if (!obj(x.traits)) return no('invalid');
+    const t = {} as NonNullable<SharedMap['traits']>;
+    for (const k of TRAIT_KEYS) {
+      const v = x.traits[k];
+      if (!fin(v) || v < 0 || v > 1) return no('invalid');
+      t[k] = Math.round(v * 100) / 100;
+    }
+    traits = t;
+  }
   const sections: SharedSection[] = [];
   const rs = x.sections as Record<string, unknown>[];
   if (!rs.length || rs.length > 64) return no(rs.length ? 'sections' : 'invalid');
@@ -416,6 +432,7 @@ export function validateSharedMap(x: unknown): { ok: true; map: SharedMap } | { 
   if (Math.abs(sections[sections.length - 1].end - duration) > 0.002) return no('sections');
   const map: SharedMap = { v: 1, analyzerVersion: x.analyzerVersion, videoId: x.videoId, duration, bpm, beats, downbeats, sections, source: x.source as 'tab' | 'device' };
   if (bars) map.bars = bars;
+  if (traits) map.traits = traits;
   return { ok: true, map };
 }
 

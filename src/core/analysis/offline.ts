@@ -2,7 +2,8 @@
  * Whole-file analysis: PCM -> features -> tempo -> beats -> downbeats -> sections -> BeatMap.
  *
  * `analyzeFeatures` is the tracker stage on its own (features in, results
- * out) and is shared with `StreamingAnalyzer.finalize`.
+ * out) and is shared with `StreamingAnalyzer.finalize`. `computeTraits` is
+ * the song-traits stage on its own, for maps made before analyser 1.3.0.
  *
  * Pure TypeScript: no DOM, Web Audio or Node APIs.
  */
@@ -14,6 +15,7 @@ import { FeatureExtractor, FeatureStore, FRAME_RATE, frameTime, onsetEnvelope, S
 import { Resampler } from './resample';
 import { segmentSections } from './sections';
 import { estimateTempo } from './tempo';
+import { traitsFromFeatures, type SongTraits, type TraitGrid } from './traits';
 
 /**
  * Small constant added to envelope-peak times: with this STFT the flux peak
@@ -35,6 +37,8 @@ export interface AnalysisResult {
   sections: Section[];
   /** Per-bar readings, one per downbeat (absent without a usable bar grid). */
   bars?: BarValues;
+  /** Absolute song traits (rounded to 2 decimals). */
+  traits?: SongTraits;
 }
 
 export interface AnalyzeFeaturesOptions {
@@ -53,6 +57,7 @@ export function analyzeFeatures(features: Features, opts: AnalyzeFeaturesOptions
     beats: [],
     downbeats: [],
     sections: segmentSections({ features, envelope: env, beats: [], downbeats: [], duration }),
+    traits: traitsFromFeatures(features, { beats: [], downbeats: [], bpm: 0 }),
   });
   if (features.frames < MIN_SECONDS * FRAME_RATE) return empty(0);
   const tempo = estimateTempo(env, FRAME_RATE);
@@ -70,7 +75,8 @@ export function analyzeFeatures(features: Features, opts: AnalyzeFeaturesOptions
   const bpm = beats.length >= 4 ? 60 / regressionPeriod(beats) : tempo.bpm;
   const sections = segmentSections({ features, envelope: env, beats, downbeats, duration });
   const bars = barReadings({ features, envelope: env, beats, downbeats, duration });
-  return { bpm, confidence: tempo.confidence, beats, downbeats, sections, ...(bars ? { bars } : {}) };
+  const traits = traitsFromFeatures(features, { beats, downbeats, bpm });
+  return { bpm, confidence: tempo.confidence, beats, downbeats, sections, ...(bars ? { bars } : {}), traits };
 }
 
 /** Least-squares slope of beat time against beat index (average period, s). */
@@ -183,6 +189,8 @@ export function toBeatMap(
     const drops = rb.drops.map((k) => pos.get(k)).filter((i): i is number => i !== undefined).slice(0, MAX_DROPS);
     map.bars = { energy: digits(rb.energy), bass: digits(rb.bass), change: digits(rb.change), drops };
   }
+  // Traits are absolute readings: a room heard through a microphone would skew them.
+  if (r.traits && meta.source !== 'mic') map.traits = { ...r.traits };
   return map;
 }
 
@@ -215,6 +223,21 @@ export function extractFeatures(
   fx.push(rs.flush());
   fx.flush();
   return store.view();
+}
+
+/**
+ * Song traits only, from decoded audio (mono PCM, any sample rate) and an
+ * existing map's beat grid (`beats`, `downbeats`, `bpm` in song time, the
+ * PCM starting at song time 0). For maps made before analyser 1.3.0: the
+ * same features and the same trait stage as `analyzeOffline`, so for the
+ * map's own audio the result matches what a fresh analysis would store
+ * (up to the map's millisecond rounding of beat times). Costs about as
+ * much as the feature extraction of a full analysis (the tempo, beat and
+ * section stages are skipped).
+ */
+export function computeTraits(pcm: Float32Array, sampleRate: number, grid: TraitGrid): SongTraits {
+  if (!(sampleRate > 0) || !Number.isFinite(sampleRate)) throw new Error(`computeTraits: invalid sampleRate ${sampleRate}`);
+  return traitsFromFeatures(extractFeatures(pcm, sampleRate), grid);
 }
 
 /** Analyse a whole decoded file (mono PCM) into a BeatMap. */

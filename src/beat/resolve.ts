@@ -8,7 +8,7 @@
  * (the caller then falls back to live listening). Never rejects.
  */
 import type { BeatMap } from '../core/analysis';
-import { isBetterMap, type BeatMapCache } from './cache';
+import { isBetterMap, sameAnalysis, type BeatMapCache } from './cache';
 
 export type MapOrigin = 'cache' | 'cloud';
 
@@ -34,24 +34,11 @@ export async function resolveBeatMap(
   }
   if (best) onMap(best, 'cache');
   const cloud = await cloudP;
-  if (cloud && !(best && sameMap(best, cloud)) && isBetterMap(best, cloud)) {
+  // An unchanged cloud map doesn't replace the cached copy (which may have traits filled in on this device).
+  if (cloud && !(best && sameAnalysis(best, cloud)) && isBetterMap(best, cloud)) {
     best = cloud;
     onMap(cloud, 'cloud');
     void deps.cache.offer(key, cloud).catch(() => false);
   }
   return best;
-}
-
-/** Cheap "is this the same analysis" check, so an unchanged cloud map doesn't bump the revision. */
-function sameMap(a: BeatMap, b: BeatMap): boolean {
-  return (
-    a.source === b.source &&
-    !!a.partial === !!b.partial &&
-    a.analyzerVersion === b.analyzerVersion &&
-    a.duration === b.duration &&
-    a.bpm === b.bpm &&
-    a.beats.length === b.beats.length &&
-    a.beats[0] === b.beats[0] &&
-    a.beats[a.beats.length - 1] === b.beats[b.beats.length - 1]
-  );
 }

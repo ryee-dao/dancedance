@@ -16,6 +16,9 @@ const nBars = REAL.downbeats.length;
 /** Bar readings (analyser 1.2.0+) of the right length for REAL. */
 const BARS = { energy: '7'.repeat(nBars), bass: '6'.repeat(nBars), change: '2'.repeat(nBars), drops: [4, 20] };
 const TAB_BARS = { ...TAB, bars: BARS };
+/** Song traits (analyser 1.3.0+). */
+const TRAITS = { calm: 0.2, drive: 0.9, fourFloor: 1, halfFeel: 0, bass: 0.7, hats: 0.6, swing: 0, syncop: 0.1, heavy: 0, minor: 0.55 };
+const TAB_TRAITS = { ...TAB_BARS, traits: TRAITS };
 
 interface Call {
   url: string;
@@ -73,6 +76,13 @@ describe('relay POST /map', () => {
     expect(JSON.parse(JSON.parse(f.calls[1].init!.body as string).inputs.map_json)).toEqual(TAB_BARS);
     // Bar readings cost ~4 bytes a bar: a 15-minute song at 220 BPM still fits.
     expect(JSON.stringify(TAB_BARS).length - JSON.stringify(TAB).length).toBeLessThan(4 * nBars + 80);
+  });
+
+  it('accepts maps with song traits and forwards them unchanged (about 150 bytes)', async () => {
+    const f = github();
+    expect((await read(await handle(post(TAB_TRAITS), env, f, NOW))).status).toBe(200);
+    expect(JSON.parse(JSON.parse(f.calls[1].init!.body as string).inputs.map_json)).toEqual(TAB_TRAITS);
+    expect(JSON.stringify(TAB_TRAITS).length - JSON.stringify(TAB_BARS).length).toBeLessThan(200);
   });
 
   it('accepts device maps too', async () => {
@@ -143,6 +153,11 @@ describe('relay POST /map', () => {
     ['drops out of order', { ...TAB, bars: { ...BARS, drops: [20, 4] } }, 'invalid'],
     ['a drop past the last bar', { ...TAB, bars: { ...BARS, drops: [nBars] } }, 'invalid'],
     ['too many drops', { ...TAB, bars: { ...BARS, drops: Array.from({ length: 65 }, (_, i) => i) } }, 'invalid'],
+    ['an extra trait', { ...TAB, traits: { ...TRAITS, mood: 0.5 } }, 'extra-field'],
+    ['traits that are not an object', { ...TAB, traits: 0.5 }, 'invalid'],
+    ['a missing trait', { ...TAB, traits: { ...TRAITS, minor: undefined } }, 'invalid'],
+    ['a trait above 1', { ...TAB, traits: { ...TRAITS, calm: 1.5 } }, 'invalid'],
+    ['a trait as text', { ...TAB, traits: { ...TRAITS, calm: '0.5' } }, 'invalid'],
   ])('rejects %s (bad-map), dispatching nothing', async (_, map, rule) => {
     const f = github();
     expect(await read(await handle(post(map), env, f, NOW))).toEqual({ status: 400, body: { ok: false, error: 'bad-map', detail: rule } });
@@ -158,6 +173,13 @@ describe('relay POST /map', () => {
       const bars = { energy: '5'.repeat(nb), bass: '4'.repeat(nb), change: '3'.repeat(nb), drops: nb > 2 ? [1] : [] };
       cases.push({ ...m, source: 'tab' }, { ...m, source: 'device' }, m, { ...m, source: 'tab', bpm: m.bpm * 1.2 }, { ...m, source: 'tab', beats: m.beats.slice(0, 40), downbeats: [] });
       cases.push({ ...m, source: 'tab', bars }, { ...m, source: 'tab', bars: { ...bars, energy: bars.energy.slice(1) } }, { ...m, source: 'tab', bars: { ...bars, extra: 1 } });
+      cases.push(
+        { ...m, source: 'device', bars, traits: TRAITS },
+        { ...m, source: 'device', traits: { ...TRAITS, calm: 0.123456 } },
+        { ...m, source: 'device', traits: { ...TRAITS, drive: 2 } },
+        { ...m, source: 'device', traits: { ...TRAITS, x: 1 } },
+        { ...m, source: 'device', traits: 'calm' },
+      );
     }
     for (const c of cases) {
       const a = validateSharedMap(c);

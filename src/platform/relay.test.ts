@@ -136,6 +136,25 @@ describe('relay POST /map client', () => {
     expect(await relayShareMap('https://r.example', withBars, null, older)).toEqual({ ok: true });
     expect(n).toBe(2);
     expect(JSON.parse(String(older.calls[1].init.body))).toEqual({ v: 1 });
+    // A relay that knows bars but not song traits: sent again without the traits only; an
+    // even older one: without traits, then without bars.
+    const relayKnowing = (keys: string[]) => {
+      const calls: string[] = [];
+      const fn = async (_url: string, init: RequestInit) => {
+        const body = String(init.body);
+        calls.push(body);
+        const extra = Object.keys(JSON.parse(body)).some((k) => !keys.includes(k));
+        return new Response(JSON.stringify(extra ? { ok: false, error: 'bad-map', detail: 'extra-field' } : { ok: true }), { status: extra ? 400 : 200 });
+      };
+      return Object.assign(fn, { calls });
+    };
+    const full = JSON.stringify({ v: 1, bars: { energy: '1', bass: '1', change: '1', drops: [] }, traits: { calm: 0.5 } });
+    const barsOnly = relayKnowing(['v', 'bars']);
+    expect(await relayShareMap('https://r.example', full, null, barsOnly)).toEqual({ ok: true });
+    expect(barsOnly.calls.map((b) => Object.keys(JSON.parse(b)))).toEqual([['v', 'bars', 'traits'], ['v', 'bars']]);
+    const neither = relayKnowing(['v']);
+    expect(await relayShareMap('https://r.example', full, null, neither)).toEqual({ ok: true });
+    expect(neither.calls.map((b) => Object.keys(JSON.parse(b)))).toEqual([['v', 'bars', 'traits'], ['v', 'bars'], ['v']]);
     expect(await relayShareMap('https://r.example', '{"v":1,"x":1}', null, fake(400, { ok: false, error: 'bad-map', detail: 'extra-field' }))).toEqual({ ok: false, code: 'bad-map', retry: false });
     const down = async () => Promise.reject(new TypeError('offline'));
     expect(await relayShareMap('https://r.example', '{}', null, down)).toEqual({ ok: false, code: 'network', retry: true });
