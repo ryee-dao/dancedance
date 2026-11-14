@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-14T21:50:00.282Z",
+  "generatedAt": "2026-11-14T22:07:44.892Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -881,7 +881,7 @@
       ]
     },
     "HhwTF97OyX8": {
-      "bpm": 79,
+      "bpm": 158,
       "duration": 173,
       "genre": "Pop",
       "genres": [
@@ -1363,7 +1363,7 @@
       ]
     },
     "V1Z586zoeeE": {
-      "bpm": 174,
+      "bpm": 87,
       "duration": 166,
       "genre": "Pop",
       "genres": [
@@ -1390,7 +1390,7 @@
       ]
     },
     "WzsYtW8zyXU": {
-      "bpm": 143.7,
+      "bpm": 144,
       "duration": 232,
       "genre": "Pop",
       "genres": [
@@ -1548,7 +1548,7 @@
       ]
     },
     "aAizT0NOWkM": {
-      "bpm": 117.9,
+      "bpm": 118.1,
       "duration": 199,
       "genre": "Pop",
       "genres": [
@@ -1872,7 +1872,7 @@
       ]
     },
     "gx7GyiDZQms": {
-      "bpm": 116,
+      "bpm": 116.1,
       "duration": 370,
       "genre": "Pop",
       "genres": [
@@ -1907,16 +1907,16 @@
         "disco",
         "synth-pop",
         "pop",
-        "bubblegum pop",
-        "indie pop"
+        "indie pop",
+        "bubblegum pop"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
         "song",
-        "album",
-        "song"
+        "song",
+        "album"
       ],
       "artistGenres": [
         "indie pop",
@@ -2032,7 +2032,7 @@
       ]
     },
     "i_SsnRdgitA": {
-      "bpm": 148.6,
+      "bpm": 149,
       "duration": 170,
       "genre": "Pop",
       "genres": [
@@ -2246,7 +2246,7 @@
       ]
     },
     "mwL1cohnHNE": {
-      "bpm": 180,
+      "bpm": 90,
       "duration": 224,
       "genre": "Pop",
       "genres": [
@@ -2327,7 +2327,7 @@
       ]
     },
     "o6Tf-xcVB_o": {
-      "bpm": 168.2,
+      "bpm": 166.8,
       "duration": 179,
       "genre": "Pop",
       "genres": [
@@ -2381,7 +2381,7 @@
       ]
     },
     "pd1_SxHh2vo": {
-      "bpm": 85.4,
+      "bpm": 84.8,
       "duration": 142,
       "genre": "Pop",
       "genres": [
@@ -2516,7 +2516,7 @@
       ]
     },
     "sLqdRmwY6vc": {
-      "bpm": 119.4,
+      "bpm": 119.7,
       "duration": 208,
       "genre": "Pop",
       "genres": [

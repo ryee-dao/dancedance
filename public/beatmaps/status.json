@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-14T21:50:00.282Z",
+  "updatedAt": "2026-11-14T22:07:44.892Z",
   "videos": {
     "-7XnDlYY9qw": {
       "state": "ok",
@@ -18,20 +18,18 @@
     },
     "0Bl8dDFsAQU": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:18:06.418Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:03:16.636Z"
     },
     "0Ui-QzihJGo": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:16:10.891Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:01:20.579Z"
     },
     "1j_XvebOg4c": {
-      "state": "blocked",
-      "reason": "blocked",
-      "message": "YouTube asked this machine to prove it is not a bot: [youtube] 1j_XvebOg4c: Sign in to confirm you’re not a bot. This helps protect our community. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how …",
-      "attempts": 5,
-      "lastTried": "2026-11-14T21:49:36.346Z"
+      "state": "ok",
+      "attempts": 6,
+      "lastTried": "2026-11-14T21:54:52.005Z"
     },
     "1oAn81h21aQ": {
       "state": "ok",
@@ -40,8 +38,8 @@
     },
     "4-TbQnONe_w": {
       "state": "ok",
-      "attempts": 4,
-      "lastTried": "2026-11-11T22:13:51.238Z"
+      "attempts": 5,
+      "lastTried": "2026-11-14T21:59:30.363Z"
     },
     "47NhAUUnIjs": {
       "state": "ok",
@@ -75,8 +73,8 @@
     },
     "5y_KJAg8bHI": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:21:32.651Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:06:32.818Z"
     },
     "6M6samPEMpM": {
       "state": "ok",
@@ -85,8 +83,8 @@
     },
     "7-x3uD5z1bQ": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:12:26.412Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:58:01.961Z"
     },
     "7CTJcHjkq0E": {
       "state": "ok",
@@ -95,8 +93,8 @@
     },
     "7Ya2U8XN_Zw": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:16:26.414Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:01:37.668Z"
     },
     "8ELbX5CMomE": {
       "state": "ok",
@@ -105,18 +103,22 @@
     },
     "8YMkAW9TxDM": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:21:49.894Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:06:48.382Z"
     },
     "8xG7mH8i-WE": {
-      "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:14:32.240Z"
+      "state": "error",
+      "reason": "outdated",
+      "message": "YouTube refused the media download (HTTP 403); usually fixed by a newer yt-dlp: unable to download video data: HTTP Error 403: Forbidden",
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:00:02.570Z"
     },
     "9lybsz-7TFM": {
-      "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:21:17.598Z"
+      "state": "error",
+      "reason": "outdated",
+      "message": "YouTube refused the media download (HTTP 403); usually fixed by a newer yt-dlp: unable to download video data: HTTP Error 403: Forbidden",
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:06:15.571Z"
     },
     "AMNNqQpU-i4": {
       "state": "ok",
@@ -135,8 +137,8 @@
     },
     "D8j5Fm94_CE": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:12:39.692Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:58:18.536Z"
     },
     "DlSsIKn3HTU": {
       "state": "ok",
@@ -144,9 +146,11 @@
       "lastTried": "2026-11-11T22:34:05.055Z"
     },
     "EQzXwcZS-FU": {
-      "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:20:52.750Z"
+      "state": "error",
+      "reason": "outdated",
+      "message": "YouTube refused the media download (HTTP 403); usually fixed by a newer yt-dlp: unable to download video data: HTTP Error 403: Forbidden",
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:05:53.630Z"
     },
     "FHo-g6DCTv4": {
       "state": "ok",
@@ -155,8 +159,8 @@
     },
     "GT1lysg-Kw4": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:11:21.400Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:56:58.560Z"
     },
     "GcHHjq8pXec": {
       "state": "ok",
@@ -165,13 +169,13 @@
     },
     "GchEVSx9XEA": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:22:06.926Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:07:03.317Z"
     },
     "GhH4rTap48M": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:19:56.084Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:05:08.804Z"
     },
     "H59xVMF4zxE": {
       "state": "ok",
@@ -180,13 +184,13 @@
     },
     "HbzZPpWr4MI": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:20:12.773Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:05:23.584Z"
     },
     "HhwTF97OyX8": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:11:47.472Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:57:16.968Z"
     },
     "IgCHFfDFivc": {
       "state": "ok",
@@ -220,8 +224,8 @@
     },
     "LhZ5GXCZtEw": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:16:44.386Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:01:54.012Z"
     },
     "Mr_uHJPUlO8": {
       "state": "ok",
@@ -230,8 +234,8 @@
     },
     "Mzk6KkyxXC8": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:14:45.988Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:00:14.689Z"
     },
     "NU61CbO9u6o": {
       "state": "ok",
@@ -245,8 +249,8 @@
     },
     "OjX4Fpb7LX8": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:19:33.425Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:04:41.883Z"
     },
     "PdKKoOiEgqY": {
       "state": "ok",
@@ -269,11 +273,9 @@
       "lastTried": "2026-11-11T22:32:36.507Z"
     },
     "SRdlnO9gMIY": {
-      "state": "blocked",
-      "reason": "blocked",
-      "message": "YouTube asked this machine to prove it is not a bot: [youtube] SRdlnO9gMIY: Sign in to confirm you’re not a bot. This helps protect our community. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how …",
-      "attempts": 4,
-      "lastTried": "2026-11-14T21:50:00.262Z"
+      "state": "ok",
+      "attempts": 5,
+      "lastTried": "2026-11-14T21:55:21.189Z"
     },
     "Sb5aq5HcS1A": {
       "state": "ok",
@@ -297,13 +299,13 @@
     },
     "UfM-nM762ec": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:23:06.020Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:07:44.878Z"
     },
     "V1Z586zoeeE": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:12:01.030Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:57:39.479Z"
     },
     "ViwtNLUqkMY": {
       "state": "ok",
@@ -312,13 +314,13 @@
     },
     "WzsYtW8zyXU": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:17:10.942Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:02:20.984Z"
     },
     "XQG89cwhmJU": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:17:21.845Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:02:29.267Z"
     },
     "XZe_pV2rXuk": {
       "state": "ok",
@@ -337,8 +339,8 @@
     },
     "YgCYsJicgEU": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:10:26.940Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:56:04.239Z"
     },
     "YxRothF-QE4": {
       "state": "ok",
@@ -352,13 +354,13 @@
     },
     "_dK2tDK9grQ": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:20:37.294Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:05:39.808Z"
     },
     "aAizT0NOWkM": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:12:53.164Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:58:31.750Z"
     },
     "aF18NehJxos": {
       "state": "ok",
@@ -377,13 +379,13 @@
     },
     "b3bkpyNiv8Y": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:18:49.351Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:03:58.290Z"
     },
     "bOq67Poe95w": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:15:01.524Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:00:27.877Z"
     },
     "bSwzZoLCoZ0": {
       "state": "ok",
@@ -427,18 +429,18 @@
     },
     "gx7GyiDZQms": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:17:38.142Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:02:45.089Z"
     },
     "hCLkVrp_4CE": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:10:12.556Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:55:52.335Z"
     },
     "hn6lonvIRsI": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:15:28.419Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:00:50.109Z"
     },
     "hyzGXmPQzEg": {
       "state": "ok",
@@ -457,8 +459,8 @@
     },
     "i_SsnRdgitA": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:13:05.572Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:58:48.549Z"
     },
     "iawgB2CDCrw": {
       "state": "ok",
@@ -467,8 +469,8 @@
     },
     "ic8j13piAhQ": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:14:16.690Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:59:47.751Z"
     },
     "id2-K3daNRQ": {
       "state": "ok",
@@ -477,8 +479,8 @@
     },
     "j5n5YzMm5LY": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:11:07.555Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:56:45.239Z"
     },
     "jRr5EasAq84": {
       "state": "ok",
@@ -487,13 +489,13 @@
     },
     "jgh8owCuX78": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:09:50.190Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:55:38.272Z"
     },
     "jz7C2W4m26U": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:16:57.949Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:02:07.347Z"
     },
     "kJNyjdpT1vo": {
       "state": "ok",
@@ -507,13 +509,13 @@
     },
     "mgT0N3tMP74": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:22:39.388Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:07:29.146Z"
     },
     "mwL1cohnHNE": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:18:33.775Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:03:31.937Z"
     },
     "nEIHHydwec8": {
       "state": "ok",
@@ -532,18 +534,18 @@
     },
     "nx3-XCtnEqU": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:17:51.260Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:03:00.868Z"
     },
     "o6Tf-xcVB_o": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:13:20.994Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:59:01.637Z"
     },
     "o6ytLPKscrU": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:10:38.297Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:56:18.642Z"
     },
     "o9mLyHtSLjk": {
       "state": "ok",
@@ -552,8 +554,8 @@
     },
     "pd1_SxHh2vo": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:13:35.220Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:59:16.615Z"
     },
     "qJ_Tw0w3lLA": {
       "state": "ok",
@@ -582,8 +584,8 @@
     },
     "sLqdRmwY6vc": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:19:02.149Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:04:12.738Z"
     },
     "sqLWfFCbYBI": {
       "state": "ok",
@@ -602,8 +604,8 @@
     },
     "u6lihZAcy4s": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:10:51.453Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T21:56:33.332Z"
     },
     "vXlyuCzZc4E": {
       "state": "ok",
@@ -621,11 +623,9 @@
       "lastTried": "2026-11-11T22:25:34.588Z"
     },
     "xjiYBGs0TUA": {
-      "state": "blocked",
-      "reason": "blocked",
-      "message": "YouTube asked this machine to prove it is not a bot: [youtube] xjiYBGs0TUA: Sign in to confirm you’re not a bot. This helps protect our community. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how …",
-      "attempts": 4,
-      "lastTried": "2026-11-14T21:49:47.827Z"
+      "state": "ok",
+      "attempts": 5,
+      "lastTried": "2026-11-14T21:55:08.283Z"
     },
     "yvvamodXZbw": {
       "state": "ok",
@@ -634,18 +634,20 @@
     },
     "zIh5AHxh-Ok": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:19:17.707Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:04:29.411Z"
     },
     "zLxXqEZ5OoA": {
       "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:22:24.292Z"
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:07:16.836Z"
     },
     "zd-h01o7LtI": {
-      "state": "ok",
-      "attempts": 3,
-      "lastTried": "2026-11-11T22:15:54.710Z"
+      "state": "error",
+      "reason": "outdated",
+      "message": "YouTube refused the media download (HTTP 403); usually fixed by a newer yt-dlp: unable to download video data: HTTP Error 403: Forbidden",
+      "attempts": 4,
+      "lastTried": "2026-11-14T22:01:03.361Z"
     },
     "zgEKLhvCCVA": {
       "state": "ok",

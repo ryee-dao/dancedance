@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-14T21:50:00.282Z",
+  "updatedAt": "2026-11-14T22:07:44.892Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -1584,8 +1584,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T21:50:00.265Z"
+          "at": "2026-11-14T21:50:00.265Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -4832,7 +4832,7 @@
         "intimate"
       ],
       "complete": true,
-      "at": "2026-11-14T07:57:07.600Z",
+      "at": "2026-11-14T22:07:44.890Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -4891,6 +4891,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:07:44.890Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -5123,16 +5128,16 @@
         "disco",
         "synth-pop",
         "pop",
-        "bubblegum pop",
-        "indie pop"
+        "indie pop",
+        "bubblegum pop"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
         "song",
-        "album",
-        "song"
+        "song",
+        "album"
       ],
       "artistGenres": [
         "indie pop",
@@ -5141,7 +5146,7 @@
         "funktronica"
       ],
       "complete": true,
-      "at": "2026-11-14T07:57:27.063Z",
+      "at": "2026-11-14T22:07:44.891Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -5201,6 +5206,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:07:44.891Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -5421,7 +5431,7 @@
         "funktronica"
       ],
       "complete": true,
-      "at": "2026-11-14T07:57:00.562Z",
+      "at": "2026-11-14T22:07:44.887Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -5481,6 +5491,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:07:44.887Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -6011,7 +6026,7 @@
         "intimate"
       ],
       "complete": true,
-      "at": "2026-11-14T07:57:00.562Z",
+      "at": "2026-11-14T22:07:44.882Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -6079,6 +6094,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:07:44.882Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -6329,7 +6349,7 @@
         "funktronica"
       ],
       "complete": true,
-      "at": "2026-11-14T07:57:06.113Z",
+      "at": "2026-11-14T22:07:44.889Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -6406,6 +6426,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:07:44.889Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -7217,8 +7242,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T21:50:00.270Z"
+          "at": "2026-11-14T21:50:00.270Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -7481,8 +7506,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T21:50:00.279Z"
+          "at": "2026-11-14T21:50:00.279Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -20642,8 +20667,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T21:50:00.278Z"
+          "at": "2026-11-14T21:50:00.278Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -21136,8 +21161,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T21:50:00.269Z"
+          "at": "2026-11-14T21:50:00.269Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
