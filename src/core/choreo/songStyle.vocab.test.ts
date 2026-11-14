@@ -44,15 +44,21 @@ describe('genre vocabulary', () => {
     ['Blues', 'Blues', ['rnb'], ['rock', 'swing']],
     ['jump blues', 'Jump blues', ['swing'], ['rock']],
     ['Texas blues', 'Texas blues', ['rock'], ['swing']],
-    ['Jazz', 'Jazz', ['swing'], []],
-    ['swing', 'Swing', ['swing'], []],
+    // Jazz dances the swing set (or smooth and flowing), never the disco & funk floor.
+    ['Jazz', 'Jazz', ['swing'], ['discofunk']],
+    ['swing', 'Swing', ['swing'], ['discofunk']],
+    ['vocal jazz', 'Vocal jazz', ['swing'], ['discofunk']],
+    ['bop', 'Bop', ['swing'], ['discofunk']],
     ['Electronic', 'Electronic', [], ['discofunk']],
     ['Eurodance', 'Eurodance', ['edm'], ['rnb']],
     ['R&B/Soul', 'R&B', ['rnb'], []],
     ['Hip-Hop/Rap', 'Hip-hop', ['hiphop'], ['trap']],
     ['K-Pop', 'K-pop', ['kpop'], []],
     ['J-Pop', 'J-pop', ['kpop'], []],
-    ['Mandopop', 'C-pop', ['kpop'], []],
+    // C-pop / Mandopop: its own scene, pop and ballad material by the traits, not K-pop's aegyo point choreography.
+    ['Mandopop', 'C-pop', [], ['kpop']],
+    ['C-pop', 'C-pop', [], ['kpop']],
+    ['Cantopop', 'C-pop', [], ['kpop']],
     // Bachata grew past MIN_GENRE_SET in the genre survey: Latin no longer opens outright, it lends (genres.ts NEIGHBOURS).
     ['bachata', 'Bachata', ['bachata'], ['salsa', 'cumbia', 'brazil']],
     ['salsa', 'Salsa', ['salsa'], ['bachata', 'brazil']],
@@ -69,6 +75,25 @@ describe('genre vocabulary', () => {
     ['Downtempo', 'Downtempo', [], ['rock', 'edm']],
     ['Dangdut', 'Dangdut', [], ['latin']],
     ['dabke', 'Dabke', ['folk'], ['bellydance']],
+    // Named folk traditions open the world folk-dance set; plain / Western folk does not.
+    ['Russian folk', 'Russian folk', ['folk'], []],
+    ['Irish folk', 'Irish folk', ['folk'], []],
+    ['traditional folk', 'Traditional folk', ['folk'], []],
+    ['folk dance', 'Folk dance', ['folk'], []],
+    ['Celtic', 'Celtic', ['folk'], []],
+    ['Folk', 'Folk', [], ['folk']],
+    ['Contemporary Folk', 'Contemporary Folk', [], ['folk']],
+    ['indie folk', 'Indie folk', [], ['folk']],
+    ['American folk', 'American folk', [], ['folk']],
+    // Sertanejo is Brazil's country music: the country floor, not samba.
+    ['Sertanejo', 'Sertanejo', ['country'], ['brazil', 'latin']],
+    ['forró', 'Forró', ['brazil'], []],
+    // Surf music is the 1960s floor, not the jive of the swing set.
+    ['surf pop', 'Surf pop', [], ['swing']],
+    ['surf rock', 'Surf rock', [], ['swing']],
+    ['rockabilly', 'Rockabilly', ['swing'], []],
+    // A song form is not a genre: calm and slow, no set of its own.
+    ['ballad', 'Ballad', [], ['rock', 'swing']],
   ];
   it.each(CASES)('%s -> %s', (g, label, open, closed) => {
     const s = resolveSongStyle(asList(g));
