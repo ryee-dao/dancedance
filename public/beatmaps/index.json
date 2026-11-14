@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-14T22:22:46.798Z",
+  "generatedAt": "2026-11-14T22:27:05.507Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -55,6 +55,7 @@
     "XZe_pV2rXuk",
     "YgCYsJicgEU",
     "_6pz0ef_YH0",
+    "_JGGLJMpVks",
     "_Vj092UgKwQ",
     "_dK2tDK9grQ",
     "aAizT0NOWkM",
@@ -1523,6 +1524,31 @@
         "symphonic metal"
       ]
     },
+    "_JGGLJMpVks": {
+      "bpm": 140,
+      "duration": 281,
+      "genre": "Alternative",
+      "genres": [
+        "indie folk",
+        "singer-songwriter",
+        "folk",
+        "alternative",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "electropop",
+        "alt-pop",
+        "indie pop",
+        "dark pop"
+      ]
+    },
     "_Vj092UgKwQ": {
       "bpm": 103.6,
       "duration": 283,
@@ -2098,7 +2124,7 @@
         "bubblegum pop",
         "pop rock",
         "pop",
-        "dream pop"
+        "industrial pop"
       ],
       "genreLevels": [
         "song",
@@ -2106,7 +2132,7 @@
         "song",
         "album",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "pop rock",

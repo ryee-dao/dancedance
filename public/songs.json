@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-14T22:14:43.881Z",
+  "updatedAt": "2026-11-14T22:27:05.507Z",
   "songs": [
     {
       "videoId": "_Vj092UgKwQ",
@@ -187,6 +187,35 @@
         "gothic metal",
         "hard rock",
         "symphonic metal"
+      ]
+    },
+    {
+      "videoId": "_JGGLJMpVks",
+      "title": "TV",
+      "artist": "Billie Eilish",
+      "addedAt": "2026-11-14T22:26:57.296Z",
+      "durationSec": 281,
+      "hasMap": true,
+      "genre": "Alternative",
+      "genres": [
+        "indie folk",
+        "singer-songwriter",
+        "folk",
+        "alternative",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "electropop",
+        "alt-pop",
+        "indie pop",
+        "dark pop"
       ]
     }
   ]

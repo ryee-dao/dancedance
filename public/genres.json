@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-14T22:22:46.798Z",
+  "updatedAt": "2026-11-14T22:27:05.507Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -1988,7 +1988,7 @@
         "dark pop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:03:30.358Z",
+      "at": "2026-11-14T22:27:05.505Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -2047,6 +2047,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:27:05.505Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -2223,6 +2228,232 @@
             "Alternative"
           ],
           "ref": "artist/1065981054 (Billie Eilish)"
+        }
+      }
+    },
+    "billie eilish - tv": {
+      "artist": "Billie Eilish",
+      "title": "TV",
+      "videoIds": [
+        "_JGGLJMpVks"
+      ],
+      "genres": [
+        "indie folk",
+        "singer-songwriter",
+        "folk",
+        "alternative",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "electropop",
+        "alt-pop",
+        "indie pop",
+        "dark pop"
+      ],
+      "complete": true,
+      "at": "2026-11-14T22:27:05.496Z",
+      "sources": {
+        "wikipedia": {
+          "status": "none",
+          "reason": "no article about this song (Guitar Songs: not a song article (album: EP); Television: not a song article (no infobox))",
+          "at": "2026-11-14T22:26:58.769Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "none",
+          "reason": "the item has no genre",
+          "ref": "Q113233217,Q115786780",
+          "at": "2026-11-14T22:26:59.915Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "contemporary folk",
+            "indie folk",
+            "singer-songwriter"
+          ],
+          "counts": [
+            1,
+            1,
+            1
+          ],
+          "ref": "recording/59bc7111-4973-4335-9d60-1773ebcda7bb",
+          "at": "2026-11-14T22:27:01.353Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "none",
+          "reason": "the track has no genre",
+          "ref": "track/36682075",
+          "at": "2026-11-14T22:26:57.518Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored",
+          "at": "2026-11-14T22:26:57.299Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:26:57.299Z"
+        },
+        "musicbrainz-album": {
+          "status": "found",
+          "genres": [
+            "contemporary folk",
+            "singer-songwriter",
+            "indie folk",
+            "pop",
+            "calm"
+          ],
+          "counts": [
+            3,
+            3,
+            2,
+            2,
+            1
+          ],
+          "ref": "release-group/9e29849f-8da8-4e3c-8287-9d86dda6fbf3 (Guitar Songs; release of the matched recording)",
+          "links": {
+            "mbReleaseGroup": "9e29849f-8da8-4e3c-8287-9d86dda6fbf3",
+            "album": "Guitar Songs",
+            "wikidata": "Q113176130"
+          },
+          "at": "2026-11-14T22:27:02.664Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "none",
+          "reason": "the album article lists no genre",
+          "ref": "Guitar Songs",
+          "links": {
+            "wikidata": "Q113176130"
+          },
+          "at": "2026-11-14T22:27:02.965Z"
+        },
+        "wikidata-album": {
+          "status": "none",
+          "reason": "the album item has no genre",
+          "ref": "Q113176130",
+          "at": "2026-11-14T22:27:02.965Z"
+        },
+        "discogs-album": {
+          "status": "none",
+          "reason": "no Discogs master linked from the MusicBrainz album",
+          "at": "2026-11-14T22:27:02.665Z"
+        },
+        "itunes-album": {
+          "status": "none",
+          "reason": "the release is the song's single",
+          "ref": "Guitar Songs - Single",
+          "links": {
+            "album": "Guitar Songs - Single"
+          },
+          "at": "2026-11-14T22:27:00.713Z"
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "genres": [
+            "electropop",
+            "alternative pop",
+            "dark pop",
+            "pop",
+            "alternative r&b",
+            "art pop",
+            "pity pop",
+            "alt-pop",
+            "bedroom pop",
+            "contemporary r&b",
+            "indie pop",
+            "2010s",
+            "2020s",
+            "singer-songwriter",
+            "alternative",
+            "electronic",
+            "electronica",
+            "female vocals",
+            "gen z",
+            "pop rock",
+            "pop soul",
+            "queer"
+          ],
+          "counts": [
+            12,
+            11,
+            9,
+            9,
+            5,
+            4,
+            4,
+            3,
+            3,
+            3,
+            3,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "artist/f4abc0b5-3f7a-4eff-8f78-ac078dbce533 (Billie Eilish; credited on the song)",
+          "links": {
+            "mbArtist": "f4abc0b5-3f7a-4eff-8f78-ac078dbce533",
+            "wikidata": "Q29564107"
+          },
+          "at": "2026-11-14T22:27:04.151Z"
+        },
+        "wikipedia-artist": {
+          "status": "none",
+          "reason": "the artist article lists no genre",
+          "ref": "Billie Eilish",
+          "links": {
+            "wikidata": "Q29564107"
+          },
+          "at": "2026-11-14T22:27:04.631Z"
+        },
+        "wikidata-artist": {
+          "status": "found",
+          "genres": [
+            "electropop",
+            "indie pop",
+            "alternative pop"
+          ],
+          "ref": "Q29564107",
+          "at": "2026-11-14T22:27:05.496Z"
+        },
+        "theaudiodb-artist": {
+          "status": "found",
+          "genres": [
+            "Pop",
+            "Rock/Pop"
+          ],
+          "ref": "artist/152448",
+          "at": "2026-11-14T22:26:59.773Z"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "artist/1065981054 (Billie Eilish)",
+          "at": "2026-11-14T22:27:00.713Z"
         }
       }
     },
@@ -8003,8 +8234,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:22:46.794Z"
+          "at": "2026-11-14T22:22:46.794Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -8260,8 +8491,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:22:46.796Z"
+          "at": "2026-11-14T22:22:46.796Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -13956,8 +14187,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:22:46.791Z"
+          "at": "2026-11-14T22:22:46.791Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "none",
@@ -15729,8 +15960,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:22:46.798Z"
+          "at": "2026-11-14T22:22:46.798Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -15913,7 +16144,7 @@
         "pop rock"
       ],
       "complete": true,
-      "at": "2026-11-14T08:02:08.744Z",
+      "at": "2026-11-14T22:27:05.503Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -15995,6 +16226,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:27:05.503Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -20352,7 +20588,7 @@
         "pop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:02:00.612Z",
+      "at": "2026-11-14T22:27:05.501Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -20430,6 +20666,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:27:05.501Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -20681,8 +20922,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:22:46.797Z"
+          "at": "2026-11-14T22:22:46.797Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -21865,7 +22106,7 @@
         "bubblegum pop",
         "pop rock",
         "pop",
-        "dream pop"
+        "industrial pop"
       ],
       "genreLevels": [
         "song",
@@ -21873,7 +22114,7 @@
         "song",
         "album",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "pop rock",
@@ -21885,7 +22126,7 @@
         "energetic"
       ],
       "complete": true,
-      "at": "2026-11-14T08:03:46.650Z",
+      "at": "2026-11-14T22:27:05.506Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -21949,6 +22190,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:27:05.506Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -22408,7 +22654,7 @@
         "australian hip hop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:02:49.619Z",
+      "at": "2026-11-14T22:27:05.504Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -22471,6 +22717,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:27:05.504Z"
         },
         "musicbrainz-album": {
           "status": "found",
