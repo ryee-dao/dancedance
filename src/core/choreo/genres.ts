@@ -66,24 +66,26 @@ export type Genre =
   // The Latin dances (songStyle.ts scores them from genre names).
   | 'salsa' | 'merengue' | 'cumbia' | 'bachata' | 'chacha' | 'flamenco' | 'tango' | 'mexican'
   // Added in the genre survey (Nov 2026, tools/eval/data/genre-dance-survey.md).
-  | 'gospel' | 'dangdut' | 'schlager';
+  | 'gospel' | 'dangdut' | 'schlager'
+  // Round three (Nov 2026): synth-pop / new wave, indie.
+  | 'synthpop' | 'indie';
 
 export const GENRES: readonly Genre[] = [
   'rock', 'hiphop', 'latin', 'discofunk', 'kpop', 'country', 'swing', 'afro', 'caribbean', 'southasian', 'folk', 'bellydance', 'hula', 'capoeira',
   'metal', 'punk', 'trap', 'drill', 'rnb', 'house', 'edm', 'bass', 'reggaeton', 'brazil', 'amapiano', 'lyrical',
   'salsa', 'merengue', 'cumbia', 'bachata', 'chacha', 'flamenco', 'tango', 'mexican',
-  'gospel', 'dangdut', 'schlager',
+  'gospel', 'dangdut', 'schlager', 'synthpop', 'indie',
 ];
 
 /** The sub-style genres: opened by a song style's sub-style scores (SongStyle.subs), not by families or themes. */
 export type SubStyle =
   | 'metal' | 'punk' | 'trap' | 'drill' | 'rnb' | 'house' | 'edm' | 'bass' | 'reggaeton' | 'brazil' | 'amapiano' | 'lyrical'
   | 'salsa' | 'merengue' | 'cumbia' | 'bachata' | 'chacha' | 'flamenco' | 'tango' | 'mexican'
-  | 'gospel' | 'dangdut' | 'schlager';
+  | 'gospel' | 'dangdut' | 'schlager' | 'synthpop' | 'indie';
 export const SUB_STYLES: readonly SubStyle[] = [
   'metal', 'punk', 'trap', 'drill', 'rnb', 'house', 'edm', 'bass', 'reggaeton', 'brazil', 'amapiano', 'lyrical',
   'salsa', 'merengue', 'cumbia', 'bachata', 'chacha', 'flamenco', 'tango', 'mexican',
-  'gospel', 'dangdut', 'schlager',
+  'gospel', 'dangdut', 'schlager', 'synthpop', 'indie',
 ];
 /** The Latin dances among the sub-styles: a song's leading one favours the moves named for it (generator.ts danceOf). */
 export const LATIN_DANCES: readonly SubStyle[] = ['salsa', 'merengue', 'cumbia', 'bachata', 'chacha', 'flamenco', 'tango', 'mexican'];
@@ -130,6 +132,8 @@ export const GENRE_LABEL: Readonly<Record<Genre, string>> = {
   gospel: 'Gospel & praise',
   dangdut: 'Dangdut & Southeast Asian pop',
   schlager: 'Schlager & Oktoberfest',
+  synthpop: 'Synth-pop',
+  indie: 'Indie',
 };
 
 export function isGenre(v: unknown): v is Genre {
@@ -211,6 +215,12 @@ export const SUB_INFO: Readonly<Record<SubStyle, SubInfo>> = {
   dangdut: { parent: null, withParent: false, replaces: null },
   // Party Schlager / Oktoberfest (families/world3.ts): schunkeln, the toast, bird-dance figures; folk lends the polka. [4]
   schlager: { parent: null, withParent: false, replaces: null },
+  // Synth-pop / new wave (families/synthpop.ts): the 80s club floor. No group (its families are pop / disco); borrows
+  // disco & funk and indie. [13]
+  synthpop: { parent: null, withParent: false, replaces: null },
+  // Indie pop / indie rock / shoegaze / dream pop (families/indie.ts): the gig and indie-disco floor. No group (rock
+  // stays open by the families on an indie rock song); borrows rock and synth-pop. [13]
+  indie: { parent: null, withParent: false, replaces: null },
 };
 
 // ---------------------------------------------------------------------------
@@ -290,6 +300,14 @@ export interface Neighbour {
  *             hand gestures and sways).
  *   schlager  folk (the polka, the Schuhplattler, the hora: the Oktoberfest
  *             floor), country (line-dance steps, danced to Schlager too).
+ *   synthpop  disco & funk (the same club floors in 1979-84: synth-pop and
+ *             Hi-NRG were played between disco records; the robot and the
+ *             hustle steps sit beside the new wave side step), indie (post-
+ *             punk is the shared root: the stomp, the head shake).
+ *   indie     rock (indie rock is rock: its pogo, air guitar and fist pumps;
+ *             the families usually open it anyway), synth-pop (indie pop and
+ *             new wave share the floor: the side step, the stiff bounce), and
+ *             on a calm song lyrical (dream pop's slow reaches and sways).
  * Lyrical lends but never borrows; the big groups and traditions don't
  * borrow (the small traditions have no style close enough to lend).
  */
@@ -316,6 +334,8 @@ export const NEIGHBOURS: Readonly<Partial<Record<Genre, readonly Neighbour[]>>> 
   gospel: [{ from: 'rnb', w: 0.6 }, { from: 'discofunk', w: 0.5 }, { from: 'lyrical', w: 0.6, slow: true }],
   dangdut: [{ from: 'bellydance', w: 0.6 }, { from: 'southasian', w: 0.5 }],
   schlager: [{ from: 'folk', w: 0.7 }, { from: 'country', w: 0.3 }],
+  synthpop: [{ from: 'discofunk', w: 0.6 }, { from: 'indie', w: 0.4 }],
+  indie: [{ from: 'rock', w: 0.6 }, { from: 'synthpop', w: 0.4 }, { from: 'lyrical', w: 0.5, slow: true }],
 };
 
 /** Calm from which a `slow` neighbour lends (where the lyrical score starts, songStyle.ts). */
@@ -383,7 +403,7 @@ export const CALM_TOLERANCE: Readonly<Record<Genre, number>> = {
   country: 0.6, swing: 0.65, afro: 0.6, amapiano: 0.65, caribbean: 0.65, southasian: 0.65, folk: 0.6,
   bellydance: 0.75, hula: 0.9, capoeira: 0.45, lyrical: 2,
   salsa: 0.6, merengue: 0.6, cumbia: 0.65, bachata: 0.75, chacha: 0.65, flamenco: 0.55, tango: 0.65, mexican: 0.6,
-  gospel: 0.75, dangdut: 0.65, schlager: 0.6,
+  gospel: 0.75, dangdut: 0.65, schlager: 0.6, synthpop: 0.6, indie: 0.75,
 };
 /** Openness below which the calm closes a set. */
 export const CALM_CLOSED = 0.3;
@@ -693,6 +713,8 @@ const RAW: Readonly<Record<Genre, string>> = {
   gospel: ``,
   dangdut: ``,
   schlager: ``,
+  synthpop: ``,
+  indie: ``,
 };
 
 /** genreSets/*.ts: id lists by genre, added after RAW's. */

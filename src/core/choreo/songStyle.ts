@@ -406,7 +406,13 @@ const LEXICON: readonly Lex[] = [
   { re: word('hard rock|hair metal'), fam: { rock: 1 }, sub: { metal: 0.45 }, bpm: 120 },
   { re: word('post grunge|grunge'), fam: { rock: 1 }, sub: { metal: 0.3 }, bpm: 110 },
   { re: word('pop punk|emo pop|easycore'), fam: { rock: 0.8, pop: 0.4 }, sub: { punk: 0.8 }, bpm: 160 },
-  { re: word('post punk revival|post punk|new wave|coldwave'), fam: { rock: 0.7, pop: 0.5, disco: 0.2 }, sub: { punk: 0.25 }, bpm: 130 },
+  // Synth-pop / new wave and indie (round three, genres.ts synthpop / indie): new wave and the New Romantics open the
+  // synth-pop floor, post-punk revival and dance-punk the indie disco; post-punk itself leans indie. The plain names
+  // (synth-pop 0.95, indie pop 0.95) open their set from the first four places of a list, not as a fifth name.
+  { re: word('post punk revival|dance punk|indie dance|indie disco|indie sleaze'), fam: { rock: 0.7, pop: 0.5, disco: 0.2 }, sub: { indie: 0.85 }, bpm: 130 },
+  { re: word('new wave'), fam: { rock: 0.7, pop: 0.5, disco: 0.2 }, sub: { punk: 0.25, synthpop: 0.9 }, bpm: 130 },
+  { re: word('new romantic|new romanticism|new pop'), fam: { pop: 0.7, disco: 0.3, rock: 0.2 }, sub: { synthpop: 0.9 }, bpm: 120 },
+  { re: word('post punk|coldwave|minimal wave'), fam: { rock: 0.7, pop: 0.5, disco: 0.2 }, sub: { punk: 0.25, indie: 0.6, synthpop: 0.4 }, bpm: 130 },
   { re: word('happy hardcore|uk hardcore|hardcore techno|gabber|hardstyle|jumpstyle|speedcore'), fam: { aerobic: 0.9, pop: 0.2 }, sub: { edm: 0.9 }, bpm: 155 },
   { re: word('breakcore|drill n bass|drill and bass|digital hardcore'), fam: { aerobic: 0.9, hiphop: 0.1 }, sub: { bass: 0.85 }, name: 'Breakcore', bpm: 175 },
   { re: word('midwest emo'), fam: { rock: 0.9, pop: 0.3 }, sub: { punk: 0.6 }, bpm: 140 },
@@ -416,15 +422,19 @@ const LEXICON: readonly Lex[] = [
   { re: word('power ballads?|rock ballad'), fam: { rock: 0.6, pop: 0.6 }, calm: 0.65, soft: 0.5, form: true, label: 'Power ballad', bpm: 75 },
   { re: word('soft rock|yacht rock|piano rock|acoustic rock|adult alternative'), fam: { rock: 0.6, pop: 0.6 }, calm: 0.62, soft: 0.6, bpm: 100 },
   { re: word('folk pop|pop folk'), fam: { pop: 0.7, rock: 0.4 }, calm: 0.55, soft: 0.5, bpm: 105 },
-  { re: word('folk rock|indie folk|contemporary folk|freak folk|anti folk|chamber folk|americana folk|american folk|alternative folk|alt folk|psychedelic folk|psych folk|progressive folk|folktronica|neofolk|dark folk|stomp and holler|folk punk'), fam: { pop: 0.7, rock: 0.4 }, calm: 0.55, soft: 0.5, bright: 'country', bpm: 105 },
+  { re: word('indie folk|stomp and holler'), fam: { pop: 0.7, rock: 0.4 }, sub: { indie: 0.7 }, calm: 0.55, soft: 0.5, bright: 'country', bpm: 105 },
+  { re: word('folk rock|contemporary folk|freak folk|anti folk|chamber folk|americana folk|american folk|alternative folk|alt folk|psychedelic folk|psych folk|progressive folk|folktronica|neofolk|dark folk|folk punk'), fam: { pop: 0.7, rock: 0.4 }, calm: 0.55, soft: 0.5, bright: 'country', bpm: 105 },
   { re: word('rock and roll|rock n roll|rock n rollo|rockabilly|psychobilly|doo wop|skiffle'), fam: { rock: 1, pop: 0.3 }, themes: ['swing'], bpm: 150 },
   // Surf music is the 1960s floor (the twist, the swim, the pony: global and disco & funk moves), not the jive.
   { re: word('surf rock|surf pop|surf music|surf'), fam: { rock: 0.7, pop: 0.5, disco: 0.15 }, bpm: 140 },
   { re: word('funk rock|funk metal'), fam: { funk: 0.7, rock: 0.6 }, bpm: 115 },
   { re: word('pop rock|power pop|pop punk revival|pop rock'), fam: { pop: 0.7, rock: 0.6 }, bpm: 120 },
-  { re: word('dream pop|shoegaze|slowcore|sadcore|post rock|space rock|ethereal wave'), fam: { pop: 0.6, rock: 0.5 }, calm: 0.7, soft: 0.6, bpm: 90 },
+  { re: word('dream pop|shoegaze|nu gaze|ethereal wave'), fam: { pop: 0.6, rock: 0.5 }, sub: { indie: 0.9 }, calm: 0.7, soft: 0.6, bpm: 90 },
+  { re: word('slowcore|sadcore|post rock|space rock'), fam: { pop: 0.6, rock: 0.5 }, calm: 0.7, soft: 0.6, bpm: 90 },
   { re: word('darkwave|gothic rock|goth rock|deathrock|goth'), fam: { rock: 0.6, pop: 0.4, disco: 0.2 }, bpm: 125 },
-  { re: word('bedroom pop|chamber pop|baroque pop|indie pop|art pop|sophisti pop|alt pop|alternative pop'), fam: { pop: 0.9, rock: 0.3 }, calm: 0.5, bpm: 110 },
+  { re: word('indie pop|twee pop|twee|jangle pop|jangle|c86|bedroom pop|lo fi indie|indie electronic'), fam: { pop: 0.9, rock: 0.3 }, sub: { indie: 0.95 }, calm: 0.5, bpm: 110 },
+  { re: word('chamber pop|baroque pop'), fam: { pop: 0.9, rock: 0.3 }, sub: { indie: 0.6 }, calm: 0.5, bpm: 110 },
+  { re: word('art pop|sophisti pop|alt pop|alternative pop'), fam: { pop: 0.9, rock: 0.3 }, calm: 0.5, bpm: 110 },
   // --- Hip-hop, bass music and electronic.
   { re: word('drill|uk drill|ny drill|brooklyn drill|chicago drill|bronx drill|jersey drill'), fam: { hiphop: 1 }, sub: { drill: 1, trap: 0.3 }, label: 'Drill', bpm: 142 },
   { re: word('phonk|drift phonk|memphis rap'), fam: { hiphop: 0.6, aerobic: 0.4 }, sub: { bass: 1 }, name: 'Phonk', label: 'Phonk', bpm: 130 },
@@ -439,7 +449,11 @@ const LEXICON: readonly Lex[] = [
   { re: word('deep house|tech house|future house|french house|disco house|chicago house|acid house|soulful house|piano house|house'), fam: { disco: 0.5, aerobic: 0.5, pop: 0.3 }, sub: { house: 1 }, label: 'House', bpm: 124 },
   { re: word('eurodance|eurobeat|euro house|italo dance|hands up|hi nrg|hinrg'), fam: { pop: 0.5, aerobic: 0.6, disco: 0.2 }, sub: { edm: 0.5 }, bpm: 135 },
   { re: word('edm|electronic dance music|trance|psytrance|psychedelic trance|goa trance|uplifting trance|hard trance|techno|hard techno|minimal techno|detroit techno|acid techno|rave'), fam: { aerobic: 0.8, pop: 0.3 }, sub: { edm: 1 }, bpm: 132 },
-  { re: word('electropop|electro pop|synth pop|synthpop|synthwave|retrowave|electroclash|hyperpop|digicore|glitchcore|nightcore'), fam: { pop: 0.8, disco: 0.3, aerobic: 0.3 }, bpm: 120 },
+  { re: word('synth pop|synthpop|technopop|techno pop'), fam: { pop: 0.8, disco: 0.3, aerobic: 0.3 }, sub: { synthpop: 0.95 }, bpm: 120 },
+  { re: word('synthwave|retrowave|outrun|darksynth'), fam: { pop: 0.8, disco: 0.3, aerobic: 0.3 }, sub: { synthpop: 0.8 }, bpm: 120 },
+  // Modern electropop is mostly pop: it opens the synth-pop floor only beside other evidence.
+  { re: word('electropop|electro pop|electroclash'), fam: { pop: 0.8, disco: 0.3, aerobic: 0.3 }, sub: { synthpop: 0.45 }, bpm: 120 },
+  { re: word('hyperpop|digicore|glitchcore|nightcore'), fam: { pop: 0.8, disco: 0.3, aerobic: 0.3 }, bpm: 120 },
   { re: word('dance pop|(?<!belly |folk |line |square )dance'), fam: { pop: 0.5, aerobic: 0.5, disco: 0.3 }, label: 'Dance', bpm: 122 },
   { re: word('dark ambient|ambient|drone|space music|new age|meditation|healing|relaxation|sleep|nature sounds|soundscape|field recording|sound art|musique concrete'), fam: STILL, calm: 0.85, soft: 0.9, still: true, bpm: 70 },
   { re: word('downtempo|chillwave|chillout|chill out|lo fi hip hop|lo fi|lofi|trip hop|vaporwave'), fam: { pop: 0.6, hiphop: 0.2 }, calm: 0.75, soft: 0.7, bpm: 85 },
@@ -544,8 +558,10 @@ const LEXICON: readonly Lex[] = [
   { re: word('world music|worldbeat|world|worldwide|international'), fam: { pop: 0.6, latin: 0.3, disco: 0.2 }, conf: 0.5, label: 'World music', fixed: true, bpm: 110 },
   { re: word('chinese|japanese|thai|indonesian|malaysian|filipino|opm|original pilipino music|vietnamese'), fam: { pop: 0.8, kpop: 0.3 }, conf: 0.6, bpm: 110 },
   { re: word('teen pop|bubblegum pop|bubblegum|pop'), fam: { pop: 1, hiphop: 0.15, disco: 0.1 }, label: 'Pop', bpm: 112 },
-  { re: word('alternative rock|alt rock|indie rock|garage rock|britpop|madchester|college rock|art rock|progressive rock|prog rock|psychedelic rock|psychedelic|stoner rock|arena rock|glam rock|southern rock|classic rock|heartland rock|roots rock|gothic rock|noise rock|math rock|krautrock|rock'), fam: { rock: 1, pop: 0.25 }, label: 'Rock', bpm: 120 },
-  { re: word('alternative|alt|indie'), fam: { rock: 0.7, pop: 0.5 }, label: 'Alternative', bpm: 115 },
+  { re: word('indie rock|britpop|madchester|baggy|garage rock revival|noise pop|lo fi rock'), fam: { rock: 1, pop: 0.25 }, sub: { indie: 0.9 }, bpm: 125 },
+  { re: word('alternative rock|alt rock|garage rock|college rock|art rock|progressive rock|prog rock|psychedelic rock|psychedelic|stoner rock|arena rock|glam rock|southern rock|classic rock|heartland rock|roots rock|gothic rock|noise rock|math rock|krautrock|rock'), fam: { rock: 1, pop: 0.25 }, label: 'Rock', bpm: 120 },
+  { re: word('indie'), fam: { rock: 0.6, pop: 0.6 }, sub: { indie: 1 }, label: 'Indie', bpm: 118 },
+  { re: word('alternative|alt'), fam: { rock: 0.7, pop: 0.5 }, label: 'Alternative', bpm: 115 },
 ];
 
 /** One genre name, read: its normalised families and everything else it says (placed = false: nothing matched). */
@@ -1054,6 +1070,7 @@ const SUB_GROUP: Readonly<Record<SubStyle, readonly Family[]>> = {
   reggaeton: ['latin', 'hiphop'], brazil: ['latin'], amapiano: ['latin', 'hiphop'], lyrical: [...FAMILIES],
   salsa: ['latin'], merengue: ['latin'], cumbia: ['latin'], bachata: ['latin'], chacha: ['latin'], flamenco: ['latin'], tango: ['latin'], mexican: ['latin'],
   gospel: ['pop', 'funk'], dangdut: ['pop', 'latin'], schlager: ['pop', 'party'],
+  synthpop: ['pop', 'disco', 'rock'], indie: ['rock', 'pop'],
 };
 
 /** The strongest family of a mix. */
@@ -1322,7 +1339,7 @@ const SUB_HEAD: Readonly<Record<SubStyle, string | null>> = {
   metal: 'Rock', punk: 'Rock', trap: 'Hip-hop', drill: 'Hip-hop', rnb: null, house: 'Electronic', edm: 'Electronic', bass: 'Electronic',
   reggaeton: 'Latin', brazil: 'Latin', amapiano: 'Afro', lyrical: null,
   salsa: null, merengue: null, cumbia: null, bachata: null, chacha: null, flamenco: null, tango: null, mexican: null,
-  gospel: null, dangdut: null, schlager: null,
+  gospel: null, dangdut: null, schlager: null, synthpop: null, indie: null,
 };
 
 /** A family as a music style name: "Dance", not "Aerobics" (families say how a song is danced, the label what it is). */
