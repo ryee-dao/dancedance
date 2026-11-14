@@ -1551,3 +1551,140 @@ body.dragging::after {
     0 0 0 0.22rem var(--bg),
     0 0 0 0.45rem var(--focus);
 }
+
+/* --- Song adding health (Add a song, Options → Songs) and pending progress --- */
+
+.opt-subtitle {
+  margin: 1.4rem 0 0.6rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+.health {
+  margin: 0 0 1.4rem;
+  padding: 0.9rem 1.1rem;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+}
+.health[data-state='problem'] {
+  border-color: var(--warn);
+}
+.health-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1rem;
+}
+.health-summary {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+.health[data-state='problem'] .health-summary {
+  color: var(--warn);
+}
+.health[data-state='ok'] .health-summary {
+  color: var(--accent-2);
+}
+.health-when {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.health-head .btn {
+  margin-left: auto;
+}
+.health-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.8rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.health-row {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.6rem;
+  background: var(--surface);
+}
+.health-row:focus {
+  outline: 0.2rem solid var(--focus);
+  outline-offset: 0.1rem;
+}
+.health-mark {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  font-weight: 900;
+  background: var(--surface-2);
+  color: var(--muted);
+}
+.health-row[data-state='ok'] .health-mark {
+  background: var(--accent-2);
+  color: #04261d;
+}
+.health-row[data-state='problem'] .health-mark,
+.health-row[data-state='warn'] .health-mark {
+  background: var(--warn);
+  color: #2a0d00;
+}
+.health-body p {
+  margin: 0;
+}
+.health-title {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.health-text {
+  font-weight: 600;
+}
+.health-todo {
+  margin-top: 0.25rem !important;
+  color: var(--text);
+}
+.health-todo strong {
+  color: var(--warn);
+}
+.pending-card[data-state='site-failed'] {
+  border-style: solid;
+  border-color: var(--warn);
+}
+.pending-card[data-state='site-failed'] .pending-msg,
+.pending-msg[data-overrun='true'] .pending-eta {
+  color: var(--warn);
+}
+.pending-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.35rem 0 0.1rem;
+}
+.pending-bar {
+  flex: 1;
+  min-width: 6rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.pending-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent-2);
+  transition: width 0.6s ease;
+}
+.pending-pct {
+  flex: none;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.pending-eta {
+  color: var(--muted);
+}
