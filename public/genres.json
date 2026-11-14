@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-14T22:07:44.892Z",
+  "updatedAt": "2026-11-14T22:14:43.881Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -4894,8 +4894,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:07:44.890Z"
+          "at": "2026-11-14T22:07:44.890Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -5209,8 +5209,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:07:44.891Z"
+          "at": "2026-11-14T22:07:44.891Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -5494,8 +5494,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:07:44.887Z"
+          "at": "2026-11-14T22:07:44.887Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -5744,7 +5744,7 @@
         "funktronica"
       ],
       "complete": true,
-      "at": "2026-11-14T07:58:07.850Z",
+      "at": "2026-11-14T22:14:43.874Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -5810,6 +5810,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:14:43.874Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -6097,8 +6102,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:07:44.882Z"
+          "at": "2026-11-14T22:07:44.882Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -6429,8 +6434,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:07:44.889Z"
+          "at": "2026-11-14T22:07:44.889Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -7411,6 +7416,245 @@
             "Hard Rock"
           ],
           "ref": "artist/42102393 (Evanescence)"
+        }
+      }
+    },
+    "evanescence - my immortal": {
+      "artist": "Evanescence",
+      "title": "My Immortal",
+      "videoIds": [
+        "_6pz0ef_YH0"
+      ],
+      "genres": [
+        "alternative metal",
+        "soft rock",
+        "alternative rock",
+        "gothic rock",
+        "nu metal",
+        "pop rock",
+        "ballad"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative metal",
+        "gothic metal",
+        "hard rock",
+        "symphonic metal"
+      ],
+      "moods": [
+        "troubled"
+      ],
+      "complete": true,
+      "at": "2026-11-14T22:11:57.906Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "genres": [
+            "Alternative rock"
+          ],
+          "ref": "My Immortal (song)",
+          "links": {
+            "albumArticle": "Fallen (Evanescence album)",
+            "artistArticle": "Evanescence"
+          },
+          "at": "2026-11-14T22:11:46.063Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "found",
+          "genres": [
+            "alternative metal",
+            "soft rock",
+            "gothic rock"
+          ],
+          "ref": "Q1981958",
+          "at": "2026-11-14T22:11:48.259Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "pop/rock",
+            "ballad",
+            "pop",
+            "symphonic rock",
+            "piano rock",
+            "rock",
+            "singer-songwriter",
+            "soft rock"
+          ],
+          "counts": [
+            4,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "release-group/34028517-fedf-3b6b-a104-45a3d96e35ae",
+          "at": "2026-11-14T22:11:54.504Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "found",
+          "genres": [
+            "Rock"
+          ],
+          "moods": [
+            "Troubled"
+          ],
+          "ref": "track/33152319",
+          "at": "2026-11-14T22:11:46.165Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Hard Rock"
+          ],
+          "ref": "stored",
+          "at": "2026-11-14T22:11:45.859Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:11:45.859Z"
+        },
+        "musicbrainz-album": {
+          "status": "none",
+          "reason": "the recordings are on no album or EP",
+          "at": "2026-11-14T22:11:54.504Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "found",
+          "genres": [
+            "Nu metal",
+            "alternative metal",
+            "gothic metal"
+          ],
+          "ref": "Fallen (Evanescence album)",
+          "links": {
+            "wikidata": "Q155612"
+          },
+          "at": "2026-11-14T22:11:54.592Z"
+        },
+        "wikidata-album": {
+          "status": "found",
+          "genres": [
+            "nu metal"
+          ],
+          "ref": "Q155612",
+          "at": "2026-11-14T22:11:55.744Z"
+        },
+        "discogs-album": {
+          "status": "none",
+          "reason": "no Discogs master linked from the MusicBrainz album",
+          "at": "2026-11-14T22:11:54.504Z"
+        },
+        "itunes-album": {
+          "status": "found",
+          "genres": [
+            "Hard Rock"
+          ],
+          "ref": "collection/1440665838 (Fallen)",
+          "links": {
+            "album": "Fallen"
+          },
+          "at": "2026-11-14T22:11:49.165Z"
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "genres": [
+            "alternative metal",
+            "metal",
+            "alternative rock",
+            "rock",
+            "symphonic metal",
+            "symphonic rock",
+            "gothic metal",
+            "heavy metal",
+            "piano rock",
+            "gothic",
+            "gothic rock",
+            "post-grunge"
+          ],
+          "counts": [
+            15,
+            8,
+            5,
+            4,
+            4,
+            4,
+            3,
+            2,
+            2,
+            1,
+            1,
+            1
+          ],
+          "ref": "artist/f4a31f0a-51dd-4fa7-986d-3095c40c5ed9 (Evanescence; credited on the song)",
+          "links": {
+            "mbArtist": "f4a31f0a-51dd-4fa7-986d-3095c40c5ed9",
+            "wikidata": "Q1777698"
+          },
+          "at": "2026-11-14T22:11:56.135Z"
+        },
+        "wikipedia-artist": {
+          "status": "found",
+          "genres": [
+            "Alternative metal",
+            "gothic metal",
+            "gothic rock",
+            "hard rock",
+            "industrial rock",
+            "symphonic metal",
+            "nu metal"
+          ],
+          "ref": "Evanescence",
+          "links": {
+            "wikidata": "Q1777698"
+          },
+          "at": "2026-11-14T22:11:56.897Z"
+        },
+        "wikidata-artist": {
+          "status": "found",
+          "genres": [
+            "alternative metal",
+            "alternative rock",
+            "gothic metal",
+            "hard rock",
+            "industrial rock",
+            "symphonic metal"
+          ],
+          "ref": "Q1777698",
+          "at": "2026-11-14T22:11:57.906Z"
+        },
+        "theaudiodb-artist": {
+          "status": "found",
+          "genres": [
+            "Rock",
+            "Rock/Pop"
+          ],
+          "ref": "artist/111766",
+          "at": "2026-11-14T22:11:48.394Z"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "genres": [
+            "Hard Rock"
+          ],
+          "ref": "artist/42102393 (Evanescence)",
+          "at": "2026-11-14T22:11:49.165Z"
         }
       }
     },
@@ -13129,7 +13373,7 @@
         "nu-disco",
         "R&B",
         "alternative hip hop",
-        "synth-pop"
+        "pop"
       ],
       "genreLevels": [
         "song",
@@ -13137,7 +13381,7 @@
         "song",
         "album",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "alternative hip hop",
@@ -13146,7 +13390,7 @@
         "pop rap"
       ],
       "complete": true,
-      "at": "2026-11-14T07:59:07.529Z",
+      "at": "2026-11-14T22:14:43.879Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -13203,6 +13447,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:14:43.879Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -13394,7 +13643,7 @@
         "poignant"
       ],
       "complete": true,
-      "at": "2026-11-14T07:58:59.505Z",
+      "at": "2026-11-14T22:14:43.880Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -13459,6 +13708,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:14:43.880Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -22352,7 +22606,7 @@
         "synth-pop"
       ],
       "complete": true,
-      "at": "2026-11-14T07:58:24.124Z",
+      "at": "2026-11-14T22:14:43.876Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -22420,6 +22674,11 @@
             "R&B/Soul"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:14:43.876Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -22644,7 +22903,7 @@
         "intense"
       ],
       "complete": true,
-      "at": "2026-11-14T07:58:24.124Z",
+      "at": "2026-11-14T22:14:43.878Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -22711,6 +22970,11 @@
             "R&B/Soul"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-14T22:14:43.878Z"
         },
         "musicbrainz-album": {
           "status": "found",

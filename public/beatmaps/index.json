@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-14T22:07:44.892Z",
+  "generatedAt": "2026-11-14T22:14:43.881Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -54,6 +54,7 @@
     "XQG89cwhmJU",
     "XZe_pV2rXuk",
     "YgCYsJicgEU",
+    "_6pz0ef_YH0",
     "_Vj092UgKwQ",
     "_dK2tDK9grQ",
     "aAizT0NOWkM",
@@ -1493,6 +1494,35 @@
         "funktronica"
       ]
     },
+    "_6pz0ef_YH0": {
+      "bpm": 74.8,
+      "duration": 266,
+      "genre": "Hard Rock",
+      "genres": [
+        "alternative metal",
+        "soft rock",
+        "alternative rock",
+        "gothic rock",
+        "nu metal",
+        "pop rock",
+        "ballad"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative metal",
+        "gothic metal",
+        "hard rock",
+        "symphonic metal"
+      ]
+    },
     "_Vj092UgKwQ": {
       "bpm": 103.6,
       "duration": 283,
@@ -2120,7 +2150,7 @@
         "nu-disco",
         "R&B",
         "alternative hip hop",
-        "synth-pop"
+        "pop"
       ],
       "genreLevels": [
         "song",
@@ -2128,7 +2158,7 @@
         "song",
         "album",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "alternative hip hop",
@@ -2462,7 +2492,7 @@
       ]
     },
     "s8ZXJ5QUYvQ": {
-      "bpm": 129.2,
+      "bpm": 95.1,
       "duration": 236,
       "genre": "Hard Rock",
       "genres": [

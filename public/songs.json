@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-14T21:50:00.282Z",
+  "updatedAt": "2026-11-14T22:14:43.881Z",
   "songs": [
     {
       "videoId": "_Vj092UgKwQ",
@@ -154,6 +154,39 @@
         "post-grunge",
         "alternative metal",
         "nu metal"
+      ]
+    },
+    {
+      "videoId": "_6pz0ef_YH0",
+      "title": "My Immortal",
+      "artist": "Evanescence",
+      "addedAt": "2026-11-14T22:11:45.857Z",
+      "durationSec": 263,
+      "hasMap": true,
+      "genre": "Hard Rock",
+      "genres": [
+        "alternative metal",
+        "soft rock",
+        "alternative rock",
+        "gothic rock",
+        "nu metal",
+        "pop rock",
+        "ballad"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative metal",
+        "gothic metal",
+        "hard rock",
+        "symphonic metal"
       ]
     }
   ]
