@@ -92,8 +92,10 @@ export const PIV_Y = 0.55;
  *         unchanged, so framing and proportions stay as authored.
  *   feet  a contact shadow under each foot (on the floor at the foot's depth,
  *         shrinking as it lifts) on top of the body's soft shadow pool.
+ *   ghost a faint trail of each hand over the last half second (motion cue
+ *         for circles the flat figure collapses; off by default).
  */
-export const VIEW = { cam: 2.6, piv: 0.95, rise: 0, feet: true };
+export const VIEW = { cam: 2.6, piv: 0.95, rise: 0, feet: true, ghost: false };
 
 /** Perspective scale at depth z (toward the viewer +). */
 export function depthScale(z: number): number {
@@ -119,4 +121,5 @@ export function viewFromParams(q: URLSearchParams): void {
   VIEW.piv = Math.max(0, Math.min(1.4, num('piv') ?? VIEW.piv));
   VIEW.rise = Math.max(0, Math.min(1, num('rise') ?? VIEW.rise));
   if (q.has('feet')) VIEW.feet = q.get('feet') !== '0';
+  if (q.has('ghost')) VIEW.ghost = q.get('ghost') !== '0';
 }

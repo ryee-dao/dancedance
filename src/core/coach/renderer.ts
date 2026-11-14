@@ -117,6 +117,12 @@ const CLASSIC: Record<CoachBuild, ClassicBuild> = {
   male: { upper: 0.07, fore: 0.062, thigh: 0.086, shin: 0.071, shoulderOut: 0.03, waist: 0.47, capR: 0.054, shorts: 0.62, male: true },
 };
 const W_FOOT = 0.054;
+/** Hand ghost trail (VIEW.ghost): samples and the time they span. */
+const GHOST_N = 14;
+const GHOST_SEC = 0.45;
+const GHOST_CHUNKS = 4;
+/** Ghost: screen height per unit of depth (toward the viewer = lower). */
+const GHOST_RISE = 0.6;
 const OUTLINE = 0.014;
 
 // Sprite mode (classic): bar width ids, piece kinds / artist ids, scratch.
@@ -240,6 +246,12 @@ export class FigurePainter implements PieceArtist {
   private lastHx = NaN;
   private lastHy = NaN;
   private lastT = NaN;
+  // Hand ghost trail (ring buffer: [rx, ry, lx, ly] per sample, figure units).
+  private readonly ghP = new Float64Array(GHOST_N * 4);
+  private readonly ghZ = new Float64Array(GHOST_N * 2);
+  private ghHead = 0;
+  private ghN = 0;
+  private ghT = NaN;
 
   /** Project the skeleton for a figure standing at (cx, floorY) with `scale` px per unit. */
   project(sk: Skeleton, cx: number, floorY: number, scale: number): void {
@@ -304,6 +316,8 @@ export class FigurePainter implements PieceArtist {
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       if (o.shadow !== false) this.shadow(ctx, sk, cx, floorY, scale);
+    if (!mini) this.ghost(ctx, sk, cx, floorY, scale, t);
+      if (!mini) this.ghost(ctx, sk, cx, floorY, scale, t);
       this.human.draw(ctx, sk, this.px, this.ps, cx, floorY, scale, t, mini);
       ctx.restore();
       return;
@@ -423,6 +437,76 @@ export class FigurePainter implements PieceArtist {
     const key = `${this.style}|${this.build}|${this.tint.top}|${this.tint.hood}`;
     if (this.tintedLook?.key !== key) this.tintedLook = { key, look: { ...base, top: this.tint.top, ...(base.hood ? { hood: this.tint.hood } : {}) } };
     return this.tintedLook.look;
+  }
+
+  /**
+   * Motion cue (VIEW.ghost, off by default): a faint fading trail of each
+   * hand over the last GHOST_SEC, behind the figure, so a circle the flat
+   * figure collapses to a line (a lasso overhead, stirring at the waist)
+   * shows as a loop. Positions are kept in figure units relative to the
+   * figure's floor point, so travel and resizes don't smear it. Call after
+   * project(); t = seconds (monotonic while dancing).
+   */
+  private ghost(ctx: CanvasRenderingContext2D, sk: Skeleton, cx: number, floorY: number, scale: number, t: number): void {
+    if (!VIEW.ghost) return;
+    this.recordHands(sk, cx, floorY, scale, t);
+    const n = this.ghN;
+    if (n < 3) return;
+    const g = this.ghP;
+    const a0 = ctx.globalAlpha;
+    ctx.lineCap = 'round';
+    for (let h = 0; h < 2; h++) {
+      // Skip a hand that hardly moved (no cue for small jitters).
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (let i = 0; i < n; i++) {
+        const k = (this.ghHead - 1 - i + GHOST_N) % GHOST_N;
+        const o = (k * 2 + h) * 2;
+        const y = g[o + 1] - this.ghZ[k * 2 + h] * GHOST_RISE;
+        x0 = Math.min(x0, g[o]); x1 = Math.max(x1, g[o]);
+        y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+      }
+      if (Math.max(x1 - x0, y1 - y0) < 0.1) continue;
+      ctx.strokeStyle = h === 0 ? COLORS.rightLight : COLORS.leftLight;
+      ctx.lineWidth = 0.02 * scale;
+      // Depth shown as height (a view from above), relative to the hand's
+      // depth now, so the newest point sits on the hand: a horizontal
+      // circle draws as an open ellipse instead of a line.
+      const zNow = this.ghZ[(((this.ghHead - 1 + GHOST_N) % GHOST_N) * 2) + h];
+      // Fading: a few chunks, each one path (no overlapping round caps).
+      for (let c = 0; c < GHOST_CHUNKS; c++) {
+        const i0 = Math.floor((c * (n - 1)) / GHOST_CHUNKS), i1 = Math.floor(((c + 1) * (n - 1)) / GHOST_CHUNKS);
+        if (i1 <= i0) continue;
+        ctx.globalAlpha = a0 * 0.4 * (1 - c / GHOST_CHUNKS);
+        ctx.beginPath();
+        for (let i = i0; i <= i1; i++) {
+          const k = (this.ghHead - 1 - i + GHOST_N) % GHOST_N;
+          const o = (k * 2 + h) * 2;
+          const y = floorY - (g[o + 1] - (this.ghZ[k * 2 + h] - zNow) * GHOST_RISE) * scale;
+          if (i === i0) ctx.moveTo(cx + g[o] * scale, y);
+          else ctx.lineTo(cx + g[o] * scale, y);
+        }
+        ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = a0;
+  }
+
+  /** Remember the projected hands (at most every GHOST_SEC / GHOST_N s); a jump back in time or a long gap restarts the trail. */
+  recordHands(sk: Skeleton, cx: number, floorY: number, scale: number, t: number): void {
+    const dt = t - this.ghT;
+    if (!(dt >= 0) || dt > 0.5) this.ghN = 0;
+    else if (dt < GHOST_SEC / GHOST_N) return;
+    this.ghT = t;
+    const o = this.ghHead * 4, g = this.ghP, px = this.px;
+    g[o] = (px[J.HA_R * 2] - cx) / scale;
+    g[o + 1] = (floorY - px[J.HA_R * 2 + 1]) / scale;
+    g[o + 2] = (px[J.HA_L * 2] - cx) / scale;
+    g[o + 3] = (floorY - px[J.HA_L * 2 + 1]) / scale;
+    const p = sk.p;
+    this.ghZ[this.ghHead * 2] = p[J.HA_R * 3 + 2];
+    this.ghZ[this.ghHead * 2 + 1] = p[J.HA_L * 3 + 2];
+    this.ghHead = (this.ghHead + 1) % GHOST_N;
+    if (this.ghN < GHOST_N) this.ghN++;
   }
 
   private shadow(ctx: CanvasRenderingContext2D, sk: Skeleton, cx: number, floorY: number, scale: number): void {

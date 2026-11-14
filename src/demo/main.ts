@@ -393,7 +393,7 @@ function sheetMoves(set: string): Move[] {
  *                                  the move, at most the whole loop plan)
  *   &trail=1                       an extra cell with the paths of hands, feet and head
  *                                  over the frames' span (how much visibly moves)
- *   &cams=cam/piv/rise/feet;...    one row per camera (before / after the stage camera)
+ *   &cams=cam/piv/rise/feet[/ghost];... one row per camera (before / after the stage camera)
  *   &form=point|horns|fingers      preview a hand form on both hands
  */
 function runSheet(): void {
@@ -412,11 +412,11 @@ function runSheet(): void {
   const start = Number(q.get('start') ?? 0);
   const trail = q.get('trail') === '1';
   const formQ = ({ point: 1, horns: 2, fingers: 3 } as Record<string, number>)[q.get('form') ?? ''] ?? 0;
-  // &cams=cam/piv/rise/feet;...: one row per camera (before / after comparisons in one sheet).
+  // &cams=cam/piv/rise/feet[/ghost];...: one row per camera (before / after comparisons in one sheet).
   const view0 = { ...VIEW };
   const cams = (q.get('cams') ?? '').split(';').filter(Boolean).map((c) => {
-    const [cam, piv, rise, feet] = c.split('/').map(Number);
-    return { cam: cam || view0.cam, piv: Number.isFinite(piv) ? piv : view0.piv, rise: rise || 0, feet: !!feet, label: c };
+    const [cam, piv, rise, feet, ghost] = c.split('/').map(Number);
+    return { cam: cam || view0.cam, piv: Number.isFinite(piv) ? piv : view0.piv, rise: rise || 0, feet: !!feet, ghost: !!ghost, label: c };
   });
   const labelW = 220;
   const cols = frames + (trail ? 1 : 0);
@@ -439,7 +439,7 @@ function runSheet(): void {
     [J.HA_R, '#ff6b6b'], [J.HA_L, '#4dabf7'], [J.TOE_R, '#ffa94d'], [J.TOE_L, '#69db7c'], [J.HEAD, '#e599f7'],
   ];
   rows.forEach(({ m, st, view, cam }, row) => {
-    Object.assign(VIEW, cam ? { cam: cam.cam, piv: cam.piv, rise: cam.rise, feet: cam.feet } : view0);
+    Object.assign(VIEW, cam ? { cam: cam.cam, piv: cam.piv, rise: cam.rise, feet: cam.feet, ghost: cam.ghost } : view0);
     const painter = new FigurePainter();
     painter.style = st;
     painter.build = build;
@@ -494,7 +494,17 @@ function runSheet(): void {
       ctx.beginPath();
       ctx.rect(cx - cellW / 2, y0, cellW, cellH);
       ctx.clip();
-      painter.draw(ctx, sk, cx, floor, scale, f * 0.1, { shadow: true });
+      if (VIEW.ghost) {
+        // Hand ghost (motion cue): feed the half second before this frame.
+        for (let k = 12; k >= 1; k--) {
+          const tb = b - (k * 0.04) / period;
+          solve(tb);
+          painter.project(sk, cx, floor, scale);
+          painter.recordHands(sk, cx, floor, scale, tb * period + 100);
+        }
+        solve(b);
+      }
+      painter.draw(ctx, sk, cx, floor, scale, VIEW.ghost ? b * period + 100 : f * 0.1, { shadow: true });
       ctx.restore();
       ctx.fillStyle = Number.isInteger(Math.round(b * 1000) / 1000) ? COLORS.band : COLORS.muted;
       ctx.font = '11px ui-monospace, monospace';
