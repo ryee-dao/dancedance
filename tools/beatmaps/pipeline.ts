@@ -14,12 +14,12 @@ import { decideContribution, parseContribution, type KnownSongs } from './contri
 import { catalogSongs, dueSongs, genreListsFor, parseGenresFile, putRecord, renderGenresFile, type CatalogSong, type GenreRecord } from './genres';
 import type { Classification } from './classify';
 import { classifyYtDlpError } from './classify';
-import { parseFlatPlaylist, parseStatus, renderIndex, renderPlaylist, renderStatus, type MapInfo, type PlaylistInfo } from './output';
+import { parseFlatPlaylist, parseStatus, renderIndex, renderPlaylist, renderStatus, type GenreMeta, type MapInfo, type PlaylistInfo } from './output';
 import type { OfficialSong } from './itunes';
 import { mergeSearches, parseSearch, rankCandidates, searchQueries, type SearchEntry } from './pick';
 import { planWork, preflightSkip, unionCandidates, type Candidate, type StatusReason, type VideoStatus, type WorkItem, type WorkReason } from './select';
 import { parseSongsList, parseSongsStatus, planAdds, renderSongs, renderSongsStatus, songKey, type AddedSong, type AddRequest, type SongRequestStatus } from './songs';
-import { cleanGenreList } from '../../src/beat/cloud';
+import { cleanGenreLevels, cleanGenreList } from '../../src/beat/cloud';
 import type { AddResult, Fatal, ResultKind, RunReport, SongResult } from './summary';
 import { PCM_RATE, ToolFailure, type DownloadResult, type EmbedCheck } from './youtube';
 
@@ -618,7 +618,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     const now = nowIso();
     await mkdir(paths.beatmapsDir, { recursive: true });
     // Rebuilt from the map files on disk every run, so it cannot drift from them.
-    const idx = renderIndex(prevIndexText, ANALYZER_VERSION, await scanMaps(paths.beatmapsDir), now, songGenres(songs, prevIndexText), songGenreLists(songs, starter, genreRecords, prevIndexText));
+    const idx = renderIndex(prevIndexText, ANALYZER_VERSION, await scanMaps(paths.beatmapsDir), now, songGenres(songs, prevIndexText), songGenreLists(songs, starter, genreRecords, prevIndexText), songGenreMeta(songs, starter, genreRecords, prevIndexText));
     if (await writeIfChanged(indexPath, idx)) written.push(indexPath);
     await writeGenresFile(paths, prevGenresText, genreRecords, now, written);
     const st = renderStatus(prevStatusText, status, now);
@@ -703,12 +703,48 @@ export function songGenres(songs: AddedSong[], prevIndexText?: string): Map<stri
   return out;
 }
 
-/** songs.json `genres`: each added song gets its lookup's combined list (when it found any). */
+/** songs.json `genres` (+ `genreLevels`, `artistGenres`): each added song gets its lookup's combined lists (when it found any). */
 export function applyGenreLists(songs: AddedSong[], records: Readonly<Record<string, GenreRecord>>): void {
   for (const s of songs) {
-    const g = records[songKey(s.artist, s.title)]?.genres;
-    if (g?.length) s.genres = [...g];
+    const r = records[songKey(s.artist, s.title)];
+    if (!r) continue;
+    if (r.genres?.length) {
+      s.genres = [...r.genres];
+      if (r.genreLevels?.length === r.genres.length) s.genreLevels = [...r.genreLevels];
+      else delete s.genreLevels;
+    }
+    if (r.artistGenres?.length) s.artistGenres = [...r.artistGenres];
   }
+}
+
+/**
+ * index.json `genreLevels` / `artistGenres`: those already stored in the
+ * previous index, then every catalog song's lookup, then songs.json's own.
+ */
+export function songGenreMeta(songs: AddedSong[], starter: Candidate[], records: Readonly<Record<string, GenreRecord>>, prevIndexText?: string): Map<string, GenreMeta> {
+  const out = new Map<string, GenreMeta>();
+  try {
+    const prev = (JSON.parse(prevIndexText ?? '{}') as { songs?: Record<string, { genres?: unknown; genreLevels?: unknown; artistGenres?: unknown }> }).songs;
+    if (prev && typeof prev === 'object') {
+      for (const [id, v] of Object.entries(prev)) {
+        const genreLevels = cleanGenreLevels(v?.genreLevels, cleanGenreList(v?.genres));
+        const artistGenres = cleanGenreList(v?.artistGenres);
+        if (genreLevels || artistGenres) out.set(id, { ...(genreLevels ? { genreLevels } : {}), ...(artistGenres ? { artistGenres } : {}) });
+      }
+    }
+  } catch {
+    // no or unreadable previous index
+  }
+  for (const c of catalogSongs(songs, starter)) {
+    const r = records[c.key];
+    if (!r) continue;
+    const genreLevels = r.genres?.length && r.genreLevels?.length === r.genres.length ? r.genreLevels : undefined;
+    if (genreLevels || r.artistGenres?.length) out.set(c.videoId, { ...(genreLevels ? { genreLevels } : {}), ...(r.artistGenres?.length ? { artistGenres: r.artistGenres } : {}) });
+  }
+  for (const x of songs) {
+    if (x.genreLevels?.length || x.artistGenres?.length) out.set(x.videoId, { ...(x.genreLevels?.length ? { genreLevels: x.genreLevels } : {}), ...(x.artistGenres?.length ? { artistGenres: x.artistGenres } : {}) });
+  }
+  return out;
 }
 
 /**
@@ -783,7 +819,7 @@ async function runContribution(
     const maps = await scanMaps(paths.beatmapsDir);
     const prevIndexText = await readText(st.indexPath);
     applyGenreLists(st.songs, st.genreRecords);
-    const idx = renderIndex(prevIndexText, ANALYZER_VERSION, maps, now, songGenres(st.songs, prevIndexText), songGenreLists(st.songs, st.starter, st.genreRecords, prevIndexText));
+    const idx = renderIndex(prevIndexText, ANALYZER_VERSION, maps, now, songGenres(st.songs, prevIndexText), songGenreLists(st.songs, st.starter, st.genreRecords, prevIndexText), songGenreMeta(st.songs, st.starter, st.genreRecords, prevIndexText));
     if (await writeIfChanged(st.indexPath, idx)) written.push(st.indexPath);
     await writeSongFiles(paths, { ...st, mapIds: new Set(maps.keys()), now, written });
   }

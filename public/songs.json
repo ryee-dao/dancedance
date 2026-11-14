@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-14T04:44:21.250Z",
+  "updatedAt": "2026-11-14T07:53:00.946Z",
   "songs": [
     {
       "videoId": "_Vj092UgKwQ",
@@ -11,7 +11,25 @@
       "genre": "Pop",
       "genres": [
         "disco",
-        "pop"
+        "pop",
+        "dance",
+        "soul",
+        "funk",
+        "stage & screen"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "album",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "disco",
+        "soft rock",
+        "pop rock",
+        "rock"
       ]
     },
     {
@@ -23,12 +41,26 @@
       "hasMap": true,
       "genre": "Pop",
       "genres": [
-        "pop",
         "dance-pop",
         "pop rap",
+        "synth-pop",
         "Britpop",
-        "pop rock",
-        "synth-pop"
+        "electronic",
+        "teen pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "dance-pop",
+        "teen pop",
+        "R&B",
+        "europop"
       ]
     },
     {
@@ -41,11 +73,25 @@
       "genre": "Hard Rock",
       "genres": [
         "nu metal",
-        "rap rock",
+        "alternative metal",
         "alternative rock",
-        "rock",
+        "rap rock",
+        "gothic metal",
+        "metal"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative metal",
+        "gothic metal",
         "hard rock",
-        "alternative metal"
+        "symphonic metal"
       ]
     },
     {
@@ -60,9 +106,23 @@
         "Latin pop",
         "reggaeton",
         "salsa",
-        "latin",
+        "pop rock",
+        "dance-pop",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "Latin pop",
         "pop",
-        "cumbia"
+        "Latin rock"
       ]
     },
     {
@@ -75,11 +135,25 @@
       "genre": "Rock",
       "genres": [
         "alternative rock",
-        "rock",
+        "post-grunge",
+        "hard rock",
         "funk rock",
         "dance-rock",
-        "hard rock",
-        "post-grunge"
+        "rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "post-grunge",
+        "alternative metal",
+        "nu metal"
       ]
     }
   ]

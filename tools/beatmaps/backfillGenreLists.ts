@@ -7,6 +7,7 @@
  *   npx tsx tools/beatmaps/backfillGenreLists.ts [--dry-run] [--limit <n>] [--only <text>] [--parallel <n>]
  *   npx tsx tools/beatmaps/backfillGenreLists.ts --recombine   # no network: recompute lists from stored answers
  *   npx tsx tools/beatmaps/backfillGenreLists.ts --report      # no network: print the summary
+ *   npx tsx tools/beatmaps/backfillGenreLists.ts --echo        # no network: how often each site's song answer repeats its artist answer
  *   npx tsx tools/beatmaps/backfillGenreLists.ts --refresh musicbrainz[,wikidata]  # ask those sources again (after a matcher fix)
  *
  * Re-runnable: public/genres.json is the cache (sources that found the song
@@ -20,10 +21,11 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseSongsList } from '../../src/beat/cloud';
 import { DEFAULT_SOURCES, familyDisagreements, lookupGenres, recombine, type SourceId } from '../../src/genre';
+import { sourceEntries } from '../../src/genre/combine';
 import { genreHttp } from './genreClient';
 import { catalogSongs, dueSongs, parseGenresFile, putRecord, renderGenresFile, type CatalogSong, type GenreRecord } from './genres';
 import { renderIndex, type MapInfo } from './output';
-import { applyGenreLists, readStarter, songGenreLists, songGenres } from './pipeline';
+import { applyGenreLists, readStarter, songGenreLists, songGenreMeta, songGenres } from './pipeline';
 import { renderSongs } from './songs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -89,11 +91,42 @@ export function summarize(catalog: readonly CatalogSong[], records: Readonly<Rec
     const total = h.found + h.none + h.failed;
     lines.push(`  ${src.id.padEnd(11)} ${h.found} / ${h.none} / ${h.failed}  (${total ? Math.round((100 * h.found) / total) : 0}%)`);
   }
+  for (const level of ['song', 'album', 'artist'] as const) {
+    const n = songs.filter((s) => DEFAULT_SOURCES.some((src) => src.level === level && records[s.key]?.sources[src.id]?.status === 'found')).length;
+    lines.push(`any ${level}-level source found: ${n}/${songs.length}`);
+  }
+  lines.push(`with artistGenres: ${songs.filter((s) => records[s.key]?.artistGenres?.length).length}/${songs.length}`);
   lines.push(`no genres (${missing.length}):`);
   for (const m of missing) lines.push(`  ${m}`);
   lines.push(`sources disagree on the broad family (${disagree.length}):`);
   for (const d of disagree) lines.push(`  ${d}`);
   return lines.join('\n');
+}
+
+/**
+ * For each site with a song answer and an artist answer: on how many songs
+ * (both found) every song genre is also an artist genre. combine.ts
+ * ECHO_RATES is this measurement.
+ */
+export function echoRates(records: Readonly<Record<string, GenreRecord>>): Map<SourceId, { echo: number; both: number }> {
+  const out = new Map<SourceId, { echo: number; both: number }>();
+  for (const src of DEFAULT_SOURCES) {
+    if (!src.artistTwin) continue;
+    const twin = DEFAULT_SOURCES.find((x) => x.id === src.artistTwin)!;
+    const r = { echo: 0, both: 0 };
+    for (const rec of Object.values(records)) {
+      const a = rec.sources[src.id];
+      const b = rec.sources[twin.id];
+      if (a?.status !== 'found' || b?.status !== 'found') continue;
+      const ka = sourceEntries(a, src.strictNames).map((e) => e.key);
+      const kb = new Set(sourceEntries(b, twin.strictNames).map((e) => e.key));
+      if (!ka.length || !kb.size) continue;
+      r.both++;
+      if (ka.every((k) => kb.has(k))) r.echo++;
+    }
+    out.set(src.id, r);
+  }
+  return out;
 }
 
 async function main(): Promise<void> {
@@ -115,6 +148,10 @@ async function main(): Promise<void> {
   const records: Record<string, GenreRecord> = parseGenresFile(genresText);
   const catalog = catalogSongs(songs, starter, songGenres(songs, indexText));
 
+  if (flag('--echo')) {
+    for (const [id, r] of echoRates(records)) log(`${id.padEnd(18)} echoes its artist answer on ${r.echo}/${r.both} songs${r.both ? ` (${(r.echo / r.both).toFixed(2)})` : ''}`);
+    return;
+  }
   if (flag('--report')) {
     log(summarize(catalog, records));
     return;
@@ -158,7 +195,7 @@ async function main(): Promise<void> {
     await writeFile(SONGS, renderSongs(songsText, songs, now));
     const index = JSON.parse(indexText) as { analyzerVersion: string; songs: Record<string, { bpm: number; duration: number }> };
     const maps = new Map<string, MapInfo>(Object.entries(index.songs).map(([id, v]) => [id, { analyzerVersion: index.analyzerVersion, bpm: v.bpm, duration: v.duration }]));
-    await writeFile(INDEX, renderIndex(indexText, index.analyzerVersion, maps, now, songGenres(songs, indexText), songGenreLists(songs, starter, records, indexText)));
+    await writeFile(INDEX, renderIndex(indexText, index.analyzerVersion, maps, now, songGenres(songs, indexText), songGenreLists(songs, starter, records, indexText), songGenreMeta(songs, starter, records, indexText)));
   }
   log(`\n${summarize(catalog, records)}`);
 }

@@ -112,6 +112,10 @@ class AddedSongsStore(private val file: File) {
         val genres: List<String> = emptyList(),
         /** That lookup as JSON text (what each source said; the page's cache for later lookups); "" until looked up. */
         val genreLookup: String = "",
+        /** The artist's usual genres, best first (weak evidence, kept apart from [genres]); empty when unknown or older lookups. */
+        val artistGenres: List<String> = emptyList(),
+        /** Parallel to [genres] (same length and order): "song", "album" or "artist", the level each genre came from; empty when unknown. */
+        val genreLevels: List<String> = emptyList(),
     ) {
         /** What the page gets (getAddedSongs / addedSongsChanged). */
         fun toJson(): JSONObject = JSONObject()
@@ -120,6 +124,8 @@ class AddedSongsStore(private val file: File) {
             .apply { if (tier == SongPicker.Tier.MUSIC_VIDEO.label) put("note", "music-video") }
             .apply { if (genre.isNotEmpty()) put("genre", genre) }
             .apply { if (genres.isNotEmpty()) put("genres", JSONArray(genres)) }
+            .apply { if (artistGenres.isNotEmpty()) put("artistGenres", JSONArray(artistGenres)) }
+            .apply { if (genreLevels.isNotEmpty()) put("genreLevels", JSONArray(genreLevels)) }
             .apply { lookupJson(genreLookup)?.let { put("genreLookup", it) } }
 
         fun toStoredJson(): JSONObject = toJson().apply { if (genreTriedAt.isNotEmpty()) put("genreTriedAt", genreTriedAt) }
@@ -137,10 +143,12 @@ class AddedSongsStore(private val file: File) {
                 val id = o.optString("videoId")
                 if (!Regex("^[A-Za-z0-9_-]{11}$").matches(id)) return@mapNotNull null
                 // Entries saved before the genre was kept have no "genre": they load with "".
+                val genres = cleanGenres(o.optJSONArray("genres"))
                 Song(id, o.optString("title"), o.optString("artist"), o.optString("addedAt"), o.optInt("durationSec"),
                     o.optString("videoTitle"), o.optString("channel"), o.optString("tier"),
                     SongPicker.cleanGenre(o.opt("genre")), o.optString("genreTriedAt"),
-                    cleanGenres(o.optJSONArray("genres")), o.optJSONObject("genreLookup")?.toString().orEmpty())
+                    genres, o.optJSONObject("genreLookup")?.toString().orEmpty(),
+                    cleanGenres(o.optJSONArray("artistGenres")), cleanLevels(o.optJSONArray("genreLevels"), genres.size))
             }
         } catch (e: Exception) {
             emptyList()
@@ -175,7 +183,9 @@ class AddedSongsStore(private val file: File) {
         val o = lookupJson(lookupJson) ?: return false
         val before = list()
         val s = before.firstOrNull { it.videoId == videoId } ?: return false
-        val updated = s.copy(genres = cleanGenres(o.optJSONArray("genres")), genreLookup = o.toString())
+        val genres = cleanGenres(o.optJSONArray("genres"))
+        val updated = s.copy(genres = genres, genreLookup = o.toString(), artistGenres = cleanGenres(o.optJSONArray("artistGenres")),
+            genreLevels = cleanLevels(o.optJSONArray("genreLevels"), genres.size))
         save(before.map { if (it.videoId == videoId) updated else it })
         return true
     }
@@ -227,6 +237,18 @@ class AddedSongsStore(private val file: File) {
                 if (out.size >= MAX_GENRES) break
             }
             return out.toList()
+        }
+
+        /** Strings only, each exactly song/album/artist (trimmed, lower-cased); kept only when there are [size] of them and none was invalid. */
+        fun cleanLevels(arr: JSONArray?, size: Int): List<String> {
+            if (arr == null || arr.length() != size) return emptyList()
+            val out = ArrayList<String>(size)
+            for (i in 0 until arr.length()) {
+                val t = (arr.opt(i) as? String)?.trim()?.lowercase()
+                if (t != "song" && t != "album" && t != "artist") return emptyList()
+                out += t
+            }
+            return out
         }
 
         fun lookupJson(text: String): JSONObject? =

@@ -141,6 +141,21 @@ export interface AddedSong {
    * Absent until looked up (or when no source could confirm the song).
    */
   genres?: string[];
+  /** Which level each `genres` entry came from ('song' or 'album'; same order). Absent in older files. */
+  genreLevels?: GenreLevelName[];
+  /**
+   * The artist's usual genres (src/genre artist-level sources), best first: weak
+   * evidence about the song, kept apart from `genres`. Absent until looked up.
+   */
+  artistGenres?: string[];
+}
+
+export type GenreLevelName = 'song' | 'album' | 'artist';
+
+/** A stored `genreLevels` list: valid only when it has one known level per entry of `genres`. */
+export function cleanGenreLevels(v: unknown, genres: readonly string[] | undefined): GenreLevelName[] | undefined {
+  if (!Array.isArray(v) || !genres?.length || v.length !== genres.length) return undefined;
+  return v.every((x) => x === 'song' || x === 'album' || x === 'artist') ? (v as GenreLevelName[]) : undefined;
 }
 
 /** A stored `genres` list, cleaned: strings only, trimmed, at most 60 characters each and 8 in all; undefined when empty. */
@@ -223,6 +238,8 @@ export function parseSongsList(text: string): AddedSong[] {
     if (typeof s.title !== 'string' || !s.title.trim() || typeof s.artist !== 'string') continue;
     seen.add(s.videoId);
     const genres = cleanGenreList(s.genres);
+    const genreLevels = cleanGenreLevels(s.genreLevels, genres);
+    const artistGenres = cleanGenreList(s.artistGenres);
     const durationSec = typeof s.durationSec === 'number' && Number.isFinite(s.durationSec) ? Math.round(s.durationSec) : 0;
     out.push({
       videoId: s.videoId,
@@ -234,6 +251,8 @@ export function parseSongsList(text: string): AddedSong[] {
       ...(s.note === 'music-video' ? { note: 'music-video' as const } : {}),
       ...(typeof s.genre === 'string' && s.genre.trim() ? { genre: s.genre.trim().slice(0, 60) } : {}),
       ...(genres ? { genres } : {}),
+      ...(genreLevels ? { genreLevels } : {}),
+      ...(artistGenres ? { artistGenres } : {}),
     });
   }
   return out;

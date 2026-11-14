@@ -12,6 +12,20 @@ export interface SongQuery {
   durationSec?: number;
   /** The iTunes genre already stored with the song, if any (the iTunes source then needs no request). */
   itunesGenre?: string;
+  /** The album / EP the song was picked from (iTunes collectionName), when known. Sent to album lookups only. */
+  album?: string;
+}
+
+/** "Hall of Fame - Single" / "Punk - EP": a store's release name without the release-type suffix. */
+export function releaseBase(name: string): string {
+  return name.replace(/\s+-\s+(?:single|ep)\s*$/i, '').trim();
+}
+
+/** Whether a store's release name says it is the song's own single ("Title - Single", or the title itself). */
+export function isSingleOf(title: string, release: string | undefined): boolean {
+  if (!release) return false;
+  if (/\s-\s+single\s*$/i.test(release)) return true;
+  return titleMatches(title, releaseBase(release));
 }
 
 /** Remove a trailing "feat. X" / "ft. X" / "featuring X" (with or without brackets). */
@@ -106,6 +120,30 @@ export function creditMatches(requestArtist: string, names: readonly string[], f
   const text = joined(fullText || names.join(' '));
   const primaries = [joined(primaryArtist(requestArtist)), joined(primaryArtist(plainLetters(requestArtist)))];
   return primaries.some((p) => p.length >= 4 && text.includes(p));
+}
+
+/** Same artist name (whole credit or first-billed), after normalisation: for artist lookups by name. */
+export function artistNameMatches(requestArtist: string, candidate: string): boolean {
+  const want = new Set([joined(requestArtist), joined(primaryArtist(requestArtist)), joined(plainLetters(primaryArtist(requestArtist))), joined(splitCredit(requestArtist)[0] ?? '')]);
+  const c = joined(candidate);
+  return !!c && want.has(c);
+}
+
+/** The artist to ask artist-level sources about: the first billed name ("Girl Ultra & Little Jesus" -> "Girl Ultra"). */
+export function leadArtist(artist: string): string {
+  return splitCredit(primaryArtist(artist))[0] ?? artist.trim();
+}
+
+/**
+ * creditMatches, and the request's first-billed artist is among the
+ * credited: "Los Ángeles Azules & Natalia Lafourcade" is not Natalia
+ * Lafourcade's own earlier single of the same song.
+ */
+export function leadCredited(requestArtist: string, names: readonly string[], fullText = ''): boolean {
+  if (!creditMatches(requestArtist, names, fullText)) return false;
+  const lead = primaryArtist(requestArtist);
+  if (joined(lead) === joined(requestArtist)) return true;
+  return creditMatches(lead, names, fullText) || [...names, fullText].some((n) => !!n && joined(n) === joined(requestArtist));
 }
 
 /** |a - b| in seconds when both are known, else null. */

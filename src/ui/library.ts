@@ -6,8 +6,8 @@
  */
 
 import starterData from '../data/starter.json';
-import { cloudGenre, cloudGenres, reloadCloudIndex } from '../beat/bpmIndex';
-import type { AddedSong } from '../beat/cloud';
+import { cloudArtistGenres, cloudGenre, cloudGenreLevels, cloudGenres, reloadCloudIndex } from '../beat/bpmIndex';
+import type { AddedSong, GenreLevelName } from '../beat/cloud';
 import { getPlatform } from '../platform/platform';
 import { cleanTitle } from '../player/playlistReader';
 import { store, type BlockReason, type PlaylistLink } from '../store';
@@ -339,6 +339,26 @@ export function songGenre(videoId: string): string | undefined {
 export function songGenres(videoId: string): string[] | undefined {
   const own = addedSongs.find(videoId)?.genres;
   return own?.length ? own : cloudGenres(videoId);
+}
+
+/**
+ * Which level each songGenres() entry came from ('song' = about the track,
+ * 'album' = about its album), same order; undefined when not recorded.
+ */
+export function songGenreLevels(videoId: string): GenreLevelName[] | undefined {
+  const own = addedSongs.find(videoId);
+  if (own?.genres?.length) return own.genreLevels;
+  return cloudGenres(videoId)?.length ? cloudGenreLevels(videoId) : undefined;
+}
+
+/**
+ * The artist's usual genres, best first, when known (the artist-level
+ * sources of src/genre). Weak evidence about the song: the choreographer
+ * takes it as `artistGenre` (a small capped share), never as the song's genre.
+ */
+export function songArtistGenres(videoId: string): string[] | undefined {
+  const own = addedSongs.find(videoId)?.artistGenres;
+  return own?.length ? own : cloudArtistGenres(videoId);
 }
 
 /** YouTube thumbnail sizes: 'hq' 480x360 (16:9 frame letterboxed in 4:3), 'mq' 320x180. */

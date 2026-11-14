@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.2.0",
-  "generatedAt": "2026-11-14T04:44:21.250Z",
+  "generatedAt": "2026-11-14T08:32:16.669Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -111,12 +111,26 @@
       "duration": 236,
       "genre": "Hip-Hop/Rap",
       "genres": [
-        "hip hop",
-        "pop",
+        "funk",
         "neo soul",
         "alternative hip hop",
         "electro",
-        "funk"
+        "pop soul",
+        "soul"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "southern hip hop",
+        "progressive rap",
+        "atlanta hip hop",
+        "alternative hip hop"
       ]
     },
     "-qZxMY7FZf8": {
@@ -126,10 +140,24 @@
       "genres": [
         "nu metal",
         "alternative rock",
-        "emo",
-        "pop rock",
         "metal",
-        "rock"
+        "emo",
+        "alternative metal",
+        "rap metal"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "pop rock",
+        "nu metal",
+        "alternative metal"
       ]
     },
     "-sVB91NTa4A": {
@@ -138,11 +166,25 @@
       "genre": "Pop",
       "genres": [
         "europop",
-        "pop",
         "Euro disco",
-        "synth-pop",
         "disco",
+        "synth-pop",
+        "pop",
         "electronic"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "europop",
+        "disco",
+        "Euro disco"
       ]
     },
     "0Bl8dDFsAQU": {
@@ -150,12 +192,26 @@
       "duration": 198,
       "genre": "Pop",
       "genres": [
-        "pop",
         "teen pop",
         "dance-pop",
-        "bubblegum pop",
         "nu-disco",
-        "Euro disco"
+        "bubblegum pop",
+        "europop",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "teen pop",
+        "electropop",
+        "synth-pop"
       ]
     },
     "0Ui-QzihJGo": {
@@ -163,12 +219,26 @@
       "duration": 236,
       "genre": "Soundtrack",
       "genres": [
-        "pop",
+        "funk",
         "disco-pop",
-        "dance-pop",
         "pop soul",
+        "dance-pop",
         "teen pop",
-        "funk"
+        "R&B"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "dance-pop",
+        "electropop",
+        "boogie",
+        "disco"
       ]
     },
     "1j_XvebOg4c": {
@@ -176,12 +246,26 @@
       "duration": 208,
       "genre": "Pop",
       "genres": [
-        "electro-disco",
         "nu-disco",
-        "pop",
+        "electro-disco",
+        "dance-pop",
         "funk-pop",
+        "power pop",
+        "synth-pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
         "indie pop",
-        "dance-pop"
+        "dream pop",
+        "synth-pop",
+        "funktronica"
       ]
     },
     "4-TbQnONe_w": {
@@ -189,23 +273,50 @@
       "duration": 194,
       "genre": "Alternative",
       "genres": [
-        "pop",
-        "dance-pop",
         "electropop",
-        "trap",
-        "pop trap",
-        "electronic"
+        "dance-pop",
+        "art pop",
+        "electronic",
+        "alt-pop",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "song",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
+        "electropop",
+        "alt-pop",
+        "indie pop",
+        "dark pop"
       ]
     },
     "47NhAUUnIjs": {
       "bpm": 108,
       "duration": 225,
       "genres": [
-        "pop",
         "dance-pop",
         "europop",
-        "pop rap",
-        "teen pop"
+        "teen pop",
+        "pop",
+        "electronic"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "dance-pop",
+        "teen pop",
+        "pop rock",
+        "adult contemporary"
       ]
     },
     "4AqjqOqNrjw": {
@@ -215,10 +326,24 @@
       "genres": [
         "electropop",
         "pop rock",
-        "rock",
         "alternative rock",
-        "alternative",
-        "synth-pop"
+        "rock",
+        "synth-pop",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "alternative rock",
+        "electropop",
+        "indie pop"
       ]
     },
     "4ZI8AC4AR5A": {
@@ -230,7 +355,21 @@
         "rap metal",
         "rap rock",
         "metal",
-        "hard rock",
+        "alternative metal",
+        "alternative rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "pop rock",
+        "nu metal",
         "alternative metal"
       ]
     },
@@ -240,11 +379,25 @@
       "genre": "Alternative",
       "genres": [
         "breakbeat",
-        "electronic rock",
+        "alternative rock",
         "rap rock",
         "trip hop",
         "hip hop",
-        "alternative rock"
+        "electronic rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "alternative hip hop",
+        "electropop",
+        "indie pop"
       ]
     },
     "5y_KJAg8bHI": {
@@ -252,12 +405,26 @@
       "duration": 251,
       "genre": "House",
       "genres": [
-        "electronic",
         "progressive house",
         "house",
         "folktronica",
+        "electro house",
         "EDM",
-        "folk pop"
+        "electronic"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "house",
+        "progressive house",
+        "electro house",
+        "EDM"
       ]
     },
     "7-x3uD5z1bQ": {
@@ -265,10 +432,25 @@
       "duration": 174,
       "genre": "Pop",
       "genres": [
-        "pop",
         "pop rock",
-        "funk-pop",
         "indie pop",
+        "funk-pop",
+        "pop",
+        "soft rock",
+        "rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
+        "soft rock",
+        "pop rock",
+        "Britpop",
         "rock"
       ]
     },
@@ -277,12 +459,26 @@
       "duration": 294,
       "genre": "Pop",
       "genres": [
-        "pop",
-        "dance-pop",
         "funk",
         "post-disco",
+        "dance-pop",
+        "disco",
         "R&B",
-        "dance"
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "disco",
+        "soul",
+        "dance-pop"
       ]
     },
     "7Ya2U8XN_Zw": {
@@ -290,12 +486,26 @@
       "duration": 271,
       "genre": "Pop",
       "genres": [
-        "pop",
         "funk",
         "soul",
-        "disco-pop",
         "boogie",
+        "minneapolis sound",
+        "disco-pop",
         "pop rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "hip hop",
+        "pop soul",
+        "pop rock",
+        "nu-disco"
       ]
     },
     "8YMkAW9TxDM": {
@@ -304,11 +514,25 @@
       "genre": "Dance",
       "genres": [
         "house",
-        "dance",
-        "pop",
-        "electronic",
         "electro",
-        "R&B"
+        "progressive house",
+        "electro house",
+        "dance",
+        "electropop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "album",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "house",
+        "electro house",
+        "electroclash",
+        "future rave"
       ]
     },
     "8xG7mH8i-WE": {
@@ -317,7 +541,25 @@
       "genre": "Pop",
       "genres": [
         "dance-pop",
-        "pop"
+        "synth-pop",
+        "pop",
+        "electropop",
+        "alt-pop",
+        "electronic"
+      ],
+      "genreLevels": [
+        "song",
+        "album",
+        "song",
+        "album",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "country",
+        "country pop",
+        "synth-pop"
       ]
     },
     "9lybsz-7TFM": {
@@ -325,12 +567,26 @@
       "duration": 285,
       "genre": "Pop",
       "genres": [
-        "pop",
         "dance-pop",
         "house",
-        "dance",
         "Latin pop",
-        "techno"
+        "techno",
+        "dance",
+        "europop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "electronic",
+        "Latin pop",
+        "latin",
+        "R&B"
       ]
     },
     "AMNNqQpU-i4": {
@@ -338,12 +594,26 @@
       "duration": 190,
       "genre": "Alternative",
       "genres": [
-        "alternative",
         "indie pop",
-        "pop",
-        "alternative rock",
         "synth-pop",
-        "pop rock"
+        "alternative rock",
+        "pop rock",
+        "electropop",
+        "alt-pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "alternative hip hop",
+        "electropop",
+        "indie pop"
       ]
     },
     "BerNfXSuvJ0": {
@@ -351,12 +621,26 @@
       "duration": 199,
       "genre": "Pop",
       "genres": [
-        "dancehall pop",
-        "tropical house",
         "R&B",
-        "pop",
+        "tropical house",
+        "dance-pop",
+        "dancehall pop",
         "moombahton",
-        "dance-pop"
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "R&B",
+        "tropical house",
+        "teen pop",
+        "contemporary country"
       ]
     },
     "D8j5Fm94_CE": {
@@ -364,12 +648,26 @@
       "duration": 176,
       "genre": "Pop",
       "genres": [
-        "pop",
         "synth-pop",
-        "nu-disco",
         "bubblegum pop",
+        "dance-pop",
+        "nu-disco",
         "electropop",
-        "funk"
+        "disco"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "electropop",
+        "dance-pop",
+        "R&B",
+        "country pop"
       ]
     },
     "DlSsIKn3HTU": {
@@ -378,9 +676,25 @@
       "genre": "R&B/Soul",
       "genres": [
         "disco",
-        "funk",
         "R&B",
-        "pop soul"
+        "funk",
+        "soul",
+        "pop",
+        "jazz"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "funk",
+        "soul",
+        "disco",
+        "progressive soul"
       ]
     },
     "EQzXwcZS-FU": {
@@ -389,11 +703,25 @@
       "genre": "Pop",
       "genres": [
         "dance-pop",
-        "electronic",
-        "pop",
         "folktronica",
         "EDM",
-        "hip hop"
+        "pop rap",
+        "pop",
+        "hip house"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "pop rap",
+        "latin hip hop",
+        "electropop",
+        "dance-pop"
       ]
     },
     "FHo-g6DCTv4": {
@@ -401,12 +729,20 @@
       "duration": 240,
       "genre": "Soundtrack",
       "genres": [
-        "pop",
         "R&B",
-        "hip hop",
-        "dance-pop",
-        "pop rap",
-        "electronic"
+        "pop",
+        "hip hop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative R&B",
+        "country",
+        "pop soul",
+        "pop rap"
       ]
     },
     "GT1lysg-Kw4": {
@@ -414,12 +750,26 @@
       "duration": 195,
       "genre": "Pop",
       "genres": [
-        "pop",
-        "new wave",
-        "dance-pop",
-        "pop rap",
         "funk",
-        "hip hop"
+        "pop rap",
+        "new wave",
+        "alternative hip hop",
+        "hip hop",
+        "neo soul"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "alternative hip hop",
+        "soul",
+        "R&B",
+        "pop rap"
       ]
     },
     "GcHHjq8pXec": {
@@ -428,8 +778,25 @@
       "genre": "Rock",
       "genres": [
         "alternative rock",
+        "pop rock",
+        "funk rock",
         "rock",
-        "pop rock"
+        "alt funk",
+        "alternative and punk"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "song",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "funk rock",
+        "funk metal",
+        "rap rock"
       ]
     },
     "GchEVSx9XEA": {
@@ -437,12 +804,26 @@
       "duration": 217,
       "genre": "Pop",
       "genres": [
+        "R&B",
+        "pop",
         "electro house",
         "EDM",
-        "pop",
-        "house",
-        "electronic",
-        "dubstep"
+        "dubstep",
+        "electro"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "dancehall",
+        "pop soul",
+        "R&B",
+        "dance-pop"
       ]
     },
     "GhH4rTap48M": {
@@ -451,10 +832,25 @@
       "genre": "Pop",
       "genres": [
         "pop rock",
-        "pop",
         "funk-pop",
+        "pop",
         "disco",
-        "soul"
+        "electropop",
+        "new wave"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "funk rock",
+        "dance-pop",
+        "alternative rock"
       ]
     },
     "HbzZPpWr4MI": {
@@ -462,12 +858,26 @@
       "duration": 225,
       "genre": "Pop",
       "genres": [
-        "pop",
         "synth-pop",
         "dancehall",
-        "tropical house",
         "electropop",
-        "dance-pop"
+        "tropical house",
+        "dance-pop",
+        "indie pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "electropop",
+        "indie pop",
+        "alt-pop",
+        "alternative"
       ]
     },
     "HhwTF97OyX8": {
@@ -476,11 +886,23 @@
       "genre": "Pop",
       "genres": [
         "pop",
-        "hip hop",
         "trap",
-        "pop rap",
         "alternative hip hop",
-        "neo soul"
+        "hip hop",
+        "R&B"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "alternative hip hop",
+        "soul",
+        "R&B",
+        "pop rap"
       ]
     },
     "IgCHFfDFivc": {
@@ -489,10 +911,24 @@
       "genre": "Hard Rock",
       "genres": [
         "alternative rock",
-        "hard rock",
         "metal",
+        "alternative metal",
+        "hard rock",
+        "post-grunge",
+        "rap metal"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "pop rock",
         "nu metal",
-        "rock",
         "alternative metal"
       ]
     },
@@ -502,10 +938,25 @@
       "genre": "Alternative",
       "genres": [
         "pop rock",
-        "rock",
         "alternative rock",
         "indie rock",
-        "alternative"
+        "rock",
+        "alternative",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "alternative rock",
+        "electropop",
+        "indie pop"
       ]
     },
     "JDHoc9qzC5I": {
@@ -513,12 +964,26 @@
       "duration": 216,
       "genre": "Rock",
       "genres": [
+        "funk rock",
+        "alternative rock",
+        "funk metal",
+        "pop rock",
+        "rap rock",
+        "hard rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
         "alternative rock",
         "funk rock",
-        "rock",
-        "rap rock",
-        "hard rock",
-        "alternative"
+        "funk metal",
+        "rap rock"
       ]
     },
     "JTBoLANhyVA": {
@@ -526,12 +991,26 @@
       "duration": 232,
       "genre": "Pop",
       "genres": [
-        "pop",
         "dance-pop",
-        "bubblegum pop",
         "synth-pop",
+        "bubblegum pop",
         "pop rock",
-        "electronic"
+        "new wave",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
+        "dance-pop",
+        "new wave",
+        "blue-eyed soul",
+        "pop rock"
       ]
     },
     "LhZ5GXCZtEw": {
@@ -539,12 +1018,26 @@
       "duration": 226,
       "genre": "Pop",
       "genres": [
-        "pop",
-        "electro",
         "funk",
+        "electro",
         "disco",
+        "new jack swing",
+        "dance",
+        "soul"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
         "R&B",
-        "dance"
+        "new wave",
+        "hip hop",
+        "funk"
       ]
     },
     "Mr_uHJPUlO8": {
@@ -553,11 +1046,25 @@
       "genre": "Rock",
       "genres": [
         "funk rock",
-        "rock",
+        "funk metal",
+        "rap rock",
         "alternative rock",
         "hard rock",
-        "rap rock",
-        "funk metal"
+        "rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "funk rock",
+        "funk metal",
+        "rap rock"
       ]
     },
     "Mzk6KkyxXC8": {
@@ -565,11 +1072,24 @@
       "duration": 198,
       "genre": "K-Pop",
       "genres": [
-        "pop",
         "K-pop",
+        "pop",
         "disco",
+        "electronic",
+        "hip hop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "K-pop",
         "dance-pop",
-        "synth funk"
+        "korean hip hop",
+        "hip hop"
       ]
     },
     "NU61CbO9u6o": {
@@ -581,8 +1101,22 @@
         "alternative rock",
         "alternative metal",
         "rap rock",
+        "metal",
+        "rap metal"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "alternative rock",
         "pop rock",
-        "metal"
+        "nu metal",
+        "alternative metal"
       ]
     },
     "NaQ083rNUwc": {
@@ -592,10 +1126,24 @@
       "genres": [
         "synth-pop",
         "new wave",
-        "pop",
         "electronic",
-        "electropop",
-        "dance"
+        "new romantic",
+        "pop rock",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
+        "synth-pop",
+        "new wave",
+        "pop rock",
+        "soft rock"
       ]
     },
     "OjX4Fpb7LX8": {
@@ -603,12 +1151,26 @@
       "duration": 201,
       "genre": "Pop",
       "genres": [
-        "dance-pop",
         "electropop",
+        "dance-pop",
         "disco",
-        "pop",
-        "electronic",
-        "house"
+        "blue-eyed soul",
+        "pop rock",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "funk rock",
+        "dance-pop",
+        "alternative rock"
       ]
     },
     "PdKKoOiEgqY": {
@@ -617,11 +1179,25 @@
       "genre": "Alternative",
       "genres": [
         "psychedelic pop",
-        "funk",
-        "alternative",
         "alternative rock",
-        "funk rock",
-        "pop soul"
+        "indie pop",
+        "alternative",
+        "pop rock",
+        "indie rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "indie rock",
+        "psychedelic rock",
+        "alternative rock",
+        "neo-psychedelia"
       ]
     },
     "Pmv8aQKO6k0": {
@@ -629,12 +1205,26 @@
       "duration": 340,
       "genre": "Alternative",
       "genres": [
-        "alternative rock",
-        "alternative",
         "indietronica",
         "indie pop",
-        "rock",
-        "electronic"
+        "electronic",
+        "alternative rock",
+        "alternative",
+        "rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "alternative hip hop",
+        "electropop",
+        "indie pop"
       ]
     },
     "RwTwd5tAq1U": {
@@ -644,10 +1234,24 @@
       "genres": [
         "alternative rock",
         "nu metal",
-        "electronic rock",
+        "rap metal",
         "alternative",
-        "rock",
-        "metal"
+        "metal",
+        "electronic rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "pop rock",
+        "nu metal",
+        "alternative metal"
       ]
     },
     "SRdlnO9gMIY": {
@@ -657,10 +1261,24 @@
       "genres": [
         "synth-pop",
         "dance-pop",
-        "pop",
         "power pop",
+        "nu-disco",
+        "electropop",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
         "indie pop",
-        "dance"
+        "dream pop",
+        "synth-pop",
+        "funktronica"
       ]
     },
     "TIUwLfpufs0": {
@@ -669,11 +1287,25 @@
       "genre": "Alternative",
       "genres": [
         "alternative rock",
-        "alternative",
         "funk rock",
-        "rock",
-        "rap rock",
-        "pop rock"
+        "pop rock",
+        "alternative",
+        "funk metal",
+        "rap rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "funk rock",
+        "funk metal",
+        "rap rock"
       ]
     },
     "UOQlKBlobRY": {
@@ -685,8 +1317,22 @@
         "trip hop",
         "rap rock",
         "electropop",
+        "hip hop",
+        "synth-pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
         "alternative rock",
-        "alternative"
+        "alternative hip hop",
+        "electropop",
+        "indie pop"
       ]
     },
     "UfM-nM762ec": {
@@ -694,12 +1340,26 @@
       "duration": 219,
       "genre": "Pop",
       "genres": [
-        "pop",
         "indie pop",
         "R&B",
-        "disco-pop",
+        "dance-pop",
         "dance",
-        "dance-pop"
+        "disco-pop",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "dance-pop",
+        "pop",
+        "dance-rock"
       ]
     },
     "V1Z586zoeeE": {
@@ -709,7 +1369,24 @@
       "genres": [
         "synth-pop",
         "new wave",
-        "pop"
+        "pop rock",
+        "R&B",
+        "pop",
+        "indie pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "album",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "soft rock",
+        "pop rock",
+        "Britpop",
+        "rock"
       ]
     },
     "WzsYtW8zyXU": {
@@ -718,11 +1395,25 @@
       "genre": "Pop",
       "genres": [
         "pop rock",
-        "pop",
         "reggae rock",
         "new wave",
-        "pub rock",
-        "reggae pop"
+        "R&B",
+        "pop",
+        "pop soul"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "R&B",
+        "new wave",
+        "hip hop",
+        "funk"
       ]
     },
     "XQG89cwhmJU": {
@@ -731,9 +1422,21 @@
       "genre": "Pop",
       "genres": [
         "soul",
+        "pop",
         "neo soul",
+        "hip hop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rap",
         "hip hop",
-        "pop"
+        "pop soul",
+        "soul"
       ]
     },
     "XZe_pV2rXuk": {
@@ -741,12 +1444,26 @@
       "duration": 203,
       "genre": "Alternative",
       "genres": [
+        "alternative hip hop",
+        "alternative rock",
+        "rap rock",
+        "indie rock",
+        "rock",
+        "electropop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
         "alternative rock",
         "alternative hip hop",
-        "alternative",
-        "rap rock",
-        "rock",
-        "hip hop"
+        "electropop",
+        "indie pop"
       ]
     },
     "YgCYsJicgEU": {
@@ -754,12 +1471,26 @@
       "duration": 186,
       "genre": "Pop",
       "genres": [
-        "pop",
         "nu-disco",
         "neo-psychedelia",
-        "electronic",
+        "post-disco",
+        "europop",
         "psychedelic pop",
-        "post-disco"
+        "electropop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "indie pop",
+        "dream pop",
+        "synth-pop",
+        "funktronica"
       ]
     },
     "_Vj092UgKwQ": {
@@ -768,7 +1499,25 @@
       "genre": "Pop",
       "genres": [
         "disco",
-        "pop"
+        "pop",
+        "dance",
+        "soul",
+        "funk",
+        "stage & screen"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "album",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "disco",
+        "soft rock",
+        "pop rock",
+        "rock"
       ]
     },
     "_dK2tDK9grQ": {
@@ -776,12 +1525,26 @@
       "duration": 235,
       "genre": "Pop",
       "genres": [
-        "pop",
         "dance-pop",
-        "tropical house",
-        "dancehall",
-        "short film",
-        "musical film"
+        "folk pop",
+        "pop rock",
+        "indie pop",
+        "pop",
+        "tropical house"
+      ],
+      "genreLevels": [
+        "song",
+        "album",
+        "album",
+        "album",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "folk pop",
+        "dance-pop",
+        "pop rock",
+        "singer-songwriter"
       ]
     },
     "aAizT0NOWkM": {
@@ -789,11 +1552,26 @@
       "duration": 199,
       "genre": "Pop",
       "genres": [
+        "pop rock",
+        "dance-pop",
+        "alt-pop",
         "pop",
+        "funk",
+        "synth-pop"
+      ],
+      "genreLevels": [
+        "song",
+        "album",
+        "album",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
         "pop rock",
         "country pop",
-        "disco",
-        "funk"
+        "country",
+        "electropop"
       ]
     },
     "aF18NehJxos": {
@@ -802,11 +1580,25 @@
       "genre": "Rock",
       "genres": [
         "alternative rock",
-        "rock",
+        "post-grunge",
+        "hard rock",
         "funk rock",
         "dance-rock",
-        "hard rock",
-        "post-grunge"
+        "rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "post-grunge",
+        "alternative metal",
+        "nu metal"
       ]
     },
     "aeZnkEMIxBM": {
@@ -816,10 +1608,24 @@
       "genres": [
         "alternative rock",
         "alternative",
-        "rock",
         "pop rock",
-        "house",
+        "funk rock",
+        "rock",
         "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "funk rock",
+        "funk metal",
+        "rap rock"
       ]
     },
     "ahvkAPbPGKw": {
@@ -830,9 +1636,23 @@
         "alternative rock",
         "electronic rock",
         "hard rock",
+        "rap rock",
         "progressive rock",
-        "rock",
         "indietronica"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "alternative hip hop",
+        "electropop",
+        "indie pop"
       ]
     },
     "b3bkpyNiv8Y": {
@@ -841,11 +1661,25 @@
       "genre": "Pop",
       "genres": [
         "dance-pop",
-        "pop",
         "synth-pop",
         "electronic",
-        "dance-rock",
-        "house"
+        "electro",
+        "bubblegum pop",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "electropop",
+        "synth-pop",
+        "bubblegum pop"
       ]
     },
     "bOq67Poe95w": {
@@ -856,9 +1690,23 @@
         "K-pop",
         "dance-pop",
         "pop",
+        "disco",
         "EDM",
-        "electronic",
-        "disco"
+        "electronic"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "K-pop",
+        "dance-pop",
+        "korean hip hop",
+        "hip hop"
       ]
     },
     "bSwzZoLCoZ0": {
@@ -867,11 +1715,25 @@
       "genre": "Hard Rock",
       "genres": [
         "rap rock",
-        "rock",
-        "alternative metal",
-        "hard rock",
         "alternative rock",
-        "metal"
+        "alternative metal",
+        "rap metal",
+        "metal",
+        "rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "pop rock",
+        "nu metal",
+        "alternative metal"
       ]
     },
     "dWErisOfeyE": {
@@ -882,9 +1744,23 @@
         "Latin pop",
         "reggaeton",
         "salsa",
-        "latin",
+        "pop rock",
+        "dance-pop",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "Latin pop",
         "pop",
-        "cumbia"
+        "Latin rock"
       ]
     },
     "egpE0ysQ21Q": {
@@ -896,8 +1772,22 @@
         "pop rock",
         "stadium rock",
         "alternative",
-        "rock",
-        "pop"
+        "funk metal",
+        "funk rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "funk rock",
+        "funk metal",
+        "rap rock"
       ]
     },
     "fH_OnJk6QqU": {
@@ -907,9 +1797,24 @@
       "genres": [
         "pop rock",
         "pop",
-        "rock",
+        "electropop",
         "alternative rock",
+        "rock",
         "alternative"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "alternative rock",
+        "pop punk",
+        "baroque pop"
       ]
     },
     "fw-QRyQcFH8": {
@@ -917,12 +1822,26 @@
       "duration": 175,
       "genre": "Pop",
       "genres": [
-        "pop",
         "dance-pop",
         "pop rap",
+        "synth-pop",
         "Britpop",
-        "pop rock",
-        "synth-pop"
+        "electronic",
+        "teen pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "dance-pop",
+        "teen pop",
+        "R&B",
+        "europop"
       ]
     },
     "g9j5UzxEhEM": {
@@ -934,8 +1853,22 @@
         "rap rock",
         "alternative rock",
         "metal",
-        "alternative metal",
-        "hard rock"
+        "rap metal",
+        "alternative metal"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "pop rock",
+        "nu metal",
+        "alternative metal"
       ]
     },
     "gx7GyiDZQms": {
@@ -944,11 +1877,25 @@
       "genre": "Pop",
       "genres": [
         "funk",
-        "pop",
         "disco",
-        "deep house",
+        "pop",
+        "synth-pop",
         "electro",
-        "electronic"
+        "French house"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "house",
+        "French house",
+        "nu-disco",
+        "electronic rock"
       ]
     },
     "hCLkVrp_4CE": {
@@ -956,11 +1903,26 @@
       "duration": 178,
       "genre": "Pop",
       "genres": [
-        "pop",
-        "synth-pop",
-        "indie pop",
+        "dance-pop",
         "disco",
-        "dance-pop"
+        "synth-pop",
+        "pop",
+        "bubblegum pop",
+        "indie pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
+        "indie pop",
+        "dream pop",
+        "synth-pop",
+        "funktronica"
       ]
     },
     "hn6lonvIRsI": {
@@ -969,6 +1931,22 @@
       "genre": "Pop",
       "genres": [
         "power pop",
+        "dance-pop",
+        "pop",
+        "electropop",
+        "electronic"
+      ],
+      "genreLevels": [
+        "song",
+        "album",
+        "song",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "dance-pop",
+        "electropop",
+        "pop rock",
         "pop"
       ]
     },
@@ -977,12 +1955,26 @@
       "duration": 215,
       "genre": "Alternative",
       "genres": [
-        "reggae",
-        "alternative",
         "alternative hip hop",
-        "alternative rock",
+        "electropop",
         "dub",
-        "electropop"
+        "reggae",
+        "alternative rock",
+        "rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "alternative hip hop",
+        "electropop",
+        "indie pop"
       ]
     },
     "iFaKc8Bvk4Y": {
@@ -991,11 +1983,25 @@
       "genre": "Alternative",
       "genres": [
         "dance-pop",
-        "pop rock",
         "disco",
+        "pop rock",
         "dance-rock",
-        "nu-disco",
-        "alt-pop"
+        "alt-pop",
+        "synth-pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "alternative hip hop",
+        "electropop",
+        "indie pop"
       ]
     },
     "iSF26HsmeRI": {
@@ -1005,10 +2011,24 @@
       "genres": [
         "K-pop",
         "dance-pop",
+        "hip house",
+        "electropop",
         "pop",
-        "pop rap",
-        "EDM",
-        "hip house"
+        "hip hop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "K-pop",
+        "hip hop",
+        "pop rock",
+        "pop"
       ]
     },
     "i_SsnRdgitA": {
@@ -1016,12 +2036,26 @@
       "duration": 170,
       "genre": "Pop",
       "genres": [
-        "pop",
         "pop punk",
         "pop rock",
+        "K-pop",
         "indie rock",
-        "electropop",
-        "K-pop"
+        "power pop",
+        "electropop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "K-pop",
+        "dance-pop",
+        "pop rock",
+        "pop"
       ]
     },
     "ic8j13piAhQ": {
@@ -1029,11 +2063,26 @@
       "duration": 179,
       "genre": "Pop",
       "genres": [
-        "electropop",
         "synth-pop",
-        "pop",
+        "electropop",
         "bubblegum pop",
-        "industrial pop"
+        "pop rock",
+        "pop",
+        "dream pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "country",
+        "country pop",
+        "synth-pop"
       ]
     },
     "id2-K3daNRQ": {
@@ -1042,9 +2091,23 @@
       "genre": "Pop",
       "genres": [
         "dance-pop",
-        "pop",
         "R&B",
-        "electronic"
+        "pop",
+        "adult contemporary",
+        "dance"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "soul",
+        "pop soul",
+        "quiet storm",
+        "R&B"
       ]
     },
     "j5n5YzMm5LY": {
@@ -1055,8 +2118,23 @@
         "disco",
         "funk",
         "nu-disco",
+        "R&B",
         "alternative hip hop",
         "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative hip hop",
+        "soul",
+        "R&B",
+        "pop rap"
       ]
     },
     "jRr5EasAq84": {
@@ -1064,12 +2142,26 @@
       "duration": 235,
       "genre": "Pop",
       "genres": [
-        "pop",
         "new wave",
-        "bubblegum pop",
-        "dance-pop",
         "synth-pop",
-        "pop rock"
+        "bubblegum pop",
+        "pop rock",
+        "dance-pop",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "new wave",
+        "dance-pop",
+        "adult contemporary"
       ]
     },
     "jgh8owCuX78": {
@@ -1078,10 +2170,25 @@
       "genre": "Pop",
       "genres": [
         "dance-pop",
-        "pop",
+        "nu-disco",
+        "power pop",
+        "synth-pop",
+        "electropop",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "album",
+        "album",
+        "album",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
         "indie pop",
-        "disco-funk",
-        "electronic"
+        "dream pop",
+        "synth-pop",
+        "funktronica"
       ]
     },
     "jz7C2W4m26U": {
@@ -1089,11 +2196,26 @@
       "duration": 176,
       "genre": "Pop",
       "genres": [
-        "pop",
         "disco",
         "funk",
+        "soul",
+        "R&B",
         "synth-pop",
-        "soul"
+        "boogie"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "R&B",
+        "new wave",
+        "hip hop",
+        "funk"
       ]
     },
     "mgT0N3tMP74": {
@@ -1101,11 +2223,26 @@
       "duration": 257,
       "genre": "Pop",
       "genres": [
-        "folk rock",
-        "pop",
         "pop rock",
+        "folk rock",
         "folk pop",
+        "pop",
+        "soft rock",
         "alternative rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "alternative rock",
+        "pop",
+        "cello rock"
       ]
     },
     "mwL1cohnHNE": {
@@ -1113,9 +2250,26 @@
       "duration": 224,
       "genre": "Pop",
       "genres": [
-        "pop",
         "power pop",
-        "rock"
+        "dance-pop",
+        "pop",
+        "europop",
+        "synth-pop",
+        "electropop"
+      ],
+      "genreLevels": [
+        "song",
+        "album",
+        "song",
+        "album",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "electropop",
+        "synth-pop",
+        "bubblegum pop"
       ]
     },
     "niR2qJ3mGEE": {
@@ -1126,9 +2280,23 @@
         "synth-pop",
         "pop rock",
         "alternative rock",
-        "new wave",
         "indie rock",
-        "pop"
+        "indie pop",
+        "new wave"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "alternative hip hop",
+        "electropop",
+        "indie pop"
       ]
     },
     "nx3-XCtnEqU": {
@@ -1139,9 +2307,23 @@
         "alternative rock",
         "power pop",
         "new wave",
+        "indie rock",
         "pop rock",
-        "alternative",
-        "synth-rock"
+        "indie pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "new wave",
+        "indie rock",
+        "alternative rock"
       ]
     },
     "o6Tf-xcVB_o": {
@@ -1151,10 +2333,24 @@
       "genres": [
         "pop punk",
         "pop rock",
-        "pop",
         "grunge",
         "emo",
+        "power pop",
         "alternative rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "indie pop",
+        "power pop",
+        "pop punk",
+        "pop rock"
       ]
     },
     "o6ytLPKscrU": {
@@ -1163,11 +2359,25 @@
       "genre": "R&B/Soul",
       "genres": [
         "electropop",
-        "synthwave",
         "synth-pop",
-        "R&B",
-        "deep house",
+        "synthwave",
+        "new wave",
+        "electro house",
         "electronic"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative R&B",
+        "R&B",
+        "electropop",
+        "synth-pop"
       ]
     },
     "pd1_SxHh2vo": {
@@ -1176,11 +2386,25 @@
       "genre": "Pop",
       "genres": [
         "pop rap",
-        "pop rock",
         "synth-pop",
-        "pop",
+        "pop rock",
         "electropop",
+        "hyperpop",
         "new wave"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "R&B",
+        "pop rap",
+        "emo rap",
+        "australian hip hop"
       ]
     },
     "qJ_Tw0w3lLA": {
@@ -1191,8 +2415,23 @@
         "funk rock",
         "alternative rock",
         "funk",
-        "rock",
-        "alternative"
+        "alternative",
+        "pop rock",
+        "rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "funk rock",
+        "funk metal",
+        "rap rock"
       ]
     },
     "qX0cPZT3Lzg": {
@@ -1201,11 +2440,25 @@
       "genre": "Alternative",
       "genres": [
         "indie pop",
-        "indie folk",
-        "folk",
         "pop rock",
+        "pop",
+        "rock",
+        "pop rap",
+        "indie folk"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
         "alternative rock",
-        "Americana"
+        "alternative hip hop",
+        "electropop",
+        "indie pop"
       ]
     },
     "s8ZXJ5QUYvQ": {
@@ -1214,11 +2467,25 @@
       "genre": "Hard Rock",
       "genres": [
         "nu metal",
-        "rap rock",
+        "alternative metal",
         "alternative rock",
-        "rock",
+        "rap rock",
+        "gothic metal",
+        "metal"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative metal",
+        "gothic metal",
         "hard rock",
-        "alternative metal"
+        "symphonic metal"
       ]
     },
     "sKtl7-_6AjE": {
@@ -1227,11 +2494,25 @@
       "genre": "Hard Rock",
       "genres": [
         "nu metal",
-        "hard rock",
-        "rap rock",
         "rap metal",
+        "rap rock",
         "metal",
-        "rock"
+        "alternative metal",
+        "hard rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "pop rock",
+        "nu metal",
+        "alternative metal"
       ]
     },
     "sLqdRmwY6vc": {
@@ -1240,11 +2521,25 @@
       "genre": "Pop",
       "genres": [
         "R&B",
-        "pop",
         "electropop",
         "dance-pop",
-        "pop rap",
+        "pop",
+        "electro",
         "electronic"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "R&B",
+        "dance-pop",
+        "electropop",
+        "pop"
       ]
     },
     "t19wM1gn1Wo": {
@@ -1253,11 +2548,25 @@
       "genre": "Soundtrack",
       "genres": [
         "alternative rock",
-        "electronic rock",
-        "alternative metal",
-        "rock",
         "hard rock",
-        "industrial rock"
+        "post-grunge",
+        "electronic rock",
+        "metal",
+        "rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "pop rock",
+        "nu metal",
+        "alternative metal"
       ]
     },
     "u6lihZAcy4s": {
@@ -1266,21 +2575,51 @@
       "genre": "R&B/Soul",
       "genres": [
         "synth-pop",
-        "R&B",
         "alternative R&B",
-        "pop",
-        "synth-rock",
+        "new wave",
+        "R&B",
+        "synthwave",
         "dance-pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative R&B",
+        "R&B",
+        "electropop",
+        "synth-pop"
       ]
     },
     "vXlyuCzZc4E": {
       "bpm": 92.4,
       "duration": 190,
       "genres": [
-        "alternative rock",
         "alternative metal",
+        "alternative rock",
+        "nu metal",
         "hard rock",
-        "rock"
+        "metal",
+        "rap rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "song",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "pop rock",
+        "nu metal",
+        "alternative metal"
       ]
     },
     "w4Xfg_MRH10": {
@@ -1290,10 +2629,24 @@
       "genres": [
         "alternative rock",
         "funk rock",
-        "rock",
+        "funk metal",
+        "stadium rock",
         "alternative",
-        "pop rock",
-        "stadium rock"
+        "pop rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "funk rock",
+        "funk metal",
+        "rap rock"
       ]
     },
     "w5i-cwLH7s0": {
@@ -1302,11 +2655,25 @@
       "genre": "Alternative",
       "genres": [
         "alternative hip hop",
-        "rap rock",
         "industrial hip hop",
-        "hip hop",
+        "rap rock",
+        "alternative rock",
         "rock",
-        "alternative"
+        "indie pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "album",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "alternative hip hop",
+        "electropop",
+        "indie pop"
       ]
     },
     "xjiYBGs0TUA": {
@@ -1316,9 +2683,24 @@
       "genres": [
         "disco",
         "nu-disco",
-        "pop",
+        "dance-pop",
+        "power pop",
+        "synth-pop",
+        "electropop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "album",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
         "indie pop",
-        "electronic"
+        "dream pop",
+        "synth-pop",
+        "funktronica"
       ]
     },
     "yvvamodXZbw": {
@@ -1326,11 +2708,22 @@
       "duration": 203,
       "genre": "Pop",
       "genres": [
-        "pop",
         "pop rock",
+        "pop",
         "dance-rock",
-        "rock",
-        "electronic"
+        "rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "R&B",
+        "dance-pop",
+        "electropop"
       ]
     },
     "zIh5AHxh-Ok": {
@@ -1339,11 +2732,25 @@
       "genre": "Pop",
       "genres": [
         "electro house",
-        "pop",
-        "pop rap",
         "hip house",
+        "pop rap",
+        "electro",
+        "hip hop",
+        "dance-pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "electro hop",
+        "pop rap",
         "dance-pop",
-        "electro"
+        "electropop"
       ]
     },
     "zLxXqEZ5OoA": {
@@ -1351,10 +2758,26 @@
       "duration": 258,
       "genre": "Hip-Hop/Rap",
       "genres": [
-        "hip hop",
         "pop rap",
-        "experimental pop",
-        "worldbeat"
+        "West Coast hip hop",
+        "alternative hip hop",
+        "hip hop",
+        "conscious hip hop",
+        "experimental pop"
+      ],
+      "genreLevels": [
+        "song",
+        "album",
+        "album",
+        "song",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rap",
+        "West Coast hip hop",
+        "alternative hip hop",
+        "hip hop"
       ]
     },
     "zd-h01o7LtI": {
@@ -1362,10 +2785,22 @@
       "duration": 187,
       "genre": "Pop",
       "genres": [
-        "pop",
         "electropop",
         "dance-pop",
-        "synth-pop"
+        "synth-pop",
+        "pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "dance-pop",
+        "electropop",
+        "pop rock",
+        "pop"
       ]
     },
     "zgEKLhvCCVA": {
@@ -1374,11 +2809,25 @@
       "genre": "Hard Rock",
       "genres": [
         "alternative rock",
-        "hard rock",
         "rap rock",
-        "electropop",
         "electronic rock",
-        "nu metal"
+        "electropop",
+        "hard rock",
+        "industrial rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "pop rock",
+        "nu metal",
+        "alternative metal"
       ]
     }
   }

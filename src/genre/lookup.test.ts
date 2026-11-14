@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GenreRunner, type LocalSong } from './background';
 import { HttpError, PoliteHttp, type GenreFetch } from './http';
-import { FAILED_RETRY_MS, lookupDue, lookupGenres, NONE_TTL_MS, parseGenreLookup } from './lookup';
+import { DEFAULT_SOURCES, FAILED_RETRY_MS, lookupDue, lookupGenres, NONE_TTL_MS, parseGenreLookup } from './lookup';
 import type { GenreLookup, GenreSource, SourceAnswer } from './types';
 
 const DAY = 24 * 3600_000;
@@ -12,6 +12,7 @@ function fakeSources(answers: Record<string, () => SourceAnswer>): { sources: Ge
   const calls: Record<string, number> = {};
   const mk = (id: GenreSource['id'], group: string, weight: number): GenreSource => ({
     id,
+    level: 'song',
     group,
     weight,
     async lookup() {
@@ -102,6 +103,74 @@ describe('lookupGenres and its cache', () => {
   });
 });
 
+describe('levels, links and versions', () => {
+  const src = (id: GenreSource['id'], level: GenreSource['level'], answer: (ctx?: Parameters<GenreSource['lookup']>[2]) => Promise<SourceAnswer>, extra: Partial<GenreSource> = {}): GenreSource => ({
+    id,
+    level,
+    group: id.split('-')[0],
+    weight: 0.8,
+    lookup: (_s, _h, ctx) => answer(ctx),
+    ...extra,
+  });
+
+  it('a source follows the links another one confirmed, and is marked failed (not none) when that one failed', async () => {
+    let mbFails = false;
+    const seen: string[] = [];
+    const sources = [
+      src('musicbrainz-album', 'album', async () => {
+        if (mbFails) throw new HttpError(503, true, 'HTTP 503');
+        return { status: 'none', reason: 'the album has no tags', links: { discogsMaster: '42' } };
+      }),
+      src(
+        'discogs-album',
+        'album',
+        async (ctx) => {
+          const o = await ctx!.outcome('musicbrainz-album');
+          seen.push(o?.status === 'none' ? o.links?.discogsMaster ?? '' : '');
+          return { status: 'found', genres: ['Cumbia'] };
+        },
+        { needs: ['musicbrainz-album'] },
+      ),
+      src('itunes', 'song', async () => ({ status: 'found', genres: ['Música tropical'] })),
+    ];
+    const l = await lookupGenres(SONG, { http, sources, now: () => new Date(T0) });
+    expect(seen).toEqual(['42']);
+    expect(l.genres).toEqual(['tropical', 'cumbia']); // one album source does not outrank the song's own label
+    expect(l.genreLevels).toEqual(['song', 'album']);
+    mbFails = true;
+    const l2 = await lookupGenres(SONG, { http, sources, now: () => new Date(T0) });
+    expect(l2.sources['discogs-album']).toMatchObject({ status: 'failed', reason: 'needs musicbrainz-album, which failed' });
+    expect(l2.complete).toBe(false);
+  });
+
+  it('artist sources fill artistGenres only', async () => {
+    const sources = [src('itunes', 'song', async () => ({ status: 'found', genres: ['Alternative'] })), src('wikipedia-artist', 'artist', async () => ({ status: 'found', genres: ['R&B'] }))];
+    const l = await lookupGenres(SONG, { http, sources, now: () => new Date(T0) });
+    expect(l.genres).toEqual(['alternative']);
+    expect(l.artistGenres).toEqual(['R&B']);
+    expect(parseGenreLookup(JSON.parse(JSON.stringify(l)))).toEqual(l);
+  });
+
+  it('an answer from an older version of a source is asked again; the version is stored', async () => {
+    let calls = 0;
+    const sources = [src('musicbrainz', 'song', async () => (calls++, { status: 'found', genres: ['pop'], counts: [2] }), { version: 2 })];
+    const old = parseGenreLookup({ genres: ['pop'], sources: { musicbrainz: { status: 'found', at: '2026-11-01T00:00:00Z', genres: ['pop'] } }, complete: true, at: 'x' })!;
+    expect(lookupDue(old, new Date(T0), sources)).toBe(true);
+    const l = await lookupGenres(SONG, { http, sources, previous: old, now: () => new Date(T0) });
+    expect(calls).toBe(1);
+    expect(l.sources.musicbrainz).toMatchObject({ v: 2, counts: [2] });
+    expect(lookupDue(l, new Date(T0), sources)).toBe(false);
+  });
+
+  it('results stored before levels existed are still read', () => {
+    const old = { genres: ['nu metal', 'rap rock'], sources: { wikipedia: { status: 'found', at: 'x', genres: ['Nu metal'], ref: 'p' } }, complete: true, at: 'x' };
+    expect(parseGenreLookup(old)).toEqual(old);
+    // Levels that do not fit the list are dropped.
+    expect(parseGenreLookup({ ...old, genreLevels: ['song'] })!.genreLevels).toBeUndefined();
+    expect(parseGenreLookup({ ...old, genreLevels: ['song', 'album'], artistGenres: ['metal', 3] })).toMatchObject({ genreLevels: ['song', 'album'], artistGenres: ['metal'] });
+  });
+});
+
 describe('GenreRunner (songs added on the TV)', () => {
   function setup(songs: LocalSong[], opts: { busyFor?: number } = {}) {
     let t = T0;
@@ -158,7 +227,7 @@ describe('GenreRunner (songs added on the TV)', () => {
   it('skips songs whose lookup is still fresh, and songs removed meanwhile', async () => {
     const fresh = parseGenreLookup({
       genres: ['drill'],
-      sources: Object.fromEntries(['wikipedia', 'wikidata', 'musicbrainz', 'theaudiodb', 'itunes'].map((id) => [id, { status: 'found', at: '2026-11-13T00:00:00Z', genres: ['drill'] }])),
+      sources: Object.fromEntries(DEFAULT_SOURCES.map((s) => [s.id, { status: 'found', at: '2026-11-13T00:00:00Z', genres: ['drill'], ...(s.version ? { v: s.version } : {}) }])),
       complete: true,
       at: '2026-11-13T00:00:00Z',
     });

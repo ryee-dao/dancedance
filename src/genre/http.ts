@@ -53,11 +53,13 @@ export interface PoliteOptions {
   log?: (line: string) => void;
 }
 
-/** Spacing per host: Wikimedia and MusicBrainz ask for about one request a second; TheAudioDB's free key allows 30 a minute; iTunes about 20. */
+/** Spacing per host: Wikimedia and MusicBrainz ask for about one request a second; TheAudioDB's free key allows 30 a minute; iTunes about 20; Discogs 25. */
 export function defaultSpacing(host: string): number {
   if (/(?:^|\.)itunes\.apple\.com$/.test(host)) return 3000;
   if (/(?:^|\.)theaudiodb\.com$/.test(host)) return 2100;
   if (/(?:^|\.)musicbrainz\.org$/.test(host)) return 1100;
+  // Discogs allows 25 unauthenticated requests a minute.
+  if (/(?:^|\.)discogs\.com$/.test(host)) return 2600;
   return 1000;
 }
 
@@ -87,6 +89,13 @@ export class PoliteHttp {
   private readonly sleep: (ms: number) => Promise<void>;
   /** Requests actually sent, per host (for reports and tests). */
   readonly sent = new Map<string, number>();
+  /**
+   * Recent answers by URL: several sources of one song often ask the same
+   * thing (the MusicBrainz song, album and artist sources share the recording
+   * search), and it is sent once. Failures are not kept.
+   */
+  private memo = new Map<string, Promise<unknown>>();
+  static readonly MEMO_SIZE = 200;
 
   constructor(private readonly o: PoliteOptions) {
     this.now = o.now ?? (() => Date.now());
@@ -95,6 +104,16 @@ export class PoliteHttp {
 
   /** GET a JSON document. Rejects with HttpError. */
   getJson(url: string): Promise<unknown> {
+    const hit = this.memo.get(url);
+    if (hit) return hit;
+    const p = this.fetchJson(url);
+    this.memo.set(url, p);
+    p.catch(() => this.memo.delete(url));
+    if (this.memo.size > PoliteHttp.MEMO_SIZE) this.memo.delete(this.memo.keys().next().value as string);
+    return p;
+  }
+
+  private fetchJson(url: string): Promise<unknown> {
     const host = new URL(url).host;
     let h = this.hosts.get(host);
     if (!h) this.hosts.set(host, (h = { chain: Promise.resolve(), nextAt: 0, slow: 1, closedUntil: 0 }));

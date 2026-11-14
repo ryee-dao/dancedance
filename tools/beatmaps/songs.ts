@@ -2,7 +2,7 @@
  * songs.json (songs added by search) and songs-status.json (requests that
  * could not be completed yet): deterministic rendering and planning. Pure.
  *
- *   songs.json         { updatedAt, songs: [{ videoId, title, artist, addedAt, durationSec, hasMap, note?, genre?, genres? }] }
+ *   songs.json         { updatedAt, songs: [{ videoId, title, artist, addedAt, durationSec, hasMap, note?, genre?, genres?, genreLevels?, artistGenres? }] }
  *                      oldest first; a song is listed as soon as its video is picked,
  *                      `hasMap` says whether beatmaps/<videoId>.json exists yet.
  *   songs-status.json  { updatedAt, requests: { [songKey]: { state, artist, title, durationSec?, videoId?, message?, attempts, lastTried } } }
@@ -44,7 +44,8 @@ export interface AddSkip {
 /**
  * The one field order written to songs.json, whatever order the input has:
  * videoId, title, artist, addedAt, durationSec, hasMap (always written; a
- * missing value reads as true), then note?, genre? and genres? only when set.
+ * missing value reads as true), then note?, genre?, genres?, genreLevels? and
+ * artistGenres? only when set.
  */
 function normSong(s: AddedSong): AddedSong {
   return {
@@ -57,6 +58,8 @@ function normSong(s: AddedSong): AddedSong {
     ...(s.note ? { note: s.note } : {}),
     ...(s.genre ? { genre: s.genre } : {}),
     ...(s.genres?.length ? { genres: [...s.genres] } : {}),
+    ...(s.genres?.length && s.genreLevels?.length === s.genres.length ? { genreLevels: [...s.genreLevels] } : {}),
+    ...(s.artistGenres?.length ? { artistGenres: [...s.artistGenres] } : {}),
   };
 }
 

@@ -14,9 +14,9 @@
  * pages, list pages, other artists' songs of the same name and
  * disambiguation pages are rejected; then the answer is 'none'.
  */
-import { creditMatches, primaryArtist, queryTitle, titleMatches, unaskedVersion, type SongQuery } from '../match';
+import { creditMatches, leadCredited, primaryArtist, queryTitle, titleMatches, unaskedVersion, type SongQuery } from '../match';
 import type { GenreSource, PoliteHttp, SourceAnswer } from '../types';
-import { isDisambiguation, listItems, parseInfoboxes, plainText } from './wikitext';
+import { isDisambiguation, listItems, parseInfoboxes, plainText, stripNoise } from './wikitext';
 
 const API = 'https://en.wikipedia.org/w/api.php';
 
@@ -36,7 +36,7 @@ export function pagesUrl(titles: string[]): string {
     action: 'query',
     redirects: '1',
     prop: 'pageprops|revisions',
-    ppprop: 'disambiguation',
+    ppprop: 'disambiguation|wikibase_item',
     rvprop: 'content',
     rvslots: 'main',
     rvsection: '0',
@@ -53,6 +53,8 @@ export interface WikiPage {
   missing: boolean;
   disambiguation: boolean;
   content: string;
+  /** The page's Wikidata item, when the answer carried it. */
+  item?: string;
 }
 
 /** Parse a `prop=revisions` answer: requested title -> page (after redirects and normalisation). */
@@ -60,7 +62,7 @@ export function parsePages(json: unknown): Map<string, WikiPage> {
   const q = (json as { query?: { normalized?: { from: string; to: string }[]; redirects?: { from: string; to: string }[]; pages?: unknown[] } } | null)?.query;
   const pages = new Map<string, WikiPage>();
   for (const raw of q?.pages ?? []) {
-    const p = (raw ?? {}) as { title?: unknown; missing?: unknown; invalid?: unknown; pageprops?: { disambiguation?: unknown }; revisions?: { slots?: { main?: { content?: unknown } } }[] };
+    const p = (raw ?? {}) as { title?: unknown; missing?: unknown; invalid?: unknown; pageprops?: { disambiguation?: unknown; wikibase_item?: unknown }; revisions?: { slots?: { main?: { content?: unknown } } }[] };
     if (typeof p.title !== 'string') continue;
     const content = p.revisions?.[0]?.slots?.main?.content;
     const text = typeof content === 'string' ? content : '';
@@ -69,6 +71,7 @@ export function parsePages(json: unknown): Map<string, WikiPage> {
       missing: !!p.missing || !!p.invalid,
       disambiguation: (p.pageprops?.disambiguation !== undefined) || isDisambiguation(text),
       content: text,
+      ...(typeof p.pageprops?.wikibase_item === 'string' ? { item: p.pageprops.wikibase_item } : {}),
     });
   }
   const follow = (t: string) => {
@@ -100,7 +103,7 @@ export function baseTitle(pageTitle: string): string {
   return pageTitle.replace(/\s*\((?:[^()]*\s)?(?:song|single)\)\s*$/i, '').trim();
 }
 
-export type PageVerdict = { ok: true; genres: string[] } | { ok: false; reason: string };
+export type PageVerdict = { ok: true; genres: string[]; albumArticle?: string; artistArticle?: string } | { ok: false; reason: string };
 
 /** Is this page THIS song by this artist? If so, its infobox genres (possibly none). */
 export function checkPage(song: SongQuery, page: WikiPage): PageVerdict {
@@ -117,7 +120,7 @@ export function checkPage(song: SongQuery, page: WikiPage): PageVerdict {
   let reason = 'by another artist';
   for (const b of songBoxes) {
     const artistNames = listItems(b.params.artist).flatMap((n) => [n.label, n.target]);
-    if (!creditMatches(song.artist, artistNames, plainText(b.params.artist))) continue;
+    if (!leadCredited(song.artist, artistNames, plainText(b.params.artist))) continue;
     const name = plainText(b.params.name) || base;
     if (!titleMatches(song.title, name) && !titleMatches(song.title, base)) {
       reason = `another song by the artist (${name})`;
@@ -128,9 +131,17 @@ export function checkPage(song: SongQuery, page: WikiPage): PageVerdict {
       continue;
     }
     const genres = listItems(b.params.genre).map((n) => pickName(n.label, n.target));
-    return { ok: true, genres };
+    const album = linkTargets(b.params.album)[0];
+    const artist = linkTargets(b.params.artist).find((t) => creditMatches(song.artist, [t, t.replace(/\s*\([^)]*\)\s*$/, '')]));
+    return { ok: true, genres, ...(album ? { albumArticle: album } : {}), ...(artist ? { artistArticle: artist } : {}) };
   }
   return { ok: false, reason };
+}
+
+/** Article titles a parameter links to, as written ("Thriller (album)"). */
+export function linkTargets(value: string | undefined): string[] {
+  if (!value) return [];
+  return [...stripNoise(value).matchAll(/\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|[^\]]*)?\]\]/g)].map((m) => m[1].trim()).filter(Boolean);
 }
 
 /** [[Hip hop music|hip-hop]]: the label, unless it is empty or just a pronoun-like word. */
@@ -144,8 +155,11 @@ async function fetchPages(http: PoliteHttp, titles: string[]): Promise<Map<strin
 
 export const wikipedia: GenreSource = {
   id: 'wikipedia',
+  level: 'song',
   group: 'wikimedia',
   weight: 1,
+  // 2: album / artist links; 3: the first-billed artist must be credited.
+  version: 3,
   async lookup(song, http): Promise<SourceAnswer> {
     const forms = titleForms(song);
     const pages = await fetchPages(http, forms);
@@ -155,7 +169,11 @@ export const wikipedia: GenreSource = {
       if (!p || checked.has(p.title)) return null;
       checked.add(p.title);
       const v = checkPage(song, p);
-      if (v.ok) return v.genres.length ? { status: 'found', genres: v.genres, ref: p.title } : { status: 'none', reason: 'the article lists no genre', ref: p.title };
+      if (v.ok) {
+        const links = { ...(v.albumArticle ? { albumArticle: v.albumArticle } : {}), ...(v.artistArticle ? { artistArticle: v.artistArticle } : {}) };
+        const l = Object.keys(links).length ? { links } : {};
+        return v.genres.length ? { status: 'found', genres: v.genres, ref: p.title, ...l } : { status: 'none', reason: 'the article lists no genre', ref: p.title, ...l };
+      }
       if (!p.missing) reasons.push(`${p.title}: ${v.reason}`);
       return null;
     };

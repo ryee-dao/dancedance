@@ -27,7 +27,8 @@ describe('genre names', () => {
 
   it('keeps unknown names from curated sources, but user tags must look like a genre', () => {
     expect(names(['Bounce'])).toEqual(['bounce']);
-    expect(names(['Bounce'], true)).toEqual([]);
+    expect(names(['my road trip'], true)).toEqual([]);
+    expect(names(['Bounce'], true)).toEqual(['bounce']); // MusicBrainz's genre list has it
     expect(names(['melodic dubstep'], true)).toEqual(['melodic dubstep']);
     expect(names(['goth rock alternative metal nu metal rock metal'], true)).toEqual([]);
     expect(names(['pkg-jewel case', 'discoth que'], true)).toEqual([]);
@@ -37,7 +38,7 @@ describe('genre names', () => {
     expect(specificity('rock')).toBe(0);
     expect(specificity('hard rock')).toBe(1);
     expect(specificity('nu metal')).toBe(2);
-    expect(families('nu metal')).toEqual(['alternative', 'metal']);
+    expect(families('nu metal')).toEqual(['alternative', 'metal', 'rock']); // Wikidata: metal is a kind of rock
     expect(families('rap rock')).toEqual(['hip hop', 'rock']);
     expect(families('unheard-of genre')).toEqual([]);
   });
@@ -104,7 +105,8 @@ describe('combining by agreement', () => {
       DEFAULT_SOURCES,
     );
     expect(c.genres).toHaveLength(6);
-    expect(c.genres.slice(0, 3).sort()).toEqual(['dance-pop', 'funk', 'pop']);
+    expect(c.genres.slice(0, 2).sort()).toEqual(['dance-pop', 'funk']);
+    expect(c.levels).toEqual(['song', 'song', 'song', 'song', 'song', 'song']);
     expect(c.genres).toContain('post-disco');
     expect(c.genres).not.toContain('seen live');
     expect(c.moods).toEqual(['quirky']);

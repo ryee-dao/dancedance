@@ -53,11 +53,19 @@ export interface MapInfo {
 }
 
 /**
- * index.json: `{ analyzerVersion, generatedAt, ids, songs: { [id]: { bpm, duration, genre?, genres? } } }`.
+ * index.json: `{ analyzerVersion, generatedAt, ids, songs: { [id]: { bpm, duration, genre?, genres?, genreLevels?, artistGenres? } } }`.
  * IDs and song keys are sorted; bpm has 1 decimal, duration whole seconds.
  * `genre` (iTunes primary genre) is only present for songs listed in `genres`,
- * `genres` (the multi-source list, src/genre) for songs listed in `genreLists`.
+ * `genres` (the multi-source list, src/genre) for songs listed in `genreLists`,
+ * `genreLevels` (level of each `genres` entry) and `artistGenres` (the
+ * artist's usual genres, weak) for songs listed in `genreMeta`.
  */
+/** Per-song extras of the genre lookup written next to `genres`. */
+export interface GenreMeta {
+  genreLevels?: readonly string[];
+  artistGenres?: readonly string[];
+}
+
 export function renderIndex(
   prevText: string | undefined,
   analyzerVersion: string,
@@ -65,18 +73,22 @@ export function renderIndex(
   now: string,
   genres?: ReadonlyMap<string, string>,
   genreLists?: ReadonlyMap<string, readonly string[]>,
+  genreMeta?: ReadonlyMap<string, GenreMeta>,
 ): string {
   const ids = [...maps.keys()].sort();
-  const songs: Record<string, { bpm: number; duration: number; genre?: string; genres?: string[] }> = {};
+  const songs: Record<string, { bpm: number; duration: number; genre?: string; genres?: string[]; genreLevels?: string[]; artistGenres?: string[] }> = {};
   for (const id of ids) {
     const m = maps.get(id)!;
     const genre = genres?.get(id);
     const list = genreLists?.get(id);
+    const meta = genreMeta?.get(id);
     songs[id] = {
       bpm: Math.round(m.bpm * 10) / 10,
       duration: Math.round(m.duration),
       ...(genre ? { genre } : {}),
       ...(list?.length ? { genres: [...list] } : {}),
+      ...(list?.length && meta?.genreLevels?.length === list.length ? { genreLevels: [...meta.genreLevels] } : {}),
+      ...(meta?.artistGenres?.length ? { artistGenres: [...meta.artistGenres] } : {}),
     };
   }
   return renderStable(prevText, 'generatedAt', now, (generatedAt) => toJsonText({ analyzerVersion, generatedAt, ids, songs }));
