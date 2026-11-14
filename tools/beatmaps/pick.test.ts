@@ -2,7 +2,26 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { KOTLIN_FIXTURES, kotlinFixtures } from './pickFixturesKotlin';
-import { delilah, extravagantEscalations, heavyMetal, hipsDontLie, purloin, quieroSerTuyo, rapSavedMe, runAway, shakeItOff, stayinAlive, takeOnMe } from './pick.fixtures';
+import {
+  delilah,
+  dipped,
+  extravagantEscalations,
+  heavyMetal,
+  hipsDontLie,
+  homertonB,
+  impersonator,
+  insane,
+  nullification,
+  purloin,
+  quieroSerTuyo,
+  rapSavedMe,
+  runAway,
+  shakeItOff,
+  stayinAlive,
+  takeOnMe,
+  touTou,
+  youLie,
+} from './pick.fixtures';
 import {
   artistVariants,
   cleanRequest,
@@ -204,6 +223,96 @@ describe('rankCandidates on real search results: cases that used to be "not foun
     expect(degradedSearch([e({ id: 'NOCHANNEL00', title: 'x', channel: '', views: null })])).toBe(true);
     expect(degradedSearch([e({ id: 'NOCHANNEL00', title: 'x', channel: '', views: null }), e({ id: 'WITHCHANNEL', title: 'y', channel: 'C' })])).toBe(false);
     expect(degradedSearch([])).toBe(false);
+  });
+});
+
+describe('rankCandidates on real search results: misses from the 2026-11-14 random sample', () => {
+  it('Insane: the original (175 M views) before "Insane (1920)", a 1920s re-arrangement (3.9 M), which stays a last resort', () => {
+    const req = { artist: 'Black Gryph0n & Baasik', title: 'Insane', durationSec: 160 };
+    // "(A Hazbin Hotel Song)" only describes the song, so the official upload counts as its video.
+    expect(ids(req, insane)).toEqual(['music-video:juJkNKodgdE', 'topic:eX5lc10Ot6w']);
+    expect(ids(req, insane.filter((x) => x.id !== 'juJkNKodgdE'))).toEqual(['topic:eX5lc10Ot6w']);
+    // Asked for by name, the tagged upload is the request.
+    expect(ids({ ...req, title: 'Insane (1920)' }, insane)[0]).toBe('topic:eX5lc10Ot6w');
+  });
+
+  it('era and style tags: a style tag goes after any untagged upload, a bare year only after one with 10x the views; remasters are the original', () => {
+    const req = { artist: 'a-ha', title: 'Take On Me', durationSec: 225 };
+    const art = (id: string, title: string, views: number) =>
+      e({ id, title, channel: 'a-ha', verified: true, views, duration: 226, description: `Provided to YouTube by Rhino ${title} · a-ha` });
+    const mv = e({ id: 'MUSICVIDEO0', title: 'a-ha - Take On Me (Official Video)', channel: 'a-ha', verified: true, views: 2e9, duration: 244 });
+    const lyric = e({ id: 'LYRICVIDEO0', title: 'a-ha - Take On Me (Lyrics)', channel: 'Lyrics', views: 400_000, duration: 225 });
+    expect(ids(req, [art('STYLETAG000', 'Take On Me (1920s Style)', 9e7), { ...mv, views: 1e6 }])).toEqual(['music-video:MUSICVIDEO0', 'topic:STYLETAG000']);
+    expect(ids(req, [art('STYLETAG001', 'Take On Me (80s)', 9e7), lyric])).toEqual(['lyric:LYRICVIDEO0', 'topic:STYLETAG001']);
+    expect(ids({ ...req, title: 'Take On Me (1920s Style)' }, [art('STYLETAG000', 'Take On Me (1920s Style)', 9e7), mv])).toEqual(['topic:STYLETAG000', 'music-video:MUSICVIDEO0']);
+    expect(ids(req, [art('SWINGTAG000', 'Take On Me (Swing)', 9e7), mv])).toEqual(['music-video:MUSICVIDEO0', 'topic:SWINGTAG000']);
+    expect(ids(req, [art('YEARTAG0000', 'Take On Me (1985)', 9e7), mv])).toEqual(['music-video:MUSICVIDEO0', 'topic:YEARTAG0000']);
+    expect(ids(req, [art('YEARTAG0000', 'Take On Me (1985)', 9e7), { ...mv, views: 5e8 }])).toEqual(['topic:YEARTAG0000', 'music-video:MUSICVIDEO0']);
+    expect(ids(req, [art('REMASTER000', 'Take On Me (2015 Remastered)', 9e7), mv])).toEqual(['topic:REMASTER000', 'music-video:MUSICVIDEO0']);
+    expect(ids(req, [art('REMASTER001', 'Take On Me (Remastered 2009)', 9e7), mv])).toEqual(['topic:REMASTER001', 'music-video:MUSICVIDEO0']);
+  });
+
+  it("You Lie (Lola Jane): \"Artist | 'Title'\" is parsed, but her channel is unverified and an unverified channel using the artist's name is still not trusted", () => {
+    const req = { artist: 'Lola Jane', title: 'You Lie', durationSec: 173 };
+    expect(ids(req, youLie)).toEqual([]);
+    expect(reasonFor(req, youLie, 'j402JjBD1pw')).toBe("unverified channel using the artist's name");
+    expect(reasonFor(req, youLie, 'stOK9uYzw7w')).toBe('different song'); // "Lola Jane | 'Dear...'"
+    // The same upload on a verified channel would be her video.
+    expect(ids(req, youLie.map((x) => (x.id === 'j402JjBD1pw' ? { ...x, verified: true } : x)))).toEqual(['music-video:j402JjBD1pw']);
+    const lev = { artist: 'Dua Lipa', title: 'Levitating', durationSec: 203 };
+    expect(ids(lev, [e({ id: 'PIPELYRIC00', title: "Dua Lipa | 'Levitating' (Lyrics)", channel: 'Lyrics Hub', duration: 204 })])).toEqual(['lyric:PIPELYRIC00']);
+    expect(reasonFor(lev, [e({ id: 'PIPEOTHER00', title: 'Lyrics Hub | Dua Lipa - Physical', channel: 'Lyrics Hub', duration: 204 })], 'PIPEOTHER00')).toBe('different song or artist');
+  });
+
+  it('Nullification (Face to Face): "officialfacetoface" is the band\'s own channel', () => {
+    const req = { artist: 'Face to Face', title: 'Nullification (Bonus Track)', durationSec: 195 };
+    expect(ids(req, nullification)).toEqual(['topic:wdWWgR07Rsw']);
+    const art = nullification.find((x) => x.id === 'wdWWgR07Rsw')!;
+    for (const channel of ['FaceToFaceBand', 'Face To Face Music', 'facetofaceVEVO', 'Face to Face Official', 'officialfacetoface']) {
+      expect(ids(req, [{ ...art, channel }])).toEqual(['topic:wdWWgR07Rsw']);
+    }
+    // Other names, or the same name unverified with few views, are not the band's art track.
+    expect(ids(req, [{ ...art, channel: 'officialfacestoface' }])).toEqual([]);
+    expect(reasonFor(req, [{ ...art, verified: false }], 'wdWWgR07Rsw')).toBe('art track with only 3016 views');
+  });
+
+  it('Dipped, Impersonator: a label\'s "Release - Topic" art track whose credit line names the artist', () => {
+    const dip = { artist: 'DJ Prime Cuts', title: 'Dipped', durationSec: 152 };
+    expect(ids(dip, dipped)).toEqual(['topic:q5VFF5Wh9q0']);
+    expect(reasonFor(dip, dipped, 'nEOJ-JCv-FA')).toBe('different song'); // "Kill Switch", same EP
+    const imp = { artist: 'Etovics', title: 'Impersonator', durationSec: 306 };
+    expect(ids(imp, impersonator)).toEqual(['topic:kVLuaG-Azr4']);
+    const art = dipped.find((x) => x.id === 'q5VFF5Wh9q0')!;
+    const not = (x: SearchEntry, more: SearchEntry[] = []) => reasonFor(dip, [x, ...more], x.id);
+    // No credit (or cut off), another artist credited, the name only later in the line, a credit for another title.
+    expect(not({ ...art, description: 'Provided to YouTube by KudosRecords Dip' })).toBe('artist not named');
+    expect(not({ ...art, description: 'Provided to YouTube by KudosRecords Dipped · DJ Other Chartist EP' })).toBe('artist not named');
+    expect(not({ ...art, description: 'Provided to YouTube by KudosRecords Dipped · Various Tribute to DJ Prime Cuts' })).toBe('artist not named');
+    expect(not({ ...art, title: 'Dipped', description: 'Provided to YouTube by KudosRecords Kill Switch · DJ Prime Cuts Chartist EP' })).toBe('artist not named');
+    // Not an auto-generated "- Topic" channel; not exactly the requested title.
+    expect(not({ ...art, channel: 'Release' })).toBe('artist not named');
+    expect(reasonFor({ ...dip, title: 'Dipped (Dub)' }, [{ ...art, title: 'Dipped' }], art.id)).toMatch(/different song|artist not named/);
+    // Off the official length by 2 s, or a song that has a popular upload (a real art track then has views).
+    expect(not({ ...art, duration: 154 })).toBe('label art track 154 s vs 152 s');
+    const popular = e({ id: 'POPULARLYRC', title: 'DJ Prime Cuts - Dipped (Lyrics)', channel: 'Lyrics Hub', views: 2e6, duration: 152 });
+    expect(not(art, [popular])).toBe('label art track of a known song');
+  });
+
+  it('偷偷 (Wei Bi, credited 未必 on YouTube): not found, and a title-only search would not be safe', () => {
+    const req = { artist: 'Wei Bi', title: '偷偷(广播剧《偷偷藏不住》主题曲)', durationSec: 249 };
+    expect(ids(req, touTou)).toEqual([]);
+    // Searching the title alone brings other singers' songs of that title at exactly 249 s.
+    const sameLength = touTou.filter((x) => x.duration === 249 && /偷偷/.test(x.title) && !/未必/.test(x.channel)).map((x) => x.channel);
+    expect(sameLength).toEqual(expect.arrayContaining(['浮梦若薇 - Topic', 'Softlipa - Topic']));
+  });
+
+  it('Homerton B (Unknown T): the music video on GRM Daily (verified premiere platform) is the fallback', () => {
+    const req = { artist: 'Unknown T', title: 'Homerton B', durationSec: 192 };
+    expect(ids(req, homertonB)).toEqual(['music-video:UrnACpUhe98']);
+    expect(reasonFor(req, homertonB, 'o2tB9Cs0dn0')).toBe('length 190 s vs 192 s');
+    expect(reasonFor(req, homertonB, 'fdvbG9VzAk4')).toBe('lyric video with only 9933 views');
+    // An unverified channel of that name is not the platform.
+    expect(reasonFor(req, homertonB.map((x) => ({ ...x, verified: false })), 'UrnACpUhe98')).toBe('not official, not a lyric video');
   });
 });
 

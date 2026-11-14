@@ -226,3 +226,179 @@ export const purloin = rows([
   ["tphFqJ_yseM", "M-Zine & Scepticz - Nether - DISLTD026", "Dispatch Recordings", false, 416, 132, "M-Zine & Scepticz Nether DISLTD026 ---- "],
   ["IPPxle0CBRk", "M-Zine - Crepitate", "sheo_ _ʚїɞ", false, 386, 371, "Buy at: https://www.beatport.com/track/c"],
 ]);
+
+// ---------------------------------------------------------------------------
+// 2026-11-14: misses from the random-song evaluation (tools/eval/data/run-20261115).
+// Searched 2026-11-14; descriptions are the first 100 characters of the snippet, so art
+// tracks keep their "Provided to YouTube by <label> <Title> · <Artist>" credit line.
+
+/**
+ * "Black Gryph0n & Baasik Insane lyrics" + "Black Gryph0n & Baasik Insane official audio", plus
+ * "Insane (1920)" (from "Black Gryph0n Insane 1920"): the evaluation's searches returned it, today's don't.
+ */
+export const insane = rows([
+  ["AicztQ69Uy8","Black Grpyh0n & Baasik- Insane (Lyrics Video)","Music Terminal",false,10697036,161,"Note: Don't Forget to Like and Subscribe for new content every single day and hit the notification b"],
+  ["juJkNKodgdE","INSANE (A Hazbin Hotel Song) - Black Gryph0n & Baasik","Black Gryph0n",true,175081074,163,"STREAM #INSANE ON SPOTIFY: ..."],
+  ["v71GQ0wRiGM","Insane (Lyrics) - Black Gryph0n","Music_Room5",false,100597,165,"music #vibes #song #dance #lyrics #popular #lyricsvideo #lyricvideo #pop #happy #blackgryph0n #feelg"],
+  ["a_uHESUzNRI","Insane-LYRICS official music video by @BlackGryph0n","RAYPAWS",false,329466,192,"Cloudjumperedits_1 @Ivy_art08."],
+  ["_t7oMrDWiAs","INSANE (With Lyrics) // AMV // Hazbin Hotel","Xeorie",false,11746159,169,"Hey folks! Here is an AMV on the first Hazbin Hotel song I discovered, and that made me love Alastor"],
+  ["SsSwsLAetDE","Black Grpyh0n & Baasik- Insane (Lyrics Video)","Hitz of music",false,1609,170,"Black Grpyh0n & Baasik- Insane (Lyrics Video) Note: Don't Forget to Like and Subscribe for new conte"],
+  ["QVOmJwWxwtc","Black Grpyh0n & Baasik - Insane (Lyrics)","LMD LYRICS",false,125089,162,"BlackGrpyh0n#Baasik#Insane#Lyrics Lien de channel: https://www.youtube.com/channel/UC78AkLcyoZTGEL_o"],
+  ["N8upIbB9FYQ","【英語歌詞+読み方付き】 Insane ( A hazbin hotel song ) - Black Gryph0n &Baasik","ham",false,105456,159,""],
+  ["e_n-R-5R6Ww","Alastor - 'Insane' (Color Coded Lyrics)","Jenowski",false,831958,160,"All Rights Administered To The Rightful Owners • Artist: Black Gryph0n, Baasik • Song ♫: Insane • Al"],
+  ["wMtrYakfKjM","Insane Lyric Video(original by @BlackGryph0n )","Millie’s Plushie Productions",false,42214,206,"Insane belongs to @B@BlackGryph0nPls don't copyright me YouTube :( Tags: #hazbinhotel #alastor #musi"],
+  ["A-5GnltcZvM","INSANE (Insanity Remix) - Black Gryph0n & Baasik","",false,null,182,""],
+  ["sJ0yPYUnLlE","UPSIDE DOWN (A Hazbin Hotel Song) - Black Gryph0n & Baasik","",false,null,164,""],
+  ["3rYmjB55d90","[REUPLOAD] INSANE (Unofficial Music Video) Black Gryphon & Baasik","El Rincon de Brashito",false,null,206,""],
+  ["H736aOIHHO8","BAD NEWS (Animated Music Video) - Stellar, Black Gryph0n & Baasik","Black Gryph0n",false,null,146,""],
+  ["9e-3m5sNuCM","Insane [An Hour Long] [Song By: @BlackGryph0n]","",false,null,3624,""],
+  ["qy9NX7iI6YQ","DAISIES (A Hazbin Hotel Song) - Black Gryph0n & Baasik","",false,null,143,""],
+  ["xEFHOpLGibY","INSANE - Hazbin Hotel (acapella) | VoicePlay","",false,null,237,""],
+  ["cW45L9OSFRY","Stellar - Bad News ft. Black Gryph0n & Baasik (Official Lyric Video)","",false,null,145,""],
+  ["eX5lc10Ot6w","Insane (1920)","Black Gryph0n",true,3868247,166,"Provided to YouTube by DistroKid Insane (1920) · Black Gryph0n · Baasik Insane (1920) ℗ Black Gryph0"],
+]);
+
+/** "Lola Jane You Lie lyrics" + "Lola Jane You Lie official audio" + "Lola Jane You Lie" */
+export const youLie = rows([
+  ["j402JjBD1pw","Lola Jane | 'You Lie'","Lola Jane",false,35116,174,"Lola Jane 'Unsettled' EP: https://ampl.ink/dpvPb Follow Lola Jane: https://www.instagram.com/iamlola"],
+  ["nG16UroQcRM","Lola Jane - To, Me (Acoustic)","Lola Jane",false,218477,224,"Hey, my name is Lola Jane. Hope you enjoy my song ! Don't forget to hit 'Like', Subscribe and Share "],
+  ["AHI7JjJlpYo","Lola Young - Messy (Lyrics)","7clouds Rock",true,8291429,285,"Follow the official 7clouds playlist on Spotify : http://spoti.fi/2SJsUcZ ​ Lola Young - Messy (Lyri"],
+  ["1hpkQ_ag470","Lola Young - Messy (Lyrics)","Vibe Music",true,28201697,290,"Lola Young - Messy Stream/Download: (Lyrics): [Verse 1] You know I'm impatient So why would you leav"],
+  ["keVFUQBBc7U","Lola Jane - Kiss Me (Acoustic)","Lola Jane",false,236246,178,"Here is another Lola Jane acoustic track ! Hope you enjoy this! Share, Subscribe, Like & all that go"],
+  ["stOK9uYzw7w","Lola Jane | 'Dear...'","Lola Jane",false,8774,186,"Lola Jane 'Unsettled' EP: https://ampl.ink/dpvPb Follow Lola Jane: https://www.instagram.com/iamlola"],
+  ["ShTBYGmwDfo","Lola Jane | 'Clouds'","Lola Jane",false,18187,228,"Lola Jane 'Unsettled' EP: https://ampl.ink/dpvPb Follow Lola Jane: https://www.instagram.com/iamlola"],
+  ["0gXclofwOuk","Lola Jane | 'Almost'","Lola Jane",false,22532,194,"Lola Jane 'Unsettled' EP: https://ampl.ink/dpvPb Follow Lola Jane: https://www.instagram.com/iamlola"],
+  ["k-k2_Liofy8","Lola Young - Messy (Official Video)","Lola Young",true,172988673,285,"My new album 'I'm Only F**cking Myself' is out now! Order here: https://lolayoung.lnk.to/ImOnlyF--ki"],
+  ["toU970cdors","Lola Jane - Clouds","ZOUK LOVE MUSIC",false,1765,225,"Músicas e remixes para dançar com o corpo e sentir com o coração. ♥️ Este canal é feito com muito am"],
+  ["REbvnRxQx64","Lola Jane & Melvin War - Kiss Me (Bachata Remix)","Musica Salsa",false,47588,234,"Lola Jane & Melvin War - Kiss Me (Bachata Remix)"],
+  ["lXIuy82hKfw","#DESAFIODABEREU @ Lola Jane","Ruana Vasquez",false,87,78,"O Desafio é para vocês tentarem reproduzir a coreo em casa, gravar e postar desafiando 2 amigos(as)!"],
+  ["kaem0SpxQbE","Lola Jane | 'The Wire'","Lola Jane",false,18735,196,"Lola Jane 'Unsettled' EP: https://ampl.ink/dpvPb Follow Lola Jane: https://www.instagram.com/iamlola"],
+  ["v92R-NE1few","nbbr live Lola Jane","Nema's Boom Boom Room",false,499,61,""],
+]);
+
+/** "Face to Face Nullification lyrics" + "Face to Face Nullification official audio" */
+export const nullification = rows([
+  ["Xed2SNsVGE4","Face To Face - Nullification","Worse Than You",false,155,189,"Face To Face Album: Reactionary (Bonus track) Guitar cover: Joseph Fernandez."],
+  ["_SAAcAT_S8c","Citizen Soldier - Face to Face [Lyrics]","BlackLightMusicV2",false,235161,222,"[Citizen Soldier] • https://www.youtube.com/channel/UC3JIDpjOFMKXObgctLRQb-A ..."],
+  ["osk3TNZCgnI","0TS / soul_splice ft. Utatane Piko","0TS",true,3841,220,"nullify —— [Inst/Lyrics/Animation/Video] 0TS [Vocals] Utatane Piko, Kagamine Len, v4flower [Story/Ch"],
+  ["cIk_cR50q50","Nullify, Break and Recoil Every Satanic Arrows, Evil Altars and Verdicts","1001 DAILY PRAYERS",false,1855,573,"NULLIFY, BREAK AND RECOIL EVERY EVIL ALTAR, SATANIC ARROWS, AND VERDICTS In the name of Jesus Christ"],
+  ["cwHeF5ZIXhs","emjaay - lost time (Sub. Español & Lyrics)","byedar",false,51,157,"Apoya a emjaay https://soundcloud.com/emjaays https://www.instagram.com/emjaays/ @emjaay Anime: A si"],
+  ["L8ZhJFDIRq8","Exodus - Open Season - (Fabulous Disaster - 1989) - Thrash Metal - Lyrics","The Best Classic Rock Ever (70s-80s-90s & more)",false,177,238,"Band: Exodus Topic: Open Season Album: Fabulous Disaster Year: 1989 Country: USA Exodus - Open Seaso"],
+  ["MXW54qAA6aA","Both Sides with Jesse Jackson (pt. 3) - Racially Based Jury Nullification w/ Professor Paul Butler","ProfessorPaulButler",false,2870,135,"On this episode of Both Sides with Jesse Jackson, Professor Paul Butler of George Washington Univers"],
+  ["R_v9oZv9oVI","All Stars WITH LYRICS- Friday Night Funkin vs Mario’s Madness","Chez2011",false,3006,666,"Bru this description is gonna be so long Lyrics: @n@chez2011Video art: @noo@chez2011omposers: ..."],
+  ["80rTOvBFMVs","Megalovania WITH LYRICS | Undertale Cover | FT ‪@wrathstetic","Maelstrom Lyrics and wrathstetic",false,1444728,538,"you picked war. so here i am. #undertale #sans #megalovania !- - Credits- -! Original Composer: Toby"],
+  ["sn0UJ7u4EY0","Недо мовик","NULLIFY",false,3,128,"Steam - https://steamcommunity.com/profiles/76561199570606140/ Vk - https://vk.com/alexeydackevich T"],
+  ["wdWWgR07Rsw","Nullification (Bonus Track)","officialfacetoface",true,3016,196,"Provided to YouTube by IIP-DDS Nullification (Bonus Track) · Face To Face Reactionary (Bonus Tracks)"],
+  ["w4tGNmPTi1Q","VEGAS LAWYERS DISCUSS THE BUNDY VERDICTS AND JURY NULLIFICATION","MrsB Stacy",false,1419,774,"https://itmattershowyoustand.com/2017/09/vegas-lawyers-discuss-the-bundy-verdicts-and-jury-nullifica"],
+  ["bRlOvc0xYk0","RUQYAH TO NULLIFY MAGIC THAT DISTORTS THE BEAUTY OF SKIN,TEETH,EYES,EARS, HAIR,CAUSES PAIN,TINGLING","Al Quran",false,52256,1931,"RUQYAH TO NULLIFY MAGIC THAT DISTORTS THE BEAUTY OF SKIN, TEETH, EYES, EARS, HAIR, CAUSES PAIN, TING"],
+  ["B9GI-PxHLwM","Nullify All Negative Intentions and Enemies Plans [Copper + Salt + Moldavite Frequency]","The Crystal Wave",false,36378,28800,"Nullify All Negative Intentions and Enemies Plans - Copper + Salt + Moldavite Frequency This frequen"],
+  ["kIXrYfqvhr8","Jury Nullification What Gun Owners Need to Know","Armed Attorneys",true,43994,844,"We're dive into the concept of jury nullification and why it's important for gun owners to understan"],
+  ["2T1BmcTalfw","The Nullification Crisis Explained: The Showdown That Nearly Divided America | DAILY BELLRINGER","The Daily Bellringer",false,60021,347,"The Nullification Crisis Explained: During Andrew Jackson's presidency, we begin to see the fracturi"],
+  ["W8CTw0T4bzY","Lymphatic System Blockage Removal and Enhanced Drainage by Sapien Medicine Ver2.0","Deleted energy work videos",false,338993,487,"Sapien Medicine's original description: The programming in this will help break apart blockages in y"],
+  ["LN1LlXChhQU","Kill Dyll - Nullify (Official Audio)","Kill Dyll",true,37132,128,"Stream \"BRAINDEAD\" now: https://killdyll.lnk.to/BRAINDEAD Follow Kill Dyll: https://www.killxdyll.co"],
+  ["JRk7gRPbs0k","THE ENEMY ANNIHILATION SUBLIMINAL (obliterate enemies, rude people, bullies etc)","wealthy crowns",false,663633,227,"ALL UNISEX AFFIRMATIONS Calm version: https://youtu.be/O3Lr_puC594 Let's goooo!!!! Listen 3-6 times "],
+  ["4_VOiOKJQYg","Ultimate Ruqyah to Nullify & Open the Blockages made by Black Magic & Evil Jinns","The Power of Quran",false,57682,2430,"As salam o alaikum wa rahmatullahi wa barakthu! This is a very powerful and effective ruqyah to Ruqy"],
+]);
+
+/** "DJ Prime Cuts Dipped lyrics" + "DJ Prime Cuts Dipped official audio" + "DJ Prime Cuts Dipped" */
+export const dipped = rows([
+  ["3W9zTpRFlzw","Dua Lipa - Training Season (Lyric Video)","Dua Lipa",true,33644032,211,"Listen to 'Radical Optimism', the new album here: https://dualipa.lnk.to/radicaloptimism Subscribe t"],
+  ["CdaIKEcj6ow","Ice Spice - Did It First (Lyrics) ft. Central Cee","Rap Samurai",true,10267532,118,"Ice Spice, Central Cee - Did It First Lyrics by Rap Samurai We aim to bring you the highest quality "],
+  ["8Ebqe2Dbzls","ROSÉ & Bruno Mars - APT. (Official Lyric Video)","Bruno Mars",true,67641617,170,"The official lyric video for ROSÉ & Bruno Mars' APT. Listen to APT.: https://rosesarerosie.lnk.to/AP"],
+  ["mCHUw7ACS8o","Of Monsters and Men - Dirty Paws (Official Lyric Video)","Of Monsters and Men",true,120798294,275,"Download this song: http://smarturl.it/OMAMalbumitunes Watch Of Monsters and Men cover Post Malone's"],
+  ["bNQSMTNSnUw","Nathan Evans - Wellerman (Sea Shanty) (Lyrics)","7clouds",true,46973734,153,"Follow the official 7clouds playlist on Spotify : https://lnkfi.re/7cloudsSpotify​ Nathan Evans - We"],
+  ["AyX_LL9nWSE","Olivia Rodrigo - favorite crime (Lyric Video)","Olivia Rodrigo",true,128966038,154,"Listen to 'SOUR': https://OliviaRodrigo.lnk.to/SOUR Listen to 'GUTS': https://OliviaRodrigo.lnk.to/G"],
+  ["h5ke4Ka4_mg","Nathan Evans - There once was a ship that put to sea (Wellerman) (Lyrics)","Cassiopeia",true,29630942,157,"Nathan Evans - There once was a ship that put to sea (Wellerman) (Lyrics) Follow Cassiopeia on Spoti"],
+  ["XZ9ZngeRP78","Nathan Evans - Wellerman (Sea Shanty) (Lyrics)","cold boy.",true,1955826,155,"Nathan Evans - Wellerman (Sea Shanty) (Lyrics) Turn on notifications to find out about upcoming vide"],
+  ["Zu2Spp4nrTM","Laufey - Promise (Official Lyric Video With Chords)","Laufey",true,20444884,234,"Stream or download \"Promise\" from my new album, Bewitched, out now: https://laufey.ffm.to/bewitched "],
+  ["Amcm_P7viqk","Lut Gaye (Lyrical) Emraan Hashmi, Yukti | Jubin N, Tanishk B, Manoj M | Bhushan K | Radhika-Vinay","T-Series",true,117959094,249,"Presenting #LutGaye Lyrical video. Gulshan Kumar & T-Series presents Bhushan Kumar's Lut Gaye; a rom"],
+  ["0mlnJ7Ic7TM","MAU P @OfficialClubSpace | Miami - Dj Set presented by Link Miami Rebels.","Club Space",true,1663931,7467,"Mau P playing an exclusive dj set for @OfficialClubSpace Miami. - SUBSCRIBE TO OUR CHANNEL: ..."],
+  ["EAcXCdMiuEo","DJ Spinall - Dis Love (Official Video) ft. Wizkid, Tiwa Savage","SPINALL",true,41320763,159,"https://smarturl.it/DisLove #DJSpinall #Wizkid #TiwaSavage TheCAPMusic presents the official music v"],
+  ["pQPgnnKdMR8","Deep Focus Music – Ultra Focus Beats for High-Performance Work & Study Sessions","Deep Focus Zone",false,1068912,4957,"Work & Productivity Music – Deep Focus Beats for CEO Performance & Calm Study This mix is designed t"],
+  ["hJBAzPsLZ00","21 Savage x Young Nudy - Since When (Official Music Video)","21 Savage",true,14708995,209,"Watch the official music video for \"Since When\" by 21 Savage x Young Nudy, produced by Kidd Hazel. S"],
+  ["rfgZTk3Zj7A","Big Bunx Riddim MIx Ft. Valiant, Skeng, RajahWild, Najeeriii, Konshens, Vybz Kartel, Roze Don & More","DJ Prime Official",false,7971,893,"This is a fun space used to display different element of DJ Prime from mashups live mix, music (reco"],
+  ["PLT68mI5Pwc","Ante Up Remix (featuring Busta Rhymes, Teflon, and Remy Martin) (Official Video)","MOPVEVO",true,51655114,264,"\"Ante Up Remix\" by M.O.P Listen to M.O.P: https://MOP.lnk.to/listenYD Subscribe to the official M.O."],
+  ["sVgd0pIZ8fQ","Gucci Mane - Truth (Official Music Video)","Gucci Mane",true,22926585,217,"I AM MY ONLY COMPETITION! https://guccimane.lnk.to/TrapGodClassics Subscribe for more official conte"],
+  ["qWWSM3wCiKY","Calvin Harris & Disciples - How Deep Is Your Love (Audio)","Calvin Harris",true,176476030,213,"Calvin Harris & Disciples - How Deep Is Your Love (Official Audio) Sign up for first access to Calvi"],
+  ["6wtwpUwxQik","21 Savage & Metro Boomin - No Heart (Official Music Video)","21 Savage",true,304784119,256,"DOPE Presents the official video for \"No Heart\" by 21 Savage & Metro Boomin off the 'Savage Mode' al"],
+  ["P00HMxdsVZI","Lizzo - Truth Hurts (Official Video)","Lizzo Music",true,335457190,182,"The official video of \"Truth Hurts\" by Lizzo. Download/Stream: https://Atlantic.lnk.to/TruthHurtsAY "],
+  ["q5VFF5Wh9q0","Dipped","Release - Topic",false,295,153,"Provided to YouTube by KudosRecords Dipped · DJ Prime Cuts Chartist EP ℗ The Trilogy Tapes Released "],
+  ["7v0SYSnM_bU","Prime Cuts of the past - Dj Cari6aca","Inaudible Sound Recordings",false,26,164,""],
+  ["nEOJ-JCv-FA","Kill Switch","Release - Topic",false,292,207,"Provided to YouTube by KudosRecords Kill Switch · DJ Prime Cuts Chartist EP ℗ The Trilogy Tapes Rele"],
+  ["84cqvTjdctk","PREVEDELLO06","Spezzapasticcio",false,22,2697,"... SHADOW REZZETT - LEG IT PIPER SPRAY & LENA TSIBIZOVA - EXIT DJ PRIME CUTS - DIPPED DJ TRYSTERO -"],
+  ["IqYWypExkoA","Salt Hank Rules the Sandwich World | Sandwich City | NYT Cooking","NYT Cooking",true,1630811,825,"Henry Laporte is famous on TikTok, but you might know him better as Salt Hank. His videos of his oft"],
+  ["G1l_yUbex0g","Belly Gang Kushington - Rent Due (Official Music Video)","Belly Gang Kushington ",true,10411837,142,"Belly Gang Kushington - Rent Due (Official Music Video) Listen/Download: https://ffm.to/streetsisyou"],
+  ["Gbx9V3WlmBM","Philly, Jersey & Baltimore Club Mix","Diamond Kuts",false,178268,2677,"3 Cities One Mix! New and Classic Club Music!"],
+]);
+
+/** "Etovics Impersonator lyrics" + "Etovics Impersonator official audio" + "Etovics Impersonator" */
+export const impersonator = rows([
+  ["kVLuaG-Azr4","Impersonator","Release - Topic",false,28,307,"Provided to YouTube by WM Music Distribution Ltd Impersonator · Etovics Stolidity ℗ 2026 Etovics Rel"],
+  ["x4dzx0uNImI","Wolverine Blues Brothers - Out Of Hand (Entombed cover)","Daniel Szabo",false,117,165,"Live cover of Out Of Hand by Entombed. Wolverine Blues Brothers: Jósa Tamás - vox Németi Tamás - gui"],
+]);
+
+/** "Wei Bi 偷偷 lyrics" + "Wei Bi 偷偷 official audio" + "Wei Bi 偷偷" + "偷偷 广播剧《偷偷藏不住》主题曲" + "偷偷" */
+export const touTou = rows([
+  ["OjMfGs-OYH0","落空 (Fall Through) - 未必 (Wei Bi)《早春晴朗 The Early Spring》Chi/Eng/Pinyin lyrics","Peachey Blossom",false,409404,209,"Song Name (歌名): 落空(Fall Through) Singer (歌手): 未必(Wei Bi) Drama Name (电视剧名字):《早春晴朗The Early Spring》 ."],
+  ["9TcqDEv12eg","你是我此生唯一所愿 (You Are My Only Wish) - 张碧晨 (Zhang Bichen)《偷偷藏不住 Hidden Love》Chi/Eng/Pinyin lyrics","Peachey Blossom Backup",false,346464,195,"Song Name (歌名): 你是我此生唯一所愿(You Are My Only Wish) Singer (歌手): 张碧晨(Zhang Bichen) Drama Name (电视剧 ..."],
+  ["e0JwzRfIhO0","妳是我此生唯一所願 / You Are My Only Wish in This Life - 張碧晨 Diamond Zhang（《偷偷藏不住Hidden Love》電視劇插曲）【動態歌詞】","Dreamer Music",true,1790656,202,"歌詞在下面❖Lyrics in the song❖ 妳是我此生唯一所願（《偷偷藏不住》電視劇插曲） - 張碧晨作詞: 邱天Tian 作曲: ..."],
+  ["EJtcb6SHLPY","Ode to Hsin and Moon: Whither Away? - Official English Lyrics [wuwa Hsin EP song]","Yxelixi",false,57907,215,"Ode to Hsin and Moon: Whither Away? - Official English Lyrics [wuwa Hsin EP song] Wuthering Waves OS"],
+  ["1Njf_E5t-2o","【Chi/Eng/Pinyin Lyrics】 刘宇宁 (Liu YuNing) -  她 (Her) | 《早春晴朗 The Early Spring》 OST","Diary Lyrics",false,889123,217,"【Chi/Eng/Pinyin Lyrics】 刘宇宁(Liu YuNing) - 她(Her) | 《早春晴朗The Early Spring》 OST *Watch the Lyrics Vide"],
+  ["tB0VMo8W8S0","【Chi/Eng/Pinyin Lyrics】 袁娅维 (Tia Ray) -  此刻 (This Moment) | 《早春晴朗 The Early Spring》 OST","Diary Lyrics",false,150120,210,"【Chi/Eng/Pinyin Lyrics】 袁娅维(Tia Ray) - 此刻(This Moment) | 《早春晴朗The Early Spring》 OST *Watch the Lyric"],
+  ["EKGCOhpTjuk","Fall Through 落空 - Wei Bi 未必 | 《早春晴朗 The Early Spring》OST Myanmar Sub #ost #mmsub","Forever Music Channel ",false,1095,209,"theearlyspring #jingboran #sunqian."],
+  ["wc2_VzAMyy4","[OST LYRICS] You Are My Only Wish by Zhang Bi Chen (Hidden Love OST)","Love for OST",false,23979,191,"Title: You Are My Only Wish Singer/ Artist: Zhang Bi Chen Released Year: 2023 Movie / Drama: Hidden "],
+  ["_V06uzrIZSQ","『冷冰冰 - Double SR/一觉Ysleep』『别冷冰冰 拜托今晚不要对我狠心心』【動態歌詞MV】","Phoenix Music",false,46642,186,"訂閱頻道收聽更多好聽的歌： https://www.youtube.com/channel/UC2kv7-nmZvr5wnnW6wSrOhA ..."],
+  ["tNqNnbBDAMc","田馥甄 Hebe Tien《小幸運》Lyrics Chinese | Pinyin | English","Bilingual Lyrics",false,4248918,261,"A great way to learn Chinese is through music. I have included Chinese characters, Pinyin and Englis"],
+  ["7H1ObJvb7Hc","【Stage】Diamond Zhang & Neo Hou \"Jia Yi Bing Ding\" #TheTreasuredVoiceS7","天赐的声音 The Treasured Voice Official Channel",true,3637240,227,""],
+  ["AUNI_oB3L8g","Tang Rebirth: Emperor Impregnates His Beauty Sister—He's a Martial God, One Hammer Crushes Rebels!","風影劇場_shortTV",false,217374,12221,""],
+  ["Xlp4iqAPK3E","Wei Wuxian making a clown out of himself for 3 minutes bi","its frigay",false,387955,192,"guys this video is literally wwx being a clown (he's well known for it), in case you don't know, wat"],
+  ["8I6beTYSwnE","Tofu Mom EP233: Fallen from Grace","民視戲劇館 Formosa TV Dramas",true,151086,5858,"00:00:00 Guoqing threatens Jialian, forcing her to abandon her book publication. 00:08:31 Huowang en"],
+  ["nKyZDdpfEiQ","六哲 - 畢竟深愛過『你堅持著說要走 說他比我要溫柔 我明白你的追求 終於安靜放了手』【動態歌詞MV/Lyrics】","Nightfall Tunes",false,2782900,285,"Nightfall Tunes 歌曲：畢竟深愛過歌手：六哲歌詞： 你堅持著說要走說他比我要溫柔我明白你的追求終於安靜放了手情歌聽多了 ..."],
+  ["jTFhkMrCx3Q","六哲 - 畢竟深愛過【動態歌詞Lyrics】","親親2o音樂LîvË【中文音樂】",true,59803855,284,"感謝你留下喜歡和訂閱♡ 打開鈴鐺接收最新消息→ 訂閱頻道：https://goo.gl/UCX8or ♪ 親親2o音樂LîvË【中文音樂】♪ ..."],
+  ["z0QTDftqi9k","【纯享版】张碧晨侯明昊全新演绎《甲乙丙丁(你我怎么两清)》 把爱情里的拉扯 不甘与难以释怀唱到极致！#天赐的声音7 EP11 20260823","浙江卫视音乐频道 ZJSTV Music Channel - 欢迎订阅 -",true,2728353,237,"【纯享版】张碧晨侯明昊全新演绎《甲乙丙丁(你我怎么两清)》 把爱情里的拉扯不甘与难以释怀唱到极致！#天赐的声音7 EP11 ..."],
+  ["Ns9YAquNWYI","偷偷（广播剧《偷偷藏不住》主题曲）","未必 - Topic",false,190615,249,"Provided to YouTube by EWway Culture Ltd 偷偷（广播剧《偷偷藏不住》主题曲） · 未必偷偷（广播剧《偷偷藏不住》主题曲） ..."],
+  ["cekytQao4ZM","《偷偷藏不住》广播剧 主题曲Ⅱ 「藏不住」","Rei Tan",false,52353,270,"视频来源猫耳FM https://www.missevan.com/sound/3249611 主题曲Ⅰ 《偷偷》https://youtu.be/y7MCVvV-MQc @晋江文学城@ ..."],
+  ["y7MCVvV-MQc","《偷偷藏不住》广播剧 主题曲Ⅰ 「偷偷」","Rei Tan",false,115390,250,"视频来源猫耳FM https://www.missevan.com/sound/3021344 主题曲Ⅱ 《藏不住》 https://youtu.be/cekytQao4ZM @晋江文学城@ ..."],
+  ["PDlQMzsHuCM","偷偷 (广播剧《偷偷藏不住》主题曲纪念版)","浮梦若薇 - Topic",false,1569,249,"Provided to YouTube by 三糙文化偷偷(广播剧《偷偷藏不住》主题曲纪念版) · 浮梦若薇偷偷(广播剧《偷偷藏不住》主题曲纪念版) ..."],
+  ["nmVAOTVo3WE","偷偷（广播剧《偷偷藏不住》主题曲） (和声伴奏版)","未必 - Topic",false,2051,249,"Provided to YouTube by EWway Culture Ltd 偷偷（广播剧《偷偷藏不住》主题曲） (和声伴奏版) · 未必偷偷（广播剧《偷偷藏不 ..."],
+  ["24LtnNGnZBg","藏不住 (广播剧《偷偷藏不住》主题曲纪念版)","轩ZONE - Topic",false,1048,270,"Provided to YouTube by 三糙文化藏不住(广播剧《偷偷藏不住》主题曲纪念版) · 轩ZONE 藏不住(广播剧《偷偷藏不住》主题曲纪念 ..."],
+  ["F9PT1aOnd-A","听歌系列#4 《偷偷》偷偷藏不住广播剧主题曲🌀🌷","豆腐tofu",false,329,52,"xhs 伊奈."],
+  ["F4iRi_bq5iQ","松子茶原著《暗恋翻车后》广播剧 主题曲《偷偷》","sour lemon .停更 Suspend updates temporarily.",false,2712,236,"来自：https://www.missevan.com/sound/7478888 “为我款款而来~” -主题曲- 《偷偷》 演唱：远皓ZIL@远皓ZIL 作词：亦沫@亦沫不 ..."],
+  ["co-Jn2E0UV8","偷偷（廣播劇偷偷藏不住） 歌曲 翻唱","湘緗",false,236,243,"反正都參加翻唱大賽，檔案都做好了順便發個cover（？） 天啊人間理想段嘉許."],
+  ["HjW3g5fTFd8","《偷偷藏不住》主题曲Ⅰ《偷偷》","星朔雪",false,49,250,"转自：https://www.missevan.com/sound/player?id=3021344 @晋江文学城@小竹已原著，@猫耳FM 、三糙文化@三米造事务所 ..."],
+  ["kdw1IuoJjns","偷偷 (feat. 閻韋伶)","Softlipa - Topic",false,3938536,249,"Provided to YouTube by YOYOROCK 偷偷(feat. 閻韋伶) · 蛋堡Winter Sweet ℗ 顏社企業有限公司Released on: 2009-12-31 ..."],
+  ["89P00QsRoOQ","黃明志【偷偷】Ft. SWAG (Official Music Video)","Namewee",true,1460822,300,"現實愛情”和“虛擬愛情”的差別在於，虛擬的愛情依然是愛情，而現實的愛情始終現實。 《偷偷》收錄在黃明志第十張全新創作專輯《 ..."],
+  ["Hdtd82Xj3Ds","蛋堡,阎韦伶-偷偷「这一刻 我觉得 我能懂得 这是我们的快乐」【動態歌詞/Lyrics Video】","WCY RAP",false,260592,249,"关注WCY Rap❖ Youtube➸https://www.youtube.com/wcyrap Facebook➸https://www.facebook.com/wcyrap ..."],
+  ["LM9uN7IlKSI","偷偷愛","美秀集團 Amazing Show",true,20291206,263,"Provided to YouTube by YOYOROCK 偷偷愛· 美秀集團美秀集團同名專輯℗ 火玄火包股份有限公司AmazingShow CO LTD ..."],
+  ["ja6FxVMjJyQ","【高音質】蛋堡-偷偷 feat.閻韋伶","Peculiar音樂",false,4824,250,"出處https://www.youtube.com/watch?v=kdw1IuoJjns&ab_channel=SoftLipa-Topic 蛋堡偷偷這是三分鐘之內的第五通訊息透露了 ..."],
+  ["rBCmeVLHrZ4","MP魔幻力量 [ 偷偷的 Secretly ] Official Music Video - 三立華劇「幸福兌換券」插曲","相信音樂BinMusic",true,48962664,271,"蕭秉治Xiao Bing Chih《活著Alive》高雄巨蛋演唱會⊹ 8.23 (六) 19：00丨高雄巨蛋2.09 (日) 12：00丨拓元售票全面開 ..."],
+  ["f8kIYA7wy_s","偷偷","蔡鹤峰",true,128890,191,"Provided to YouTube by 北京昌禾文化发展有限公司偷偷· 蔡鹤峰· 蔡鶴峰 偷偷℗ 北京昌禾文化发展有限公司Released on: ..."],
+  ["GjBIe2G0yMU","en - 我是真的愛上你『我 偷偷的愛上你，卻不敢告訴你。』【高音質|動態歌詞Lyrics】♫ · 翻唱歌曲 (原唱:王傑)","4K Music Make",true,3484743,206,"4KMusicMake◁ 點擊訂閱收聽歌曲: https://www.youtube.com/c/4KMusicMake ..."],
+  ["Wij4S5g8fVc","Secretly Loving You - Yuzumi 【Official Music Video】","橙Yuzumi Channel",false,57614,237,"Twitch ➔ https://www.twitch.tv/yuzumi_neon Twitter ➔ https://twitter.com/Yuzumi_Neon FB ➔ https://ww"],
+  ["0s63EARduI8","偷偷-蔡鹤峰〔和訳〕「こっそり君を好きになった」","mii",false,23286,191,"【曲名】 偷偷【歌手】 蔡鹤峰作詞：蔡鹤峰作曲：蔡鹤峰リリース日：2020年9月30日. 歌詞の途中に出てくる「小鹿乱撞」という ..."],
+]);
+
+/** "Unknown T Homerton B lyrics" + "Unknown T Homerton B official audio" + "Unknown T Homerton B" */
+export const homertonB = rows([
+  ["o2tB9Cs0dn0","Unknown T - Homerton B Lyrics","UK LYRICS VIDEOS",false,185035,190,"Unknown T - Homerton B Lyrics."],
+  ["rXgnW7B0K0Y","Homerton B lyrics - Unknown T","ProdbyJPBeats",false,9691,171,"Soundcloud-https://soundcloud.com/helladubs/unknown-t-homerton-b-hellas-toxic-edit."],
+  ["UrnACpUhe98","Unknown T - Homerton B [Music Video] | GRM Daily","GRM Daily",true,30411057,191,"SUBSCRIBE: http://bit.ly/GRMsubscribe VISIT: http://grmdaily.com/ ✓ DOWNLOAD THE GRM DAILY APP FOR i"],
+  ["fdvbG9VzAk4","Unknown T - Homerton B [Lyrics]","Real UK Lyrics",false,9933,191,"Beat by Chubz The Producer."],
+  ["gA92ec-SMDc","Unknown T Homerton B lyrics","worldwide rap lyrics",false,2593,204,"If you like this video smash the like button and I will post more videos like this. Ps: subscribe :3"],
+  ["mlTBXHkaJ6I","Unknown T - Homerton B [Lyric Video]","UKs TopLyrics",false,357,191,"I DO NOT OWN THE RIGHTS TO THIS MUSIC I SIMPLY UPLOAD LYRIC VIDEOS TO THE MUSIC I LIKE FOR OTHER PEO"],
+  ["wu7DgR4CYH8","Homerton B UNKN T","ECRP Radio",false,61,190,""],
+  ["1A7VI5TMbxk","Homerton B (Lyrics)","Certii Lyrics",false,128,118,""],
+  ["BCrMwL8uz28","Unknown T Explains 'Homerton B' To A Classical Music Expert | Classical Kyle | Capital XTRA","Capital XTRA",false,1124950,335,"Here's what happened when 'Homerton B' rapper Unknown T met classical musical expert Kyle. Subscribe"],
+  ["E-l84LUXi9Y","SL - Excuse Me (Lyrics) ft. Unknown T","CENSORED",false,27568,190,"SL - Excuse Me (feat. Unknown T) • Follow DRILL YouTube: https://m.youtube.com/channel/UC8lZ2ob7LUjL"],
+  ["3_4dn49l80Y","Unknown T (Homerton) - Homerton B (Official Westwood Version) [AUDIO] | Slammer Media","Slammer Media: Music",false,29021,225,"SUBSCRIBE & ENABLE for more: https://bit.ly/2WCyfQy ➡️ Visit our website for the latest videos & new"],
+  ["66atxJP9Sso","Unknown T - Homerton B (Hella Toxics Edit)","Bank Music",false,2003174,165,"Unknown T - Homerton B (Hella Toxics Edit) •••••••••••••••••••••••••••••••••••••••••••••••••••••••••"],
+  ["4oxgBlFcc9I","Unknown T - Homerton B (432 Hz)","Audio 432",false,2697,193,""],
+  ["S2o2bMko4Hc","Unknown T - Homerton B (toxic remix)","Botang",false,333621,165,""],
+  ["iMPSAKiHzKM","Unknown T - Homerton B 8D AUDIO","8DWave",false,228,194,"Unknown T - Homerton B 8D AUDIO #8daudio #ukmusic."],
+  ["qi5K4D3bHVM","Unknown T - WW2","Unknown T",true,7063284,218,"BLOOD DIAMOND, THE NEW ALBUM (JAN 12) - PRE-ORDER NOW: https://unknownt.lnk.to/blooddiamondID Unknow"],
+  ["C6aZT8htIyk","Unknown T - Homerton B (Bass Boosted)","JagguarIsTapped",false,2454,191,"ORIGINAL - https://www.youtube.com/watch?v=UrnACpUhe98 This video features materials protected by th"],
+  ["TNSACyrxdmY","Unknown T - Homerton B (Slowed & Reverb)","The GKD Channel",false,8484,214,"Copyright Disclaimer under section 107 of the Copyright Act of 1976, allowance is made for “fair use"],
+  ["PXWUU3qH0vw","Unknown T - BBK (Official Video)","Unknown T",true,381654,149,"Official video for Unknown T - BBK Pre save LISTEN. on all platforms → https://drop.cobrand.com/d/Un"],
+  ["Y9T3N_trY10","Unknown T - Homerton B (Original Version) #Exclusive | Evolve Media","Evolve Media Entertainment",false,192956,226,"Available on Soundcloud : https://soundcloud.com/evolve-media/unknown-t-homerton-b-exclusive Follow "],
+  ["GGmC7JfJ6kY","Unknown T - Homerton B | Homegrown Live With Vimto | Capital XTRA","Capital XTRA",false,92220,257,"Capital XTRA's Homegrown Live took over London's Shepherd's Bush on April 22nd 2019, bringing togeth"],
+]);

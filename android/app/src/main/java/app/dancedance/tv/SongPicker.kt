@@ -17,8 +17,13 @@ import kotlin.math.roundToInt
  *   2 LYRIC        third-party lyric video, most views first (>= 300 k views)
  *   3 TOPIC        the artist's genuine "Provided to YouTube" art track (>= 10 k views, or on the
  *                  artist's verified channel, or, for a little-known song, on the artist's
- *                  "- Topic" channel at the official length)
+ *                  "- Topic" channel at the official length; or on a label's "- Topic" channel
+ *                  when the art track's "Title · Artist" credit names the artist, same conditions)
  *   4 MUSIC_VIDEO  fallback: the official music video closest in length
+ *
+ * Within that order, an upload tagged with an era or style the request doesn't name
+ * ("Insane (1920s Style)") goes after the untagged ones, and one tagged with a bare year
+ * ("Insane (1920)") after an untagged one with 10x its views.
  *
  * When the two searches ([searchQueries]) rank nothing, the caller runs the plain "Artist Title"
  * search ([fallbackQuery]) too and ranks all results again.
@@ -160,14 +165,39 @@ object SongPicker {
     fun requestCore(title: String): List<String> =
         coreTokens(title.replace(re("\\s[-–—]\\s.*\\b(?:remaster(?:ed)?|edit|version|mix|mono|stereo|single|live|acoustic|demo|from)\\b.*$"), ""))
 
-    private fun channelCore(channel: String): String {
+    /** Words a channel puts around the artist's name ("officialfacetoface", "Face To Face Band", "FaceToFaceVEVO"). */
+    private val CHANNEL_AFFIXES = listOf("official", "vevo", "music", "band", "tv", "topic", "channel")
+
+    /** [joinedName] without leading / trailing [CHANNEL_AFFIXES]; at least 3 letters stay. */
+    private fun stripAffixes(joinedName: String): String {
+        var j = joinedName
+        var changed = true
+        while (changed) {
+            changed = false
+            for (a in CHANNEL_AFFIXES) {
+                if (j.length - a.length < 3) continue
+                if (j.startsWith(a)) { j = j.substring(a.length); changed = true }
+                else if (j.endsWith(a)) { j = j.substring(0, j.length - a.length); changed = true }
+            }
+        }
+        return j
+    }
+
+    /**
+     * Ways the channel name may spell the artist: joined, with "- Topic", "and 2 more" and VEVO
+     * removed, with or without the words official / music / tv / channel / vevo, and with
+     * [CHANNEL_AFFIXES] glued to the front or back stripped.
+     */
+    private fun channelCores(channel: String): List<String> {
         val s = channel
             .replace(re("\\s+and\\s+\\d+\\s+more$"), "")
             .replace(re("\\s*-\\s*topic$"), "")
             .replace(re("vevo$"), "")
-        return toks(s).filter { it !in setOf("official", "music", "tv", "channel", "vevo") }
+        val plain = toks(s).joinToString("")
+        val filtered = toks(s).filter { it !in setOf("official", "music", "tv", "channel", "vevo") }
             .joinToString("")
             .replace(Regex("(?:official|music)$"), "")
+        return listOf(plain, filtered, stripAffixes(plain), stripAffixes(filtered)).distinct().filter { it.isNotEmpty() }
     }
 
     private val LABELS = listOf(
@@ -179,6 +209,8 @@ object SongPicker {
         "elektra records", "300 entertainment", "fueled by ramen", "sire records", "reprise records", "capitol music group",
         "motown records", "ultra records", "spinnin records", "monstercat", "hybe labels", "sm town", "jyp entertainment",
         "yg entertainment", "xl recordings", "domino recordings", "sub pop records", "big beat records", "astralwerks",
+        // UK rap/drill premiere platforms: the official music video often appears only there.
+        "grm daily", "mixtape madness", "link up tv",
     ).map(::joined).toSet()
 
     /** Words that mean "not the original recording" (only when the request doesn't contain them). */
@@ -242,6 +274,9 @@ object SongPicker {
         }
         val want = requestCore(req.title)
         if (want.isEmpty()) return "empty title"
+        // "Artist | Title" / "Artist | 'Title'": the artist's name exactly, then the title.
+        val bars = title.split(Regex("\\s+\\|\\s+"))
+        if (bars.size >= 2 && joined(bars[0]) in variants && titleReadings(bars[1]).any { sameTokens(it, want) }) return null
         val dash = Regex("\\s+[-–—~]+\\s+").find(title)
         if (dash != null) {
             val left = title.substring(0, dash.range.first)
@@ -259,7 +294,32 @@ object SongPicker {
             return have
         }
         if (titleReadings(title).none { sameTokens(withoutArtist(it), want) }) return "different song"
-        return if (mentionsArtist(title, variants) || mentionsArtist(e.channel, variants)) null else "artist not named"
+        if (mentionsArtist(title, variants) || mentionsArtist(e.channel, variants)) return null
+        return if (creditsArtist(req, e)) null else "artist not named"
+    }
+
+    private val TOPIC_CHANNEL = re("\\s-\\s*topic$")
+    private val PROVIDED = re("^\\s*provided to youtube by\\b")
+
+    /**
+     * A label's art track ("Release - Topic") whose YouTube-generated credit line ("Provided to
+     * YouTube by <label> <Title> · <Artist> · ...") names the requested artist, with exactly the
+     * requested title. The credit must follow the upload's own title and start one of the "·"
+     * parts with the artist's name.
+     */
+    private fun creditsArtist(req: Request, e: Entry): Boolean {
+        if (!PROVIDED.containsMatchIn(e.description) || !TOPIC_CHANNEL.containsMatchIn(e.channel)) return false
+        if (normalizeName(e.title) != normalizeName(req.title)) return false
+        val parts = e.description.split('·')
+        if (parts.size < 2) return false
+        val head = toks(parts[0])
+        val t = toks(e.title)
+        if (head.size <= t.size || t.indices.any { head[head.size - t.size + it] != t[it] }) return false
+        val names = artistTokenLists(req.artist)
+        return parts.drop(1).any { p ->
+            val words = toks(p)
+            names.any { n -> n.indices.all { words.getOrNull(it) == n[it] } }
+        }
     }
 
     private class Facts(
@@ -268,21 +328,23 @@ object SongPicker {
         val audio: Boolean,
         val artTrack: Boolean,
         val artistChannel: Boolean,
+        /** A label's art track whose credit line names the artist (see [creditsArtist]). */
+        val credited: Boolean,
         val official: Boolean,
         val musicVideo: Boolean,
     )
 
     private fun facts(req: Request, e: Entry, variants: List<String>): Facts {
-        val core = channelCore(e.channel)
-        val artistChannel = core.isNotEmpty() && core in variants
+        val artistChannel = channelCores(e.channel).any { it in variants }
         val label = joined(e.channel) in LABELS
-        val artTrack = re("^\\s*provided to youtube by\\b").containsMatchIn(e.description) || re("\\s-\\s*topic$").containsMatchIn(e.channel)
+        val artTrack = PROVIDED.containsMatchIn(e.description) || TOPIC_CHANNEL.containsMatchIn(e.channel)
         return Facts(
             dt = (e.duration ?: 0L).toDouble() - req.durationSec,
             lyric = LYRIC.containsMatchIn(e.title),
             audio = re("\\baudio\\b").containsMatchIn(e.title),
             artTrack = artTrack,
             artistChannel = artistChannel,
+            credited = !artistChannel && creditsArtist(req, e),
             official = e.verified && (artistChannel || label) && !artTrack,
             musicVideo = re("\\bvideo\\b|\\bmv\\b|\\bclip\\b").containsMatchIn(e.title) ||
                 !Regex("[(\\[]").containsMatchIn(withoutRequestBrackets(e.title, req.title)),
@@ -291,25 +353,69 @@ object SongPicker {
 
     private val BRACKETS = Regex("\\(([^)]*)\\)|\\[([^\\]]*)\\]")
 
-    /** [title] without the bracketed parts the requested title has too ("Delilah (pull me out of this)"). */
+    /** A bracket that only describes the song: "(A Hazbin Hotel Song)". */
+    private val DESCRIPTIVE = re("^\\s*an?\\s+\\S.*\\bsong\\s*$")
+
+    /**
+     * [title] without the bracketed parts the requested title has too ("Delilah (pull me out of
+     * this)") and without descriptive ones ("(A Hazbin Hotel Song)").
+     */
     private fun withoutRequestBrackets(title: String, reqTitle: String): String {
         val own = BRACKETS.findAll(reqTitle).map { normalizeName(it.groups[1]?.value ?: it.groups[2]?.value ?: "") }.toSet()
-        return BRACKETS.replace(title) { m -> if (normalizeName(m.groups[1]?.value ?: m.groups[2]?.value ?: "") in own) " " else m.value }
+        return BRACKETS.replace(title) { m ->
+            val inner = m.groups[1]?.value ?: m.groups[2]?.value ?: ""
+            if (normalizeName(inner) in own || DESCRIPTIVE.containsMatchIn(inner)) " " else m.value
+        }
     }
 
-    private val TOPIC_CHANNEL = re("\\s-\\s*topic$")
-    private val PROVIDED = re("^\\s*provided to youtube by\\b")
+    /** A bracketed era or style the request doesn't name: "(1920s Style)", "(80s)", "(Swing)". */
+    private val ERA_STYLE = re("\\b(?:\\d{2}|\\d{4})'?s\\b|\\b(?:style|era|vintage|retro|swing|jazz|ragtime|big\\s*band)\\b")
+    /** A bracketed bare year: "(1920)". Often the original's release year ("(1985)"), so it only counts beside a far more viewed upload. */
+    private val YEAR_TAG = Regex("^\\s*\\d{4}\\s*$")
+
+    private enum class EraTag { STYLE, YEAR }
+
+    private fun eraTag(title: String, reqTitle: String): EraTag? {
+        var out: EraTag? = null
+        for (m in BRACKETS.findAll(withoutRequestBrackets(title, reqTitle))) {
+            val inner = m.groups[1]?.value ?: m.groups[2]?.value ?: ""
+            if (ERA_STYLE.containsMatchIn(inner) && !ERA_STYLE.containsMatchIn(reqTitle)) return EraTag.STYLE
+            if (YEAR_TAG.containsMatchIn(inner)) out = EraTag.YEAR
+        }
+        return out
+    }
+
+    /**
+     * An upload tagged with an era or style the request doesn't name goes after the untagged
+     * ones; one tagged with a bare year only after an untagged one with 10x its views ("Insane
+     * (1920)", 3.9 M, a 1920s re-arrangement, vs the original's 175 M). Kept, not rejected: it
+     * may be all there is.
+     */
+    private fun untaggedFirst(req: Request, ranked: List<Ranked>): List<Ranked> {
+        val tag = ranked.associateWith { eraTag(it.entry.title, req.title) }
+        val untagged = ranked.filter { tag[it] == null }
+        val most = untagged.maxOfOrNull { it.entry.views ?: 0L } ?: 0L
+        fun later(r: Ranked) = when (tag[r]) {
+            EraTag.STYLE -> untagged.isNotEmpty()
+            EraTag.YEAR -> most > 0 && most >= 10 * (r.entry.views ?: 0L)
+            null -> false
+        }
+        return ranked.filterNot(::later) + ranked.filter(::later)
+    }
 
     /**
      * An art track that needs no view count: uploaded by the artist's own verified channel (an
      * impostor can't be verified), or, for a little-known song (no matching upload has
-     * [KNOWN_SONG_VIEWS]), a real "Provided to YouTube by" upload on the artist's "- Topic"
-     * channel at the official length (+-1 s).
+     * [KNOWN_SONG_VIEWS]), a real "Provided to YouTube by" upload on a "- Topic" channel at the
+     * official length (+-1 s).
      */
     private fun genuineArtTrack(e: Entry, f: Facts, knownSong: Boolean): Boolean {
         if (e.verified && !TOPIC_CHANNEL.containsMatchIn(e.channel)) return true
-        return !knownSong && PROVIDED.containsMatchIn(e.description) && TOPIC_CHANNEL.containsMatchIn(e.channel) && abs(f.dt) <= 1.0
+        return littleKnownArtTrack(e, f, knownSong)
     }
+
+    private fun littleKnownArtTrack(e: Entry, f: Facts, knownSong: Boolean): Boolean =
+        !knownSong && PROVIDED.containsMatchIn(e.description) && TOPIC_CHANNEL.containsMatchIn(e.channel) && abs(f.dt) <= 1.0
 
     /** Rank the candidates: `ranked` in the order to offer them, `rejected` explains the rest. */
     fun rank(req: Request, entries: List<Entry>): Result {
@@ -342,6 +448,10 @@ object SongPicker {
             } else if (inWindow && f.artTrack && f.artistChannel) {
                 if (views >= TOPIC_MIN_VIEWS || genuineArtTrack(e, f, knownSong)) tiers.getValue(Tier.TOPIC) += e to listOf(-views)
                 else reject("art track with only ${e.views ?: 0} views")
+            } else if (inWindow && f.credited) {
+                // A label's art track: only for a little-known song, at the official length.
+                if (littleKnownArtTrack(e, f, knownSong)) tiers.getValue(Tier.TOPIC) += e to listOf(-views)
+                else reject(if (knownSong) "label art track of a known song" else "label art track ${e.duration} s vs ${req.durationSec} s")
             } else if (f.official && f.musicVideo && !f.lyric && f.dt in MV_WINDOW) {
                 tiers.getValue(Tier.MUSIC_VIDEO) += e to listOf(abs(f.dt), -views)
             } else if (!inWindow) {
@@ -364,7 +474,7 @@ object SongPicker {
             0
         }
         val ranked = Tier.entries.flatMap { t -> tiers.getValue(t).sortedWith(cmp).map { Ranked(it.first, t) } }
-        return Result(ranked, rejected)
+        return Result(untaggedFirst(req, ranked), rejected)
     }
 
     /** Union of result lists; the first occurrence of a video wins. */

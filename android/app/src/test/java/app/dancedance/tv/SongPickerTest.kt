@@ -1,9 +1,14 @@
 package app.dancedance.tv
 
 import app.dancedance.tv.PickFixtures.delilah
+import app.dancedance.tv.PickFixtures.dipped
 import app.dancedance.tv.PickFixtures.extravagantEscalations
 import app.dancedance.tv.PickFixtures.heavyMetal
 import app.dancedance.tv.PickFixtures.hipsDontLie
+import app.dancedance.tv.PickFixtures.homertonB
+import app.dancedance.tv.PickFixtures.impersonator
+import app.dancedance.tv.PickFixtures.insane
+import app.dancedance.tv.PickFixtures.nullification
 import app.dancedance.tv.PickFixtures.purloin
 import app.dancedance.tv.PickFixtures.quieroSerTuyo
 import app.dancedance.tv.PickFixtures.rapSavedMe
@@ -11,6 +16,8 @@ import app.dancedance.tv.PickFixtures.runAway
 import app.dancedance.tv.PickFixtures.shakeItOff
 import app.dancedance.tv.PickFixtures.stayinAlive
 import app.dancedance.tv.PickFixtures.takeOnMe
+import app.dancedance.tv.PickFixtures.touTou
+import app.dancedance.tv.PickFixtures.youLie
 import app.dancedance.tv.SongPicker.Entry
 import app.dancedance.tv.SongPicker.Request
 import org.junit.Assert.assertEquals
@@ -193,6 +200,85 @@ class SongPickerTest {
         assertTrue(other, other == "art track from another channel" || other == "artist not named")
         val popular = e("POPULARLYRC", "LingualX - Extravagant Escalations (Lyrics)", "Lyrics Hub", views = 2_000_000, duration = 249)
         assertEquals("art track with only 2 views", not(art, listOf(popular)))
+    }
+
+    // --- misses from the 2026-11-14 random sample (same as pick.test.ts) ---------------------
+
+    @Test fun insaneOriginalBeforeThe1920sReArrangement() {
+        val req = Request("Black Gryph0n & Baasik", "Insane", 160)
+        assertEquals(listOf("music-video:juJkNKodgdE", "topic:eX5lc10Ot6w"), ids(req, insane))
+        assertEquals(listOf("topic:eX5lc10Ot6w"), ids(req, insane.filter { it.id != "juJkNKodgdE" }))
+        assertEquals("topic:eX5lc10Ot6w", ids(req.copy(title = "Insane (1920)"), insane)[0])
+    }
+
+    @Test fun eraAndStyleTags() {
+        val req = Request("a-ha", "Take On Me", 225)
+        fun art(id: String, title: String, views: Long) =
+            e(id, title, "a-ha", true, views = views, duration = 226, description = "Provided to YouTube by Rhino $title · a-ha")
+        val mv = e("MUSICVIDEO0", "a-ha - Take On Me (Official Video)", "a-ha", true, views = 2_000_000_000, duration = 244)
+        val lyric = e("LYRICVIDEO0", "a-ha - Take On Me (Lyrics)", "Lyrics", views = 400_000, duration = 225)
+        assertEquals(listOf("music-video:MUSICVIDEO0", "topic:STYLETAG000"), ids(req, listOf(art("STYLETAG000", "Take On Me (1920s Style)", 90_000_000), mv.copy(views = 1_000_000))))
+        assertEquals(listOf("lyric:LYRICVIDEO0", "topic:STYLETAG001"), ids(req, listOf(art("STYLETAG001", "Take On Me (80s)", 90_000_000), lyric)))
+        assertEquals(listOf("topic:STYLETAG000", "music-video:MUSICVIDEO0"), ids(req.copy(title = "Take On Me (1920s Style)"), listOf(art("STYLETAG000", "Take On Me (1920s Style)", 90_000_000), mv)))
+        assertEquals(listOf("music-video:MUSICVIDEO0", "topic:SWINGTAG000"), ids(req, listOf(art("SWINGTAG000", "Take On Me (Swing)", 90_000_000), mv)))
+        assertEquals(listOf("music-video:MUSICVIDEO0", "topic:YEARTAG0000"), ids(req, listOf(art("YEARTAG0000", "Take On Me (1985)", 90_000_000), mv)))
+        assertEquals(listOf("topic:YEARTAG0000", "music-video:MUSICVIDEO0"), ids(req, listOf(art("YEARTAG0000", "Take On Me (1985)", 90_000_000), mv.copy(views = 500_000_000))))
+        assertEquals(listOf("topic:REMASTER000", "music-video:MUSICVIDEO0"), ids(req, listOf(art("REMASTER000", "Take On Me (2015 Remastered)", 90_000_000), mv)))
+        assertEquals(listOf("topic:REMASTER001", "music-video:MUSICVIDEO0"), ids(req, listOf(art("REMASTER001", "Take On Me (Remastered 2009)", 90_000_000), mv)))
+    }
+
+    @Test fun youLiePipeTitleButUnverifiedChannel() {
+        val req = Request("Lola Jane", "You Lie", 173)
+        assertEquals(emptyList<String>(), ids(req, youLie))
+        assertEquals("unverified channel using the artist's name", reason(req, youLie, "j402JjBD1pw"))
+        assertEquals("different song", reason(req, youLie, "stOK9uYzw7w"))
+        assertEquals(listOf("music-video:j402JjBD1pw"), ids(req, youLie.map { if (it.id == "j402JjBD1pw") it.copy(verified = true) else it }))
+        val lev = Request("Dua Lipa", "Levitating", 203)
+        assertEquals(listOf("lyric:PIPELYRIC00"), ids(lev, listOf(e("PIPELYRIC00", "Dua Lipa | 'Levitating' (Lyrics)", "Lyrics Hub", duration = 204))))
+        assertEquals("different song or artist", reason(lev, listOf(e("PIPEOTHER00", "Lyrics Hub | Dua Lipa - Physical", "Lyrics Hub", duration = 204)), "PIPEOTHER00"))
+    }
+
+    @Test fun nullificationOnTheBandsOwnChannel() {
+        val req = Request("Face to Face", "Nullification (Bonus Track)", 195)
+        assertEquals(listOf("topic:wdWWgR07Rsw"), ids(req, nullification))
+        val art = nullification.first { it.id == "wdWWgR07Rsw" }
+        for (channel in listOf("FaceToFaceBand", "Face To Face Music", "facetofaceVEVO", "Face to Face Official", "officialfacetoface")) {
+            assertEquals(channel, listOf("topic:wdWWgR07Rsw"), ids(req, listOf(art.copy(channel = channel))))
+        }
+        assertEquals(emptyList<String>(), ids(req, listOf(art.copy(channel = "officialfacestoface"))))
+        assertEquals("art track with only 3016 views", reason(req, listOf(art.copy(verified = false)), "wdWWgR07Rsw"))
+    }
+
+    @Test fun labelArtTrackCreditingTheArtist() {
+        val dip = Request("DJ Prime Cuts", "Dipped", 152)
+        assertEquals(listOf("topic:q5VFF5Wh9q0"), ids(dip, dipped))
+        assertEquals("different song", reason(dip, dipped, "nEOJ-JCv-FA"))
+        assertEquals(listOf("topic:kVLuaG-Azr4"), ids(Request("Etovics", "Impersonator", 306), impersonator))
+        val art = dipped.first { it.id == "q5VFF5Wh9q0" }
+        fun not(x: Entry, more: List<Entry> = emptyList()) = reason(dip, listOf(x) + more, x.id)
+        assertEquals("artist not named", not(art.copy(description = "Provided to YouTube by KudosRecords Dip")))
+        assertEquals("artist not named", not(art.copy(description = "Provided to YouTube by KudosRecords Dipped · DJ Other Chartist EP")))
+        assertEquals("artist not named", not(art.copy(description = "Provided to YouTube by KudosRecords Dipped · Various Tribute to DJ Prime Cuts")))
+        assertEquals("artist not named", not(art.copy(description = "Provided to YouTube by KudosRecords Kill Switch · DJ Prime Cuts Chartist EP")))
+        assertEquals("artist not named", not(art.copy(channel = "Release")))
+        val dub = reason(dip.copy(title = "Dipped (Dub)"), listOf(art), art.id)!!
+        assertTrue(dub, dub == "different song" || dub == "artist not named")
+        assertEquals("label art track 154 s vs 152 s", not(art.copy(duration = 154)))
+        val popular = e("POPULARLYRC", "DJ Prime Cuts - Dipped (Lyrics)", "Lyrics Hub", views = 2_000_000, duration = 152)
+        assertEquals("label art track of a known song", not(art, listOf(popular)))
+    }
+
+    @Test fun touTouNotFound() {
+        val req = Request("Wei Bi", "偷偷(广播剧《偷偷藏不住》主题曲)", 249)
+        assertEquals(emptyList<String>(), ids(req, touTou))
+    }
+
+    @Test fun homertonBMusicVideoOnGrmDaily() {
+        val req = Request("Unknown T", "Homerton B", 192)
+        assertEquals(listOf("music-video:UrnACpUhe98"), ids(req, homertonB))
+        assertEquals("length 190 s vs 192 s", reason(req, homertonB, "o2tB9Cs0dn0"))
+        assertEquals("lyric video with only 9933 views", reason(req, homertonB, "fdvbG9VzAk4"))
+        assertEquals("not official, not a lyric video", reason(req, homertonB.map { it.copy(verified = false) }, "UrnACpUhe98"))
     }
 
     @Test fun fallbackQueryIsPlain() {

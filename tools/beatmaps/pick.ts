@@ -9,8 +9,14 @@
  *   2 'lyric'       third-party lyric video, most views first (>= 300 k views)
  *   3 'topic'       the artist's genuine "Provided to YouTube" art track (>= 10 k views,
  *                   or on the artist's verified channel, or, for a little-known song,
- *                   on the artist's "- Topic" channel at the official length)
+ *                   on the artist's "- Topic" channel at the official length; or on a
+ *                   label's "- Topic" channel when the art track's "Title · Artist"
+ *                   credit names the artist, same conditions)
  *   4 'music-video' fallback: the official music video closest in length
+ *
+ * Within that order, an upload tagged with an era or style the request doesn't
+ * name ("Insane (1920s Style)") goes after the untagged ones, and one tagged
+ * with a bare year ("Insane (1920)") after an untagged one with 10x its views.
  *
  * When the two searches (searchQueries) rank nothing, the caller runs the plain
  * "Artist Title" search (fallbackQuery) too and ranks all results again.
@@ -218,16 +224,38 @@ export function requestCore(title: string): string[] {
   return coreTokens(t);
 }
 
-/** Channel name with "- Topic", "VEVO", "Official", "and 2 more" etc. removed, joined. */
-function channelCore(channel: string): string {
+/** Words a channel puts around the artist's name ("officialfacetoface", "Face To Face Band", "FaceToFaceVEVO"). */
+const CHANNEL_AFFIXES = ['official', 'vevo', 'music', 'band', 'tv', 'topic', 'channel'];
+
+/** `j` (joined) without leading / trailing CHANNEL_AFFIXES; at least 3 letters stay. */
+function stripAffixes(j: string): string {
+  for (let changed = true; changed; ) {
+    changed = false;
+    for (const a of CHANNEL_AFFIXES) {
+      if (j.length - a.length < 3) continue;
+      if (j.startsWith(a)) (j = j.slice(a.length)), (changed = true);
+      else if (j.endsWith(a)) (j = j.slice(0, -a.length)), (changed = true);
+    }
+  }
+  return j;
+}
+
+/**
+ * Ways the channel name may spell the artist: joined, with "- Topic", "and 2
+ * more" and VEVO removed, with or without the words official / music / tv /
+ * channel / vevo, and with CHANNEL_AFFIXES glued to the front or back stripped.
+ */
+function channelCores(channel: string): string[] {
   const s = channel
     .replace(/\s+and\s+\d+\s+more$/i, '')
     .replace(/\s*-\s*topic$/i, '')
     .replace(/vevo$/i, '');
-  return toks(s)
+  const plain = toks(s).join('');
+  const filtered = toks(s)
     .filter((w) => !['official', 'music', 'tv', 'channel', 'vevo'].includes(w))
     .join('')
     .replace(/(?:official|music)$/, '');
+  return [...new Set([plain, filtered, stripAffixes(plain), stripAffixes(filtered)])].filter((c) => c.length > 0);
 }
 
 const LABELS = new Set(
@@ -240,6 +268,8 @@ const LABELS = new Set(
     'elektra records', '300 entertainment', 'fueled by ramen', 'sire records', 'reprise records', 'capitol music group',
     'motown records', 'ultra records', 'spinnin records', 'monstercat', 'hybe labels', 'sm town', 'jyp entertainment',
     'yg entertainment', 'xl recordings', 'domino recordings', 'sub pop records', 'big beat records', 'astralwerks',
+    // UK rap/drill premiere platforms: the official music video often appears only there.
+    'grm daily', 'mixtape madness', 'link up tv',
   ].map(joined),
 );
 
@@ -295,6 +325,8 @@ interface Facts {
   audio: boolean;
   artTrack: boolean;
   artistChannel: boolean;
+  /** A label's art track whose credit line names the artist (see creditsArtist). */
+  credited: boolean;
   official: boolean;
   musicVideo: boolean;
 }
@@ -317,6 +349,9 @@ function mismatch(req: SongRequest, e: SearchEntry, variants: string[]): string 
   }
   const want = requestCore(req.title);
   if (!want.length) return 'empty title';
+  // "Artist | Title" / "Artist | 'Title'": the artist's name exactly, then the title.
+  const bars = title.split(/\s+\|\s+/);
+  if (bars.length >= 2 && variants.includes(joined(bars[0])) && titleReadings(bars[1]).some((r) => sameTokens(r, want))) return null;
   const dash = /\s+[-–—~]+\s+/.exec(title);
   if (dash) {
     const left = title.slice(0, dash.index);
@@ -338,14 +373,38 @@ function mismatch(req: SongRequest, e: SearchEntry, variants: string[]): string 
     return have;
   };
   if (!titleReadings(title).some((r) => sameTokens(withoutArtist(r), want))) return 'different song';
-  return mentionsArtist(title, variants) || mentionsArtist(e.channel, variants) ? null : 'artist not named';
+  if (mentionsArtist(title, variants) || mentionsArtist(e.channel, variants)) return null;
+  return creditsArtist(req, e) ? null : 'artist not named';
+}
+
+const PROVIDED = /^\s*provided to youtube by\b/i;
+const TOPIC_CHANNEL = /\s-\s*topic$/i;
+
+/**
+ * A label's art track ("Release - Topic") whose YouTube-generated credit line
+ * ("Provided to YouTube by <label> <Title> · <Artist> · ...") names the
+ * requested artist, with exactly the requested title. The credit must follow
+ * the upload's own title and start one of the "·" parts with the artist's name.
+ */
+function creditsArtist(req: SongRequest, e: SearchEntry): boolean {
+  if (!PROVIDED.test(e.description) || !TOPIC_CHANNEL.test(e.channel)) return false;
+  if (normalizeName(e.title) !== normalizeName(req.title)) return false;
+  const parts = e.description.split('·');
+  if (parts.length < 2) return false;
+  const head = toks(parts[0]);
+  const t = toks(e.title);
+  if (head.length <= t.length || !t.every((w, i) => head[head.length - t.length + i] === w)) return false;
+  const names = artistTokenLists(req.artist);
+  return parts.slice(1).some((p) => {
+    const words = toks(p);
+    return names.some((n) => n.every((w, i) => words[i] === w));
+  });
 }
 
 function facts(req: SongRequest, e: SearchEntry, variants: string[]): Facts {
-  const core = channelCore(e.channel);
-  const artistChannel = core.length > 0 && variants.includes(core);
+  const artistChannel = channelCores(e.channel).some((c) => variants.includes(c));
   const label = LABELS.has(joined(e.channel));
-  const artTrack = /^\s*provided to youtube by\b/i.test(e.description) || /\s-\s*topic$/i.test(e.channel);
+  const artTrack = PROVIDED.test(e.description) || TOPIC_CHANNEL.test(e.channel);
   const lyric = LYRIC.test(e.title);
   const audio = /\baudio\b/i.test(e.title);
   return {
@@ -354,6 +413,7 @@ function facts(req: SongRequest, e: SearchEntry, variants: string[]): Facts {
     audio,
     artTrack,
     artistChannel,
+    credited: !artistChannel && creditsArtist(req, e),
     official: e.verified && (artistChannel || label) && !artTrack,
     musicVideo: /\bvideo\b|\bmv\b|\bclip\b/i.test(e.title) || !/[([]/.test(withoutRequestBrackets(e.title, req.title)),
   };
@@ -363,19 +423,44 @@ function facts(req: SongRequest, e: SearchEntry, variants: string[]): Facts {
  * An art track that needs no view count: uploaded by the artist's own verified
  * channel (an impostor can't be verified), or, for a little-known song (no
  * matching upload has KNOWN_SONG_VIEWS), a real "Provided to YouTube by" upload
- * on the artist's "- Topic" channel at the official length (+-1 s).
+ * on a "- Topic" channel at the official length (+-1 s).
  */
 function genuineArtTrack(e: SearchEntry, f: Facts, knownSong: boolean): boolean {
-  if (e.verified && !/\s-\s*topic$/i.test(e.channel)) return true;
-  return !knownSong && /^\s*provided to youtube by\b/i.test(e.description) && /\s-\s*topic$/i.test(e.channel) && Math.abs(f.dt) <= 1;
+  if (e.verified && !TOPIC_CHANNEL.test(e.channel)) return true;
+  return littleKnownArtTrack(e, f, knownSong);
+}
+
+function littleKnownArtTrack(e: SearchEntry, f: Facts, knownSong: boolean): boolean {
+  return !knownSong && PROVIDED.test(e.description) && TOPIC_CHANNEL.test(e.channel) && Math.abs(f.dt) <= 1;
 }
 
 const BRACKETS = /\(([^)]*)\)|\[([^\]]*)\]/g;
 
-/** `title` without the bracketed parts the requested title has too ("Delilah (pull me out of this)"). */
+/** A bracket that only describes the song: "(A Hazbin Hotel Song)". */
+const DESCRIPTIVE = /^\s*an?\s+\S.*\bsong\s*$/i;
+
+/**
+ * `title` without the bracketed parts the requested title has too ("Delilah
+ * (pull me out of this)") and without descriptive ones ("(A Hazbin Hotel Song)").
+ */
 function withoutRequestBrackets(title: string, reqTitle: string): string {
   const own = new Set([...reqTitle.matchAll(BRACKETS)].map((m) => normalizeName(m[1] ?? m[2] ?? '')));
-  return title.replace(BRACKETS, (m, a, b) => (own.has(normalizeName(a ?? b ?? '')) ? ' ' : m));
+  return title.replace(BRACKETS, (m, a, b) => (own.has(normalizeName(a ?? b ?? '')) || DESCRIPTIVE.test(a ?? b ?? '') ? ' ' : m));
+}
+
+/** A bracketed era or style the request doesn't name: "(1920s Style)", "(80s)", "(Swing)". */
+const ERA_STYLE = /\b(?:\d{2}|\d{4})'?s\b|\b(?:style|era|vintage|retro|swing|jazz|ragtime|big\s*band)\b/i;
+/** A bracketed bare year: "(1920)". Often the original's release year ("(1985)"), so it only counts beside a far more viewed upload. */
+const YEAR_TAG = /^\s*\d{4}\s*$/;
+
+function eraTag(title: string, reqTitle: string): 'style' | 'year' | null {
+  let out: 'style' | 'year' | null = null;
+  for (const m of withoutRequestBrackets(title, reqTitle).matchAll(BRACKETS)) {
+    const inner = m[1] ?? m[2] ?? '';
+    if (ERA_STYLE.test(inner) && !ERA_STYLE.test(reqTitle)) return 'style';
+    if (YEAR_TAG.test(inner)) out = 'year';
+  }
+  return out;
 }
 
 /**
@@ -415,6 +500,10 @@ export function rankCandidates(req: SongRequest, entries: SearchEntry[]): { rank
     } else if (inWindow && f.artTrack && f.artistChannel) {
       if (views >= TOPIC_MIN_VIEWS || genuineArtTrack(e, f, knownSong)) tiers.topic.push({ e, key: [-views] });
       else reject(`art track with only ${views} views`);
+    } else if (inWindow && f.credited) {
+      // A label's art track: only for a little-known song, at the official length.
+      if (littleKnownArtTrack(e, f, knownSong)) tiers.topic.push({ e, key: [-views] });
+      else reject(knownSong ? 'label art track of a known song' : `label art track ${e.duration} s vs ${req.durationSec} s`);
     } else if (f.official && f.musicVideo && !f.lyric && f.dt >= MV_WINDOW[0] && f.dt <= MV_WINDOW[1]) {
       tiers['music-video'].push({ e, key: [Math.abs(f.dt), -views] });
     } else if (!inWindow) {
@@ -435,7 +524,25 @@ export function rankCandidates(req: SongRequest, entries: SearchEntry[]): { rank
   for (const tier of ['official', 'lyric', 'topic', 'music-video'] as Tier[]) {
     for (const c of tiers[tier].sort((a, b) => cmp(a.key, b.key))) ranked.push({ entry: c.e, tier });
   }
-  return { ranked, rejected };
+  return { ranked: untaggedFirst(req, ranked), rejected };
+}
+
+/**
+ * An upload tagged with an era or style the request doesn't name goes after
+ * the untagged ones; one tagged with a bare year only after an untagged one
+ * with 10x its views ("Insane (1920)", 3.9 M, a 1920s re-arrangement, vs the
+ * original's 175 M). Kept, not rejected: it may be all there is.
+ */
+function untaggedFirst(req: SongRequest, ranked: Ranked[]): Ranked[] {
+  const tag = new Map(ranked.map((r) => [r, eraTag(r.entry.title, req.title)]));
+  const untagged = ranked.filter((r) => !tag.get(r));
+  const most = Math.max(0, ...untagged.map((r) => r.entry.views ?? 0));
+  const later = (r: Ranked) => {
+    const t = tag.get(r);
+    if (t === 'style') return untagged.length > 0;
+    return t === 'year' && most > 0 && most >= 10 * (r.entry.views ?? 0);
+  };
+  return [...ranked.filter((r) => !later(r)), ...ranked.filter(later)];
 }
 
 // ---------------------------------------------------------------------------
