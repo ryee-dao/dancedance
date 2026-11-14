@@ -704,10 +704,13 @@ function runBench(): void {
   const pose = createPose();
   // Pre-solve a few frames of every move so the timing measures drawing only.
   const sks: Skeleton[] = [];
-  for (const m of MOVES) {
+  // &moves=a,b: only these (a song-sized set: the sprite cache holds a routine, not the catalogue).
+  const only = q.get('moves')?.split(',');
+  for (const m of only ? MOVES.filter((x) => only.includes(x.id)) : MOVES) {
     const plan = loopPlan(m, period);
-    for (let f = 0; f < 6; f++) {
-      ev.evaluate(plan, (f / 6) * plan.loopBeats * period, pose);
+    const nf = only ? 48 : 6;
+    for (let f = 0; f < nf; f++) {
+      ev.evaluate(plan, (f / nf) * plan.loopBeats * period, pose);
       sks.push(solveSkeleton(pose, createSkeleton()));
     }
   }

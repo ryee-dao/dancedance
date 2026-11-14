@@ -4,7 +4,10 @@
  * mean ms per figure (Full tier = paths; --sprites = the sprite tiers' blits
  * after a warm pass). Medians of --runs runs.
  *
- *   npx tsx tools/moves/bench.ts [--sprites] [--runs 5] [--param cam=4.2,piv=0.55,feet=0] [--at <rev>]
+ *   npx tsx tools/moves/bench.ts [--sprites] [--runs 5] [--moves a,b,c] [--param cam=4.2,piv=0.55,feet=0] [--at <rev>]
+ *
+ * --sprites needs --moves (a song-sized set, 48 frames each): the sprite
+ * cache holds a routine's pieces, not the whole catalogue's.
  *
  * Headless Chromium on a laptop, not the TV: compare numbers only with each
  * other (same machine, same run).
@@ -19,6 +22,7 @@ const opt = (n: string): string | undefined => {
 const runs = Number(opt('runs') ?? 5);
 const p = new URLSearchParams({ mode: 'bench', reps: opt('reps') ?? '2' });
 if (args.includes('--sprites')) p.set('sprites', '1');
+if (opt('moves')) p.set('moves', opt('moves')!);
 for (const kv of (opt('param') ?? '').split(',').filter(Boolean)) {
   const i = kv.indexOf('=');
   p.set(kv.slice(0, i), kv.slice(i + 1));
