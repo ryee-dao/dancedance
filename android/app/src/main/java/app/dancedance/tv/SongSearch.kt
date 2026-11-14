@@ -55,11 +55,15 @@ class SongSearch(private val http: OkHttpClient) {
         }
     }
 
-    /** Both searches for the song, merged, ranked. */
+    /** Both searches for the song, merged, ranked; the plain "Artist Title" search too when they rank nothing. */
     suspend fun findVideos(hit: SongPicker.Request): SongPicker.Result = coroutineScope {
         val queries = SongPicker.searchQueries(hit.artist, hit.title)
         val lists = queries.map { q -> async { runInterruptible { youtubeSearch(q) } } }.awaitAll()
-        val result = SongPicker.rank(hit, SongPicker.merge(lists))
+        var result = SongPicker.rank(hit, SongPicker.merge(lists))
+        if (result.ranked.isEmpty()) {
+            val more = runInterruptible { youtubeSearch(SongPicker.fallbackQuery(hit.artist, hit.title)) }
+            result = SongPicker.rank(hit, SongPicker.merge(lists + listOf(more)))
+        }
         Log.i(TAG, "Find a song: ${hit.artist} - ${hit.title} (${hit.durationSec} s): " +
             "${result.ranked.size} usable, picked ${result.ranked.firstOrNull()?.let { "${it.tier.label} ${it.entry.id} \"${it.entry.title}\" / ${it.entry.channel} ${it.entry.duration} s" }}")
         result

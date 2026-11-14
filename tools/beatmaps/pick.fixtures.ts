@@ -94,3 +94,135 @@ export const takeOnMe = rows([
   ["QchhC4yhdhc", "A-ha  Take On Me live 2017", "Our memory", false, 362924, 325, "A-ha - MTV Unplugged: Summer Solstice 20"],
   ["uAqW9uJi2-g", "A-ha  - Take On Me (Official 1984 Music Video)", "Old But Gold - Musik Nostalgie", false, 76763, 203, "The official Video for \"Take On Me\" made"],
 ]);
+
+/** "21 Savage, Offset & Metro Boomin Rap Saved Me lyrics" + "21 Savage, Offset & Metro Boomin Rap Saved Me official audio" */
+export const rapSavedMe = rows([
+  ["HXNQfg8OfTg", "c21 Savage, Offset & Metro Boomin - \"Rap Saved Me\" Ft Quavo (Lyrics)", "Melody Masters", false, 3258, 261, "music #lyrics #videolyrics #toplyrics #l"],
+  ["TiKiJvRqn_k", "21 Savage, Offset & Metro Boomin - Rap Saved Me feat. Quavo (Lyrics)", "Deprikind.ッ/LyricsChannel", false, 4407, 258, "Artists: 21 Savage, Offset, Metro Boomin"],
+  ["LK9rgGmrH7I", "21 Savage, Offset & Metro Boomin - \"Rap Saved Me\" Ft Quavo (Official Audio)", "21 Savage", true, 51449424, 258, "Listen to the official audio of \"Rap Sav"],
+  ["NgieuRd1Hqg", "Rap Saved Me - 21 Savage (lyrics)", "SoundClout Lyrics", false, 64706, 255, ""],
+  ["51HpCVo3H7g", "21 Savage - Rap Saved Me (Lyrics)", "Elijah Lyrics", false, 5573, 261, "21 Savage - Saved Me (Lyrics) - Enjoy."],
+  ["ZPaT0eub0_g", "21 Savage, Offset & Metro Boomin – Rap Saved Me (ft. Quavo) - Lyrics", "RAP TRACK", false, 298497, 260, "Rap Saved Me Lyrics [Intro: 21 Savage & "],
+  ["wq8y80S4BVU", "21 Savage & Offset & Metro Boomin & Quavo - Rap Saved Me (Lyrics)", "Lyrical Archive", false, 111, 259, "Album: Without Warning Writer(s): Quavio"],
+  ["ywAJSXADr3w", "21 Savage, Offset & Metro Boomin - \"Rap Saved Me\" Ft Quavo 가사/ 해석", "black.", false, 1280, 257, ""],
+  ["LPTlvQ1Zet0", "21 Savage, Offset, Metro Boomin - Ric Flair Drip (Official Music Video)", "21 Savage", true, 563671638, 189, "\"Without Warning\" available at http://sm"],
+  ["HQsRElU2NN0", "21 Savage, Offset & Metro Boomin – Rap Saved Me ft  Quavo   Lyrics", "ericvfxx x", false, 544, 14, "o own no audio in this video."],
+  ["WQL6zlobUJg", "21 Savage, Offset & Metro Boomin - Rap Saved Me Feat. Quavo (Without Warning)", "Quality Control Music", true, 51818, 260, "21 Savage, Offset & Metroo Boomin - AVAI"],
+  ["ickaQIf9AhA", "21 Savage, Offset, Metro Boomin - Rap Saved Me (feat. Quavo) | Official Audio", "Top Music Archive", false, 672, 258, "Tired of slow, risky online converters? "],
+  ["1u_Fz7opf-M", "21Savage, Offset & Metro Boomin - \"Rap Saved Me\" Ft Quavo (Official Audio)", "21SavageVEVO", false, 1235, 258, ""],
+  ["LLnyo8Yqx20", "Rap Saved Me - Metro Boomin, 21 Savage & Offset Ft Quavo Without Warning(Fan Video)", "Big Bang", false, 107926, 260, "rap saved me, 21 savage, offset, metro b"],
+  ["YQbpiY2uXmI", "21 Savage, Metro Boomin - Rap Saved Me (ft. Offest) • 432Hz", "Katsuo's Music", false, 2156, 263, "I don't own any of these songs that I po"],
+  ["r-sK4jS8w8Y", "21 Savage, Offset, Metro Boomin - Rap Saved Me ft Quavo [official audio]", "21 Savage - Topic", false, 534, 258, ""],
+  ["CWtdqDxhKPM", "Metro Boomin, 21 Savage & Offset - Rap Saved Me Feat. Quavo (Without Warning)", "RAPSTAR", true, 2691613, 260, "Metro Boomin, 21 Savage & Offset - Witho"],
+]);
+
+/** "Fred again.. & Delilah Montagu Delilah lyrics" + "Fred again.. & Delilah Montagu Delilah official audio" */
+export const delilah = rows([
+  ["3U5VhRZVD4k", "Fred again.. - Delilah (pull me out of this) [Lyrics]", "Dance Paradise", true, 108195, 251, "Welcome to Dance Paradise Your Home For "],
+  ["qivkhBfHZYQ", "fred again.., delilah montagu - delilah (pull me out of this) [ japanese lyrics ]", "onlymaruu", false, 1055, 251, "sub for more of your fav asian artist's "],
+  ["Cl6Rz1Uvi2M", "Fred again.. - Delilah (pull me out of this)", "Fred again . .", true, 16894505, 252, "Okayyyy SO I am so so really very VERY h"],
+  ["7ZXRc-tTehE", "Delilah Montagu - Delilah (pull me out of this) (Acoustic - Visualiser)", "DelilahMontaguVEVO", false, 410914, 200, "Music video by Delilah Montagu performin"],
+  ["RhkBLR9E4po", "Fred again.. - Delilah (pull me out of this) (Lyrics)", "Calm Chubby Cat ", false, 4120, 254, "You can listen here: https://FredAgain.l"],
+  ["GA8uMBOrXOk", "Fred again.. - Delilah (pull me out of this) (Lyrics)", "Vibe Alone", false, 383, 311, "Fred again.. - Delilah (pull me out of t"],
+  ["2_64XAqYgJ0", "Fred again.. - Delilah (pull me out of this) / Billie (loving arms) | Glastonbury 2023", "BBC Music", true, 9519849, 604, "Fred again.. performs Delilah (pull me o"],
+  ["d943B3MUlbg", "Fred Again.. - Delilah (pull me out of this) | Kaleidoscope Orchestra Version", "Kaleidoscope Orchestra", false, 799233, 254, "fredagain #delilah #orchestra Music by B"],
+  ["Q7Zk-2zxbfo", "Delilah Montagu - Lost Keys (Lyrics)", "Mr.Radio", true, 26618, 226, "Delilah Montagu - Lost Keys ▪️ Discover "],
+  ["0e8rJGXVKHQ", "Fred Again - Shrine LA 11-2-2023 with Delilah Montagu (pull me out of this) Live", "Eric Baja", false, 554647, 451, "Song: Delilah (pull me out of this) Live"],
+  ["BxtE6PMmdvg", "Delilah Montagu on the Fred Again Viral Boiler Room Moment", "Songs You Know with Toby Gad", false, 80904, 387, "Full conversation: https://youtu.be/SBLD"],
+  ["7exVPb0_KL8", "Fred again..- Delilah (pull me out of this)", "Selected.", true, 1268460, 251, "Selected - Music on a new level. » Spoti"],
+  ["vMbaW5xwXSM", "Fred Again.. - Delilah (Pull Me Out Of This)", "Rest Your Soul", false, 4684, 252, "Rest Your Soul - Musics of another world"],
+  ["4iQmPv_dTI0", "Fred again..: Tiny Desk Concert", "NPR Music", true, 17853030, 1605, "Teresa Xie | April 10, 2023 When Fred ag"],
+  ["GnF67BaFa1g", "Fred again - Delilah (pull me out of this) live rework", "Mr Wolf", false, 151968, 146, "Live rework on London Boiler Room."],
+]);
+
+/** "Tito Rojas Quiero Ser Tuyo lyrics" + "Tito Rojas Quiero Ser Tuyo official audio" */
+export const quieroSerTuyo = rows([
+  ["AcbBKIShKh8", "QUIERO Ser Tuyo 💝 - Tito Rojas [Lyric Video]", "JN Music Group", true, 19079357, 314, "Disfruta de \"Quiero Ser Tuyo\" de Tito Ro"],
+  ["-TSWAn0bqAU", "Quiero ser tuyo tito rojas con letra", "RecPlay", false, 3674182, 313, ""],
+  ["uHfvfmWgkrg", "Quiero ser tuyo Letra 😏🔥|  Tito rojas | Frases en Salsa", "FrasesEnSalsa", false, 370619, 317, "Canción: Quiero ser tuyo Canta: #titoroj"],
+  ["v_wN1LtvSoE", "Quiero Ser Tuyo - Tito Rojas", "Julián Moreno Echavarría", false, 2328799, 315, "Alcoba \"AfroAntillana\"...!!!"],
+  ["PoXjsyV4Gqo", "Tito Rojas - Quiero Ser Tuyo - Karaoke", "RITMO , CORAZON Y SABOR.", false, 14184, 314, "CANAL \"DEDICADO EXCLUSIVAMENTE\" A KARAOK"],
+  ["VV20Vo-fbyg", "Quiero ser tuyo - Tito rojas - letra", "DJ HOLMES SALSA", true, 40736, 313, "Quiero ser tuyo - Tito rojas - letra ESC"],
+  ["xlMqlJQaJwQ", "a ti volveré tito rojas letra", "FELIX VDJ", false, 4961466, 314, "apoyame con tu suscripcion es muy import"],
+  ["VbH4zFeg4aM", "TITO ROJAS - Quiero Ser Tuyo (HQS)", "Salsa jjdj 507", false, 340, 316, ""],
+  ["f6VYGmmVgf0", "Quiero ser tuyo  - Tito rojas Salsa Con Letra", "DJ ZABALETA MUSIC", false, 93, 317, ""],
+  ["ri5RXLge8gY", "QUIERO SER TUYO (LETRA) - TITO ROJAS - #BebayOlvide", "D J   L A R R Y  A L V E S", false, 1110, 316, "LETRASCONAMOR #SALSAROMANTICA."],
+  ["bGQTOlPxVcg", "Tito Rojas - Quiero Ser Tuyo (HQ Audio)", "DJ ESCARCHE", false, 1598, 320, "Año: 1993. #salsa #music #trending."],
+  ["Zs4gPytzH6A", "Tito Rojas - Quiero Ser Tuyo", "Don Recio", false, 32026, 318, "Tito Rojas - A mi Estilo Album (1993)"],
+  ["MQAF1XgGMV8", "QUIERO SER TUYO - TITO ROJAS (FULL AUDIO)", "VDJ EDICIONES", false, 39735, 313, "DISCOGRAFIA ° ° Año de lanzamiento: 1993"],
+  ["nmyHk0nTWJg", "Tito Rojas - Quiero Ser Tuyo", "Yulkin German", false, 1268, 317, "Tito Rojas (1993, Vinyl) A Mi Estilo."],
+  ["GYSy36GJLuo", "Quiero ser tuyo - Tito Rojas", "Reiher Salsa", false, 2517, 314, "A Mi Estilo (1994) Suscribete'"],
+]);
+
+/** "Guy Clark Heavy Metal lyrics" + "Guy Clark Heavy Metal official audio" */
+export const heavyMetal = rows([
+  ["1mtm499TlPo", "Guy Clark - Heavy Metal (Official Audio)", "Guy Clark", true, 5079, 183, "Track from Old Friends (1988). Sugar HIl"],
+  ["p0cNJmpzHLw", "L.A Freeway - Guy Clark - lyrics", "Lyrics Video Synchronized", false, 41530, 290, "Lyric video from the music L.A Freeway s"],
+  ["cGKvqe5rVU8", "Heavy Metal", "Guy Clark", true, 4438, 218, "Provided to YouTube by The Orchard Enter"],
+  ["Xpa5mOg3Fjs", "Guy Clark - L.A. Freeway | Live From Austin City Limits TV", "Austin City Limits", true, 1094429, 237, "guyclarkmusic performs \"L.A. Freeway\" fr"],
+  ["2BoiKi1FytA", "Guy Clark - Ballad of Laverne and Captain Flint", "Barbara Field", false, 326669, 155, "From the movie \"Heartworn Highways\"."],
+  ["pV-3-pVUQYg", "The Guitar - Guy Clark", "Crissmith", false, 355, 251, "Live Streams at: https://www.twitch.tv/c"],
+  ["pCDfeWw13ZM", "Guy Clark - \"New Cut Road\" [Live from Austin, TX]", "Live From Austin TX", false, 53331, 249, "From the Guy Clark album 'Live From Aust"],
+  ["57ln5xN9gI0", "Guy Clark Magnolia Wind (karaoke)  (by request)", "Custom Karaoke 🎤 by Chad Couger ", false, 2827, 274, "Magnolia Wind I don't own any right to t"],
+  ["HI3TQqfP2MU", "The Last Gunfighter Ballad, performed by Jeff Del Mastro, written by Guy Clark", "Jeffrey Del Mastro", false, 115, 184, "Recorded on October 27, 2019 in 5K Studi"],
+  ["ZwGaGzSYHzs", "Heavy Metal (Don't Mean Rock And Roll to Me) Johnny Cash - Caterpillar D10", "Joe Yip", false, 29523, 169, "Heavy Metal (Don't Mean Rock n Roll) sun"],
+  ["3mQ6Dik8FOM", "Tornado Time In Texas", "Guy Clark", true, 2615, 207, "Provided to YouTube by Dualtone Music Gr"],
+  ["hEst7MmQrao", "Guy Clark", "Djj9462", false, 408, 292, "from the film HEARTWORN HIGHWAYS, filmed"],
+  ["uHdYdLP7LPM", "Guy Clark - Hands (Official Audio)", "Guy Clark", true, 4046, 143, "Track from Old Friends (1988). Sugar HIl"],
+  ["1O1qLla4scY", "Guy Clark: Sierra Center Stage", "Peter Berkow", false, 214966, 3277, "The legendary singer/songwriter Guy Clar"],
+  ["pprLiYRbthg", "Guy Clark - Old Friends (Official Audio)", "Guy Clark", true, 24079, 193, "Track from Old Friends (1988). Sugar HIl"],
+  ["aR42l4jDAVs", "Super heavy metal by Clark..kkk(Ra seang beul)", "sktjdquf", false, 540, 432, "i wrote this shit... AS you know I have "],
+]);
+
+/** "Real McCoy Run Away lyrics" + "Real McCoy Run Away official audio" */
+export const runAway = rows([
+  ["PceXE5lOMJs", "Real McCoy - Run Away (Lyrics)", "Infinite Music", false, 107352, 246, "Real McCoy - Run Away (Lyrics) Turn on n"],
+  ["oPksa3VYhQw", "Real McCoy - Run Away (Lyric)", "Dani Scaletta", false, 200069, 244, "I do not own song. I only made lyrics fo"],
+  ["A7FW5rJ-khI", "Real McCoy - Run Away - 1994 - Lyrics", "Giraffe EN", false, 2723, 243, "Real McCoy is a German Eurodance and pop"],
+  ["_05FMWP-22E", "Real McCoy - Run Away (Video with Lyrics)", "john doe", false, 198162, 275, "Real McCoy - Run Away Released Europe 19"],
+  ["kH1fsKK85Qo", "Real McCoy   Runaway", "Ricardo BP", false, 9895247, 233, ""],
+  ["6JrcVLy35WQ", "Run away-Real McCoy lyrics", "urthemissing pieceineed", false, 33114, 245, "Do not own this song!!!"],
+  ["T22hokDks-w", "Real McCoy - Run Away #lyrics", "Músicas & Letras", false, 803, 249, ""],
+  ["arHdOFutc-0", "Run Away (Single Version)", "Real McCoy", true, 7376403, 246, "Provided to YouTube by Arista/BMG Herita"],
+  ["HMXrJq6976g", "MC Sar and The Real McCoy - Run Away Subtitulado en Inglés & Español (Official Video)", "darly muñoz", false, 165563, 189, "(Lyrics Sub Español) Official Video."],
+  ["_dx0qWHL7dc", "Real McCoy • Run Away (US Version)", "Real McCoy", true, 16441493, 259, "Official Video for ”Run Away” by Real Mc"],
+  ["XafHcdtKgYA", "Real McCoy - Run Away (Audio)", "ata ersoy", false, 1650, 245, ""],
+  ["Dd_o4pqGXTg", "Real McCoy - Run Away HQ (Audio)", "MusickLife", false, 4430, 246, ""],
+  ["6L4xvAmdcOI", "Real McCoy - Run Away", "Andrew Waby", false, 92679, 245, "A great dance tune. Real McCoy - Run Awa"],
+  ["gIH2FRYEQJU", "Real McCoy ft. M.C. Sar - Run Away (Top Of The Pops, 26.1.1995)", "Real McCoy", true, 557079, 151, "Real McCoy performing „Run Away“ at Top "],
+  ["OqYG87oxlGo", "Another Night", "Real McCoy", true, 24935075, 237, "Provided to YouTube by Arista Another Ni"],
+  ["puR8F4I6E6E", "M.C. Sar & The Real McCoy - Run Away (US Version Unreleased) (1994) (VHSrip)", "EURODANCE HD Clips", false, 297334, 242, "remastered video from VHSrip ::: torniks"],
+  ["vp3662rrIAE", "M.C. Sar & The Real McCoy - Run Away (1994) HD 4K 60-fps", "EURODANCE HD Clips", false, 16908, 186, "remastered video from DVD to HD ::: torn"],
+]);
+
+/** "LingualX Extravagant Escalations lyrics" + "LingualX Extravagant Escalations official audio" + "LingualX Extravagant Escalations" */
+export const extravagantEscalations = rows([
+  ["M_yLkPZZ1Ys", "Extravagant Escalations", "LingualX - Topic", false, 2, 249, "Provided to YouTube by DistroKid Extrava"],
+]);
+
+/** "M-zine Purloin lyrics" + "M-zine Purloin official audio" + "M-zine Purloin" */
+export const purloin = rows([
+  ["GJIKnYv9zCw", "Crepitate", "M-zine - Topic", false, 325, 370, "Provided to YouTube by Cygnus Music Ltd "],
+  ["5_r3l-U-Lpk", "Equate", "M-zine - Topic", false, 493, 297, "Provided to YouTube by IDOL Equate · M-z"],
+  ["tst-2z7420w", "Pokémon Scarlet & Violet - Legendary Quartet Battle Music (HQ)", "Pokeli", true, 5779386, 306, "This play when you are challenging The T"],
+  ["8dGNOIu4_zA", "Pikachu almost caught Meowth", "Taze", false, 9918744, 32, "Ash's Pikachu almost caught Meowth of Te"],
+  ["BRZvsm-SYYk", "“My Own Drum” (Remix) Music & Lyric Video ft. Missy Elliott | Vivo | Netflix Family", "Netflix Family", false, 84020344, 179, "Lin-Manuel Miranda wrote the song. Missy"],
+  ["MMxXw43xpk0", "Audiobooks and subtitles: Edgar Allan Poe. The Murders in the rue Morque. Detective, Adventure.", "Audiobooks and Subtitles", false, 195, 6039, "\"The Murders in the Rue Morgue\" is a sho"],
+  ["n8meGYMkPGQ", "SKITTY DOES A BARREL ROLL", "Ryan Healy", false, 372, 18, "CORY IN TEH HOUZE REAL MAN any ways, nex"],
+  ["pJfhDPC95vw", "Pokemon Black White Jyanobii Chaobuu Futachimaru September CoroCoro", "SkyEFX", false, 4453, 488, "Pokemon Black White pkmn revealed coroco"],
+  ["3hPzP4L9-YA", "Let's Play: Watch_Dogs - Part 32: A Bug In the Machine [PS4][HD]", "skorch82", false, 666, 1939, "We guide Bedbug through the building whe"],
+  ["EXy3Es51L40", "Trạng Quỳnh Sang Bắc Quốc Dám “Ghẹo” Vợ Vua Tàu Ngay Giữa Triều Đình Và Cái Kết Bất Ngờ", "Chuyện Cũ Bên Bờ Sông", false, 4551, 4248, "Trạng Quỳnh Sang Bắc Quốc Dám “Ghẹo” Vợ "],
+  ["zjJTNKQA6dI", "Purloin (Original Mix)", "M-zine - Topic", false, 224, 313, "Provided to YouTube by Triple Vision Rec"],
+  ["uqnCObqNO5M", "M-Zine - Galimatias", "ROOTZDNB", false, 901, 430, "All rights to the label and artists. Upl"],
+  ["ocO6kEc-RKM", "M-Zine - Eristic", "ROOTZDNB", false, 509, 280, "All rights to the label and artists. Upl"],
+  ["MMXKZa6ryq0", "M-Zine - Loon", "ROOTZDNB", false, 588, 348, "Joeri Deyaert, a.k.a. M-Zine, is back on"],
+  ["8BlK8kWbsus", "Dark Drum and Bass 2021 - mixed by : GHANDZA part 2", "Ganjan (Jungle / DnB / Hardtek...)", false, 177, 3768, "1.Kid Drama - Impulse 1 (Commix Remix) ("],
+  ["USK5ED3vQvI", "Dava - Cold Feet", "NOIR DRUM & BASS", false, 77, 281, "Artist : Dava Title : Cold Feet 2021 Tra"],
+  ["tspFFtFZdEI", "Short story reading: The Domain of Arnheim or the Landscape Garden, by Edgar Allan Poe", "whitegreyblackyyc", false, 47, 3443, "SUNDAY SCARIES READING CLUB --] July 9, "],
+  ["Mjku9GfR63o", "Sketchy", "Conrad Subs - Topic", false, 314, 313, "Provided to YouTube by Cygnus Music Ltd "],
+  ["T8PuKcoLdyg", "M-zine- TFATV", "Sofa Sound Bristol", false, 581, 274, "Support direct - https://sofasoundbristo"],
+  ["bf0UKTfHFUI", "M zine - Blinkered - DIS141", "Dispatch Recordings", false, 1160, 380, "M-zine Blinkered DIS141 Buy Links: • Dis"],
+  ["fCkrMFn0bmU", "M-zine - Untitled Dub", "Sofa Sound Bristol", false, 742, 364, "Support direct - https://sofasoundbristo"],
+  ["tphFqJ_yseM", "M-Zine & Scepticz - Nether - DISLTD026", "Dispatch Recordings", false, 416, 132, "M-Zine & Scepticz Nether DISLTD026 ---- "],
+  ["IPPxle0CBRk", "M-Zine - Crepitate", "sheo_ _ʚїɞ", false, 386, 371, "Buy at: https://www.beatport.com/track/c"],
+]);

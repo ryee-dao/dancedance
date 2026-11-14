@@ -7,8 +7,13 @@
  *   1 'official'    official lyric video or official audio on the artist's own,
  *                   VEVO or label channel (verified); lyric before audio
  *   2 'lyric'       third-party lyric video, most views first (>= 300 k views)
- *   3 'topic'       the artist's genuine "Provided to YouTube" art track
+ *   3 'topic'       the artist's genuine "Provided to YouTube" art track (>= 10 k views,
+ *                   or on the artist's verified channel, or, for a little-known song,
+ *                   on the artist's "- Topic" channel at the official length)
  *   4 'music-video' fallback: the official music video closest in length
+ *
+ * When the two searches (searchQueries) rank nothing, the caller runs the plain
+ * "Artist Title" search (fallbackQuery) too and ranks all results again.
  *
  * Tiers 1-3 must be within -1 .. +6 s of the official length; the fallback
  * within -2 .. +60 s. Live, remix, cover, sped up, slowed, karaoke, "1 hour",
@@ -52,17 +57,33 @@ export interface Rejected {
 
 export const LYRIC_MIN_VIEWS = 300_000;
 export const TOPIC_MIN_VIEWS = 10_000;
+/** A matching upload with this many views makes the song "known" (see genuineArtTrack). */
+export const KNOWN_SONG_VIEWS = 100_000;
 /** Allowed length difference (video - official), seconds. */
 export const WINDOW: readonly [number, number] = [-1, 6];
 export const MV_WINDOW: readonly [number, number] = [-2, 60];
 
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
 
+/** "Artist Title" without feat. credits or non-qualifier brackets. */
+function queryBase(req: Pick<SongRequest, 'artist' | 'title'>): string {
+  const title = req.title.replace(/\s*(?:\(([^)]*)\)|\[([^\]]*)\])/g, (m, a, b) => (QUALIFIER.test(a ?? b ?? '') ? m : ' '));
+  return `${req.artist} ${stripFeat(title)}`.replace(/\s+/g, ' ').trim();
+}
+
 /** The two searches run for a request. */
 export function searchQueries(req: Pick<SongRequest, 'artist' | 'title'>): string[] {
-  const title = req.title.replace(/\s*(?:\(([^)]*)\)|\[([^\]]*)\])/g, (m, a, b) => (QUALIFIER.test(a ?? b ?? '') ? m : ' '));
-  const base = `${req.artist} ${stripFeat(title)}`.replace(/\s+/g, ' ').trim();
+  const base = queryBase(req);
   return [`${base} lyrics`, `${base} official audio`];
+}
+
+/**
+ * The third search, run only when the first two rank nothing: plain "Artist
+ * Title". For little-known songs the "lyrics" / "official audio" words pull in
+ * other songs, while the plain search finds the art track or the upload.
+ */
+export function fallbackQuery(req: Pick<SongRequest, 'artist' | 'title'>): string {
+  return queryBase(req);
 }
 
 /** `yt-dlp ytsearchN:... --flat-playlist -J` output -> entries (deduplicated, in order). */
@@ -88,6 +109,15 @@ export function parseSearch(json: unknown): SearchEntry[] {
   return mergeSearches([out]);
 }
 
+/**
+ * A degraded answer: results where no entry has a channel or a view count.
+ * YouTube serves one now and then (about 1 query in 25 in tools/eval/pickEval.ts);
+ * nothing in it can be ranked, so the caller asks again.
+ */
+export function degradedSearch(entries: SearchEntry[]): boolean {
+  return entries.length > 0 && entries.every((e) => !e.channel && e.views === null);
+}
+
 /** Union of several result lists; the first occurrence of a video wins. */
 export function mergeSearches(lists: SearchEntry[][]): SearchEntry[] {
   const seen = new Set<string>();
@@ -111,21 +141,38 @@ const joined = (s: string): string => toks(s).join('');
 /** Words that decorate upload titles but are not part of the song title. */
 const NOISE = new Set([
   'lyrics', 'lyric', 'video', 'official', 'audio', 'hd', 'hq', '4k', 'music', 'mv', 'visualizer', 'visualiser',
-  'with', 'letra', 'oficial', 'remastered', 'remaster', 'full', 'song', 'explicit', 'the',
+  'with', 'letra', 'letras', 'paroles', 'lirik', '가사', '歌詞', 'oficial', 'remastered', 'remaster', 'full', 'song', 'explicit', 'the',
 ]);
+
+/** A lyric video, in English or the usual other words ("Letra", "Paroles", "Lirik", 가사, 歌詞). */
+const LYRIC = /\blyrics?\b|\blyric\s*video\b|\bletras?\b|\bparoles\b|\blirik\b|가사|歌詞/i;
 
 /** Remove a trailing "feat. X" / "ft. X" / "featuring X". */
 function stripFeat(s: string): string {
   return s.replace(/\s*[([]?\s*\b(?:feat|ft|featuring)\b\.?\s.*$/i, '').trim();
 }
 
-/** Title words without brackets, quotes, features, trailing "| ..." or "// ...", or decoration. */
-export function coreTokens(title: string): string[] {
+const QUOTED = /"[^"]*"|“[^”]*”/g;
+
+/**
+ * Title words without brackets, quotes, features, trailing "| ..." or "// ...", or decoration.
+ * `keepQuoted` keeps the words inside double quotes (only the marks go): the
+ * quotes then hold the song title (`21 Savage - "Rap Saved Me" Ft Quavo`),
+ * not an appended lyric line (`HOT TO GO! (Lyrics) "you can take me hot to go"`).
+ */
+export function coreTokens(title: string, keepQuoted = false): string[] {
   let s = title.split(/\s(?:\||\/\/)\s?/)[0];
   s = s.replace(/\([^)]*\)|\[[^\]]*\]|\{[^}]*\}|【[^】]*】/g, ' ');
-  s = s.replace(/"[^"]*"|“[^”]*”/g, ' ');
+  s = keepQuoted ? s.replace(/["“”]/g, ' ') : s.replace(QUOTED, ' ');
   s = stripFeat(s);
   return toks(s).filter((w) => !NOISE.has(w));
+}
+
+/** The ways an upload title's words can be read: quoted text dropped, and (when there is any) kept. */
+function titleReadings(title: string): string[][] {
+  const out = [coreTokens(title)];
+  if (/["“”]/.test(title)) out.push(coreTokens(title, true));
+  return out;
 }
 
 const sameTokens = (a: string[], b: string[]) => a.length > 0 && a.length === b.length && a.every((w, i) => w === b[i]);
@@ -219,9 +266,12 @@ const BAD: [string, RegExp][] = [
   ['acoustic', /\bacoustic\b|\bunplugged\b|\bstripped\b|\bpiano\b|\bguitar\b|\borchestra(?:l)?\b|\bsymphonic\b|\blofi\b|\blo-fi\b/i],
   ['version', /\bversion\b|\bversi[oó]n\b|\brerecord(?:ed|ing)?\b|\bre-recorded\b/i],
   ['demo', /\bdemo\b|\bsnippet\b|\bpreview\b|\bunreleased\b|\bleak(?:ed)?\b/i],
-  ['other media', /\breversed\b|\bbackwards\b|\bbass\s*boost(?:ed)?\b|\btiktok\b|\bchipmunk\b|\b8\s*-?\s*bit\b|\bshorts?\b|\btutorial\b|\bchoreography\b|\bdance (?:video|practice|cover)\b|\blesson\b|\bfan\s*made\b|\bteaser\b|\btrailer\b|\bbehind the scenes\b|\bmaking of\b|\binterview\b/i],
-  ['translation', /\blegendad[oa]\b|\btraduc(?:ida|ido|ción|cion|ao|ão)\b|\btradução\b|\btraduzione\b|\bsub(?:titulado|titulada|s?)?\s*(?:español|espanol|ita|pt|br)\b|\bespañol\b|\bespanol\b|\bперевод\b|\bvietsub\b|\bthaisub\b|\bpolskie\b|\bnapisy\b/i],
+  ['other media', /\breversed\b|\b\d{3}\s*hz\b|\bbackwards\b|\bbass\s*boost(?:ed)?\b|\btiktok\b|\bchipmunk\b|\b8\s*-?\s*bit\b|\bshorts?\b|\btutorial\b|\bchoreography\b|\bdance (?:video|practice|cover)\b|\blesson\b|\bfan\s*made\b|\bteaser\b|\btrailer\b|\bbehind the scenes\b|\bmaking of\b|\binterview\b/i],
+  ['translation', /\blegendad[oa]\b|\btraduc(?:ida|ido|ción|cion|ao|ão)\b|\btradução\b|\btraduzione\b|\bsub(?:titulado|titulada|s?)?\s*(?:español|espanol|ita|pt|br)\b|\bespañol\b|\bespanol\b|перевод|해석|번역|和訳|中字|中文字幕|\bvietsub\b|\bthaisub\b|\bpolskie\b|\bnapisy\b/i],
 ];
+
+/** Labels that name the released recording itself: "(Album Version)", "(Single Version)", "(Explicit Version)", "(Original Mix)". */
+const SAME_RECORDING = /\b(?:album|single|lp|explicit|dirty)\s+version\b|\boriginal\s+mix\b/gi;
 
 /** A bracketed qualifier in the request that changes which recording it is ("Taylor's Version"). */
 const QUALIFIER = /\b(?:version|remix|mix|live|acoustic|demo|extended|instrumental|sped|slowed|unplugged|stripped|re-?recorded)\b/i;
@@ -257,7 +307,8 @@ function mismatch(req: SongRequest, e: SearchEntry, variants: string[]): string 
   const title = e.title;
   const reqText = `${req.title} ${req.artist}`;
   for (const [label, re] of BAD) {
-    if (re.test(title) && !re.test(reqText)) return label;
+    const t = label === 'version' || label === 'remix' ? title.replace(SAME_RECORDING, ' ') : title;
+    if (re.test(t) && !re.test(reqText)) return label;
     if (BAD_CHANNEL.has(label) && re.test(e.channel) && !re.test(reqText)) return `${label} channel`;
   }
   const words = new Set(toks(title));
@@ -272,20 +323,21 @@ function mismatch(req: SongRequest, e: SearchEntry, variants: string[]): string 
     const right = title.slice(dash.index + dash[0].length);
     const inLeft = mentionsArtist(left, variants);
     const inRight = mentionsArtist(right, variants);
-    if ((inLeft && sameTokens(coreTokens(right), want)) || (inRight && sameTokens(coreTokens(left), want))) return null;
+    const isWant = (side: string) => titleReadings(side).some((r) => sameTokens(r, want));
+    if ((inLeft && isWant(right)) || (inRight && isWant(left))) return null;
     if (!inLeft && !inRight) return mentionsArtist(e.channel, variants) ? 'different song' : 'different artist';
     return 'different song or artist';
   }
   // No "Artist - Title" separator: the title's words, maybe with the artist's name in them.
-  let have = coreTokens(title);
-  for (const name of artistTokenLists(req.artist)) {
-    const cut = removeRun(have, name);
-    if (cut) {
-      have = cut;
-      break;
+  const names = artistTokenLists(req.artist);
+  const withoutArtist = (have: string[]) => {
+    for (const name of names) {
+      const cut = removeRun(have, name);
+      if (cut) return cut;
     }
-  }
-  if (!sameTokens(have, want)) return 'different song';
+    return have;
+  };
+  if (!titleReadings(title).some((r) => sameTokens(withoutArtist(r), want))) return 'different song';
   return mentionsArtist(title, variants) || mentionsArtist(e.channel, variants) ? null : 'artist not named';
 }
 
@@ -294,7 +346,7 @@ function facts(req: SongRequest, e: SearchEntry, variants: string[]): Facts {
   const artistChannel = core.length > 0 && variants.includes(core);
   const label = LABELS.has(joined(e.channel));
   const artTrack = /^\s*provided to youtube by\b/i.test(e.description) || /\s-\s*topic$/i.test(e.channel);
-  const lyric = /\blyrics?\b|\blyric\s*video\b/i.test(e.title);
+  const lyric = LYRIC.test(e.title);
   const audio = /\baudio\b/i.test(e.title);
   return {
     dt: (e.duration ?? NaN) - req.durationSec,
@@ -303,8 +355,27 @@ function facts(req: SongRequest, e: SearchEntry, variants: string[]): Facts {
     artTrack,
     artistChannel,
     official: e.verified && (artistChannel || label) && !artTrack,
-    musicVideo: /\bvideo\b|\bmv\b|\bclip\b/i.test(e.title) || !/[([]/.test(e.title),
+    musicVideo: /\bvideo\b|\bmv\b|\bclip\b/i.test(e.title) || !/[([]/.test(withoutRequestBrackets(e.title, req.title)),
   };
+}
+
+/**
+ * An art track that needs no view count: uploaded by the artist's own verified
+ * channel (an impostor can't be verified), or, for a little-known song (no
+ * matching upload has KNOWN_SONG_VIEWS), a real "Provided to YouTube by" upload
+ * on the artist's "- Topic" channel at the official length (+-1 s).
+ */
+function genuineArtTrack(e: SearchEntry, f: Facts, knownSong: boolean): boolean {
+  if (e.verified && !/\s-\s*topic$/i.test(e.channel)) return true;
+  return !knownSong && /^\s*provided to youtube by\b/i.test(e.description) && /\s-\s*topic$/i.test(e.channel) && Math.abs(f.dt) <= 1;
+}
+
+const BRACKETS = /\(([^)]*)\)|\[([^\]]*)\]/g;
+
+/** `title` without the bracketed parts the requested title has too ("Delilah (pull me out of this)"). */
+function withoutRequestBrackets(title: string, reqTitle: string): string {
+  const own = new Set([...reqTitle.matchAll(BRACKETS)].map((m) => normalizeName(m[1] ?? m[2] ?? '')));
+  return title.replace(BRACKETS, (m, a, b) => (own.has(normalizeName(a ?? b ?? '')) ? ' ' : m));
 }
 
 /**
@@ -315,6 +386,9 @@ export function rankCandidates(req: SongRequest, entries: SearchEntry[]): { rank
   const variants = artistVariants(req.artist);
   const tiers: Record<Tier, { e: SearchEntry; key: number[] }[]> = { official: [], lyric: [], topic: [], 'music-video': [] };
   const rejected: Rejected[] = [];
+  const why = new Map(entries.map((e) => [e, mismatch(req, e, variants)]));
+  // A song with a popular upload: a genuine art track of it has views too.
+  const knownSong = entries.some((e) => why.get(e) === null && (e.views ?? 0) >= KNOWN_SONG_VIEWS);
   for (const e of entries) {
     const reject = (reason: string) => rejected.push({ entry: e, reason });
     if (e.liveStatus === 'is_live' || e.liveStatus === 'is_upcoming' || e.liveStatus === 'post_live') {
@@ -325,9 +399,9 @@ export function rankCandidates(req: SongRequest, entries: SearchEntry[]): { rank
       reject('no length');
       continue;
     }
-    const why = mismatch(req, e, variants);
-    if (why) {
-      reject(why);
+    const whyNot = why.get(e);
+    if (whyNot) {
+      reject(whyNot);
       continue;
     }
     const f = facts(req, e, variants);
@@ -339,7 +413,7 @@ export function rankCandidates(req: SongRequest, entries: SearchEntry[]): { rank
       if (views >= LYRIC_MIN_VIEWS) tiers.lyric.push({ e, key: [-views] });
       else reject(`lyric video with only ${views} views`);
     } else if (inWindow && f.artTrack && f.artistChannel) {
-      if (views >= TOPIC_MIN_VIEWS) tiers.topic.push({ e, key: [-views] });
+      if (views >= TOPIC_MIN_VIEWS || genuineArtTrack(e, f, knownSong)) tiers.topic.push({ e, key: [-views] });
       else reject(`art track with only ${views} views`);
     } else if (f.official && f.musicVideo && !f.lyric && f.dt >= MV_WINDOW[0] && f.dt <= MV_WINDOW[1]) {
       tiers['music-video'].push({ e, key: [Math.abs(f.dt), -views] });

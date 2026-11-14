@@ -16,7 +16,7 @@ import type { Classification } from './classify';
 import { classifyYtDlpError } from './classify';
 import { parseFlatPlaylist, parseStatus, renderIndex, renderPlaylist, renderStatus, type MapInfo, type PlaylistInfo } from './output';
 import type { OfficialSong } from './itunes';
-import { mergeSearches, parseSearch, rankCandidates, searchQueries, type SearchEntry } from './pick';
+import { degradedSearch, fallbackQuery, mergeSearches, parseSearch, rankCandidates, searchQueries, type SearchEntry } from './pick';
 import { planWork, preflightSkip, unionCandidates, type Candidate, type StatusReason, type VideoStatus, type WorkItem, type WorkReason } from './select';
 import { parseSongsList, parseSongsStatus, planAdds, renderSongs, renderSongsStatus, songKey, type AddedSong, type AddRequest, type SongRequestStatus } from './songs';
 import { cleanGenreList } from '../../src/beat/cloud';
@@ -272,12 +272,25 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
   /** Search YouTube for a request and rank the results. */
   const searchAndRank = async (req: { artist: string; title: string; durationSec: number }) => {
     const lists: SearchEntry[][] = [];
-    for (const q of searchQueries(req)) {
+    const search = async (q: string) => {
       await pause();
-      lists.push(parseSearch(await deps.searchVideos!(q)));
+      let list = parseSearch(await deps.searchVideos!(q));
+      if (degradedSearch(list)) {
+        // No channels or views in the answer: YouTube's occasional stripped results; ask once more.
+        await pause();
+        list = parseSearch(await deps.searchVideos!(q));
+      }
+      lists.push(list);
+    };
+    for (const q of searchQueries(req)) await search(q);
+    let entries = mergeSearches(lists);
+    let ranked = rankCandidates(req, entries);
+    if (!ranked.ranked.length) {
+      // Little-known songs: the plain "Artist Title" search often finds what the other two miss.
+      await search(fallbackQuery(req));
+      entries = mergeSearches(lists);
+      ranked = rankCandidates(req, entries);
     }
-    const entries = mergeSearches(lists);
-    const ranked = rankCandidates(req, entries);
     deps.log(`  ${entries.length} search result(s), ${ranked.ranked.length} usable`);
     for (const r of ranked.ranked.slice(0, 5)) {
       deps.log(`    ${r.tier.padEnd(11)} ${r.entry.id} ${r.entry.duration} s ${r.entry.views ?? '?'} views "${r.entry.title}" (${r.entry.channel})`);
