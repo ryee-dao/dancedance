@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-14T22:27:05.507Z",
+  "generatedAt": "2026-11-14T22:35:11.130Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -65,6 +65,7 @@
     "b3bkpyNiv8Y",
     "bOq67Poe95w",
     "bSwzZoLCoZ0",
+    "d-JBBNg8YKs",
     "dWErisOfeyE",
     "egpE0ysQ21Q",
     "fH_OnJk6QqU",
@@ -1077,14 +1078,12 @@
         "K-pop",
         "pop",
         "disco",
-        "electronic",
-        "hip hop"
+        "electronic"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "album",
         "album"
       ],
       "artistGenres": [
@@ -1790,6 +1789,33 @@
         "pop rock",
         "nu metal",
         "alternative metal"
+      ]
+    },
+    "d-JBBNg8YKs": {
+      "bpm": 155,
+      "duration": 314,
+      "genre": "Hip-Hop/Rap",
+      "genres": [
+        "trap",
+        "progressive rap",
+        "pop rap",
+        "hip hop",
+        "psychedelic rap",
+        "psychedelic"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "song",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "trap",
+        "southern hip hop",
+        "pop rap",
+        "alternative hip hop"
       ]
     },
     "dWErisOfeyE": {

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-14T22:27:05.507Z",
+  "updatedAt": "2026-11-14T22:35:11.130Z",
   "songs": [
     {
       "videoId": "_Vj092UgKwQ",
@@ -216,6 +216,37 @@
         "alt-pop",
         "indie pop",
         "dark pop"
+      ]
+    },
+    {
+      "videoId": "d-JBBNg8YKs",
+      "title": "SICKO MODE",
+      "artist": "Travis Scott",
+      "addedAt": "2026-11-14T22:34:44.341Z",
+      "durationSec": 313,
+      "hasMap": true,
+      "genre": "Hip-Hop/Rap",
+      "genres": [
+        "trap",
+        "progressive rap",
+        "pop rap",
+        "hip hop",
+        "psychedelic rap",
+        "psychedelic"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "song",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "trap",
+        "southern hip hop",
+        "pop rap",
+        "alternative hip hop"
       ]
     }
   ]
