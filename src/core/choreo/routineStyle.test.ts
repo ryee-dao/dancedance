@@ -159,7 +159,9 @@ describe('song style -> routine', () => {
   });
 
   it('uses variations on Medium / Hard, few on Easy', () => {
-    const v = (lv: Intensity) => share(SONGS, lv, { style: BALANCED_POP }, (i) => i.move.base !== i.move.id);
+    // Two dozen songs: on six, one kit's ornaments swing Easy's share (0.18-0.22) past Medium's.
+    const ids = Array.from({ length: 24 }, (_, k) => `s${k + 1}`);
+    const v = (lv: Intensity) => share(ids, lv, { style: BALANCED_POP }, (i) => i.move.base !== i.move.id);
     expect(v('sweaty')).toBeGreaterThan(0.2);
     expect(v('cardio')).toBeGreaterThan(0.1);
     expect(v('chill')).toBeLessThan(v('cardio'));

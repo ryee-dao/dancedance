@@ -9,7 +9,7 @@ import type { Genre } from './genres';
 import { MOVES } from './moves';
 import { publishedSongs } from './published.testutil';
 import { resolveSongStyle } from './songStyle';
-import { LEVEL_SPEED } from './speed';
+import { LEVEL_SPEED, coordinationOk } from './speed';
 import { songMap } from './testutil';
 import { buildCues } from '../coach/duoTracks';
 
@@ -447,11 +447,14 @@ describe('partner moves at tempo', () => {
   let cache: { s: ReturnType<typeof publishedSongs>[number]; level: Intensity; r: DuoRoutine }[] | null = null;
   const published = () => (cache ??= publishedSongs().flatMap((s) => LEVELS.map((level) => ({ s, level, r: generateDuoRoutine(s.map, level, { style: s.style }) }))));
 
-  it('every partner move has a speed limit from both tracks; the mode follows it', () => {
+  it('every partner move has a speed limit from both tracks; the mode follows it (and the coordination load)', () => {
     for (const pm of PARTNER_MOVES) {
       const { limit } = partnerSpeed(pm);
       expect(limit, pm.id).toBeGreaterThanOrEqual(90);
-      expect(partnerTempoMode(pm, limit - 1, 'cardio'), pm.id).toBe('full');
+      // Full time just under the limit, unless a player's piece is over the level's coordination load there (speed.ts COORD_LOAD).
+      const coord = [...pm.p1, ...pm.p2].every((m) => coordinationOk(m, limit - 1, 'cardio'));
+      if (coord) expect(partnerTempoMode(pm, limit - 1, 'cardio'), pm.id).toBe('full');
+      else expect(partnerTempoMode(pm, limit - 1, 'cardio'), pm.id).not.toBe('full');
       expect(partnerTempoMode(pm, limit + 1, 'cardio'), pm.id).not.toBe('full');
     }
   });

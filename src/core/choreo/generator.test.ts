@@ -102,7 +102,8 @@ describe('generateRoutine', () => {
   });
 
   it('mixes intensity measurably; Easy never jumps', () => {
-    const songs = ['a', 'b', 'c', 'd', 'e', 'f'].map((id) => songMap(122, id));
+    // A dozen songs: each casts one kit, and Medium's impact time is a few moves (6 songs: 0.8-8 % from seed to seed).
+    const songs = Array.from({ length: 12 }, (_, k) => songMap(122, `mix${k}`));
     const frac = (lv: Intensity, f: (i: MoveInstance) => boolean) => {
       let hit = 0;
       let all = 0;
@@ -225,14 +226,15 @@ describe('generateRoutine', () => {
 
   it('performs each move at half time on its own, when the song is over its speed limit', () => {
     let full = 0, half = 0;
-    for (const lv of LEVELS) {
+    // A dozen songs: one kit's casting swings the full / half split (one song: 0.7-3.2x).
+    for (const lv of LEVELS) for (const id of Array.from({ length: 12 }, (_, k) => `fast-${k}`)) {
       // Above 150 BPM the routine counts in half time (phrases / units doubled) ...
-      const r = generateRoutine(songMap(170, 'fast'), lv);
+      const r = generateRoutine(songMap(170, id), lv);
       expect(r.half).toBe(true);
       expect(r.bpm).toBeCloseTo(170, 0);
       for (const i of r.instances) {
         if (i.move.idle || i.move.part || i.sig) continue;
-        // ... but each move runs at its own speed: half time only when 170 is over its limit.
+        // ... but each move runs at its own speed: half time only when 170 is over its limit (or its coordination load).
         expect(moveTempoMode(i.move, 170, lv), i.move.id).not.toBe('out');
         expect(i.half, i.move.id).toBe(moveTempoMode(i.move, 170, lv) === 'half');
         expect(i.span).toBe(i.move.beats * (i.half ? 2 : 1));
@@ -243,8 +245,10 @@ describe('generateRoutine', () => {
       expect(slow.half).toBe(false);
       for (const i of slow.instances) if (!i.move.idle && !i.move.part && !i.sig) expect(i.half, i.move.id).toBe(moveTempoMode(i.move, 128, lv) === 'half');
     }
-    // Simple on-the-beat moves keep fast songs fast: most of a 170 BPM routine is full time.
-    expect(full).toBeGreaterThan(1.5 * half);
+    // Simple on-the-beat moves keep fast songs fast: most of a 170 BPM routine is full time. The coordination load
+    // (speed.ts COORD_LOAD) sends moves with busy arms to half time at this tempo on Easy and Medium: full / half was
+    // 2.0-2.7 before it, 1.3-1.6 after (12 songs, Nov 2026; Easy 0.44-0.54 full, Medium 0.58-0.63, Hard 0.62-0.71).
+    expect(full).toBeGreaterThan(1.15 * half);
   });
 
   it('never dances a move over its speed limit, on any published map, at any level', () => {

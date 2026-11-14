@@ -27,10 +27,18 @@
  * time in the air would stretch past MAX_AIR_SEC floats, so it is left out
  * rather than slowed. Simple on-the-beat moves (bounces, pumps, step-touches)
  * have high limits, so fast songs keep them at full time.
+ *
+ * COORDINATION: each level also has a most coordination load (COORD_LOAD;
+ * coordination.ts: how busy the legs and the arms / torso are AT ONCE, per
+ * second at the tempo danced). A move over it at full time is danced at half
+ * time when that is within it (and still moves: MIN_HALF_BPM), else it is
+ * left out on that song at that level (the generator hands its weight to a
+ * simpler form of it when there is one: Choreographer.simplerForms).
  */
 
 import { CH, createPose, createSkeleton, J, solveSkeleton, type Pose } from '../coach/skeleton';
 import type { Move, MoveKey } from './catalog';
+import { REF_BPM, coordinationLoad } from './coordination';
 
 /** Joint speed limits (figure units per second; 1 unit = standing height). */
 const JOINT_V: readonly (readonly [number, number])[] = [
@@ -203,15 +211,52 @@ export function readsAtHalf(m: Move, bpm: number): boolean {
 }
 
 /**
+ * Most coordination load (coordination.ts) a level dances, at any tempo. The
+ * load grows with the tempo a move is danced at, so the coordination a move
+ * may have per beat falls as the tempo rises (coordinationLimit). Set from
+ * the measured loads (Nov 2026, published songs): Easy one thing at a time (a
+ * march with swinging arms 1.05 x tempo / 120 fits up to ~140 BPM; a march
+ * with arms pumping overhead, 2.1, only at half time); Medium moderate (a
+ * jumping jack, 2.2, at full time up to ~95 BPM); Hard demanding but doable
+ * (jumping jacks up to ~145 BPM, nothing like a jump with hammer fists, 2.9,
+ * at full time above ~110).
+ */
+export const COORD_LOAD: Readonly<Record<SpeedLevel, number>> = { chill: 1.25, cardio: 1.75, sweaty: 2.75 };
+/** Slowest tempo (move beats per minute) a move is slowed to for its coordination: below it, it is left out instead. */
+export const MIN_HALF_BPM = 50;
+
+/** Most coordination per move beat (coordination.ts perBeat) a level dances at `bpm` move beats per minute: it falls as the tempo rises. */
+export function coordinationLimit(level: SpeedLevel, bpm: number): number {
+  return (COORD_LOAD[level] * REF_BPM) / bpm;
+}
+
+/** Whether a move danced at `bpm` move beats per minute is within the level's coordination load. */
+export function coordinationOk(m: Move, bpm: number, level: SpeedLevel): boolean {
+  return coordinationLoad(m, bpm) <= COORD_LOAD[level] + 1e-9;
+}
+
+/**
  * How a move is performed on a song of `bpm` (beats of the beat grid per
  * minute): full time when the tempo is within its limit (times the level's
- * share), half time when half the tempo is and the move reads at half time,
- * else 'out' (not used on this song at this level).
+ * share) and its coordination load there is within the level's
+ * (COORD_LOAD), half time when half the tempo is (and the move reads at half
+ * time), else 'out' (not used on this song at this level).
  */
 export function moveTempoMode(m: Move, bpm: number | undefined, level: SpeedLevel = 'cardio'): TempoMode {
+  return tempoMode(m, bpm, level, true);
+}
+
+/** moveTempoMode by the speed limit alone (no coordination load): what a move dropped for its coordination would have been. */
+export function speedTempoMode(m: Move, bpm: number | undefined, level: SpeedLevel = 'cardio'): TempoMode {
+  return tempoMode(m, bpm, level, false);
+}
+
+function tempoMode(m: Move, bpm: number | undefined, level: SpeedLevel, coord: boolean): TempoMode {
   if (!bpm || !Number.isFinite(bpm) || bpm <= 0) return 'full';
   const lim = moveSpeed(m).limit * LEVEL_SPEED[level];
-  if (bpm <= lim + 1e-9) return 'full';
-  if (bpm / 2 <= lim + 1e-9 && readsAtHalf(m, bpm)) return 'half';
+  const fast = bpm > lim + 1e-9;
+  if (!fast && (!coord || coordinationOk(m, bpm, level))) return 'full';
+  // Half time for the coordination alone only while it still moves (MIN_HALF_BPM), not as a crawl.
+  if (bpm / 2 <= lim + 1e-9 && readsAtHalf(m, bpm) && (!coord || (coordinationOk(m, bpm / 2, level) && (fast || bpm / 2 >= MIN_HALF_BPM - 1e-9)))) return 'half';
   return 'out';
 }

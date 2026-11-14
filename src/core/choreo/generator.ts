@@ -27,6 +27,12 @@
  * a map with no grid at all gets a free-time flow on a nominal grid, or a
  * steady one at its genre's tempo when it is driving (Routine.freeTime).
  *
+ * Coordination (coordination.ts, speed.ts COORD_LOAD): a move whose legs and
+ * arms / torso are both busy at once, at the tempo it would be danced at, over
+ * the level's load is danced at half time when that passes, else it hands
+ * its weight to a simpler form of itself (simplerForms) or is left out. One
+ * measured rule for every song and genre, falling with the tempo.
+ *
  * Assembly, in order (generateRoutine):
  *   1. plan the whole song: phrases, holds, and each hold's slot in the
  *      song's KIT (see "The song's kit" below: verse motif, chorus hook,
@@ -96,7 +102,8 @@ import { IDLE_MOVE, MOVES, keysOf, type Level, type Move } from './moves';
 import { getPool, warmPool } from './pool';
 import { BALANCED_POP, readGenre, signatureMoveIds, styleKey, type SongStyle } from './songStyle';
 import { busyFactor, calmFactor, difficultyFactor, impactFactor, isNovelty, moveAggression, moveReach, moveSmoothness, moveVigour, moveWeights, poseStepCost, tempoFactor } from './weights';
-import { moveSpeed, moveTempoMode, readsAtHalf, type TempoMode } from './speed';
+import { moveSpeed, moveTempoMode, readsAtHalf, speedTempoMode, type TempoMode } from './speed';
+import { moveCoordination } from './coordination';
 import { enforceCards, partOf, pauseOf, renamed, tileMove } from './cards';
 import { smoothSteps } from './flow';
 
@@ -813,6 +820,9 @@ interface Slot {
   odd?: Genre;
   /** Planned beats and target vigour x beats of its odd runs' slot, set apart before its own were shared (spreadGlobal). */
   oddPlan?: readonly [number, number];
+  /** Planned beats and target vigour x beats of its holds in odd runs of its section (what its '~b' slot dances). */
+  oddBeats?: number;
+  oddT?: number;
   move: Move | null;
   /** Planned beats and target vigour x beats (map routines). */
   beats: number;
@@ -967,6 +977,8 @@ export class Choreographer {
   private comboName = '';
   /** How each move is danced on this song at this level (speed.ts), cached. */
   private modes = new Map<Move, TempoMode>();
+  /** Moves the coordination load leaves out here, and the simpler form of each that took its weight (simplerForms). */
+  readonly simpler = new Map<Move, Move>();
   /** Song beats per move beat of the song combo (half time when any of its moves needs it). */
   private sigMult = 1;
   /** The song's leading Latin dance (danceOf): moves named for it are favoured (NAMED_DANCE). */
@@ -1053,6 +1065,7 @@ export class Choreographer {
       if (list) list.push(m);
       else this.varsByBase.set(m.base, [m]);
     }
+    this.simplerForms(moves, isVar, vw, none);
     for (const g of open) if (moves.some((m, i) => m.genre === g && this.base[i] > 0 && this.levelF[i] > 0)) this.genreOk.push(g);
     this.lead = leadSubStyle(this.genreOk, this.openness);
     const plan = opts.borrow !== false && this.genreOk.length ? borrowPlan(this.style, intensity, bpm) : null;
@@ -1083,6 +1096,49 @@ export class Choreographer {
     this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}|${sk}`)), intensity, this.style, open, bpm, genreK, this.jumpCap >= SIG_JUMP_CAP, this.tone, this.energy);
     this.comboName = comboName(this.signature);
     this.sigMult = this.signature.some((x) => this.mode(x.move) === 'half') ? 2 : 1;
+  }
+
+  /**
+   * A move the level's coordination load leaves out on this song (speed.ts COORD_LOAD: not even its half-time form
+   * passes) hands its weight to a simpler form of itself that passes, so the slot keeps the move's look and tier: its
+   * catalogue move (a variation without the extra: no double-time arms, no added hips), or a variation of the same
+   * catalogue move that keeps its footwork or its arms (half-time arms, the same feet under other arms) with less
+   * coordination. The closest such form (the most coordination still within the limit) takes it; none: it is dropped.
+   */
+  private simplerForms(moves: readonly Move[], isVar: Uint8Array, vw: number, none: ReadonlyMap<Genre, number>): void {
+    if (!this.bpm) return;
+    const at = new Map<string, number>();
+    moves.forEach((m, i) => at.set(m.id, i));
+    for (let i = 0; i < moves.length; i++) {
+      const m = moves[i];
+      if (this.base[i] > 0 || this.outside.has(m) || this.levelF[i] <= 0 || this.mode(m) !== 'out') continue;
+      if (isVar[i] && this.intensity === 'chill' && m.difficulty > 1) continue;
+      const sm = speedTempoMode(m, this.bpm, this.intensity);
+      if (sm === 'out') continue;
+      const w0 = staticWeight(m, this.style, this.bpm, none, this.intensity, sm) * (isVar[i] ? vw : 1);
+      if (!(w0 > 0)) continue;
+      const own = moveCoordination(m).perBeat;
+      const cands: number[] = [];
+      const b = m.base !== m.id ? at.get(m.base) : undefined;
+      if (b !== undefined) cands.push(b);
+      for (const v of this.varsByBase.get(m.base) ?? []) {
+        if (v === m || !((m.foot && v.foot === m.foot) || (m.arms && v.arms === m.arms))) continue;
+        const j = at.get(v.id);
+        if (j !== undefined) cands.push(j);
+      }
+      let best = -1, bc = -1;
+      for (const j of cands) {
+        const v = moves[j];
+        const c = moveCoordination(v).perBeat;
+        if (this.base[j] <= 0 || this.levelF[j] <= 0 || v.genre !== m.genre || (v.jump && !m.jump) || c >= own || c <= bc) continue;
+        best = j;
+        bc = c;
+      }
+      if (best >= 0) {
+        this.base[best] += w0;
+        this.simpler.set(m, moves[best]);
+      }
+    }
   }
 
   /** How a move is danced on this song at this level: 'full', 'half' or 'out' (speed.ts moveTempoMode; cached). */
@@ -1168,6 +1224,10 @@ export class Choreographer {
         const s = this.slot(slot, o);
         s.beats += holdBeats;
         s.tSum += t * holdBeats;
+        if ((o.occ ?? 0) % 2 === 1) {
+          s.oddBeats = (s.oddBeats ?? 0) + holdBeats;
+          s.oddT = (s.oddT ?? 0) + t * holdBeats;
+        }
       }
       items.push({ kind: 'hold', bars: hb, feels: hf, o, phraseNo, phraseEnd: h.a + h.len === bars.length && !calm, slot, target: t });
     }
@@ -1574,6 +1634,10 @@ export class Choreographer {
         from.tSum -= it.target * hb;
         members[j].beats += hb;
         members[j].tSum += it.target * hb;
+        if ((it.o.occ ?? 0) % 2 === 1) {
+          from.oddBeats = (from.oddBeats ?? 0) - hb;
+          from.oddT = (from.oddT ?? 0) - it.target * hb;
+        }
         it.slot = members[j].key;
       }
     }
@@ -1618,7 +1682,10 @@ export class Choreographer {
     let b = this.slots.get(key);
     if (!b) {
       const same = base.odd === base.genre;
-      b = { key, role: base.role, of: null, section: base.section, genre: base.odd ?? null, ...(same && base.borrow ? { borrow: true } : {}), move: null, beats: base.oddPlan?.[0] ?? base.beats / 2, tSum: base.oddPlan?.[1] ?? base.tSum / 2 };
+      // Its budgets (jumps, high intensity) count the odd runs' holds of the slot and its variations as planned.
+      let ob = 0, ot = 0;
+      for (const x of this.slots.values()) if ((x === base || x.of === base.key) && x.odd) (ob += x.oddBeats ?? 0), (ot += x.oddT ?? 0);
+      b = { key, role: base.role, of: null, section: base.section, genre: base.odd ?? null, ...(same && base.borrow ? { borrow: true } : {}), move: null, beats: ob > 0 ? ob : base.oddPlan?.[0] ?? base.beats / 2, tSum: ob > 0 ? ot : base.oddPlan?.[1] ?? base.tSum / 2 };
       this.slots.set(key, b);
       b.move = this.cast(b, it);
       if (!b.genre) b.move = base.move;
@@ -2748,9 +2815,9 @@ export function dancedBpm(m: Move, bpm: number | undefined, intensity: Intensity
  * danced at) x the song's character (calm) x Easy's on-the-beat lean x its
  * genre set's scale; 0 when it can't be danced at this tempo (speed.ts).
  */
-function staticWeight(m: Move, style: SongStyle, bpm: number | undefined, genreK: ReadonlyMap<Genre, number>, intensity: Intensity = 'cardio'): number {
-  if (moveTempoMode(m, bpm, intensity) === 'out') return 0;
-  const eff = dancedBpm(m, bpm, intensity);
+function staticWeight(m: Move, style: SongStyle, bpm: number | undefined, genreK: ReadonlyMap<Genre, number>, intensity: Intensity = 'cardio', mode: TempoMode = moveTempoMode(m, bpm, intensity)): number {
+  if (mode === 'out') return 0;
+  const eff = bpm && Number.isFinite(bpm) && mode === 'half' ? bpm / 2 : bpm && Number.isFinite(bpm) ? bpm : undefined;
   return styleFactor(m, style) * tempoFactor(m, eff) * calmFactor(m, style.calm, intensity, style.soft, style.hard) * busyFactor(m, eff, intensity) * (m.genre ? (genreK.get(m.genre) ?? 1) : 1);
 }
 
@@ -2771,18 +2838,27 @@ function pickSignature(
   // The combo opens every chorus: a calm-toned move only on a song with the calm for it (calmTone).
   const fits = (m: Move) => fitsAny(m) && (jumps || !m.jump) && (tone > 0 || !calmToned(m));
   const pool = DANCE_MOVES.filter((m) => fits(m) && genreFits(m, open) && (m.level !== 'low' || intensity === 'chill'));
+  // Easy keeps to simple moves (EASY_HARD_CAP) and the combo comes back every chorus: a picked move above difficulty 1
+  // is picked again among the simple ones, while there are any.
+  const simpleOnly = intensity === 'chill' && pool.filter((m) => m.difficulty === 1).length >= 2;
+  const pickSimple = (from: readonly Move[], w: (m: Move) => number): Move | null => {
+    const m = pickWeighted(rng, from, from.map(w));
+    if (!m || !simpleOnly || m.difficulty === 1) return m;
+    const s = from.filter((x) => x.difficulty === 1);
+    return pickWeighted(rng, s, s.map(w)) ?? m;
+  };
   const lean = energyLean({ low: 1, mid: 1, high: 1 }, energy);
   const weight = (m: Move) =>
     (m.level === 'high' ? (intensity === 'chill' ? 0.3 : intensity === 'cardio' ? 1 : 1.8) * lean.high : 1.2) * (m.beats === 2 ? 2 : 1) * levelFactor(m, intensity) * staticWeight(m, style, bpm, genreK, intensity) * (calmToned(m) ? tone : 1) * punchTone(m, tone) * noveltyTone(m, open) * energyFit(m, energy, intensity, mode(m) === 'half');
   // The combo is danced at one speed: half time when either move needs it, so a full-time move in it must read at half time.
   const together = (a: Move, b: Move) => mode(a) === mode(b) || (mode(a) === 'full' ? readsAtHalf(a, bpm ?? 0) : readsAtHalf(b, bpm ?? 0));
   const nods = (style.signature ?? []).map((id) => DANCE_MOVES.find((m) => m.id === id)).filter((m): m is Move => !!m && fitsAny(m));
-  const a = nods[0] ?? pickWeighted(rng, pool, pool.map(weight));
+  const a = nods[0] ?? pickSimple(pool, weight);
   if (!a) return [];
   // At most one of its two blocks jumps (it comes back in every chorus: the jump budget counts it).
   const rest = pool.filter((m) => m !== a && together(a, m) && !(a.jump && m.jump));
   const nb = nods[1] && nods[1] !== a && together(a, nods[1]) ? nods[1] : null;
-  const b = nb ?? pickWeighted(rng, rest, rest.map((m) => weight(m) * (1 - 0.7 * partsOverlap(a, m)) * (mode(m) === mode(a) ? 1 : 0.3))) ?? rest[0] ?? a;
+  const b = nb ?? pickSimple(rest, (m) => weight(m) * (1 - 0.7 * partsOverlap(a, m)) * (mode(m) === mode(a) ? 1 : 0.3)) ?? rest[0] ?? a;
   const steps: SigStep[] = [];
   for (const m of [a, b]) {
     const reps = 4 / m.beats;
