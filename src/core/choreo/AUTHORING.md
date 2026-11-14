@@ -14,6 +14,7 @@ readable from the front, and distinct**. Quality beats quantity: do not pad.
 | `families/latin.ts`, `disco.ts`, `funk.ts`, `hiphop.ts`, `pop.ts`, `rock.ts`, `kpop.ts`, `party.ts` | one style family each (`party` = mime, sports, novelty) |
 | `families/afro.ts`, `retro.ts`, `world.ts` | traditions: afrobeats / dancehall / soca, swing / country / folk, Bollywood / hula / belly dance ... |
 | `families/named.ts` | named variations: recombinations promoted to first-class moves with their own names |
+| `families/gospel.ts`, `country2.ts`, `latin2.ts`, `mexican.ts`, `flamenco.ts`, `world2.ts`, `world3.ts`, `club.ts` | the genre survey's additions (Nov 2026): gospel; more country; bachata, tango, salsa shines; regional Mexican and cumbia; flamenco; belly dance; dangdut and Schlager; house farmer, amapiano groove (ids in `genreSets/variety.ts`) |
 
 ## Two tiers: global and genre-exclusive
 
@@ -22,9 +23,11 @@ exclusive to one GENRE set, listed by id in `genres.ts` (`GENRE_MOVES`) and
 `genreSets/*.ts`: rock, hip-hop, Latin, disco & funk, K-pop, country, swing,
 afro, Caribbean, South Asian, folk, belly dance, hula, capoeira, and the
 sub-style sets metal, punk, trap, drill, R&B, house, EDM, bass music,
-reggaeton, Brazilian, amapiano, lyrical and the Latin dances salsa,
-merengue, cumbia, bachata, cha-cha, flamenco, tango, regional Mexican (see
-"Genre sets" below). A genre-exclusive move is only
+reggaeton, Brazilian, amapiano, lyrical, the Latin dances salsa,
+merengue, cumbia, bachata, cha-cha, flamenco, tango, regional Mexican, and
+gospel, dangdut and Schlager (see "Genre sets" below; the sets added or grown in the genre survey,
+`tools/eval/data/genre-dance-survey.md`, list their ids in
+`genreSets/variety.ts`). A genre-exclusive move is only
 used on songs whose style opens that genre (`songGenres`: the style's
 tradition themes, its leading families, its sub-style scores, gated by the
 song's calm). When you add a move that only
@@ -157,22 +160,32 @@ borrow needs a `NEIGHBOURS` entry with the dance reason next to it.
 | `trap` | the whip, nae nae, shoot, woah, griddy; quick poses on hi-hat rolls, bounce on the half-time snare | trap, crunk, snap, rage, cloud rap names; half-time feel + hat rolls / heavy 808 | adds to hip-hop; borrows drill, bass | `genreSets/urban.ts` |
 | `drill` | drill bounce, arm swings, shoulder rocks, shmoney, the strut | drill (UK / NY / Chicago ...), grime partly; half-time feel + syncopated hats and sliding bass | adds to hip-hop; borrows trap | `genreSets/urban.ts` |
 | `rnb` | body rolls, smooth two-steps, shoulder / hip isolations, slow grind grooves | R&B, neo soul, new jack swing, quiet storm; a swung, unhurried groove | none: the family mix opens what it leads; borrows soul / funk grooves, lyrical (calm); never the hip-hop set (its party dances) | `genreSets/urban.ts` |
-| `house` | jacking, lofting, heel-toe footwork, skate / train / farmer, loose legs, voguing hands and frames | house names (deep / tech / Chicago / French, nu-disco, UK garage); four-on-the-floor at ~115-127 BPM | borrows disco & funk (parent), EDM | `genreSets/electronic.ts` |
+| `house` | jacking, lofting, heel-toe footwork, skate / train / farmer (the farmer in `families/club.ts`), loose legs, voguing hands and frames | house names (deep / tech / Chicago / French, nu-disco, UK garage); four-on-the-floor at ~115-127 BPM | borrows disco & funk (parent), EDM | `genreSets/electronic.ts` |
 | `edm` | fist pumping, shuffle (cutting shapes), the jump on the drop, hands-up builds | EDM, big room, electro / progressive house, trance, techno, hardstyle; four-on-the-floor at 124+ | borrows house, bass | `genreSets/electronic.ts` |
 | `bass` | DnB skank, rail / wobble bounce, liquid and popping hits, phonk drift arms | dubstep, drum and bass, phonk, future bass; heavy sub-bass with half-time feel, or dense hats at ~170 | borrows trap, EDM, drill | `genreSets/electronic.ts` |
 | `reggaeton` | perreo, dembow step, reggaeton bounce, hip rolls | reggaeton, dembow, urbano, Latin trap; dembow syncopation around 88-100 BPM | dancehall (caribbean: opens below 6 moves, then lends); Brazilian lends; replaces Latin | `genreSets/urban.ts` |
 | `brazil` | samba no pé, axé, frevo, passinho / quadradinho (funk carioca), forró | samba, axé, baile funk, sertanejo, forró, MPB, bossa nova | replaces Latin, which lends its samba-named steps; reggaeton lends | `genreSets/mood.ts` |
-| `amapiano` | vosho, pouncing cat, tshwala bam, slow knee bounces on the log drum | amapiano, gqom, kwaito, South African house; log-drum bass at ~108-116 BPM | borrows afro (parent; usually open by the theme) | `genreSets/mood.ts` |
+| `amapiano` | vosho, pouncing cat, tshwala bam (the shoulder-roll groove, `families/club.ts`), slow knee bounces on the log drum | amapiano, gqom, kwaito, South African house; log-drum bass at ~108-116 BPM | borrows afro (parent; usually open by the theme) | `genreSets/mood.ts` |
 | `lyrical` | reaches, arm sweeps, port de bras, slow turns, arcing lunges, balances, contractions / releases, body waves | a calm song (`calm` ~0.74+ with analyser 1.4.0, and not intense), ballads, ambient, classical; any family | none (smooth global moves) | `genreSets/mood.ts` |
-| `salsa` | salsa basic, back basic, side salsa, right turn, New Yorker | salsa, mambo, timba, son cubano | Latin lends (mambo, cha-cha); cumbia | `genres.ts` RAW |
-| `bachata` | bachata side and forward basics (+ their own variations) | bachata | opens Latin while this small | `genres.ts` RAW |
-| `cumbia` | cumbia step, machete, sau, candle | cumbia, vallenato, champeta | opens Latin while small; regional Mexican | `genres.ts` RAW |
-| `flamenco` | flamenco arms, palmas, turn, paso doble cape | flamenco, rumba flamenca, paso doble, sevillanas | closes Latin; borrows tango | `genres.ts` RAW |
-| `tango` | tango walk | tango, nuevo tango, electrotango | closes Latin; borrows flamenco, lyrical (calm) | `genres.ts` RAW |
-| `mexican` | folklórico skirt, hat dance heels | regional Mexican, banda, norteño, mariachi, corridos, Tejano | closes Latin; borrows cumbia, folk (polka), country | `genres.ts` RAW |
+| `salsa` | salsa basic, back basic, side salsa, right turn, New Yorker, the cross-step and flare shines | salsa, mambo, timba, son cubano | Latin lends (mambo, cha-cha); cumbia | `genres.ts` RAW |
+| `bachata` | bachata side and forward basics (+ their own variations), the turn, body wave, hair comb, Dominican cross step, double tap | bachata | Latin lends (opened it outright while below 6 moves) | `genres.ts` RAW, `genreSets/variety.ts` |
+| `cumbia` | cumbia step, machete, sau, candle, side basic, kick & back, circle basic, turn, hat sway, pollera wave | cumbia, vallenato, champeta, technocumbia, cuarteto | Latin lends (opened it outright while below 6 moves); regional Mexican | `genres.ts` RAW, `genreSets/variety.ts` |
+| `flamenco` | flamenco arms, palmas, turn, paso doble cape, braceo, marcaje, llamada | flamenco, rumba flamenca, paso doble, sevillanas | closes Latin; borrows tango | `genres.ts` RAW, `genreSets/variety.ts` |
+| `tango` | tango walk, forward ochos, boleo, cruzada, lunge (corté), caricia, molinete, in a solo embrace | tango, nuevo tango, electrotango | closes Latin; borrows flamenco, lyrical (calm) | `genres.ts` RAW, `genreSets/variety.ts` |
+| `mexican` | folklórico skirt, hat dance heels, zapateado, huapango campanas, puntas, remate, the banda caballito, quebradita hop | regional Mexican, banda, norteño, mariachi, corridos, Tejano, quebradita, tecnobanda | closes Latin; borrows cumbia, folk (polka), country | `genres.ts` RAW, `genreSets/variety.ts` |
 | `merengue`, `chacha` | (their steps are Latin's) | merengue; cha-cha, danzón, rumba, ballroom | open Latin; NAMED_DANCE favours their moves | - |
+| `gospel` | choir step and clap, choir two-step, raised-hand praise, lifted hands, point to heaven, handkerchief wave, tambourine, bow and rise, the praise-break shout and shout hops, step-team stomps | gospel (traditional, urban contemporary, southern), worship, CCM, contemporary Christian, the iTunes "Christian & Gospel" tag; "Christian rock / metal / hip hop" read as their second word | none; borrows R&B, soul / funk grooves, lyrical (calm) | `genreSets/variety.ts` |
+| `dangdut` | joget sway (soft hand rolls, pointing fingers), goyang gergaji (the saw), dribble shake, broken hip hits (patah-patah) | dangdut, koplo, joget; Thai luk thung / mor lam at 0.6 | none; borrows belly dance, Bollywood | `genreSets/variety.ts` |
+| `schlager` | schunkeln (arm-in-arm sway), the stein toast, bird-dance beak snaps and wing flaps (figures, never the routine) | Schlager, party Schlager, Oktoberfest, apres-ski, Stimmungsmusik, Discofox | none; borrows folk (the polka), country | `genreSets/variety.ts` |
 
-Country is one set: its moves are line-dance / hoedown steps, which serve
+Belly dance (the tradition set every Arabic, Turkish, raï, shaabi,
+khaleeji and mizrahi name opens) grew in the genre survey from 3 to 10:
+hip lifts, hip slides, the maya, the hip shimmy, the khaleeji hair toss
+and drop step, the saidi cane hop (`families/world2.ts`).
+
+Country is one set: its moves are line-dance / hoedown steps (grown in the
+genre survey with heel splits, the rolling vine, slappin' leather and the
+zydeco rubboard scratch, `families/country2.ts`), which serve
 country-pop at tempo as well; a country ballad closes it by its calm (and
 waltz steps live in `swing`). A two-step is a travelling partner dance that
 doesn't read as a solo front-facing move beyond a step-touch.
