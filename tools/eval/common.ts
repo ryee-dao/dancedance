@@ -130,6 +130,8 @@ export interface LevelSummary {
   bpmDanced?: number;
   /** Ten most-used moves by danced beats: "Name (genre|global) beats". */
   top: { name: string; id?: string; tier: string; beats: number }[];
+  /** The genre moves danced most, by base move id. */
+  topGenre?: { id: string; name: string; genre: string; beats: number }[];
 }
 
 export interface VideoPick {

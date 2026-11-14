@@ -279,6 +279,17 @@ function summarise(map: BeatMap, style: ReturnType<typeof resolveSongStyle>, lev
     ...(r.freeTime ? { freeTime: true } : {}),
     bpmDanced: Math.round((r.bpm ?? map.bpm) * 10) / 10,
     top: [...byName].sort((a, b) => b[1].beats - a[1].beats).slice(0, 10).map(([name, e]) => ({ name, id: e.id, tier: e.tier, beats: e.beats })),
+    // The genre moves danced most (by base move, combos included), for rendering them (tools/moves/sheet.ts --moves).
+    topGenre: (() => {
+      const g = new Map<string, { name: string; genre: string; beats: number }>();
+      for (const i of danced) {
+        if (!i.move.genre) continue;
+        const e = g.get(i.move.base) ?? { name: i.move.name, genre: i.move.genre, beats: 0 };
+        e.beats += i.span;
+        g.set(i.move.base, e);
+      }
+      return [...g].sort((x, y) => y[1].beats - x[1].beats).slice(0, 8).map(([id, e]) => ({ id, ...e }));
+    })(),
   };
 }
 

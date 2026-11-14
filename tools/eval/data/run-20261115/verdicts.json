@@ -1,0 +1,254 @@
+{
+ "713691774": {
+  "verdict": "acceptable",
+  "reason": "Post-punk label and the rock set (Guitar Neck Raise, Swaying Drummer, Pogo Windmill) are right, but the beat is counted at 185 (double of ~93; no half offered), so Medium is 63 % half time, Hard 22 % jumps / 66 % high, and Port de Bras and Power Stance Pump dominate a melancholic anthem.",
+  "causes": [
+   "tempo-double",
+   "level-handling"
+  ]
+ },
+ "1469579653": {
+  "verdict": "right",
+  "reason": "Soul label, R&B and funk sets with period steps (The Jerk, Funky Chicken, Hand-Glide and Knee-Pop Two-Step, Body Roll) at the right 105 BPM on a sweet Motown song; Kickline Sky Clap and 49 % high moves on Hard are the stretch."
+ },
+ "1099843209": {
+  "verdict": "right",
+  "reason": "Nu metal label, metal and rock sets (Doom Sway, Foot on the Monitor, Chug Squat, Low Headbang) at 144; borrowed punk skanks and a Port de Bras on Easy are the odd bits."
+ },
+ "1570993122": {
+  "verdict": "wrong",
+  "reason": "The picker chose the '1920' re-arrangement (a version), and its sparse vintage sound reads calm 0.70 / intensity 0: 'Dubstep · Ballad' with no set open and soft generic moves (Hands-on-Hips Circles, Freestyle Swim) for a theatrical swing / electro-swing banger.",
+  "causes": [
+   "picker-version",
+   "trait-misread"
+  ]
+ },
+ "716071285": {
+  "verdict": "wrong",
+  "reason": "A song titled 'Reggaeton' with a dembow-like groove (fourFloor 1.0, syncop 0.67) gets plain 'Pop': the lookup found only the iTunes tag, the artist reads hip hop / R&B, no Latin set opens, and the moves are Cheer Kick, Kick & Cross and Breaststroke.",
+  "causes": [
+   "lookup-miss",
+   "genre-too-broad"
+  ]
+ },
+ "1745576607": {
+  "verdict": "wrong",
+  "reason": "A slow power ballad (~70) is counted at 140 with calm 0.22 and plain 'Pop': Separate Heaven and Earth, V Step Side Punch, Speed Bag and Jump Kick; album-level 'new jack swing / dance-pop' junk does not help.",
+  "causes": [
+   "tempo-double",
+   "trait-misread"
+  ]
+ },
+ "6819932400": {
+  "verdict": "acceptable",
+  "reason": "K-pop label and set are right, but the K-pop moves are thin and cute (Cat Paws, V Step Aegyo Clasp, Wiper Hands) and Conga / Blow a Kiss lead an intense performance track counted at 85 (double 0.89 offered, not taken). Thin evidence.",
+  "causes": [
+   "level-handling"
+  ]
+ },
+ "6812412667": {
+  "verdict": "right",
+  "reason": "Rock label and rock set (Windmill, Strum & Kick, Guitar Solo, Stomp Kick Bass Slap) on U2 arena rock; calm 0.42 makes Easy softer than an anthem needs."
+ },
+ "1563274812": {
+  "verdict": "right",
+  "reason": "Caribbean set with real dancehall steps (Log On, Wacky Dip, Reggae Skank) at the right 90 BPM; label 'Reggae' rather than dancehall, and tai-chi moves (Separate Heaven and Earth, Single Whip) on a bashment banger are the clash."
+ },
+ "1383548445": {
+  "verdict": "acceptable",
+  "reason": "Dancehall label with Reggae Skank and Pon di River is right, but one 'tango' in the Wikipedia list opens tango (Ochos, Boleo, Cruzada) and borrowed flamenco: about 40 % of the genre beats are Argentine tango on a reggae-pop single.",
+  "causes": [
+   "junk-genre"
+  ]
+ },
+ "1769025042": {
+  "verdict": "right",
+  "reason": "Country label at the right 80 BPM, calm 0.46, no jumps, country steps (Heel Strut, Heel & Hook, Side Rock Hitch Clap) on a slow country ballad; Gallop Lasso is a bit jaunty."
+ },
+ "6778607829": {
+  "verdict": "acceptable",
+  "reason": "Country label and set (Rubboard Scratch, Slappin' Leather, Monterey Turn) are right, but the slow ~73 groove is counted at 146 (half 0.75 offered, not taken): Easy is 80 % half time and Hard 26 % jumps (Jump Rope Crossover) on a reflective song.",
+  "causes": [
+   "tempo-double",
+   "level-handling"
+  ]
+ },
+ "1244743915": {
+  "verdict": "right",
+  "reason": "Miami bass label and hip-hop set (Indian Step, smurf arms, Jerkin', Bankhead arms) at 129 on a party anthem; T-Step and Tennis Forehand fillers. (Hand-picked video.)"
+ },
+ "1003813290": {
+  "verdict": "acceptable",
+  "reason": "Sertanejo opens the Brazilian set, but its steps are samba and forró (Samba de Roda, Bota Fogo Drum Hits) plus Booty Shake and Figure Eight Hips on rural viola music. (Hand-picked video; thin evidence.)",
+  "causes": [
+   "lexicon-gap"
+  ]
+ },
+ "277635828": {
+  "verdict": "wrong",
+  "reason": "The reggae-lilt strum reads swing 0.82, which opens the swing set: Lindy steps (Truckin', Apple Jacks, Tacky Annie, Shorty George) on a mellow folk-pop song, counted at 151 (double; half 0.99 offered, not taken).",
+  "causes": [
+   "trait-misread",
+   "tempo-double"
+  ]
+ },
+ "696891524": {
+  "verdict": "acceptable",
+  "reason": "The lookup returns only 'pop' (the artist's synth-pop / house stays a weak score), so plain 'Pop' with generic aerobics (Stomp Kick Tricep Press, Touchdown & Daggers); nothing clashes, nothing of synth-pop or Latin freestyle.",
+  "causes": [
+   "genre-too-broad"
+  ]
+ },
+ "1440911925": {
+  "verdict": "acceptable",
+  "reason": "No beat found in a slow ballad, so a free-time flow at 83 with lyrical moves (Slow Spiral Turn, Spine Roll) suits it, but 'jazz' opens funk too: Step Touch Disco Point and Hip Swing Point on Coltrane.",
+  "causes": [
+   "tempo-none",
+   "lexicon-gap"
+  ]
+ },
+ "430276711": {
+  "verdict": "unjudged",
+  "reason": "Nothing found about this version (the act makes many genre remakes of the theme). Internally: Soundtrack label, no list, 99 BPM, hats 1.0, generic aerobics (Sprinkler, Jab-Cross, Floss)."
+ },
+ "1444103245": {
+  "verdict": "acceptable",
+  "reason": "Disco leads the label and opens The Jerk, The Pony and The Bump, but four-on-the-floor also opens house and EDM: House Farmer, Crossroads and Build & Drop on 1982 new pop, and Hard is 71 % high moves.",
+  "causes": [
+   "genre-too-broad",
+   "level-handling"
+  ]
+ },
+ "1440912354": {
+  "verdict": "right",
+  "reason": "Rap rock label with hip-hop, rock and metal sets (Air Drums, Horns to the Crowd, Cat Daddy, Low Headbang, Wall of Death Crouch) on raucous rap-metal; Booty Shake Double Clap leading Medium is the odd one."
+ },
+ "1837972823": {
+  "verdict": "unjudged",
+  "reason": "Nothing found about the song (store tag only). Internally consistent: Metal label, metal and rock sets at 171, intensity 0.93."
+ },
+ "1681356899": {
+  "verdict": "acceptable",
+  "reason": "A peaceful bedroom-pop song (~78) is counted at 156 with no half offered; plain 'Alternative', no sets, calm 0.59, and busy generic moves (Arena Wave, Jazz Burst, Strike a Pose, Hair Flip). No jumps, so it does not clash hard, but it is not this song.",
+  "causes": [
+   "tempo-double",
+   "genre-too-broad"
+  ]
+ },
+ "1437002165": {
+  "verdict": "right",
+  "reason": "Rock · Punk at the right 107 with punk and (borrowed) metal moves (Grounded Pogo, Circle Pit Run, Chug Squat, Wall of Death Crouch, Strum & Kick) on metal-leaning hardcore; Speed Bag, Shopping Cart and Kickline Port de Bras fillers. swing reads 0.85 on it without harm."
+ },
+ "1095761072": {
+  "verdict": "right",
+  "reason": "Electronic · House at 125 four-on-the-floor with house, EDM and borrowed disco moves (Jacking, Crossroads, Cutting Shapes, House Stomp) on peppy retro synth-disco electronica; Conga and March Diagonal fill Easy. Thin evidence."
+ },
+ "325037297": {
+  "verdict": "unjudged",
+  "reason": "Not fetched: no upload found by the picker or by hand (0 search results).",
+  "causes": [
+   "fetch"
+  ]
+ },
+ "1785261246": {
+  "verdict": "acceptable",
+  "reason": "Rock family right, but heavy 1.0 makes it 'Alternative · Metal' rather than punk, and fast skate punk is counted at 93 (double 0.79 offered): Funk Stomp + Knee Lift, Who Knows Shrug, Kickline Spirit Fingers, 52 % half time on Medium. (Hand-picked video; album-level evidence.)",
+  "causes": [
+   "tempo-half",
+   "trait-misread"
+  ]
+ },
+ "1436707549": {
+  "verdict": "acceptable",
+  "reason": "Metal label and set (Hammer Stomp, Chug Squat, Arms-Out Lean Back) plus borrowed punk, but counted at 74.5 (the one tempo source says 108) and led by Hammer & Nail, Arena Wave and a tai-chi Single Whip. Thin evidence.",
+  "causes": [
+   "tempo-half",
+   "generic-fill"
+  ]
+ },
+ "1697227806": {
+  "verdict": "acceptable",
+  "reason": "Rock family right, but heavy 0.80 turns post-punk / shoegaze into 'Alternative · Metal': Doom Sway, Hammer Stomp and punk skanks with Hamstring Curl and Quarter-Turn Hops on a darkwave-tinged track. Thin evidence.",
+  "causes": [
+   "trait-misread"
+  ]
+ },
+ "1673252247": {
+  "verdict": "right",
+  "reason": "Techno label, EDM set with borrowed house (Techno Stomp, Build & Drop, Hakken, Pound & Pump, Vogue Pose) on driving electro-techno; Tree Pose, Layup and a Booty Shake floss on Hard. (Hand-picked video; thin evidence.)"
+ },
+ "1630402054": {
+  "verdict": "unjudged",
+  "reason": "Not fetched (one unrelated search result) and nothing found about the song.",
+  "causes": [
+   "fetch"
+  ]
+ },
+ "1125081912": {
+  "verdict": "acceptable",
+  "reason": "Horror library underscore at its listed 92 BPM: no list, label 'Soundtrack', generic aerobics (Kickline, Jab-Cross, Shake It Out). Nothing to dance to in the source either; harmless, meaningless. Thin evidence.",
+  "causes": [
+   "genre-too-broad"
+  ]
+ },
+ "496584649": {
+  "verdict": "right",
+  "reason": "'Christian' opens the gospel set: Point to Heaven, Bow & Rise, Tambourine Praise, Handkerchief Wave, Praise Shout on a devotional Latin worship song at mid calm; Step-Team Stomp & Clap and Hair Flip are the stretch. Artist-level evidence only."
+ },
+ "1742261988": {
+  "verdict": "right",
+  "reason": "Neo soul · Ballad with a half feel (70) and the R&B set (Slow-Jam Sway, Chest Circle, Hip Roll Down, Slow Hip Roll) on an R&B / soul singer-songwriter track; Point the Mic and Pom Shake fillers. (Hand-picked video; artist-level evidence.)"
+ },
+ "1720365564": {
+  "verdict": "wrong",
+  "reason": "'Folk' opens the world folk-dance set for a gentle American indie-folk song: Para Para Sweep, Ribbon Figure Eight, Kalinka Heel-Toe, Yangge Cross Step and Yemenite Step, plus Jacket Tug and Hip Bump Clap.",
+  "causes": [
+   "lexicon-gap"
+  ]
+ },
+ "6813090992": {
+  "verdict": "acceptable",
+  "reason": "Melancholic electronic reads calm 0.64 but opens nothing: plain 'Electronic' with generic moves (Contract & Release, Bicep Curl, No-No Finger Wag, Shake Down Overhead Cross). Harmless, generic. (Hand-picked video; album-level evidence.)",
+  "causes": [
+   "genre-too-broad"
+  ]
+ },
+ "1585125946": {
+  "verdict": "acceptable",
+  "reason": "C-pop opens the K-pop set, so a sweet Mandopop drama theme gets wiper hands and aegyo clasps with Heart Hands and Blow a Kiss: the cute mood fits, the K-pop idol vocabulary is a stand-in. (Hand-picked video; thin evidence.)",
+  "causes": [
+   "lexicon-gap"
+  ]
+ },
+ "1880898365": {
+  "verdict": "acceptable",
+  "reason": "No beat found in a drumless sax-piano duo, so a free-time flow at 86; 'Jazz' opens swing but also funk, and Boogaloo and Four Corners lead Medium on a cool-jazz line, with Lighter Sway and Blow a Kiss.",
+  "causes": [
+   "tempo-none",
+   "lexicon-gap"
+  ]
+ },
+ "202007692": {
+  "verdict": "wrong",
+  "reason": "Crossover thrash (intensity 1.0, heavy 0.99) yields no beat grid at all, and the free-time fallback dances a slow lyrical flow with Blow a Kiss, Slow Spiral Turn and Développé under a 'Rock · Metal' label. (Hand-picked video.)",
+  "causes": [
+   "tempo-none",
+   "free-time-on-driving"
+  ]
+ },
+ "1874648358": {
+  "verdict": "unjudged",
+  "reason": "Not fetched: the only uploads are the 2024 single and its MV (3:16), not the 3:24 DEMOS1 version iTunes lists.",
+  "causes": [
+   "fetch"
+  ]
+ },
+ "1573187425": {
+  "verdict": "acceptable",
+  "reason": "Rock family is right, but shimmering shoegaze reads calm 0 and gets Hook Punch (88 beats on Medium), Elbow Strikes, Headbang Arms Up and tai-chi Part the Wild Horse's Mane; the artist's 'shoegaze' stays a weak score. Thin evidence.",
+  "causes": [
+   "genre-too-broad",
+   "trait-misread"
+  ]
+ }
+}
