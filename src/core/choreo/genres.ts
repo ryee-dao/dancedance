@@ -58,16 +58,26 @@ export type Genre =
   | 'folk' | 'bellydance' | 'hula' | 'capoeira'
   // Sub-styles (songStyle.ts scores them) and the mood set.
   | 'metal' | 'punk' | 'trap' | 'drill' | 'rnb' | 'house' | 'edm' | 'bass'
-  | 'reggaeton' | 'brazil' | 'amapiano' | 'lyrical';
+  | 'reggaeton' | 'brazil' | 'amapiano' | 'lyrical'
+  // The Latin dances (songStyle.ts scores them from genre names).
+  | 'salsa' | 'merengue' | 'cumbia' | 'bachata' | 'chacha' | 'flamenco' | 'tango' | 'mexican';
 
 export const GENRES: readonly Genre[] = [
   'rock', 'hiphop', 'latin', 'discofunk', 'kpop', 'country', 'swing', 'afro', 'caribbean', 'southasian', 'folk', 'bellydance', 'hula', 'capoeira',
   'metal', 'punk', 'trap', 'drill', 'rnb', 'house', 'edm', 'bass', 'reggaeton', 'brazil', 'amapiano', 'lyrical',
+  'salsa', 'merengue', 'cumbia', 'bachata', 'chacha', 'flamenco', 'tango', 'mexican',
 ];
 
 /** The sub-style genres: opened by a song style's sub-style scores (SongStyle.subs), not by families or themes. */
-export type SubStyle = 'metal' | 'punk' | 'trap' | 'drill' | 'rnb' | 'house' | 'edm' | 'bass' | 'reggaeton' | 'brazil' | 'amapiano' | 'lyrical';
-export const SUB_STYLES: readonly SubStyle[] = ['metal', 'punk', 'trap', 'drill', 'rnb', 'house', 'edm', 'bass', 'reggaeton', 'brazil', 'amapiano', 'lyrical'];
+export type SubStyle =
+  | 'metal' | 'punk' | 'trap' | 'drill' | 'rnb' | 'house' | 'edm' | 'bass' | 'reggaeton' | 'brazil' | 'amapiano' | 'lyrical'
+  | 'salsa' | 'merengue' | 'cumbia' | 'bachata' | 'chacha' | 'flamenco' | 'tango' | 'mexican';
+export const SUB_STYLES: readonly SubStyle[] = [
+  'metal', 'punk', 'trap', 'drill', 'rnb', 'house', 'edm', 'bass', 'reggaeton', 'brazil', 'amapiano', 'lyrical',
+  'salsa', 'merengue', 'cumbia', 'bachata', 'chacha', 'flamenco', 'tango', 'mexican',
+];
+/** The Latin dances among the sub-styles: a song's leading one favours the moves named for it (generator.ts danceOf). */
+export const LATIN_DANCES: readonly SubStyle[] = ['salsa', 'merengue', 'cumbia', 'bachata', 'chacha', 'flamenco', 'tango', 'mexican'];
 
 export function isSubStyle(v: unknown): v is SubStyle {
   return typeof v === 'string' && (SUB_STYLES as readonly string[]).includes(v);
@@ -100,6 +110,14 @@ export const GENRE_LABEL: Readonly<Record<Genre, string>> = {
   brazil: 'Brazilian',
   amapiano: 'Amapiano',
   lyrical: 'Lyrical',
+  salsa: 'Salsa & mambo',
+  merengue: 'Merengue',
+  cumbia: 'Cumbia',
+  bachata: 'Bachata',
+  chacha: 'Cha-cha & ballroom Latin',
+  flamenco: 'Flamenco & paso doble',
+  tango: 'Tango',
+  mexican: 'Regional Mexican',
 };
 
 export function isGenre(v: unknown): v is Genre {
@@ -160,6 +178,20 @@ export const SUB_INFO: Readonly<Record<SubStyle, SubInfo>> = {
   brazil: { parent: 'latin', withParent: false, replaces: 'latin' },
   amapiano: { parent: 'afro', withParent: false, replaces: null }, // [7] afrobeats lends to it
   lyrical: { parent: null, withParent: false, replaces: null },
+  // The Latin dances. Latin (the parent set) keeps what can't be split off for the variation pool:
+  // merengue, cha-cha and mambo share layers through named recombinations (Merengue Side Cha-Cha Arm,
+  // Merengue Side Mambo Arms), so a merengue, cha-cha or mambo song dances the Latin set, its own
+  // dance's moves favoured by their names (generator.ts NAMED_DANCE). Salsa, cumbia and bachata lean
+  // on Latin (a salsa song's families open it; the small sets open it outright); flamenco, tango and
+  // regional Mexican are other floors altogether and close it.
+  salsa: { parent: 'latin', withParent: false, replaces: null }, // [6] salsa steps; mambo / cha-cha from Latin
+  merengue: { parent: 'latin', withParent: false, replaces: null }, // [0] its steps are Latin's
+  cumbia: { parent: 'latin', withParent: false, replaces: null }, // [4]
+  bachata: { parent: 'latin', withParent: false, replaces: null }, // [2]
+  chacha: { parent: 'latin', withParent: false, replaces: null }, // [0] cha-cha, chasses, cucaracha are Latin's
+  flamenco: { parent: null, withParent: false, replaces: 'latin' }, // [4] flamenco and paso doble
+  tango: { parent: null, withParent: false, replaces: 'latin' }, // [1]
+  mexican: { parent: null, withParent: false, replaces: 'latin' }, // [2] folklorico, hat dance
 };
 
 // ---------------------------------------------------------------------------
@@ -215,6 +247,20 @@ export interface Neighbour {
  *             but the vosho and knee drops are danced nothing like jacking.
  *   metal     punk (the shared pit: circle pit, slam, two-step); rock is open.
  *   punk      metal (the shared pit); rock is open.
+ *   salsa     Latin (its parent: mambo and cha-cha are salsa's Cuban roots, danced
+ *             on the same floor; usually open already by the families), cumbia
+ *             (the other big tropical floor, a side-to-side step).
+ *   bachata,  Latin (their parent, opened outright while their sets are this
+ *   cumbia    small); cumbia also regional Mexican (cumbia is danced to banda
+ *             and norteño too).
+ *   merengue, Latin (their steps live there).
+ *   chacha
+ *   flamenco  tango (the dramatic, held Spanish / Argentine lines).
+ *   tango     flamenco (the same), and on a calm song lyrical (held balances,
+ *             slow lunges: tango's control).
+ *   mexican   cumbia (danced to the same bands), folk (norteño is polka-born:
+ *             the polka and heel-toe steps), country (zapateado and the
+ *             two-step floor of Tejano: heel-and-toe, boot scoot).
  * Lyrical lends but never borrows; the big groups and traditions don't
  * borrow (the small traditions have no style close enough to lend).
  */
@@ -230,6 +276,14 @@ export const NEIGHBOURS: Readonly<Partial<Record<Genre, readonly Neighbour[]>>> 
   amapiano: [{ from: 'afro', w: 0.9 }],
   metal: [{ from: 'punk', w: 0.6 }],
   punk: [{ from: 'metal', w: 0.6 }],
+  salsa: [{ from: 'latin', w: 0.9 }, { from: 'cumbia', w: 0.4 }],
+  bachata: [{ from: 'latin', w: 0.8 }],
+  cumbia: [{ from: 'latin', w: 0.8 }, { from: 'mexican', w: 0.5 }],
+  merengue: [{ from: 'latin', w: 1 }],
+  chacha: [{ from: 'latin', w: 1 }],
+  flamenco: [{ from: 'tango', w: 0.5 }],
+  tango: [{ from: 'flamenco', w: 0.5 }, { from: 'lyrical', w: 0.4, slow: true }],
+  mexican: [{ from: 'cumbia', w: 0.7 }, { from: 'folk', w: 0.45 }, { from: 'country', w: 0.4 }],
 };
 
 /** Calm from which a `slow` neighbour lends (where the lyrical score starts, songStyle.ts). */
@@ -276,7 +330,7 @@ export function borrowSources(style: GenreSource): Map<Genre, Map<Genre, Lend>> 
     for (const nb of list) {
       if (open.has(nb.from) || (replaced.has(nb.from) && nb.from !== parent)) continue;
       if (nb.slow && !((style.calm ?? 0) >= SLOW_CALM)) continue;
-      const k = calmGate(nb.from, style.calm);
+      const k = calmGate(nb.from, gateCalm(style));
       if (k < CALM_CLOSED) continue;
       m.set(nb.from, { w: nb.w * k, namedOnly: replaced.has(nb.from) });
     }
@@ -296,9 +350,26 @@ export const CALM_TOLERANCE: Readonly<Record<Genre, number>> = {
   house: 0.55, edm: 0.45, bass: 0.45, discofunk: 0.55, kpop: 0.6, latin: 0.65, reggaeton: 0.55, brazil: 0.55,
   country: 0.6, swing: 0.65, afro: 0.6, amapiano: 0.65, caribbean: 0.65, southasian: 0.65, folk: 0.6,
   bellydance: 0.75, hula: 0.9, capoeira: 0.45, lyrical: 2,
+  salsa: 0.6, merengue: 0.6, cumbia: 0.65, bachata: 0.75, chacha: 0.65, flamenco: 0.55, tango: 0.65, mexican: 0.6,
 };
 /** Openness below which the calm closes a set. */
 export const CALM_CLOSED = 0.3;
+
+/**
+ * The calm a song's sets are gated at: its calm, or more for a soft-but-steady
+ * song (GenreSource.soft): a soft song closes the showpiece sets (no headbangs
+ * or fist-pumping drops on a gentle groove: rock, metal, punk, EDM close from
+ * soft ~0.9) without opening lyrical (which only the calm itself opens).
+ */
+export function gateCalm(style: { calm?: number; soft?: number }): number | undefined {
+  const c = style.calm;
+  const s = style.soft;
+  if (s === undefined || !Number.isFinite(s)) return c;
+  const sc = SOFT_GATE[0] + SOFT_GATE[1] * Math.min(1, Math.max(0, s));
+  return c === undefined || !Number.isFinite(c) ? sc : Math.max(c, sc);
+}
+/** Gate calm of a song of softness s: SOFT_GATE[0] + SOFT_GATE[1] x s. */
+export const SOFT_GATE: readonly [number, number] = [0.3, 0.4];
 
 /** How open a set stays at a song's calm (1 = fully, 0 = closed); calm unknown = 1. */
 export function calmGate(g: Genre, calm: number | undefined): number {
@@ -355,6 +426,8 @@ export interface GenreSource {
   subs?: Partial<Record<SubStyle, number>>;
   /** The song's calm 0..1 (undefined = unknown: nothing closes). */
   calm?: number;
+  /** Soft-but-steady character 0..1 (songStyle.ts): closes showpiece sets like calm does (gateCalm), never opens lyrical. */
+  soft?: number;
 }
 
 /**
@@ -419,8 +492,9 @@ function resolveOpenness(style: GenreSource): { out: Map<Genre, number>; replace
     out.delete(g);
     replaced.add(g);
   }
+  const gc = gateCalm(style);
   for (const [g, w] of out) {
-    const k = w * calmGate(g, style.calm);
+    const k = w * calmGate(g, gc);
     if (k < CALM_CLOSED * w || k <= 0) out.delete(g);
     else out.set(g, k);
   }
@@ -456,20 +530,18 @@ const RAW: Readonly<Record<Genre, string>> = {
     // named: recombinations promoted in families/named.ts
     booty-shake-dougie-arms jump-around-dougie-arms jump-around-bankhead-arms side-out-bankhead-arms
     swag-walk-cabbage-patch swag-walk-bankhead-arms`,
+  // Latin: the social-floor basics that share layers (merengue, cha-cha and mambo are tied by named
+  // recombinations) and the percussion moves. Each other Latin dance has its own set (the Andean huayno is folk).
   latin: `
     merengue merengue-clap merengue-turn merengue-side
-    salsa-basic salsa-back-basic side-salsa salsa-right-turn new-yorker mambo-rock
+    mambo-rock
     cha-cha cha-cha-chasse cha-cha-spot-turn cucaracha
-    cumbia-step cumbia-machete cumbia-sau cumbia-candle
-    bachata-side bachata-basic
-    samba-basic samba-whisk bota-fogo samba-reggae-drum samba-no-pe
-    flamenco-arms flamenco-palmas flamenco-turn paso-doble-cape tango-walk
-    folklorico-skirt hat-dance-heels huayno-skip maraca-shake
+    maraca-shake
     // named: recombinations promoted in families/named.ts
     box-step-mambo-arms box-step-maracas cha-cha-chasse-cha-cha-arm cha-cha-chasse-fan
     cha-cha-chasse-flow cha-cha-chasse-shimmy conga-maracas cucaracha-snake-arms merengue-side-cha-cha-arm
-    merengue-side-fan merengue-side-mambo-arms side-salsa-flow
-    step-touch-maracas bota-fogo-drum-hits samba-whisk-carnival-arms samba-whisk-shimmy`,
+    merengue-side-fan merengue-side-mambo-arms
+    step-touch-maracas`,
   discofunk: `
     disco-point double-disco-point kick-point fever-pose disco-vine disco-dip disco-spin bump-point hip-swing-point
     hustle-tap hustle-basic hustle-turn hitch-turn roll-the-dice roller-glide roller-crossover roller-swizzle
@@ -526,7 +598,7 @@ const RAW: Readonly<Record<Genre, string>> = {
     irish-threes irish-sevens irish-cut-rock highland-fling morris-step pas-de-basque
     dabke-stomp dabke-cross-hop yemenite-step horon-shimmy halay-dip lezginka-steps
     bon-odori-clap awa-odori-walk para-para-sweep fan-arc ribbon-eight taiko-strike yangge-cross-step balinese-agem
-    tinikling-hops itik-itik`,
+    tinikling-hops itik-itik huayno-skip`,
   bellydance: `egyptian-walk hip-drop-kick snake-arm-shimmy`,
   hula: `kaholo-wave hela-point uwehe tamau-hips poi-swing slap-dance`,
   capoeira: `ginga esquiva-dodge`,
@@ -541,11 +613,22 @@ const RAW: Readonly<Record<Genre, string>> = {
   edm: ``,
   bass: ``,
   reggaeton: ``,
-  // The layered samba steps stay in Latin: their arm / foot layers recombine with salsa and cha-cha
-  // layers in the variation pool (pool.json), and a variation never mixes two sets.
-  brazil: `frevo-hop`,
+  // The samba steps (their layers are their own: pool.json was regenerated when they moved from Latin).
+  brazil: `
+    frevo-hop
+    samba-basic samba-whisk bota-fogo samba-reggae-drum samba-no-pe
+    bota-fogo-drum-hits samba-whisk-carnival-arms samba-whisk-shimmy`,
   amapiano: `vosho pouncing-cat`,
   lyrical: ``,
+  // The Latin dances split out of Latin (each set's layers are its own; see the header on layered moves).
+  salsa: `salsa-basic salsa-back-basic side-salsa salsa-right-turn new-yorker side-salsa-flow`,
+  merengue: ``,
+  cumbia: `cumbia-step cumbia-machete cumbia-sau cumbia-candle`,
+  bachata: `bachata-side bachata-basic`,
+  chacha: ``,
+  flamenco: `flamenco-arms flamenco-palmas flamenco-turn paso-doble-cape`,
+  tango: `tango-walk`,
+  mexican: `folklorico-skirt hat-dance-heels`,
 };
 
 /** genreSets/*.ts: id lists by genre, added after RAW's. */

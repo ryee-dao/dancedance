@@ -126,8 +126,13 @@ const TEMPLATES: Record<Intensity, Partial<Record<SectionType | 'warmup', DuoKin
   },
 };
 
-/** From this calm up (a ballad; lyrical opens at ~0.68) a song gets only gentle partner moves. */
-export const CALM_GENTLE = 0.6;
+/**
+ * From this calm up (a ballad) a song gets only gentle partner moves. Analyser
+ * 1.4.0 reads soft songs on a steady beat at calm ~0.4-0.64 and ballads from
+ * ~0.79 (recorded sets, Nov 2026); lyrical opens from ~0.74 (songStyle.ts
+ * LYRICAL_CALM). 0.7 keeps soft-but-steady songs' claps and slaps.
+ */
+export const CALM_GENTLE = 0.7;
 /** A song with fewer partner moves than this to choose from leans on the single-player kinds instead. */
 export const PARTNER_RICH = 6;
 /** Pick weight of a style-tagged partner move on a song that opens its style (times the openness). */

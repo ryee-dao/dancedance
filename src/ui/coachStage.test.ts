@@ -27,7 +27,7 @@ describe('coach stage routine personalisation', () => {
     const ballad = { kind: 'youtube' as const, videoId: 'mi', title: 'My Immortal', artist: 'Evanescence' };
     const map = { bpm: 78, sections: [{ energy: 0.5 }], traits: { calm: 0.9, heavy: 0.2 } };
     const b = routineInfo(ballad, map, { getGenre: () => 'Hard Rock' });
-    expect(b.label).toBe('Rock · Ballad');
+    expect(b.label).toBe('Hard Rock · Ballad');
     expect(b.style.calm).toBeGreaterThan(0.8);
     // Bad or missing traits: neutral, no crash.
     expect(routineInfo(ballad, { bpm: 78, sections: [], traits: { calm: 'x', heavy: NaN } }, { getGenre: () => 'Hard Rock' }).style.calm).toBeUndefined();

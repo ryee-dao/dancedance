@@ -172,8 +172,9 @@ describe('genre mapping', () => {
     expect(resolveSongStyle({ genres: ['Country pop'] }).themes).toContain('country');
     expect(t(['Bedroom pop'])).toBe('pop');
     expect(resolveSongStyle({ genres: ['Phonk'] }).subs?.bass).toBeGreaterThanOrEqual(0.9);
-    expect(styleLabel(resolveSongStyle({ genres: ['Phonk'] }))).toBe('Electronic · Phonk');
-    expect(styleLabel(resolveSongStyle({ genres: ['Dubstep'] }))).toBe('Electronic · Dubstep');
+    // The label is the music's own name (it says the sub-style already).
+    expect(styleLabel(resolveSongStyle({ genres: ['Phonk'] }))).toBe('Phonk');
+    expect(styleLabel(resolveSongStyle({ genres: ['Dubstep'] }))).toBe('Dubstep');
     expect(resolveSongStyle({ genres: ['UK drill'] }).subs?.drill).toBeGreaterThanOrEqual(0.9);
     expect(resolveSongStyle({ genres: ['Amapiano'] }).subs?.amapiano).toBeGreaterThanOrEqual(0.9);
     // A list blends: the first names weigh most, the tag is a tie-breaker.
@@ -192,9 +193,14 @@ describe('genre mapping', () => {
     expect(genreFamilies('hip-hop/rap')).toEqual(genreFamilies('Hip-Hop/Rap'));
     expect(genreFamilies('Música Urbana')).not.toBeNull();
     expect(top(resolveSongStyle({ genre: 'Pop Punk Revival' }))).toBe('rock');
-    expect(genreFamilies('Spoken Word')).toBeNull();
+    expect(genreFamilies('Zzyzx Wave')).toBeNull();
     expect(genreFamilies('')).toBeNull();
-    expect(resolveSongStyle({ genre: 'Spoken Word' }).source).toBe('fallback');
+    expect(resolveSongStyle({ genre: 'Zzyzx Wave' }).source).toBe('fallback');
+    // Not dance music is placed honestly: a neutral mix under its own name.
+    const spoken = resolveSongStyle({ genre: 'Spoken Word' });
+    expect(spoken.source).toBe('genre');
+    expect(spoken.still).toBe(true);
+    expect(styleLabel(spoken)).toBe('Spoken Word');
   });
 });
 
@@ -277,14 +283,14 @@ describe('style comes from the song (owner examples)', () => {
     for (const info of [{ title: 'My Immortal', genre: 'Hard Rock' }, { title: 'My Immortal', genre: 'Hard Rock', genres: ['Alternative rock'] }]) {
       const s = resolveSongStyle(info, { bpm: 78, traits: { calm: 0.9, heavy: 0.2, drive: 0.15 } });
       expect(s.calm).toBeGreaterThan(0.85);
-      expect(styleLabel(s)).toBe('Rock · Ballad');
+      expect(styleLabel(s)).toMatch(/^(Hard Rock|Alternative rock) · Ballad$/);
       const open = songGenres(s);
       for (const g of ['rock', 'metal', 'punk'] as const) expect(open.has(g), g).toBe(false);
       expect(open.has('lyrical')).toBe(true);
     }
     // The same band's banger stays rock (and metal).
     const loud = resolveSongStyle({ title: 'Bring Me to Life', genre: 'Hard Rock', genres: ['Nu metal', 'rap rock', 'alternative rock', 'gothic metal'] }, { traits: { calm: 0.3, heavy: 0.85, drive: 0.8 } });
-    expect(styleLabel(loud)).toBe('Rock · Metal');
+    expect(styleLabel(loud)).toBe('Nu metal');
     expect(songGenres(loud).has('rock')).toBe(true);
     expect(songGenres(loud).has('metal')).toBe(true);
   });
@@ -316,8 +322,10 @@ describe('style comes from the song (owner examples)', () => {
     expect(trap.source).toBe('traits');
     expect(top(trap)).toBe('hiphop');
     expect(top(trap)).not.toBe('pop');
-    expect(songGenres(trap).has('trap')).toBe(true);
-    expect(styleLabel(trap)).toBe('Hip-hop · Trap');
+    // A half-time feel is what any song counted at double tempo shows: without a trap name it doesn't open trap.
+    expect(songGenres(trap).has('trap')).toBe(false);
+    expect(styleLabel(trap)).toBe('Hip-hop');
+    expect(songGenres(resolveSongStyle({ title: 'X', genres: ['trap'] }, { bpm: 140, traits: { calm: 0.25, halfFeel: 0.85, hats: 0.8, bass: 0.8, drive: 0.6 } })).has('trap')).toBe(true);
     const house = resolveSongStyle({ title: 'X' }, { bpm: 124, traits: { calm: 0.3, fourFloor: 0.9, drive: 0.7 } });
     expect(styleLabel(house)).toBe('Electronic · House');
     const metal = resolveSongStyle({ title: 'X' }, { bpm: 170, traits: { calm: 0.15, heavy: 0.9, drive: 0.9 } });
@@ -325,7 +333,8 @@ describe('style comes from the song (owner examples)', () => {
     expect(songGenres(metal).has('metal')).toBe(true);
     const ballad = resolveSongStyle({ title: 'X' }, { bpm: 70, traits: { calm: 0.9, drive: 0.1 } });
     expect(top(ballad)).toBe('pop');
-    expect(styleLabel(ballad)).toBe('Pop · Ballad');
+    // Known only by its audio: a ballad, not "Pop".
+    expect(styleLabel(ballad)).toBe('Ballad');
     // Partial traits are fine; missing traits are neutral.
     expect(resolveSongStyle({ title: 'X' }, { traits: { heavy: 0.95 } }).source).toBe('traits');
     expect(resolveSongStyle({ title: 'X' }, { traits: {} }).source).toBe('fallback');
@@ -373,14 +382,16 @@ describe('starter pack', () => {
 
 describe('labels and keys', () => {
   const st = (families: SongStyle['families'], themes: SongStyle['themes'] = []): SongStyle => ({ families, themes, source: 'override' });
-  it('styleLabel names the top one or two families', () => {
-    expect(styleLabel(st({ latin: 0.8, pop: 0.2 }))).toBe('Latin groove');
+  it('styleLabel names the top one or two families as music styles (never "Aerobics")', () => {
+    expect(styleLabel(st({ latin: 0.8, pop: 0.2 }))).toBe('Latin');
+    expect(styleLabel(st({ aerobic: 0.8, pop: 0.2 }))).toBe('Dance');
     expect(styleLabel(st({ rock: 1 }))).toBe('Rock');
     expect(styleLabel(st({ disco: 0.5, funk: 0.4, pop: 0.1 }))).toBe('Disco · Funk');
     expect(styleLabel(st({ funk: 0.45, disco: 0.45, pop: 0.1 }))).toBe('Disco · Funk');
     expect(styleLabel(st({ kpop: 0.6, pop: 0.3, hiphop: 0.1 }))).toBe('K-pop');
-    expect(styleLabel(BALANCED_POP)).toBe('Pop');
-    expect(styleLabel(resolveSongStyle({ genre: 'Latin' }))).toBe('Latin groove');
+    // Nothing known: no pretend style.
+    expect(styleLabel(BALANCED_POP)).toBe('Mixed styles');
+    expect(styleLabel(resolveSongStyle({ genre: 'Latin' }))).toBe('Latin');
     expect(styleLabel(resolveSongStyle({ genre: 'Rock' }))).toBe('Rock');
   });
 
