@@ -36,7 +36,7 @@ const ENTRIES: readonly Entry[] = [
   ['reggae', [], ['reggae music']],
   ['jazz', [], ['jazz music']],
   ['blues', [], ['blues music']],
-  ['folk', [], ['folk music']],
+  ['folk', [], ['folk music', 'traditional folk music', 'traditional folk', 'contemporary folk music']],
   ['classical', [], ['classical music', 'orchestral']],
   ['alternative', [], ['alternative music', 'alternative/indie', 'indie', 'adult alternative', 'indie alternative']],
   ['punk', [], ['punk rock', 'punk music']],
@@ -124,7 +124,7 @@ const ENTRIES: readonly Entry[] = [
   ['yacht rock', ['rock', 'pop']],
   ['Latin rock', ['latin', 'rock']],
   ['country rock', ['country', 'rock']],
-  ['indie folk', ['folk', 'alternative']],
+  ['indie folk', ['folk', 'alternative'], ['alternative folk', 'alt-folk', 'indie-folk']],
   ['folk pop', ['folk', 'pop']],
   ['singer-songwriter', ['folk'], ['singer/songwriter', 'singer songwriter']],
 
@@ -268,6 +268,7 @@ const ENTRIES: readonly Entry[] = [
   ['highlife', ['world']],
   ['bhangra', ['world', 'dance']],
   ['dancehall', ['reggae'], ['dancehall music', 'ragga']],
+  ['dancehall pop', ['dancehall', 'pop'], ['dancehall-pop']],
   ['ska', ['reggae']],
   ['dub', ['reggae']],
   ['roots reggae', ['reggae']],
@@ -308,7 +309,7 @@ const JUNK = new Set(
     'american', 'british', 'english', 'uk', 'usa', 'us', 'canadian', 'australian', 'swedish', 'korean', 'japanese', 'irish', 'scottish',
     'french', 'german', 'norwegian', 'danish', 'dutch', 'italian', 'spanish', 'puerto rican', 'colombian', 'barbadian', 'mexican',
     'brazilian', 'jamaican', 'nigerian', 'new zealand', 'welsh', 'belgian', 'finnish',
-    'spoken word', 'rapping', 'singing', 'stage and screen', 'music video', 'comedy', 'easy listening', 'lounge', 'background',
+    'spoken word', 'edits', 'general', 'pop general', 'todd in the shadows', 'rapping', 'singing', 'stage and screen', 'music video', 'comedy', 'easy listening', 'lounge', 'background',
   ].map((s) => keyOf(s)),
 );
 

@@ -102,13 +102,13 @@ export function sourceFamilies(outcomes: Partial<Record<SourceId, SourceOutcome>
 
 /**
  * Broad families grouped for the "do the sources even agree?" check: rock,
- * metal and punk are one camp; dance, electronic and disco another; hip hop,
- * R&B, soul, funk and gospel another; country, folk and blues another.
+ * metal and punk are one camp; pop, dance, electronic and disco another; hip
+ * hop, R&B, soul, funk and gospel another; country, folk and blues another.
  * "alternative" says too little to disagree with anything.
  */
 const CAMP: Record<string, string> = {
   rock: 'rock', metal: 'rock', punk: 'rock', industrial: 'rock',
-  dance: 'dance', electronic: 'dance', disco: 'dance',
+  pop: 'pop', dance: 'pop', electronic: 'pop', disco: 'pop',
   'hip hop': 'urban', 'r&b': 'urban', soul: 'urban', funk: 'urban', gospel: 'urban',
   country: 'country', folk: 'country', blues: 'country',
 };
