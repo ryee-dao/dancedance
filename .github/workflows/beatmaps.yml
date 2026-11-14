@@ -256,11 +256,11 @@ jobs:
           stage() {
             # Only JSON under public/ is ever staged: never audio, never anything else.
             paths=(public/beatmaps)
-            for f in public/playlist.json public/songs.json public/songs-status.json; do
+            for f in public/playlist.json public/songs.json public/songs-status.json public/genres.json; do
               if [ -e "$f" ]; then paths+=("$f"); fi
             done
             git add -A -- "${paths[@]}"
-            if git diff --cached --name-only | grep -Ev '^public/(beatmaps/[A-Za-z0-9_-]+|playlist|songs|songs-status)\.json$'; then
+            if git diff --cached --name-only | grep -Ev '^public/(beatmaps/[A-Za-z0-9_-]+|playlist|songs|songs-status|genres)\.json$'; then
               echo "::error title=Unexpected files::Refusing to commit files other than beat-map JSON"
               exit 1
             fi

@@ -135,6 +135,25 @@ export interface AddedSong {
   note?: 'music-video';
   /** iTunes primary genre ("Pop", "Latin", ...), when the cloud job learned it. */
   genre?: string;
+  /**
+   * Genres of this song gathered from several public sources and combined by
+   * agreement (src/genre), best first, at most about 6: ["nu metal", "rap rock", ...].
+   * Absent until looked up (or when no source could confirm the song).
+   */
+  genres?: string[];
+}
+
+/** A stored `genres` list, cleaned: strings only, trimmed, at most 60 characters each and 8 in all; undefined when empty. */
+export function cleanGenreList(v: unknown): string[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const out: string[] = [];
+  for (const g of v) {
+    if (typeof g !== 'string') continue;
+    const t = g.replace(/\s+/g, ' ').trim();
+    if (t && t.length <= 60 && !/[\u0000-\u001f]/.test(t) && !out.includes(t)) out.push(t);
+    if (out.length >= 8) break;
+  }
+  return out.length ? out : undefined;
 }
 
 /**
@@ -203,6 +222,7 @@ export function parseSongsList(text: string): AddedSong[] {
     if (typeof s.videoId !== 'string' || !VIDEO_ID.test(s.videoId) || seen.has(s.videoId)) continue;
     if (typeof s.title !== 'string' || !s.title.trim() || typeof s.artist !== 'string') continue;
     seen.add(s.videoId);
+    const genres = cleanGenreList(s.genres);
     const durationSec = typeof s.durationSec === 'number' && Number.isFinite(s.durationSec) ? Math.round(s.durationSec) : 0;
     out.push({
       videoId: s.videoId,
@@ -213,6 +233,7 @@ export function parseSongsList(text: string): AddedSong[] {
       ...(s.hasMap === false ? { hasMap: false } : {}),
       ...(s.note === 'music-video' ? { note: 'music-video' as const } : {}),
       ...(typeof s.genre === 'string' && s.genre.trim() ? { genre: s.genre.trim().slice(0, 60) } : {}),
+      ...(genres ? { genres } : {}),
     });
   }
   return out;

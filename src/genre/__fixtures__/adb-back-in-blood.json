@@ -1,0 +1,17 @@
+{
+ "url": "https://www.theaudiodb.com/api/v1/json/123/searchtrack.php?s=Pooh+Shiesty&t=Back+in+Blood",
+ "body": {
+  "track": [
+   {
+    "idTrack": "36698632",
+    "strTrack": "Back in Blood",
+    "strAlbum": "Shiesty Season: Certified",
+    "strArtist": "Pooh Shiesty",
+    "intDuration": "184489",
+    "strGenre": null,
+    "strMood": null,
+    "strStyle": null
+   }
+  ]
+ }
+}

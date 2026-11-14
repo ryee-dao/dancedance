@@ -1,0 +1,47 @@
+{
+ "url": "https://en.wikipedia.org/w/api.php?titles=Butter (Taio Cruz song)|Butter (song)|Butter",
+ "body": {
+  "batchcomplete": true,
+  "query": {
+   "pages": [
+    {
+     "ns": 0,
+     "title": "Butter (Taio Cruz song)",
+     "missing": true
+    },
+    {
+     "pageid": 46183,
+     "ns": 0,
+     "title": "Butter",
+     "revisions": [
+      {
+       "slots": {
+        "main": {
+         "contentmodel": "wikitext",
+         "contentformat": "text/x-wiki",
+         "content": "{{Short description|Dairy product}}\n{{Other uses}}\n{{pp-vandalism|small=yes}}\n{{Use American English|date=July 2026}}\n{{cs1 config|name-list-style=vanc|display-authors=3}}\n{{Use dmy dates|date=June 2021}}\n[[File:Švédský koláč naruby 904 (cropped).JPG|thumb|Solid and melted butter]]\n'''Butter''' is a [[dairy product]] made from the fat and protein components of [[Churning (butter)|churned]] [[cream]]. It is a semi-solid [[emulsion]] at [[room temperature]], consisting of approximately 81% [[butterfat]]. It is used at room temperature as a [[spread (food)|spread]], melted as a [[condiment]], and used as a [[Cooking fat|fat]] in baking, sauce-making, [[pan frying]], and other cooking procedures.\n\nMost frequently made from [[cow's milk]], butter can also be manufactured from the milk of other mammals, including [[Sheep milk|sheep]], [[Goat milk|goats]], [[Buffalo milk|buffalo]], and [[Yak milk|yaks]]. It is made by churning milk or cream to separate the fat globules from the [[buttermilk]]. [[Dairy salt|Salt]] has been added to butter since antiquity to help [[Food preservation|preserve]] it, particularly when being transported; salt may still play a preservation role but is less important today as the entire supply chain is usually refrigerated. In modern times, salt may be added for taste<ref>{{cite book | author=Institute of Medicine. Committee on Strategies to Reduce Sodium Intake | editor-last1=Henney | editor-first1=Jane E. | editor-last2=Taylor | editor-first2=Christine Lewis | editor-last3=Boon | editor-first3=Caitlin S. | title=Strategies to reduce sodium intake in the United States | chapter=4: Preservation and Physical Property Roles of Sodium in Foods | url=https://www.ncbi.nlm.nih.gov/books/NBK50952/ | publisher=National Academies Press | publication-place=Washington, D.C. | date=2010 | isbn=978-0-309-14805-4 | oclc=676698420 | archive-date=9 May 2022 | archive-url=https://web.archive.org/web/20220509180020/https://www.ncbi.nlm.nih.gov/books/NBK50952/ | url-status=live }}</ref> and [[food coloring]] for color.<ref>{{Cite web |title=Butter coloring |url=https://www.ocemuseum.nl/oce-technologies/butter-coloring/?lang=en |access-date=2 January 2023 |archive-date=2 January 2023 |archive-url=https://web.archive.org/web/20230102123254/https://www.ocemuseum.nl/oce-technologies/butter-coloring/?lang=en |url-status=live }}</ref> [[Kitchen rendering|Rendering]] butter, removing the water and [[milk solids]], produces [[clarified butter]] (including ''[[ghee]]''), which is almost entirely butterfat.\n\nButter is a [[gel]].<ref>\nAt room temperature, for example 20{{nbsp}}°C, butter is composed of a liquid fat phase dispersed in a solid fat phase, and water is present within the structure. \n{{cite magazine |author=<!-- not stated --> |language= fr |title=La microstructure du lait et du beurre |url=https://www.academie-agriculture.fr/publications/encyclopedie/questions-sur/0801q20-la-microstructure-du-lait-et-du-beurre |magazine=Encyclopédie de l'Académie d'Agriculture |date=2020 |location= |publisher=Académie d'Agriculture  |access-date=2025-10-10}}</ref> \nButter remains a firm solid when [[refrigerated]] but softens to a spreadable consistency at [[room temperature]] and melts to a thin liquid consistency at {{Convert|32|to|35|C}}. The density of butter is {{convert|911|g/L|oz/USpt|abbr=on|frac=4}}.<ref>{{cite web|url=https://physics.info/density/|work=The Physics Hypertextbook|title=Density|last=Elert|first=Glenn|access-date=26 March 2018|archive-url=https://web.archive.org/web/20180819083024/https://physics.info/density/|archive-date=19 August 2018|url-status=live}}</ref> It generally has a pale yellow color but varies from deep yellow to nearly white. Its natural, unmodified color is dependent on the source animal's feed and genetics, but the commercial manufacturing process sometimes alters this with food colorings like [[annatto]]<ref>{{cite journal |title=A Substitute for 'Annatto' in Butter |journal=Nature |year=1946 |doi=10.1038/157232a0 |last1=Saïd |first1=Husein |last2=Nada |first2=I. A. A. |volume=157 |issue=3982 |page=232 |pmid=21017927 |bibcode=1946Natur.157..232S |s2cid=4131974 |doi-access=free }}</ref> or [[carotene]].\n\nIn 2023, world production of butter made from cow milk was six million [[tonne]]s, led by the United States, with 16% of the total."
+        }
+       }
+      }
+     ]
+    },
+    {
+     "pageid": 67506140,
+     "ns": 0,
+     "title": "Butter (song)",
+     "revisions": [
+      {
+       "slots": {
+        "main": {
+         "contentmodel": "wikitext",
+         "contentformat": "text/x-wiki",
+         "content": "{{short description|2021 single by BTS}}\n{{about|the BTS song|other songs|Butter (disambiguation)#Songs}}\n{{Use mdy dates|date=May 2021}}\n{{Infobox song\n| name           = Butter\n| cover          = BTS - Butter.png\n| caption        = 7-inch, cassette, and digital single cover\n| alt            = \n| type           = single\n| artist         = [[BTS]]\n| album          = <!--Do not add Proof here. Butter is a standalone single that was later included on an album, like Dynamite on Be.-->\n| B-side         = \"[[Permission to Dance]]\"\n| released       = {{Start date|2021|5|21}}\n| recorded       = \n| studio         = * Dogg Bounce (Seoul)\n* Larry and George (New York)\n| genre          = * [[Dance-pop]]\n* [[disco]]-[[pop music|pop]]\n* [[Electronic dance music|EDM]]\n| length         = 2:44\n| label          = * [[Big Hit Music|Big Hit]]\n* [[Sony Music Entertainment|Sony Music]]\n| writer         = * [[Jenna Andrews]]\n* Rob Grimaldi\n* Stephen Kirk\n* [[RM (rapper)|RM]]\n* Alex Bilowitz\n* Sebastian Garcia\n* [[Ron Perry (music)|Ron Perry]]\n| producer       = * Grimaldi\n* Kirk\n* Perry\n| prev_title     = [[Film Out]]\n| prev_year      = 2021\n| next_title     = [[Permission to Dance]]\n| next_year      = 2021\n| misc           = {{External music video|{{YouTube|WMweEpGlu_U|\"Butter\"}}\n{{Extra chronology\n | artist     = [[Megan Thee Stallion]]\n | type       = single\n | prev_title = [[Thot Shit]]\n | prev_year  = 2021\n | title      = Butter\n | version    = remix\n | year       = 2021\n | next_title = [[SG (song)|SG]]\n | next_year  = 2021\n}}\n{{External music video|header=Visualizer|{{YouTube|ymaIzkXY8nQ|\"Butter (feat. Megan Thee Stallion)\"}}|type=single}}\n}}\n{{Audio sample\n | type      = single\n | file      = BTS Butter sample.ogg\n}}\n}}\n\"'''Butter'''\" is a song recorded by South Korean [[boy band]] [[BTS]]. It was released as a digital single on May 21, 2021, through [[Big Hit Music]] and [[Sony Music Entertainment]], as the band's second English-language single. A [[disco-pop]], [[dance-pop]], and [[Electronic dance music|EDM]] track, the song was written by [[Jenna Andrews]], [[RM (rapper)|RM]], Alex Bilowitz, Sebastian Garcia, Robert Grimaldi, Stephen Kirk, and [[Ron Perry (music)|Ron Perry]], with production handled by the last three.\n\nUpon release, \"Butter\" received positive reviews from music critics, with praise towards its [[catchiness]]. It was a commercial success, topping charts in Hungary, India, Japan, Malaysia, Mexico, Singapore, South Korea, the United States, and Vietnam, as well as ''[[Billboard (magazine)|Billboard]]''{{'}}s [[Billboard Global 200|Global 200]] chart. The song also reached the top 10 in over 30 other countries worldwide. A remix featuring American rapper-songwriter [[Megan Thee Stallion]] was also released on August 27, 2021, which peaked at number three on the Global 200."
+        }
+       }
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

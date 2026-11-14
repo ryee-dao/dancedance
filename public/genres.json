@@ -1,0 +1,6999 @@
+{
+  "updatedAt": "2026-11-14T04:44:39.294Z",
+  "songs": {
+    "a ha - take on me": {
+      "artist": "a-ha",
+      "title": "Take On Me",
+      "videoIds": [
+        "NaQ083rNUwc"
+      ],
+      "genres": [
+        "synth-pop",
+        "new wave",
+        "pop",
+        "electronic",
+        "electropop",
+        "dance"
+      ],
+      "moods": [
+        "excitable"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:44:04.148Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:35:42.451Z",
+          "genres": [
+            "Synth-pop",
+            "new wave"
+          ],
+          "ref": "Take On Me"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:37:03.949Z",
+          "genres": [
+            "synth-pop"
+          ],
+          "ref": "Q107263325"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:44:04.148Z",
+          "genres": [
+            "pop",
+            "synth-pop",
+            "electronic",
+            "80s",
+            "dance / electro pop",
+            "new wave",
+            "todd in the shadows"
+          ],
+          "ref": "release-group/d8aadff5-81d2-3490-b865-ca77e64ad0c1,89475e94-e0f1-4e87-a4c9-cf02e564c4a8"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:35:42.534Z",
+          "genres": [
+            "Synthpop"
+          ],
+          "moods": [
+            "Excitable"
+          ],
+          "ref": "track/32882300"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:35:42.319Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "abba - dancing queen": {
+      "artist": "ABBA",
+      "title": "Dancing Queen",
+      "videoIds": [
+        "-sVB91NTa4A"
+      ],
+      "genres": [
+        "europop",
+        "pop",
+        "Euro disco",
+        "synth-pop",
+        "disco",
+        "electronic"
+      ],
+      "moods": [
+        "cheerful"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:44:06.709Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:36:55.946Z",
+          "genres": [
+            "Eurodisco",
+            "Europop"
+          ],
+          "ref": "Dancing Queen"
+        },
+        "wikidata": {
+          "status": "none",
+          "at": "2026-11-14T04:38:09.639Z",
+          "reason": "the item has no genre",
+          "ref": "Q109566031,Q870786"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:44:06.709Z",
+          "genres": [
+            "disco",
+            "electronic",
+            "europop",
+            "pop",
+            "rock",
+            "synth-pop"
+          ],
+          "ref": "release-group/4ee9c48e-5b91-3d83-9899-5e94892d3230"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:36:56.041Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "Cheerful"
+          ],
+          "ref": "track/32802723"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:36:55.818Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "ava max - kings queens": {
+      "artist": "Ava Max",
+      "title": "Kings & Queens",
+      "videoIds": [
+        "hn6lonvIRsI"
+      ],
+      "genres": [
+        "power pop",
+        "pop"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:43.492Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:07:28.389Z",
+          "genres": [
+            "Power pop"
+          ],
+          "ref": "Kings & Queens (Ava Max song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:08:41.816Z",
+          "genres": [
+            "power pop"
+          ],
+          "ref": "Q87429903"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:43.492Z",
+          "genres": [
+            "pop",
+            "power pop"
+          ],
+          "ref": "release-group/209d4bab-7b11-4491-9a19-a4f564cd3e62"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:07:28.571Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/35413279"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:07:28.265Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "ava max - sweet but psycho": {
+      "artist": "Ava Max",
+      "title": "Sweet but Psycho",
+      "videoIds": [
+        "zd-h01o7LtI"
+      ],
+      "genres": [
+        "pop",
+        "electropop",
+        "dance-pop",
+        "synth-pop"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:44.753Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:07:36.584Z",
+          "genres": [
+            "Pop",
+            "dance-pop",
+            "electropop",
+            "synth-pop"
+          ],
+          "ref": "Sweet but Psycho"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:08:49.955Z",
+          "genres": [
+            "electropop"
+          ],
+          "ref": "Q57550171"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:44.753Z",
+          "genres": [
+            "pop",
+            "electropop"
+          ],
+          "ref": "release-group/3b404d0c-bd49-4536-a3ce-45643ed7d744"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:07:36.638Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/35109637"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:07:36.455Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "avicii - wake me up": {
+      "artist": "Avicii",
+      "title": "Wake Me Up",
+      "videoIds": [
+        "5y_KJAg8bHI"
+      ],
+      "genres": [
+        "electronic",
+        "progressive house",
+        "house",
+        "folktronica",
+        "EDM",
+        "folk pop"
+      ],
+      "moods": [
+        "gentle"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:38.582Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:16:38.812Z",
+          "genres": [
+            "Folktronica",
+            "progressive house",
+            "EDM"
+          ],
+          "ref": "Wake Me Up (Avicii song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:17:52.444Z",
+          "genres": [
+            "pop music",
+            "electronic dance music",
+            "folktronica",
+            "folk-pop"
+          ],
+          "ref": "Q13557314"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:38.582Z",
+          "genres": [
+            "billboard hot 100",
+            "electronic"
+          ],
+          "ref": "release-group/8243edf0-1c84-4c5e-b693-811b1a2ef070"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:16:38.916Z",
+          "genres": [
+            "House"
+          ],
+          "moods": [
+            "Gentle"
+          ],
+          "ref": "track/33523280"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:16:38.637Z",
+          "genres": [
+            "House"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "backstreet boys - everybody backstreet s back": {
+      "artist": "Backstreet Boys",
+      "title": "Everybody (Backstreet's Back)",
+      "videoIds": [
+        "47NhAUUnIjs"
+      ],
+      "genres": [
+        "pop",
+        "dance-pop",
+        "europop",
+        "pop rap",
+        "teen pop"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:44:12.526Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:38:09.795Z",
+          "genres": [
+            "Dance-pop"
+          ],
+          "ref": "Everybody (Backstreet's Back)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:39:31.182Z",
+          "genres": [
+            "dance-pop",
+            "pop music"
+          ],
+          "ref": "Q2302917"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:44:12.526Z",
+          "genres": [
+            "pop",
+            "boy band",
+            "dance-pop",
+            "europop",
+            "pop rap",
+            "teen pop"
+          ],
+          "ref": "release-group/ba8bcd00-efeb-30bf-a786-ed6ffb0ffe0c"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:38:09.843Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "track/33009522"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:38:09.745Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "Backstreet Boys - Everybody (Backstreet's Back) [Extended Version] (Backstreet Boys)"
+        }
+      }
+    },
+    "bee gees - stayin alive": {
+      "artist": "Bee Gees",
+      "title": "Stayin' Alive",
+      "videoIds": [
+        "_Vj092UgKwQ"
+      ],
+      "genres": [
+        "disco",
+        "pop"
+      ],
+      "moods": [
+        "carefree"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:40:21.978Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T03:56:50.718Z",
+          "genres": [
+            "Disco"
+          ],
+          "ref": "Stayin' Alive"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T03:56:57.384Z",
+          "genres": [
+            "popular music",
+            "stage and screen",
+            "disco"
+          ],
+          "ref": "Q1352181,Q126178998"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:40:21.978Z",
+          "genres": [
+            "disco"
+          ],
+          "ref": "release-group/f3cc5901-8895-3a8c-ab57-c3485e78ea93"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T03:56:50.783Z",
+          "genres": [
+            "Disco"
+          ],
+          "moods": [
+            "Carefree"
+          ],
+          "ref": "track/32727671"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T03:56:50.495Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "beyonce ft jay z - crazy in love": {
+      "artist": "Beyoncé ft. JAY-Z",
+      "title": "Crazy in Love",
+      "videoIds": [
+        "FHo-g6DCTv4"
+      ],
+      "genres": [
+        "pop",
+        "R&B",
+        "hip hop",
+        "dance-pop",
+        "pop rap",
+        "electronic"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:44:13.769Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:38:17.925Z",
+          "genres": [
+            "Pop",
+            "hip-hop",
+            "R&B"
+          ],
+          "ref": "Crazy in Love"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:39:39.388Z",
+          "genres": [
+            "pop music",
+            "contemporary R&B",
+            "hip-hop"
+          ],
+          "ref": "Q148511"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:44:13.769Z",
+          "genres": [
+            "contemporary r&b",
+            "r b",
+            "dance-pop",
+            "electronic",
+            "hip hop",
+            "pop rap"
+          ],
+          "ref": "release-group/689d5a05-bbe7-335f-b3e0-1adb557c2393"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:38:17.975Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "track/33900993"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:38:17.796Z",
+          "genres": [
+            "Soundtrack"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "billie eilish - bad guy": {
+      "artist": "Billie Eilish",
+      "title": "bad guy",
+      "videoIds": [
+        "4-TbQnONe_w"
+      ],
+      "genres": [
+        "pop",
+        "dance-pop",
+        "electropop",
+        "trap",
+        "pop trap",
+        "electronic"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:28.771Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:05:05.558Z",
+          "genres": [
+            "Dance-pop",
+            "electropop",
+            "pop-trap"
+          ],
+          "ref": "Bad Guy (Billie Eilish song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:06:22.965Z",
+          "genres": [
+            "pop music",
+            "trap music"
+          ],
+          "ref": "Q62618893"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:28.771Z",
+          "genres": [
+            "electronic",
+            "pop"
+          ],
+          "ref": "release-group/a101e74c-a54f-4b90-bec7-d8e3b4d627c9"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:05:01.346Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/35127067"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:05:01.060Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "bruno mars - 24k magic": {
+      "artist": "Bruno Mars",
+      "title": "24K Magic",
+      "videoIds": [
+        "LhZ5GXCZtEw"
+      ],
+      "genres": [
+        "pop",
+        "electro",
+        "funk",
+        "disco",
+        "R&B",
+        "dance"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:48.570Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:08:50.113Z",
+          "genres": [
+            "Funk",
+            "disco",
+            "R&B"
+          ],
+          "ref": "24K Magic (song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:10:11.532Z",
+          "genres": [
+            "electro"
+          ],
+          "ref": "Q27126911"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:48.570Z",
+          "genres": [
+            "dance",
+            "edits"
+          ],
+          "ref": "release-group/b19973bd-9f79-48ed-bb72-a582bcf543e7"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:08:50.143Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/34677938"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:08:49.957Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "bruno mars - locked out of heaven": {
+      "artist": "Bruno Mars",
+      "title": "Locked Out of Heaven",
+      "videoIds": [
+        "WzsYtW8zyXU"
+      ],
+      "genres": [
+        "pop rock",
+        "pop",
+        "reggae rock",
+        "new wave",
+        "pub rock",
+        "reggae pop"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:03.580Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:10:03.522Z",
+          "genres": [
+            "Reggae rock",
+            "pop rock"
+          ],
+          "ref": "Locked Out of Heaven"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:11:16.943Z",
+          "genres": [
+            "reggae rock",
+            "pop rock"
+          ],
+          "ref": "Q25562"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:03.580Z",
+          "genres": [
+            "pop rock",
+            "new wave",
+            "electronic",
+            "pop",
+            "post-punk revival",
+            "pub rock",
+            "reggae rock",
+            "reggae-pop"
+          ],
+          "ref": "release-group/5fbed481-8541-4fdb-9df9-6abd81966588"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:10:03.672Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "track/32967400"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:10:03.376Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "bruno mars - treasure": {
+      "artist": "Bruno Mars",
+      "title": "Treasure",
+      "videoIds": [
+        "jz7C2W4m26U"
+      ],
+      "genres": [
+        "pop",
+        "disco",
+        "funk",
+        "synth-pop",
+        "soul"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:56.079Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:09:55.308Z",
+          "genres": [
+            "Disco",
+            "funk",
+            "pop",
+            "soul",
+            "synth-pop"
+          ],
+          "ref": "Treasure (song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:11:08.762Z",
+          "genres": [
+            "disco",
+            "funk",
+            "soul",
+            "synth-pop"
+          ],
+          "ref": "Q13465566"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:56.079Z",
+          "genres": [
+            "disco",
+            "funk"
+          ],
+          "ref": "release-group/2879de76-62b6-4443-a527-82a9c6cbf98a"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:09:55.396Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "track/32967402"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:09:55.182Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "bts - butter": {
+      "artist": "BTS",
+      "title": "Butter",
+      "videoIds": [
+        "bOq67Poe95w"
+      ],
+      "genres": [
+        "K-pop",
+        "dance-pop",
+        "pop",
+        "EDM",
+        "electronic",
+        "disco"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:40.085Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:07:20.229Z",
+          "genres": [
+            "Dance-pop",
+            "disco",
+            "pop",
+            "EDM"
+          ],
+          "ref": "Butter (song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:08:33.633Z",
+          "genres": [
+            "K-pop",
+            "electronic dance music",
+            "dance-pop"
+          ],
+          "ref": "Q106928736,Q106928594"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:40.085Z",
+          "genres": [
+            "k-pop"
+          ],
+          "ref": "release-group/fe9200d2-6a79-4b3f-8f64-e54865342823"
+        },
+        "theaudiodb": {
+          "status": "none",
+          "at": "2026-11-14T04:07:20.259Z",
+          "reason": "the track has no genre",
+          "ref": "track/35767477"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:07:20.079Z",
+          "genres": [
+            "K-Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "bts - dynamite": {
+      "artist": "BTS",
+      "title": "Dynamite",
+      "videoIds": [
+        "Mzk6KkyxXC8"
+      ],
+      "genres": [
+        "pop",
+        "K-pop",
+        "disco",
+        "dance-pop",
+        "synth funk"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:38.838Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:06:23.130Z",
+          "genres": [
+            "Disco",
+            "pop"
+          ],
+          "ref": "Dynamite (BTS song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:07:36.452Z",
+          "genres": [
+            "disco",
+            "pop music"
+          ],
+          "ref": "Q98073193"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:38.838Z",
+          "genres": [
+            "k-pop",
+            "dance-pop",
+            "pop",
+            "synth funk"
+          ],
+          "ref": "release-group/d0d03eaa-d880-4c12-b3ae-3013e327ed90"
+        },
+        "theaudiodb": {
+          "status": "none",
+          "at": "2026-11-14T04:06:23.141Z",
+          "reason": "the track has no genre",
+          "ref": "track/35813427"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:06:22.968Z",
+          "genres": [
+            "K-Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "carly rae jepsen - call me maybe": {
+      "artist": "Carly Rae Jepsen",
+      "title": "Call Me Maybe",
+      "videoIds": [
+        "0Bl8dDFsAQU"
+      ],
+      "genres": [
+        "pop",
+        "teen pop",
+        "dance-pop",
+        "bubblegum pop",
+        "nu-disco",
+        "Euro disco"
+      ],
+      "moods": [
+        "excitable"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:14.879Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:11:25.250Z",
+          "genres": [
+            "Pop",
+            "teen pop",
+            "dance-pop",
+            "bubblegum pop",
+            "nu-disco"
+          ],
+          "ref": "Call Me Maybe"
+        },
+        "wikidata": {
+          "status": "none",
+          "at": "2026-11-14T04:12:57.841Z",
+          "reason": "the item has no genre",
+          "ref": "Q141774066,Q326835,Q141774070"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:14.879Z",
+          "genres": [
+            "pop",
+            "teen pop",
+            "dance-pop",
+            "electronic; house; pop; jazz",
+            "euro-disco",
+            "pop general",
+            "todd in the shadows"
+          ],
+          "ref": "release-group/09ae8c7a-594a-442c-b5f2-47f3bbfb105a"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:11:25.351Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "Excitable"
+          ],
+          "ref": "track/32882209"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:11:25.160Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "cyndi lauper - girls just want to have fun": {
+      "artist": "Cyndi Lauper",
+      "title": "Girls Just Want to Have Fun",
+      "videoIds": [
+        "jRr5EasAq84"
+      ],
+      "genres": [
+        "pop",
+        "new wave",
+        "bubblegum pop",
+        "dance-pop",
+        "synth-pop",
+        "pop rock"
+      ],
+      "moods": [
+        "happy"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:44:11.287Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:37:12.272Z",
+          "genres": [
+            "New wave",
+            "pop",
+            "bubblegum"
+          ],
+          "ref": "Girls Just Want to Have Fun"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:38:25.987Z",
+          "genres": [
+            "new wave",
+            "pop music",
+            "bubblegum music",
+            "post-disco",
+            "disco"
+          ],
+          "ref": "Q432461"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:44:11.287Z",
+          "genres": [
+            "pop",
+            "dance-pop",
+            "synth-pop",
+            "80s",
+            "electronic",
+            "new wave",
+            "pop rock",
+            "rock",
+            "synthpop"
+          ],
+          "ref": "release-group/5e53792e-0298-3fc1-8371-14b4916beb8e"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:37:12.322Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "Happy"
+          ],
+          "ref": "track/32744338"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:37:12.121Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "daft punk ft pharrell williams - get lucky": {
+      "artist": "Daft Punk ft. Pharrell Williams",
+      "title": "Get Lucky",
+      "videoIds": [
+        "gx7GyiDZQms"
+      ],
+      "genres": [
+        "funk",
+        "pop",
+        "disco",
+        "deep house",
+        "electro",
+        "electronic"
+      ],
+      "moods": [
+        "happy"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:06.104Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:11:08.902Z",
+          "genres": [
+            "Disco",
+            "funk",
+            "pop"
+          ],
+          "ref": "Get Lucky (Daft Punk song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:12:41.509Z",
+          "genres": [
+            "disco",
+            "funk",
+            "pop music"
+          ],
+          "ref": "Q11510350"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:06.104Z",
+          "genres": [
+            "electronic",
+            "deep house",
+            "disco",
+            "electro",
+            "funk",
+            "pop"
+          ],
+          "ref": "release-group/9b7ce16c-8310-4cc5-aad5-09893a5a8297"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:11:09.028Z",
+          "genres": [
+            "Funk"
+          ],
+          "moods": [
+            "Happy"
+          ],
+          "ref": "track/33372076"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:11:08.764Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "david guetta ft sia - titanium": {
+      "artist": "David Guetta ft. Sia",
+      "title": "Titanium",
+      "videoIds": [
+        "8YMkAW9TxDM"
+      ],
+      "genres": [
+        "house",
+        "dance",
+        "pop",
+        "electronic",
+        "electro",
+        "R&B"
+      ],
+      "moods": [
+        "happy"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:46.090Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:16:47.056Z",
+          "genres": [
+            "House",
+            "dance",
+            "pop"
+          ],
+          "ref": "Titanium (David Guetta song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:18:00.636Z",
+          "genres": [
+            "house music",
+            "pop music",
+            "urban contemporary",
+            "dance music"
+          ],
+          "ref": "Q535566"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:46.090Z",
+          "genres": [
+            "electro",
+            "electronic",
+            "house",
+            "pop",
+            "todd in the shadows"
+          ],
+          "ref": "release-group/b698679d-b675-4137-bcda-05cede87820b"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:16:47.065Z",
+          "genres": [
+            "House"
+          ],
+          "moods": [
+            "Happy"
+          ],
+          "ref": "track/32756252"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:16:46.881Z",
+          "genres": [
+            "Dance"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "dnce - cake by the ocean": {
+      "artist": "DNCE",
+      "title": "Cake By The Ocean",
+      "videoIds": [
+        "UfM-nM762ec"
+      ],
+      "genres": [
+        "pop",
+        "indie pop",
+        "R&B",
+        "disco-pop",
+        "dance",
+        "dance-pop"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:52.535Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:18:57.967Z",
+          "genres": [
+            "Pop",
+            "dance",
+            "disco-pop",
+            "funk"
+          ],
+          "ref": "Cake by the Ocean"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:20:19.467Z",
+          "genres": [
+            "indie pop",
+            "contemporary R&B",
+            "pop music",
+            "dance music",
+            "disco-funk"
+          ],
+          "ref": "Q21427193"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:52.535Z",
+          "genres": [
+            "dance-pop",
+            "dance; electronic; indie pop; jazz; trance",
+            "indie pop",
+            "contemporary r&b",
+            "pop"
+          ],
+          "ref": "release-group/f7b0e719-3f8b-4080-9e9c-0dc9e1df5c4a"
+        },
+        "theaudiodb": {
+          "status": "none",
+          "at": "2026-11-14T04:18:58.020Z",
+          "reason": "the track has no genre",
+          "ref": "track/34561075"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:18:57.829Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "dua lipa - break my heart": {
+      "artist": "Dua Lipa",
+      "title": "Break My Heart",
+      "videoIds": [
+        "jgh8owCuX78"
+      ],
+      "genres": [
+        "dance-pop",
+        "pop",
+        "indie pop",
+        "disco-funk",
+        "electronic"
+      ],
+      "moods": [
+        "intimate"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:40:38.593Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T03:58:13.061Z",
+          "genres": [
+            "Dance-pop",
+            "disco-funk"
+          ],
+          "ref": "Break My Heart (Dua Lipa song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T03:59:41.535Z",
+          "genres": [
+            "dance-pop"
+          ],
+          "ref": "Q88098498"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:40:38.593Z",
+          "genres": [
+            "dance-pop",
+            "electronic",
+            "pop"
+          ],
+          "ref": "release-group/43a71fb0-65b0-47ba-ad22-40e52d0fed90"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T03:58:13.078Z",
+          "genres": [
+            "Indie Pop"
+          ],
+          "moods": [
+            "Intimate"
+          ],
+          "ref": "track/35407474"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T03:58:12.890Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "dua lipa - dance the night": {
+      "artist": "Dua Lipa",
+      "title": "Dance The Night",
+      "videoIds": [
+        "hCLkVrp_4CE"
+      ],
+      "genres": [
+        "pop",
+        "synth-pop",
+        "indie pop",
+        "disco",
+        "dance-pop"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:40:41.957Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T03:59:25.256Z",
+          "genres": [
+            "Disco",
+            "synth-pop"
+          ],
+          "ref": "Dance the Night"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:00:46.819Z",
+          "genres": [
+            "pop music",
+            "disco"
+          ],
+          "ref": "Q118697941"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:40:41.957Z",
+          "genres": [
+            "pop",
+            "dance-pop",
+            "soundtrack"
+          ],
+          "ref": "release-group/54d80d1a-d34e-40e1-968a-38368bfa4546"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T03:59:25.349Z",
+          "genres": [
+            "Indie Pop"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/36107374"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T03:59:25.098Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "dua lipa - don t start now": {
+      "artist": "Dua Lipa",
+      "title": "Don't Start Now",
+      "videoIds": [
+        "xjiYBGs0TUA"
+      ],
+      "genres": [
+        "disco",
+        "nu-disco",
+        "pop",
+        "indie pop",
+        "electronic"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:40:33.964Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T03:58:04.649Z",
+          "genres": [
+            "Nu-disco"
+          ],
+          "ref": "Don't Start Now"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T03:59:25.095Z",
+          "genres": [
+            "disco"
+          ],
+          "ref": "Q72008699"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:40:33.964Z",
+          "genres": [
+            "pop",
+            "disco",
+            "electronic",
+            "electronica"
+          ],
+          "ref": "release-group/5ba758cb-345a-4335-bba5-71adc18e14d9"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T03:58:04.780Z",
+          "genres": [
+            "Indie Pop"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/35339855"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T03:58:04.508Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "dua lipa - houdini": {
+      "artist": "Dua Lipa",
+      "title": "Houdini",
+      "videoIds": [
+        "YgCYsJicgEU"
+      ],
+      "genres": [
+        "pop",
+        "nu-disco",
+        "neo-psychedelia",
+        "electronic",
+        "psychedelic pop",
+        "post-disco"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:40:45.330Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T03:59:33.502Z",
+          "genres": [
+            "Nu-disco",
+            "post-disco",
+            "psychedelic pop"
+          ],
+          "ref": "Houdini (Dua Lipa song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:00:55.097Z",
+          "genres": [
+            "nu-disco",
+            "pop music",
+            "electronica",
+            "post-disco",
+            "neo-psychedelia"
+          ],
+          "ref": "Q123273186"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:40:45.330Z",
+          "genres": [
+            "pop",
+            "neo-psychedelia",
+            "nu disco",
+            "electronica"
+          ],
+          "ref": "release-group/ee38e44d-c8c7-4bd7-8253-0de4e500eaa4"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T03:59:33.503Z",
+          "genres": [
+            "Indie Pop"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/36264071"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T03:59:33.320Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "dua lipa - levitating": {
+      "artist": "Dua Lipa",
+      "title": "Levitating",
+      "videoIds": [
+        "1j_XvebOg4c"
+      ],
+      "genres": [
+        "electro-disco",
+        "nu-disco",
+        "pop",
+        "funk-pop",
+        "indie pop",
+        "dance-pop"
+      ],
+      "moods": [
+        "intimate"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:40:32.709Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T03:57:04.689Z",
+          "genres": [
+            "Electro-disco",
+            "nu-disco",
+            "pop-funk",
+            "space rock"
+          ],
+          "ref": "Levitating (song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T03:58:12.874Z",
+          "genres": [
+            "electro-disco",
+            "nu-disco"
+          ],
+          "ref": "Q90599924"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:40:32.709Z",
+          "genres": [
+            "pop",
+            "dance-pop",
+            "house",
+            "electro-disco",
+            "electronic",
+            "nu disco"
+          ],
+          "ref": "release-group/62f660e0-6224-434b-bf7a-7e23f6b9317c"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T03:57:03.014Z",
+          "genres": [
+            "Indie Pop"
+          ],
+          "moods": [
+            "Intimate"
+          ],
+          "ref": "track/35407470"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T03:57:02.704Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "dua lipa - physical": {
+      "artist": "Dua Lipa",
+      "title": "Physical",
+      "videoIds": [
+        "SRdlnO9gMIY"
+      ],
+      "genres": [
+        "synth-pop",
+        "dance-pop",
+        "pop",
+        "power pop",
+        "indie pop",
+        "dance"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:40:37.341Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T03:58:08.708Z",
+          "genres": [
+            "Power pop",
+            "synth-pop",
+            "dance-pop"
+          ],
+          "ref": "Physical (Dua Lipa song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T03:59:33.309Z",
+          "genres": [
+            "dance-pop",
+            "synth-pop"
+          ],
+          "ref": "Q83548825"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:40:37.341Z",
+          "genres": [
+            "dance",
+            "electronic",
+            "hip hop music",
+            "house music",
+            "jazz",
+            "k-pop",
+            "pop",
+            "pop music",
+            "rock",
+            "synth-pop",
+            "trance"
+          ],
+          "ref": "release-group/5f836bf1-6080-4d32-ae93-57fff34ab009"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T03:58:08.865Z",
+          "genres": [
+            "Indie Pop"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/35374593"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T03:58:08.626Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "earth wind fire - september": {
+      "artist": "Earth, Wind & Fire",
+      "title": "September",
+      "videoIds": [
+        "DlSsIKn3HTU"
+      ],
+      "genres": [
+        "disco",
+        "funk",
+        "R&B",
+        "pop soul"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:44:05.468Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:35:50.679Z",
+          "genres": [
+            "Disco",
+            "funk",
+            "R&B"
+          ],
+          "ref": "September (song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:37:12.118Z",
+          "genres": [
+            "disco"
+          ],
+          "ref": "Q3075151"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:44:05.468Z",
+          "genres": [
+            "disco",
+            "funk",
+            "pop soul"
+          ],
+          "ref": "release-group/db82fb52-f246-36dc-910a-ba709ed22dea"
+        },
+        "theaudiodb": {
+          "status": "none",
+          "at": "2026-11-14T04:35:50.726Z",
+          "reason": "no track by this artist with this title"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:35:50.544Z",
+          "genres": [
+            "R&B/Soul"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "ed sheeran - shape of you": {
+      "artist": "Ed Sheeran",
+      "title": "Shape of You",
+      "videoIds": [
+        "_dK2tDK9grQ"
+      ],
+      "genres": [
+        "pop",
+        "dance-pop",
+        "tropical house",
+        "dancehall",
+        "short film",
+        "musical film"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:32.710Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:15:17.013Z",
+          "genres": [
+            "Pop",
+            "dancehall",
+            "tropical house"
+          ],
+          "ref": "Shape of You"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:16:38.635Z",
+          "genres": [
+            "dance-pop",
+            "short film",
+            "musical film"
+          ],
+          "ref": "Q28132505"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:32.710Z",
+          "genres": [
+            "pop",
+            "todd in the shadows"
+          ],
+          "ref": "release-group/c4c16161-d211-4c71-99af-cc344d99c69d"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:15:17.048Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/34775377"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:15:16.881Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "evanescence - bring me to life": {
+      "artist": "Evanescence",
+      "title": "Bring Me to Life",
+      "videoIds": [
+        "s8ZXJ5QUYvQ"
+      ],
+      "genres": [
+        "nu metal",
+        "rap rock",
+        "alternative rock",
+        "rock",
+        "hard rock",
+        "alternative metal"
+      ],
+      "moods": [
+        "troubled"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:40:26.669Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T03:56:52.873Z",
+          "genres": [
+            "Nu metal",
+            "rap rock",
+            "alternative rock",
+            "gothic metal"
+          ],
+          "ref": "Bring Me to Life"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T03:57:02.703Z",
+          "genres": [
+            "nu metal"
+          ],
+          "ref": "Q303783"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:40:26.669Z",
+          "genres": [
+            "rock",
+            "symphonic rock",
+            "alternative metal",
+            "nu metal",
+            "alternative rock",
+            "gothic rock",
+            "hard rock",
+            "heavy metal",
+            "post-grunge",
+            "progressive metal",
+            "rap rock"
+          ],
+          "ref": "release-group/a35bcaf6-8e4a-3087-9b3b-d1295a2d4dbb"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T03:56:55.343Z",
+          "genres": [
+            "Rock"
+          ],
+          "moods": [
+            "Troubled"
+          ],
+          "ref": "track/32802755"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T03:56:50.496Z",
+          "genres": [
+            "Hard Rock"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "finger eleven - paralyzer": {
+      "artist": "Finger Eleven",
+      "title": "Paralyzer",
+      "videoIds": [
+        "aF18NehJxos"
+      ],
+      "genres": [
+        "alternative rock",
+        "rock",
+        "funk rock",
+        "dance-rock",
+        "hard rock",
+        "post-grunge"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:40:31.351Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T03:57:02.611Z",
+          "genres": [
+            "Funk rock",
+            "dance-rock",
+            "alternative rock",
+            "hard rock",
+            "post-grunge"
+          ],
+          "ref": "Paralyzer"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T03:58:08.625Z",
+          "genres": [
+            "alternative rock"
+          ],
+          "ref": "Q17092313"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:40:31.351Z",
+          "genres": [
+            "alternative rock",
+            "rock"
+          ],
+          "ref": "release-group/5f342ff2-2462-4ee0-8464-f52399e2cfee"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T03:57:00.791Z",
+          "genres": [
+            "Rock"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/32915483"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T03:57:00.600Z",
+          "genres": [
+            "Rock"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "harry styles - as it was": {
+      "artist": "Harry Styles",
+      "title": "As It Was",
+      "videoIds": [
+        "V1Z586zoeeE"
+      ],
+      "genres": [
+        "synth-pop",
+        "new wave",
+        "pop"
+      ],
+      "moods": [
+        "happy"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:07.463Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:02:08.697Z",
+          "genres": [
+            "Synth-pop",
+            "new wave"
+          ],
+          "ref": "As It Was"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:03:30.166Z",
+          "genres": [
+            "synth-pop"
+          ],
+          "ref": "Q111397510"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:07.463Z",
+          "genres": [
+            "synth-pop",
+            "new wave"
+          ],
+          "ref": "release-group/b800ebe9-970a-4501-93d9-c23ba3c0284e"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:02:08.880Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "Happy"
+          ],
+          "ref": "track/35886398"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:02:08.571Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "harry styles - watermelon sugar": {
+      "artist": "Harry Styles",
+      "title": "Watermelon Sugar",
+      "videoIds": [
+        "7-x3uD5z1bQ"
+      ],
+      "genres": [
+        "pop",
+        "pop rock",
+        "funk-pop",
+        "indie pop",
+        "rock"
+      ],
+      "moods": [
+        "happy"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:08.719Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:02:16.977Z",
+          "genres": [
+            "Pop rock",
+            "funk-pop"
+          ],
+          "ref": "Watermelon Sugar"
+        },
+        "wikidata": {
+          "status": "none",
+          "at": "2026-11-14T04:03:38.307Z",
+          "reason": "the item has no genre",
+          "ref": "Q75219631,Q100891829"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:08.719Z",
+          "genres": [
+            "indie pop",
+            "pop",
+            "rock"
+          ],
+          "ref": "release-group/df371262-5776-4e48-8b41-400425963815"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:02:17.114Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "Happy"
+          ],
+          "ref": "track/35348732"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:02:16.815Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "imagine dragons - believer": {
+      "artist": "Imagine Dragons",
+      "title": "Believer",
+      "videoIds": [
+        "IhP3J0j9JmY"
+      ],
+      "genres": [
+        "pop rock",
+        "rock",
+        "alternative rock",
+        "indie rock",
+        "alternative"
+      ],
+      "moods": [
+        "poignant"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:56.514Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:20:19.611Z",
+          "genres": [
+            "Arena rock",
+            "pop rock"
+          ],
+          "ref": "Believer (Imagine Dragons song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:21:33.122Z",
+          "genres": [
+            "pop rock"
+          ],
+          "ref": "Q28737603"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:56.514Z",
+          "genres": [
+            "alternative rock",
+            "indie rock",
+            "rock",
+            "pop general",
+            "pop rock"
+          ],
+          "ref": "release-group/8bcb5dcd-88bd-4651-9822-51b069b5e0d9"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:20:19.649Z",
+          "genres": [
+            "Indie"
+          ],
+          "moods": [
+            "Poignant"
+          ],
+          "ref": "track/34810290"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:20:19.468Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "imagine dragons - thunder": {
+      "artist": "Imagine Dragons",
+      "title": "Thunder",
+      "videoIds": [
+        "4AqjqOqNrjw"
+      ],
+      "genres": [
+        "electropop",
+        "pop rock",
+        "rock",
+        "alternative rock",
+        "alternative",
+        "synth-pop"
+      ],
+      "moods": [
+        "poignant"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:57.821Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:20:27.768Z",
+          "genres": [
+            "Electropop",
+            "synth-pop",
+            "arena rock",
+            "pop rock"
+          ],
+          "ref": "Thunder (Imagine Dragons song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:21:41.340Z",
+          "genres": [
+            "electropop",
+            "pop rock"
+          ],
+          "ref": "Q65533311,Q29790517"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:57.821Z",
+          "genres": [
+            "alternative rock",
+            "electropop",
+            "pop",
+            "rock",
+            "todd in the shadows"
+          ],
+          "ref": "release-group/ddb98c9f-6f42-4734-88f0-0c7c05d301d3"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:20:27.782Z",
+          "genres": [
+            "Indie"
+          ],
+          "moods": [
+            "Poignant"
+          ],
+          "ref": "track/34810296"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:20:27.605Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "jennifer lopez ft pitbull - on the floor": {
+      "artist": "Jennifer Lopez ft. Pitbull",
+      "title": "On The Floor",
+      "videoIds": [
+        "9lybsz-7TFM"
+      ],
+      "genres": [
+        "pop",
+        "dance-pop",
+        "house",
+        "dance",
+        "Latin pop",
+        "techno"
+      ],
+      "moods": [
+        "in love"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:47.665Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:16:30.536Z",
+          "genres": [
+            "Dance-pop",
+            "Latin",
+            "pop",
+            "house",
+            "techno"
+          ],
+          "ref": "On the Floor"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:17:44.137Z",
+          "genres": [
+            "dance music"
+          ],
+          "ref": "Q169453"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:47.665Z",
+          "genres": [
+            "pop",
+            "house",
+            "dance-pop",
+            "dance",
+            "club",
+            "latin pop"
+          ],
+          "ref": "recording/55e9d172-04bc-44d6-85b0-c474a529aa04,504cf39d-2c89-4f23-8073-12d5c50a6f79,dfc73336-689c-45a0-992b-1f7f2a9e85fd,d7898288-6c17-4e35-a1d1-c6d1d7e641da,0a3f63e2-2f8f-457c-9392-e3b4b3a6c6a2"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:16:30.716Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "In Love"
+          ],
+          "ref": "track/32724240"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:16:30.397Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "justin bieber - sorry": {
+      "artist": "Justin Bieber",
+      "title": "Sorry",
+      "videoIds": [
+        "BerNfXSuvJ0"
+      ],
+      "genres": [
+        "dancehall pop",
+        "tropical house",
+        "R&B",
+        "pop",
+        "moombahton",
+        "dance-pop"
+      ],
+      "moods": [
+        "good natured"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:00.330Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:21:33.269Z",
+          "genres": [
+            "Dancehall pop",
+            "dance-pop",
+            "tropical house",
+            "moombahton",
+            "R&B"
+          ],
+          "ref": "Sorry (Justin Bieber song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:22:54.880Z",
+          "genres": [
+            "dancehall pop",
+            "tropical house",
+            "moombahton"
+          ],
+          "ref": "Q21198638"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:00.330Z",
+          "genres": [
+            "contemporary r&b",
+            "todd in the shadows"
+          ],
+          "ref": "release-group/ebf85580-7ce4-4855-8936-30ced46a5f0f"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:21:33.402Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "Good Natured"
+          ],
+          "ref": "track/34455503"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:21:33.123Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "justin timberlake - can t stop the feeling": {
+      "artist": "Justin Timberlake",
+      "title": "Can't Stop the Feeling!",
+      "videoIds": [
+        "0Ui-QzihJGo"
+      ],
+      "genres": [
+        "pop",
+        "disco-pop",
+        "dance-pop",
+        "pop soul",
+        "teen pop",
+        "funk"
+      ],
+      "moods": [
+        "energetic"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:45.997Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:08:33.751Z",
+          "genres": [
+            "Disco-pop",
+            "dance-pop",
+            "soul-pop",
+            "Teen pop"
+          ],
+          "ref": "Can't Stop the Feeling!"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:09:55.180Z",
+          "genres": [
+            "pop music",
+            "funk"
+          ],
+          "ref": "Q24032253"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:45.997Z",
+          "genres": [
+            "pop",
+            "r&b",
+            "funk"
+          ],
+          "ref": "release-group/96ad7a58-71b2-46ad-944f-cfd683568773"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:08:33.889Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "Energetic"
+          ],
+          "ref": "track/34744483"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:08:33.634Z",
+          "genres": [
+            "Soundtrack"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "katy perry - firework": {
+      "artist": "Katy Perry",
+      "title": "Firework",
+      "videoIds": [
+        "b3bkpyNiv8Y"
+      ],
+      "genres": [
+        "dance-pop",
+        "pop",
+        "synth-pop",
+        "electronic",
+        "dance-rock",
+        "house"
+      ],
+      "moods": [
+        "cheerful"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:18.948Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:12:49.830Z",
+          "genres": [
+            "Dance-pop"
+          ],
+          "ref": "Firework (song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:14:03.318Z",
+          "genres": [
+            "synth-pop",
+            "dance-pop"
+          ],
+          "ref": "Q163412"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:18.948Z",
+          "genres": [
+            "electronic",
+            "dance-pop",
+            "dance-rock",
+            "house",
+            "todd in the shadows"
+          ],
+          "ref": "release-group/a0bef2bf-5e59-4c63-9bbe-e9e48a551280"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:12:49.852Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "Cheerful"
+          ],
+          "ref": "track/32849937"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:12:49.685Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "katy perry - roar": {
+      "artist": "Katy Perry",
+      "title": "Roar",
+      "videoIds": [
+        "mwL1cohnHNE"
+      ],
+      "genres": [
+        "pop",
+        "power pop",
+        "rock"
+      ],
+      "moods": [
+        "cheerful"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:16.125Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:12:41.645Z",
+          "genres": [
+            "Power pop"
+          ],
+          "ref": "Roar (song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:13:55.131Z",
+          "genres": [
+            "pop music"
+          ],
+          "ref": "Q14559271"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:16.125Z",
+          "genres": [
+            "pop",
+            "rock"
+          ],
+          "ref": "release-group/72a977ef-8907-4109-aaa0-46b7b3313558"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:12:41.802Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "Cheerful"
+          ],
+          "ref": "track/33583877"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:12:41.511Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "linkin park - bleed it out": {
+      "artist": "Linkin Park",
+      "title": "Bleed It Out",
+      "videoIds": [
+        "bSwzZoLCoZ0"
+      ],
+      "genres": [
+        "rap rock",
+        "rock",
+        "alternative metal",
+        "hard rock",
+        "alternative rock",
+        "metal"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:52.526Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:33:15.424Z",
+          "genres": [
+            "Rap rock"
+          ],
+          "ref": "Bleed It Out"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:34:28.712Z",
+          "genres": [
+            "rap rock"
+          ],
+          "ref": "Q19981"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:52.526Z",
+          "genres": [
+            "alternative rock",
+            "rap rock",
+            "alternative metal",
+            "rock"
+          ],
+          "ref": "release-group/4a929d43-df44-382c-b704-fd06b4202e28"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:33:15.591Z",
+          "genres": [
+            "Metal"
+          ],
+          "ref": "track/32741757"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:33:15.292Z",
+          "genres": [
+            "Hard Rock"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "linkin park - breaking the habit": {
+      "artist": "Linkin Park",
+      "title": "Breaking the Habit",
+      "videoIds": [
+        "RwTwd5tAq1U"
+      ],
+      "genres": [
+        "alternative rock",
+        "nu metal",
+        "electronic rock",
+        "alternative",
+        "rock",
+        "metal"
+      ],
+      "moods": [
+        "angry"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:53.753Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:33:23.584Z",
+          "genres": [
+            "Alternative rock",
+            "electronic rock"
+          ],
+          "ref": "Breaking the Habit (song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:34:36.908Z",
+          "genres": [
+            "alternative rock"
+          ],
+          "ref": "Q19978"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:53.753Z",
+          "genres": [
+            "alternative rock",
+            "nu metal",
+            "rock"
+          ],
+          "ref": "release-group/87da2213-0caa-349e-abe8-4bd083e0a3b9"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:33:23.648Z",
+          "genres": [
+            "Metal"
+          ],
+          "moods": [
+            "Angry"
+          ],
+          "ref": "track/32741734"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:33:23.458Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "linkin park - burn it down": {
+      "artist": "Linkin Park",
+      "title": "Burn It Down",
+      "videoIds": [
+        "zgEKLhvCCVA"
+      ],
+      "genres": [
+        "alternative rock",
+        "hard rock",
+        "rap rock",
+        "electropop",
+        "electronic rock",
+        "nu metal"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:41.607Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:30:39.911Z",
+          "genres": [
+            "Electronic rock",
+            "rap rock",
+            "hard rock",
+            "alternative rock",
+            "alternative pop",
+            "electropop"
+          ],
+          "ref": "Burn It Down (Linkin Park song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:31:53.328Z",
+          "genres": [
+            "alternative rock"
+          ],
+          "ref": "Q19991"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:41.607Z",
+          "genres": [
+            "alternative rock",
+            "rock",
+            "electro hop",
+            "electropop",
+            "industrial rock",
+            "new rave",
+            "nu metal",
+            "pop rock",
+            "rap rock"
+          ],
+          "ref": "release-group/ba7639f8-c3d2-48a8-9353-c66775feb64d"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:30:39.980Z",
+          "genres": [
+            "Metal"
+          ],
+          "ref": "track/32741768"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:30:39.778Z",
+          "genres": [
+            "Hard Rock"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "linkin park - faint": {
+      "artist": "Linkin Park",
+      "title": "Faint",
+      "videoIds": [
+        "NU61CbO9u6o"
+      ],
+      "genres": [
+        "nu metal",
+        "alternative rock",
+        "alternative metal",
+        "rap rock",
+        "pop rock",
+        "metal"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:50.066Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:32:09.997Z",
+          "genres": [
+            "Nu metal",
+            "alternative metal",
+            "alternative rock",
+            "rap rock",
+            "pop rock"
+          ],
+          "ref": "Faint (song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:33:23.456Z",
+          "genres": [
+            "nu metal"
+          ],
+          "ref": "Q20004"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:50.066Z",
+          "genres": [
+            "alternative rock",
+            "nu metal",
+            "rock"
+          ],
+          "ref": "release-group/399c6a18-ba40-3e82-947b-623745aeeb0b"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:32:10.036Z",
+          "genres": [
+            "Metal"
+          ],
+          "ref": "track/32741732"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:32:09.848Z",
+          "genres": [
+            "Hard Rock"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "linkin park - in the end": {
+      "artist": "Linkin Park",
+      "title": "In the End",
+      "videoIds": [
+        "g9j5UzxEhEM"
+      ],
+      "genres": [
+        "nu metal",
+        "rap rock",
+        "alternative rock",
+        "metal",
+        "alternative metal",
+        "hard rock"
+      ],
+      "moods": [
+        "angry"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:45.410Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:31:53.492Z",
+          "genres": [
+            "Nu metal",
+            "rap rock",
+            "alternative rock",
+            "hard rock"
+          ],
+          "ref": "In the End"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:33:07.110Z",
+          "genres": [
+            "rap rock"
+          ],
+          "ref": "Q20003"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:45.410Z",
+          "genres": [
+            "alternative rock",
+            "rock",
+            "alternative metal",
+            "heavy metal",
+            "nu metal",
+            "post-grunge",
+            "rap rock"
+          ],
+          "ref": "release-group/f38ae9f7-30a2-37e0-9046-f69b39f64c55"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:31:53.582Z",
+          "genres": [
+            "Metal"
+          ],
+          "moods": [
+            "Angry"
+          ],
+          "ref": "track/32741785"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:31:53.330Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "linkin park - new divide": {
+      "artist": "Linkin Park",
+      "title": "New Divide",
+      "videoIds": [
+        "t19wM1gn1Wo"
+      ],
+      "genres": [
+        "alternative rock",
+        "electronic rock",
+        "alternative metal",
+        "rock",
+        "hard rock",
+        "industrial rock"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:57.110Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:34:20.652Z",
+          "genres": [
+            "Alternative rock",
+            "electronic rock"
+          ],
+          "ref": "New Divide"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:35:34.095Z",
+          "genres": [
+            "alternative rock"
+          ],
+          "ref": "Q19985"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:57.110Z",
+          "genres": [
+            "alternative rock",
+            "alternative metal",
+            "big music",
+            "film soundtrack",
+            "hard rock",
+            "industrial rock",
+            "rock"
+          ],
+          "ref": "release-group/4741866d-c3a5-47ca-944d-732c2cc9e651"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:34:20.827Z",
+          "genres": [
+            "Metal"
+          ],
+          "ref": "track/33743031"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:34:20.520Z",
+          "genres": [
+            "Soundtrack"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "linkin park - numb": {
+      "artist": "Linkin Park",
+      "title": "Numb",
+      "videoIds": [
+        "-qZxMY7FZf8"
+      ],
+      "genres": [
+        "nu metal",
+        "alternative rock",
+        "emo",
+        "pop rock",
+        "metal",
+        "rock"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:44.109Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:30:56.266Z",
+          "genres": [
+            "Nu metal",
+            "alternative rock",
+            "emo",
+            "pop rock"
+          ],
+          "ref": "Numb (Linkin Park song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:32:09.847Z",
+          "genres": [
+            "alternative rock",
+            "nu metal"
+          ],
+          "ref": "Q19973"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:44.109Z",
+          "genres": [
+            "alternative rock",
+            "nu metal",
+            "rock"
+          ],
+          "ref": "release-group/bf6cfe90-ad3f-3b56-b758-403b442cbb4b"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:30:56.364Z",
+          "genres": [
+            "Metal"
+          ],
+          "ref": "track/32741738"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:30:56.097Z",
+          "genres": [
+            "Hard Rock"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "linkin park - one step closer": {
+      "artist": "Linkin Park",
+      "title": "One Step Closer",
+      "videoIds": [
+        "sKtl7-_6AjE"
+      ],
+      "genres": [
+        "nu metal",
+        "hard rock",
+        "rap rock",
+        "rap metal",
+        "metal",
+        "rock"
+      ],
+      "moods": [
+        "angry"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:58.341Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:34:28.847Z",
+          "genres": [
+            "Nu metal",
+            "rap metal",
+            "rap rock",
+            "hard rock"
+          ],
+          "ref": "One Step Closer (Linkin Park song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:35:42.314Z",
+          "genres": [
+            "nu metal"
+          ],
+          "ref": "Q19995"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:58.341Z",
+          "genres": [
+            "electronic",
+            "industrial",
+            "nu metal",
+            "rock"
+          ],
+          "ref": "release-group/82a5b1af-70cd-41a3-affa-dea3917166f9"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:34:28.973Z",
+          "genres": [
+            "Metal"
+          ],
+          "moods": [
+            "Angry"
+          ],
+          "ref": "track/32741779"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:34:28.715Z",
+          "genres": [
+            "Hard Rock"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "linkin park - somewhere i belong": {
+      "artist": "Linkin Park",
+      "title": "Somewhere I Belong",
+      "videoIds": [
+        "4ZI8AC4AR5A"
+      ],
+      "genres": [
+        "nu metal",
+        "rap metal",
+        "rap rock",
+        "metal",
+        "hard rock",
+        "alternative metal"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:51.299Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:33:07.266Z",
+          "genres": [
+            "Nu metal",
+            "rap metal",
+            "alternative rock"
+          ],
+          "ref": "Somewhere I Belong"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:34:20.518Z",
+          "genres": [
+            "rap rock"
+          ],
+          "ref": "Q19976"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:51.299Z",
+          "genres": [
+            "nu metal",
+            "post-grunge",
+            "rap rock",
+            "alternative metal",
+            "hard rock",
+            "heavy metal",
+            "industrial rock",
+            "rap metal",
+            "rock",
+            "turntablism"
+          ],
+          "ref": "release-group/97f302f8-fcd7-3d89-82e8-2f31a998687d"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:33:07.329Z",
+          "genres": [
+            "Metal"
+          ],
+          "ref": "track/32741728"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:33:07.114Z",
+          "genres": [
+            "Hard Rock"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "linkin park - the emptiness machine": {
+      "artist": "Linkin Park",
+      "title": "The Emptiness Machine",
+      "videoIds": [
+        "vXlyuCzZc4E"
+      ],
+      "genres": [
+        "alternative rock",
+        "alternative metal",
+        "hard rock",
+        "rock"
+      ],
+      "moods": [
+        "angry"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:42.850Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:30:48.104Z",
+          "genres": [
+            "Hard rock",
+            "alternative rock",
+            "alternative metal"
+          ],
+          "ref": "The Emptiness Machine"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:32:01.534Z",
+          "genres": [
+            "alternative metal"
+          ],
+          "ref": "Q130243069"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:42.850Z",
+          "genres": [
+            "alternative rock",
+            "alternative metal",
+            "rock"
+          ],
+          "ref": "release-group/e206fe3e-e2d4-465a-9997-90339a566e36"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:30:48.146Z",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "moods": [
+            "Angry"
+          ],
+          "ref": "track/36385693"
+        },
+        "itunes": {
+          "status": "none",
+          "at": "2026-11-14T04:30:48.095Z",
+          "reason": "no matching track"
+        }
+      }
+    },
+    "linkin park - what i ve done": {
+      "artist": "Linkin Park",
+      "title": "What I've Done",
+      "videoIds": [
+        "IgCHFfDFivc"
+      ],
+      "genres": [
+        "alternative rock",
+        "hard rock",
+        "metal",
+        "nu metal",
+        "rock",
+        "alternative metal"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:46.699Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:32:01.697Z",
+          "genres": [
+            "Alternative rock",
+            "hard rock"
+          ],
+          "ref": "What I've Done"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:33:15.287Z",
+          "genres": [
+            "alternative rock"
+          ],
+          "ref": "Q19980"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:46.699Z",
+          "genres": [
+            "rock",
+            "alternative rock",
+            "kol",
+            "alternative metal",
+            "big music",
+            "heavy metal",
+            "nu metal",
+            "post-grunge",
+            "rap metal",
+            "soundtrack"
+          ],
+          "ref": "release-group/15324beb-dd28-3206-9b58-ce811c2b189e"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:32:01.738Z",
+          "genres": [
+            "Metal"
+          ],
+          "ref": "track/32741759"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:32:01.539Z",
+          "genres": [
+            "Hard Rock"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "lizzo - about damn time": {
+      "artist": "Lizzo",
+      "title": "About Damn Time",
+      "videoIds": [
+        "j5n5YzMm5LY"
+      ],
+      "genres": [
+        "disco",
+        "funk",
+        "nu-disco",
+        "alternative hip hop",
+        "pop"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:40:57.456Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:00:55.238Z",
+          "genres": [
+            "Nu-disco"
+          ],
+          "ref": "About Damn Time"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:02:08.570Z",
+          "genres": [
+            "disco",
+            "funk"
+          ],
+          "ref": "Q111622181"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:40:57.456Z",
+          "genres": [
+            "disco",
+            "funk"
+          ],
+          "ref": "release-group/7936f06b-e543-476c-a76b-a72335ac4fb4"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:00:55.369Z",
+          "genres": [
+            "Alternative Hip-Hop"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/35905329"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:00:55.098Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "lizzo - juice": {
+      "artist": "Lizzo",
+      "title": "Juice",
+      "videoIds": [
+        "GT1lysg-Kw4"
+      ],
+      "genres": [
+        "pop",
+        "new wave",
+        "dance-pop",
+        "pop rap",
+        "funk",
+        "hip hop"
+      ],
+      "moods": [
+        "poignant"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:40:58.712Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:01:03.433Z",
+          "genres": [
+            "Funk",
+            "pop",
+            "hip hop",
+            "new wave"
+          ],
+          "ref": "Juice (Lizzo song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:02:16.814Z",
+          "genres": [
+            "funk",
+            "pop music",
+            "rapping"
+          ],
+          "ref": "Q60772052"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:40:58.712Z",
+          "genres": [
+            "pop",
+            "contemporary r&b",
+            "dance-pop",
+            "pop rap"
+          ],
+          "ref": "release-group/a0461b89-14bd-448a-b942-3ec9837401c6"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:01:03.582Z",
+          "genres": [
+            "Alternative Hip-Hop"
+          ],
+          "moods": [
+            "Poignant"
+          ],
+          "ref": "track/35204637"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:01:03.260Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "lizzo - truth hurts": {
+      "artist": "Lizzo",
+      "title": "Truth Hurts",
+      "videoIds": [
+        "HhwTF97OyX8"
+      ],
+      "genres": [
+        "pop",
+        "hip hop",
+        "trap",
+        "pop rap",
+        "alternative hip hop",
+        "neo soul"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:40:59.964Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:02:00.605Z",
+          "genres": [
+            "Trap",
+            "hip hop",
+            "pop"
+          ],
+          "ref": "Truth Hurts (song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:03:22.015Z",
+          "genres": [
+            "trap music",
+            "hip-hop",
+            "pop music"
+          ],
+          "ref": "Q65034919"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:40:59.964Z",
+          "genres": [
+            "pop",
+            "neo soul",
+            "pop rap"
+          ],
+          "ref": "release-group/31c3b682-4748-435b-871a-7e617c87a979"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:02:00.718Z",
+          "genres": [
+            "Alternative Hip-Hop"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/35204647"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:02:00.436Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "lmfao - party rock anthem": {
+      "artist": "LMFAO",
+      "title": "Party Rock Anthem",
+      "videoIds": [
+        "zIh5AHxh-Ok"
+      ],
+      "genres": [
+        "electro house",
+        "pop",
+        "pop rap",
+        "hip house",
+        "dance-pop",
+        "electro"
+      ],
+      "moods": [
+        "cheerful"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:27.697Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:13:55.261Z",
+          "genres": [
+            "Hip house"
+          ],
+          "ref": "Party Rock Anthem"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:15:08.675Z",
+          "genres": [
+            "electro",
+            "electro house",
+            "hip-hop",
+            "dance-pop"
+          ],
+          "ref": "Q672515"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:27.697Z",
+          "genres": [
+            "electronic",
+            "drum n bass",
+            "electro house",
+            "electropop",
+            "party rock",
+            "pop rap",
+            "single",
+            "todd in the shadows"
+          ],
+          "ref": "release-group/7c0f188b-d754-4003-b64b-6198d9a60d8c"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:13:55.312Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "Cheerful"
+          ],
+          "ref": "track/32832384"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:13:55.133Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "macklemore ryan lewis - can t hold us": {
+      "artist": "Macklemore & Ryan Lewis",
+      "title": "Can't Hold Us",
+      "videoIds": [
+        "zLxXqEZ5OoA"
+      ],
+      "genres": [
+        "hip hop",
+        "pop rap",
+        "experimental pop",
+        "worldbeat"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:50.037Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:17:52.589Z",
+          "genres": [
+            "Pop rap",
+            "experimental pop",
+            "worldbeat"
+          ],
+          "ref": "Can't Hold Us"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:19:05.981Z",
+          "genres": [
+            "hip-hop"
+          ],
+          "ref": "Q5028914"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:50.037Z",
+          "genres": [
+            "hip hop"
+          ],
+          "ref": "release-group/541e3876-2cbc-49c3-b62a-ea7bea19c011"
+        },
+        "theaudiodb": {
+          "status": "none",
+          "at": "2026-11-14T04:17:52.623Z",
+          "reason": "no track by this artist with this title"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:17:52.447Z",
+          "genres": [
+            "Hip-Hop/Rap"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "mark ronson ft bruno mars - uptown funk": {
+      "artist": "Mark Ronson ft. Bruno Mars",
+      "title": "Uptown Funk",
+      "videoIds": [
+        "7Ya2U8XN_Zw"
+      ],
+      "genres": [
+        "pop",
+        "funk",
+        "soul",
+        "disco-pop",
+        "boogie",
+        "pop rock"
+      ],
+      "moods": [
+        "energetic"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:47.245Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:08:41.959Z",
+          "genres": [
+            "Funk",
+            "pop",
+            "soul",
+            "boogie",
+            "disco-pop",
+            "Minneapolis sound"
+          ],
+          "ref": "Uptown Funk"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:10:03.372Z",
+          "genres": [
+            "funk",
+            "soul",
+            "disco-pop",
+            "boogie"
+          ],
+          "ref": "Q18559542"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:47.245Z",
+          "genres": [
+            "funk",
+            "pop",
+            "pop 2010er",
+            "soul"
+          ],
+          "ref": "release-group/bce20d09-d903-4370-8047-0f589a5258c2"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:08:42.012Z",
+          "genres": [
+            "Pop-Rock"
+          ],
+          "moods": [
+            "Energetic"
+          ],
+          "ref": "track/34210997"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:08:41.818Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "maroon 5 - sugar": {
+      "artist": "Maroon 5",
+      "title": "Sugar",
+      "videoIds": [
+        "GhH4rTap48M"
+      ],
+      "genres": [
+        "pop rock",
+        "pop",
+        "funk-pop",
+        "disco",
+        "soul"
+      ],
+      "moods": [
+        "gentle"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:30.191Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:14:11.718Z",
+          "genres": [
+            "Disco",
+            "funk-pop",
+            "soul"
+          ],
+          "ref": "Sugar (Maroon 5 song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:15:25.072Z",
+          "genres": [
+            "pop rock"
+          ],
+          "ref": "Q18763681"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:30.191Z",
+          "genres": [
+            "pop rock"
+          ],
+          "ref": "release-group/89178066-f991-4449-b409-1e6fd55323b0"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:14:11.727Z",
+          "genres": [
+            "Pop-Rock"
+          ],
+          "moods": [
+            "Gentle"
+          ],
+          "ref": "track/34048825"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:14:11.536Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "maroon 5 ft christina aguilera - moves like jagger": {
+      "artist": "Maroon 5 ft. Christina Aguilera",
+      "title": "Moves Like Jagger",
+      "videoIds": [
+        "OjX4Fpb7LX8"
+      ],
+      "genres": [
+        "dance-pop",
+        "electropop",
+        "disco",
+        "pop",
+        "electronic",
+        "house"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:28.950Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:14:03.449Z",
+          "genres": [
+            "Disco",
+            "electropop",
+            "dance-pop"
+          ],
+          "ref": "Moves like Jagger"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:15:16.880Z",
+          "genres": [
+            "disco",
+            "electropop",
+            "dance-pop"
+          ],
+          "ref": "Q309727"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:28.950Z",
+          "genres": [
+            "dance-pop",
+            "electropop",
+            "house",
+            "pop",
+            "disco",
+            "electronic",
+            "todd in the shadows"
+          ],
+          "ref": "release-group/dd55e60b-0f07-468f-aca1-d9402e9baffc"
+        },
+        "theaudiodb": {
+          "status": "none",
+          "at": "2026-11-14T04:14:03.491Z",
+          "reason": "the track has no genre",
+          "ref": "track/34689234"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:14:03.319Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "michael jackson - billie jean": {
+      "artist": "Michael Jackson",
+      "title": "Billie Jean",
+      "videoIds": [
+        "7CTJcHjkq0E"
+      ],
+      "genres": [
+        "pop",
+        "dance-pop",
+        "funk",
+        "post-disco",
+        "R&B",
+        "dance"
+      ],
+      "moods": [
+        "quirky"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:59.574Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:34:37.039Z",
+          "genres": [
+            "Post-disco",
+            "R&B",
+            "funk",
+            "dance-pop"
+          ],
+          "ref": "Billie Jean"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:35:50.542Z",
+          "genres": [
+            "post-disco",
+            "funk",
+            "dance-pop",
+            "contemporary R&B",
+            "rhythm and blues"
+          ],
+          "ref": "Q193319,Q107505760"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:59.574Z",
+          "genres": [
+            "pop",
+            "electronic",
+            "dance",
+            "disco",
+            "funk"
+          ],
+          "ref": "release-group/d42503ec-54fd-3ac7-83ac-a5e37425509c"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:34:37.087Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "Quirky"
+          ],
+          "ref": "track/32823000"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:34:36.911Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "miley cyrus - flowers": {
+      "artist": "Miley Cyrus",
+      "title": "Flowers",
+      "videoIds": [
+        "aAizT0NOWkM"
+      ],
+      "genres": [
+        "pop",
+        "pop rock",
+        "country pop",
+        "disco",
+        "funk"
+      ],
+      "moods": [
+        "confrontational"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:17.517Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:03:30.341Z",
+          "genres": [
+            "Disco",
+            "funk",
+            "pop rock"
+          ],
+          "ref": "Flowers (Miley Cyrus song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:04:43.771Z",
+          "genres": [
+            "pop music"
+          ],
+          "ref": "Q115945493"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:17.517Z",
+          "genres": [
+            "pop"
+          ],
+          "ref": "release-group/95ff5306-2b74-46c4-9f7a-a9d5c439efa6"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:03:30.362Z",
+          "genres": [
+            "Country Pop"
+          ],
+          "moods": [
+            "Confrontational"
+          ],
+          "ref": "track/36067145"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:03:30.169Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "olivia rodrigo - good 4 u": {
+      "artist": "Olivia Rodrigo",
+      "title": "good 4 u",
+      "videoIds": [
+        "o6Tf-xcVB_o"
+      ],
+      "genres": [
+        "pop punk",
+        "pop rock",
+        "pop",
+        "grunge",
+        "emo",
+        "alternative rock"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:20.013Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:04:35.723Z",
+          "genres": [
+            "Pop-punk",
+            "grunge",
+            "alternative rock",
+            "pop rock",
+            "power pop"
+          ],
+          "ref": "Good 4 U"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:06:06.391Z",
+          "genres": [
+            "pop-punk",
+            "emo",
+            "pop rock",
+            "grunge",
+            "teen pop"
+          ],
+          "ref": "Q106830344"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:20.013Z",
+          "genres": [
+            "pop punk",
+            "pop rock",
+            "alternative punk",
+            "alternative rock",
+            "artist on cover",
+            "dance-rock",
+            "emo",
+            "emo pop",
+            "grunge",
+            "pop",
+            "punk rock"
+          ],
+          "ref": "release-group/32b48679-cf56-4ad9-9405-bcdb00bd878b"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:04:35.763Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/35708189"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:04:35.601Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "onerepublic - counting stars": {
+      "artist": "OneRepublic",
+      "title": "Counting Stars",
+      "videoIds": [
+        "mgT0N3tMP74"
+      ],
+      "genres": [
+        "folk rock",
+        "pop",
+        "pop rock",
+        "folk pop",
+        "alternative rock"
+      ],
+      "moods": [
+        "cheerful"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:51.283Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:18:00.775Z",
+          "genres": [
+            "Pop rock",
+            "folk rock",
+            "folk pop"
+          ],
+          "ref": "Counting Stars"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:19:14.164Z",
+          "genres": [
+            "folk rock"
+          ],
+          "ref": "Q13422120"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:51.283Z",
+          "genres": [
+            "pop",
+            "pop general",
+            "todd in the shadows"
+          ],
+          "ref": "release-group/c7a9e7e3-5c22-4886-91ec-1823b8e3f473"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:18:00.970Z",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "moods": [
+            "Cheerful"
+          ],
+          "ref": "track/33961429"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:18:00.641Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "outkast - hey ya": {
+      "artist": "Outkast",
+      "title": "Hey Ya!",
+      "videoIds": [
+        "-7XnDlYY9qw"
+      ],
+      "genres": [
+        "hip hop",
+        "pop",
+        "neo soul",
+        "alternative hip hop",
+        "electro",
+        "funk"
+      ],
+      "moods": [
+        "energetic"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:44:21.248Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:38:26.125Z",
+          "genres": [
+            "Pop",
+            "electro",
+            "funk",
+            "neo-soul"
+          ],
+          "ref": "Hey Ya!"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:39:47.582Z",
+          "genres": [
+            "alternative hip-hop",
+            "hip-hop",
+            "funk",
+            "pop music",
+            "soul"
+          ],
+          "ref": "Q281085"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:44:21.248Z",
+          "genres": [
+            "hip hop",
+            "pop",
+            "contemporary r&b",
+            "electronic",
+            "house",
+            "neo-soul",
+            "pop soul",
+            "sunshine pop"
+          ],
+          "ref": "release-group/f450a3d1-c7c4-3985-85f0-8bff98c63e17"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:38:26.177Z",
+          "genres": [
+            "Hip-Hop"
+          ],
+          "moods": [
+            "Energetic"
+          ],
+          "ref": "track/33468934"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:38:25.991Z",
+          "genres": [
+            "Hip-Hop/Rap"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "p nk - raise your glass": {
+      "artist": "P!nk",
+      "title": "Raise Your Glass",
+      "videoIds": [
+        "yvvamodXZbw"
+      ],
+      "genres": [
+        "pop",
+        "pop rock",
+        "dance-rock",
+        "rock",
+        "electronic"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:03.759Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:21:41.485Z",
+          "genres": [
+            "Pop rock"
+          ],
+          "ref": "Raise Your Glass"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:23:03.047Z",
+          "genres": [
+            "dance-rock",
+            "pop music"
+          ],
+          "ref": "Q1576988"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:03.759Z",
+          "genres": [
+            "pop rock",
+            "pop",
+            "electronic",
+            "rock"
+          ],
+          "ref": "release-group/6a061db0-1673-4f23-bdd4-3d97a538e06c"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:21:41.554Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "track/32768058"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:21:41.348Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "panic at the disco - high hopes": {
+      "artist": "Panic! At The Disco",
+      "title": "High Hopes",
+      "videoIds": [
+        "fH_OnJk6QqU"
+      ],
+      "genres": [
+        "pop rock",
+        "pop",
+        "rock",
+        "alternative rock",
+        "alternative"
+      ],
+      "moods": [
+        "fun"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:55.053Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:19:22.665Z",
+          "genres": [
+            "Pop",
+            "pop rock"
+          ],
+          "ref": "High Hopes (Panic! at the Disco song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:20:35.803Z",
+          "genres": [
+            "pop rock"
+          ],
+          "ref": "Q54869049"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:55.053Z",
+          "genres": [
+            "pop",
+            "pop rock",
+            "rock"
+          ],
+          "ref": "release-group/6ade14a0-ed92-4ff9-85a0-726645df562f"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:19:14.511Z",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "moods": [
+            "Fun"
+          ],
+          "ref": "track/35025476"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:19:14.168Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "pharrell williams - happy": {
+      "artist": "Pharrell Williams",
+      "title": "Happy",
+      "videoIds": [
+        "XQG89cwhmJU"
+      ],
+      "genres": [
+        "soul",
+        "neo soul",
+        "hip hop",
+        "pop"
+      ],
+      "moods": [
+        "happy"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:04.855Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:10:11.681Z",
+          "genres": [
+            "Soul",
+            "neo soul"
+          ],
+          "ref": "Happy (Pharrell Williams song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:11:25.159Z",
+          "genres": [
+            "soul",
+            "neo soul"
+          ],
+          "ref": "Q15275920"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:04.855Z",
+          "genres": [
+            "pop",
+            "soul",
+            "happy",
+            "hip-hop"
+          ],
+          "ref": "release-group/79796d6a-eed3-42d3-85fb-1b9a015bc1a8"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:10:11.706Z",
+          "genres": [
+            "Hip-Hop"
+          ],
+          "moods": [
+            "Happy"
+          ],
+          "ref": "track/34015736"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:10:11.534Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "pitbull ft ke ha - timber": {
+      "artist": "Pitbull ft. Ke$ha",
+      "title": "Timber",
+      "videoIds": [
+        "EQzXwcZS-FU"
+      ],
+      "genres": [
+        "dance-pop",
+        "electronic",
+        "pop",
+        "folktronica",
+        "EDM",
+        "hip hop"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:36.081Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:15:25.253Z",
+          "genres": [
+            "Dance-pop",
+            "EDM",
+            "folktronica"
+          ],
+          "ref": "Timber (Pitbull song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:16:46.877Z",
+          "genres": [
+            "dance-pop",
+            "electronic dance music",
+            "folktronica"
+          ],
+          "ref": "Q15054054"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:36.081Z",
+          "genres": [
+            "hip hop",
+            "dance-pop",
+            "electronic",
+            "house",
+            "pop",
+            "pop rap"
+          ],
+          "ref": "release-group/0767f5b5-dc72-4b09-8493-8528e55e1dad"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:15:25.397Z",
+          "genres": [
+            "Hip-Hop"
+          ],
+          "ref": "track/33700185"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:15:25.076Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "portugal the man - feel it still": {
+      "artist": "Portugal. The Man",
+      "title": "Feel It Still",
+      "videoIds": [
+        "PdKKoOiEgqY"
+      ],
+      "genres": [
+        "psychedelic pop",
+        "funk",
+        "alternative",
+        "alternative rock",
+        "funk rock",
+        "pop soul"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:53.808Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:19:06.126Z",
+          "genres": [
+            "Psychedelic pop",
+            "funk",
+            "alternative rock",
+            "soul"
+          ],
+          "ref": "Feel It Still"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:20:27.603Z",
+          "genres": [
+            "psychedelic pop",
+            "funk"
+          ],
+          "ref": "Q30595883"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:53.808Z",
+          "genres": [
+            "alternative",
+            "dance-pop",
+            "funk rock",
+            "indie pop",
+            "pop rock",
+            "pop soul",
+            "todd in the shadows"
+          ],
+          "ref": "release-group/79472405-2f9e-4f38-9c90-c1ea07264b05"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:19:06.167Z",
+          "genres": [
+            "Psychedelic Rock"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/34781343"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:19:05.986Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "psy - gangnam style": {
+      "artist": "PSY",
+      "title": "Gangnam Style",
+      "videoIds": [
+        "iSF26HsmeRI"
+      ],
+      "genres": [
+        "K-pop",
+        "dance-pop",
+        "pop",
+        "pop rap",
+        "EDM",
+        "hip house"
+      ],
+      "moods": [
+        "weird"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:59.083Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:20:35.941Z",
+          "genres": [
+            "K-pop",
+            "hip hop",
+            "dance-pop",
+            "EDM"
+          ],
+          "ref": "Gangnam Style"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:21:49.455Z",
+          "genres": [
+            "K-pop"
+          ],
+          "ref": "Q890,Q130464715"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:59.083Z",
+          "genres": [
+            "k-pop",
+            "dance-pop",
+            "electropop",
+            "hip house",
+            "dutch house",
+            "electronic",
+            "pop",
+            "pop rap",
+            "single",
+            "todd in the shadows"
+          ],
+          "ref": "release-group/101d1723-bf41-4e22-bd0b-5ad980ef4808"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:20:36.073Z",
+          "genres": [
+            "K-Pop"
+          ],
+          "moods": [
+            "Weird"
+          ],
+          "ref": "track/32917736"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:20:35.805Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "red hot chili peppers - by the way": {
+      "artist": "Red Hot Chili Peppers",
+      "title": "By the Way",
+      "videoIds": [
+        "JDHoc9qzC5I"
+      ],
+      "genres": [
+        "alternative rock",
+        "funk rock",
+        "rock",
+        "rap rock",
+        "hard rock",
+        "alternative"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:34.075Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:28:04.973Z",
+          "genres": [
+            "Funk rock",
+            "alternative rock",
+            "rap rock",
+            "hard rock"
+          ],
+          "ref": "By the Way (Red Hot Chili Peppers song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:29:18.287Z",
+          "genres": [
+            "funk rock"
+          ],
+          "ref": "Q75397"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:34.075Z",
+          "genres": [
+            "rock",
+            "alternative pop/rock",
+            "alternative rock",
+            "alternative/indie rock",
+            "funk metal",
+            "funk rock",
+            "heavy metal",
+            "pop rock",
+            "pop/rock"
+          ],
+          "ref": "release-group/c67b3a54-9469-4503-8b58-abafa66bb9ad"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:28:05.065Z",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "ref": "track/32759125"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:28:04.822Z",
+          "genres": [
+            "Rock"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "red hot chili peppers - californication": {
+      "artist": "Red Hot Chili Peppers",
+      "title": "Californication",
+      "videoIds": [
+        "GcHHjq8pXec"
+      ],
+      "genres": [
+        "alternative rock",
+        "rock",
+        "pop rock"
+      ],
+      "moods": [
+        "moody"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:39.080Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:29:26.588Z",
+          "genres": [
+            "Alternative rock"
+          ],
+          "ref": "Californication (song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:30:47.945Z",
+          "genres": [
+            "alternative rock"
+          ],
+          "ref": "Q2087371"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:39.080Z",
+          "genres": [
+            "pop rock",
+            "rock",
+            "rock; alternative; alternative rock; funk; funk rock"
+          ],
+          "ref": "release-group/394c1bd4-e3e1-306f-ade9-e9cd0f49016c"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:29:26.616Z",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "moods": [
+            "Moody"
+          ],
+          "ref": "track/32759162"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:29:26.428Z",
+          "genres": [
+            "Rock"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "red hot chili peppers - can t stop": {
+      "artist": "Red Hot Chili Peppers",
+      "title": "Can't Stop",
+      "videoIds": [
+        "TIUwLfpufs0"
+      ],
+      "genres": [
+        "alternative rock",
+        "alternative",
+        "funk rock",
+        "rock",
+        "rap rock",
+        "pop rock"
+      ],
+      "moods": [
+        "moody"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:30.705Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:27:15.951Z",
+          "genres": [
+            "Funk rock",
+            "alternative rock",
+            "rap rock"
+          ],
+          "ref": "Can't Stop (Red Hot Chili Peppers song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:28:21.117Z",
+          "genres": [
+            "alternative rock"
+          ],
+          "ref": "Q2292806"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:30.705Z",
+          "genres": [
+            "rock",
+            "pop/rock",
+            "alternative rock"
+          ],
+          "ref": "release-group/30183030-7fad-35aa-893f-8b6147b71f2d"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:27:07.896Z",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "moods": [
+            "Moody"
+          ],
+          "ref": "track/32759131"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:27:07.722Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "red hot chili peppers - dani california": {
+      "artist": "Red Hot Chili Peppers",
+      "title": "Dani California",
+      "videoIds": [
+        "w4Xfg_MRH10"
+      ],
+      "genres": [
+        "alternative rock",
+        "funk rock",
+        "rock",
+        "alternative",
+        "pop rock",
+        "stadium rock"
+      ],
+      "moods": [
+        "moody"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:35.327Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:28:13.120Z",
+          "genres": [
+            "Funk rock",
+            "alternative rock",
+            "stadium rock"
+          ],
+          "ref": "Dani California"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:29:26.424Z",
+          "genres": [
+            "rock music"
+          ],
+          "ref": "Q729815"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:35.327Z",
+          "genres": [
+            "rock",
+            "alternative rock",
+            "pop",
+            "pop rock",
+            "funk rock",
+            "pop/rock"
+          ],
+          "ref": "release-group/c7933a46-632b-33d1-aa9b-fed909c30c90"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:28:13.146Z",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "moods": [
+            "Moody"
+          ],
+          "ref": "track/33555376"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:28:12.967Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "red hot chili peppers - dark necessities": {
+      "artist": "Red Hot Chili Peppers",
+      "title": "Dark Necessities",
+      "videoIds": [
+        "qJ_Tw0w3lLA"
+      ],
+      "genres": [
+        "funk rock",
+        "alternative rock",
+        "funk",
+        "rock",
+        "alternative"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:28.167Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:27:07.814Z",
+          "genres": [
+            "Alternative rock",
+            "funk rock"
+          ],
+          "ref": "Dark Necessities"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:28:12.961Z",
+          "genres": [
+            "funk rock"
+          ],
+          "ref": "Q24025215"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:28.167Z",
+          "genres": [
+            "funk",
+            "rock"
+          ],
+          "ref": "release-group/0e4a6c95-954f-4ff1-915d-389100e29626"
+        },
+        "theaudiodb": {
+          "status": "none",
+          "at": "2026-11-14T04:26:59.878Z",
+          "reason": "the track has no genre",
+          "ref": "track/34623084"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:26:59.595Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "red hot chili peppers - give it away": {
+      "artist": "Red Hot Chili Peppers",
+      "title": "Give It Away",
+      "videoIds": [
+        "Mr_uHJPUlO8"
+      ],
+      "genres": [
+        "funk rock",
+        "rock",
+        "alternative rock",
+        "hard rock",
+        "rap rock",
+        "funk metal"
+      ],
+      "moods": [
+        "moody"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:36.578Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:28:21.267Z",
+          "genres": [
+            "Funk rock",
+            "funk metal",
+            "hard rock",
+            "rap rock"
+          ],
+          "ref": "Give It Away (Red Hot Chili Peppers song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:29:34.587Z",
+          "genres": [
+            "funk rock"
+          ],
+          "ref": "Q523345"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:36.578Z",
+          "genres": [
+            "rock",
+            "alternative rock"
+          ],
+          "ref": "release-group/2ee19338-b1d7-3d3f-8817-66d4b78f8787"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:28:21.342Z",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "moods": [
+            "Moody"
+          ],
+          "ref": "track/32759083"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:28:21.120Z",
+          "genres": [
+            "Rock"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "red hot chili peppers - otherside": {
+      "artist": "Red Hot Chili Peppers",
+      "title": "Otherside",
+      "videoIds": [
+        "aeZnkEMIxBM"
+      ],
+      "genres": [
+        "alternative rock",
+        "alternative",
+        "rock",
+        "pop rock",
+        "house",
+        "pop"
+      ],
+      "moods": [
+        "moody"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:40.324Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:29:34.722Z",
+          "genres": [
+            "Alternative rock"
+          ],
+          "ref": "Otherside"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:30:56.093Z",
+          "genres": [
+            "alternative rock"
+          ],
+          "ref": "Q737257"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:40.324Z",
+          "genres": [
+            "pop/rock",
+            "alternative rock",
+            "house",
+            "pop",
+            "rock"
+          ],
+          "ref": "release-group/f5a6d84b-1afa-327f-ae43-3f4ae1a4e784"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:29:34.811Z",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "moods": [
+            "Moody"
+          ],
+          "ref": "track/32759160"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:29:34.591Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "red hot chili peppers - snow hey oh": {
+      "artist": "Red Hot Chili Peppers",
+      "title": "Snow (Hey Oh)",
+      "videoIds": [
+        "egpE0ysQ21Q"
+      ],
+      "genres": [
+        "alternative rock",
+        "pop rock",
+        "stadium rock",
+        "alternative",
+        "rock",
+        "pop"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:37.825Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:29:18.433Z",
+          "genres": [
+            "Stadium rock"
+          ],
+          "ref": "Snow (Hey Oh)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:30:39.777Z",
+          "genres": [
+            "alternative rock",
+            "pop rock"
+          ],
+          "ref": "Q2068337"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:37.825Z",
+          "genres": [
+            "rock",
+            "alternative rock",
+            "pop",
+            "pop rock"
+          ],
+          "ref": "release-group/113a1de9-5dbb-310d-91a4-df402278b5e7"
+        },
+        "theaudiodb": {
+          "status": "none",
+          "at": "2026-11-14T04:29:18.525Z",
+          "reason": "no track by this artist with this title"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:29:18.290Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "rihanna ft calvin harris - we found love": {
+      "artist": "Rihanna ft. Calvin Harris",
+      "title": "We Found Love",
+      "videoIds": [
+        "GchEVSx9XEA"
+      ],
+      "genres": [
+        "electro house",
+        "EDM",
+        "pop",
+        "house",
+        "electronic",
+        "dubstep"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:48.786Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:17:44.285Z",
+          "genres": [
+            "EDM"
+          ],
+          "ref": "We Found Love"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:18:57.826Z",
+          "genres": [
+            "electro house"
+          ],
+          "ref": "Q725334"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:48.786Z",
+          "genres": [
+            "contemporary r&b",
+            "dubstep",
+            "electronic",
+            "electro",
+            "house"
+          ],
+          "ref": "release-group/7fa46158-f064-4397-a26c-3ae9dc82faa9"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:17:44.487Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "track/32734764"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:17:44.139Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "rose bruno mars - apt": {
+      "artist": "ROSÉ & Bruno Mars",
+      "title": "APT.",
+      "videoIds": [
+        "i_SsnRdgitA"
+      ],
+      "genres": [
+        "pop",
+        "pop punk",
+        "pop rock",
+        "indie rock",
+        "electropop",
+        "K-pop"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:18.766Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:03:38.465Z",
+          "genres": [
+            "Pop",
+            "pop rock",
+            "pop-punk",
+            "new wave"
+          ],
+          "ref": "APT. (song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:05:01.059Z",
+          "genres": [
+            "pop-punk",
+            "pop rock",
+            "indie rock",
+            "electropop"
+          ],
+          "ref": "Q130554183"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:18.766Z",
+          "genres": [
+            "pop",
+            "dance-rock",
+            "pop punk",
+            "pop rock",
+            "bubblegum",
+            "dance-pop",
+            "indie rock",
+            "power pop",
+            "r&b",
+            "singer-songwriter"
+          ],
+          "ref": "release-group/95dc0226-b92f-444e-a503-5ef844f3cff1"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:03:38.519Z",
+          "genres": [
+            "K-Pop"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/36400592"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:03:38.313Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "sabrina carpenter - espresso": {
+      "artist": "Sabrina Carpenter",
+      "title": "Espresso",
+      "videoIds": [
+        "D8j5Fm94_CE"
+      ],
+      "genres": [
+        "pop",
+        "synth-pop",
+        "nu-disco",
+        "bubblegum pop",
+        "electropop",
+        "funk"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:09.962Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:03:22.166Z",
+          "genres": [
+            "Bubblegum",
+            "dance",
+            "electropop",
+            "funk",
+            "nu-disco",
+            "post-disco",
+            "synth-pop"
+          ],
+          "ref": "Espresso (song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:04:35.599Z",
+          "genres": [
+            "synth-pop",
+            "disco",
+            "funk"
+          ],
+          "ref": "Q125450571"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:09.962Z",
+          "genres": [
+            "pop",
+            "boogie",
+            "dance-pop",
+            "funktronica",
+            "nu disco"
+          ],
+          "ref": "release-group/faa3efa0-150a-4394-ae76-a9ddfa13424e"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:03:22.206Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/36371986"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:03:22.016Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "shakira - hips don t lie feat wyclef jean": {
+      "artist": "Shakira",
+      "title": "Hips Don't Lie (feat. Wyclef Jean)",
+      "videoIds": [
+        "dWErisOfeyE"
+      ],
+      "genres": [
+        "Latin pop",
+        "reggaeton",
+        "salsa",
+        "latin",
+        "pop",
+        "cumbia"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:40:27.927Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T03:57:00.552Z",
+          "genres": [
+            "Latin pop",
+            "reggaeton",
+            "salsa",
+            "cumbia"
+          ],
+          "ref": "Hips Don't Lie"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T03:58:04.503Z",
+          "genres": [
+            "Latin pop",
+            "reggaeton",
+            "salsa"
+          ],
+          "ref": "Q1780500"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:40:27.927Z",
+          "genres": [
+            "pop",
+            "dance-pop",
+            "hip hop",
+            "latin",
+            "pop rock",
+            "r&b",
+            "rock"
+          ],
+          "ref": "release-group/42670af5-a4a3-3529-ac31-6aefe8c4e765"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T03:56:57.668Z",
+          "genres": [
+            "Latin"
+          ],
+          "ref": "track/33312956"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T03:56:57.386Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "sia ft sean paul - cheap thrills": {
+      "artist": "Sia ft. Sean Paul",
+      "title": "Cheap Thrills",
+      "videoIds": [
+        "HbzZPpWr4MI"
+      ],
+      "genres": [
+        "pop",
+        "synth-pop",
+        "dancehall",
+        "tropical house",
+        "electropop",
+        "dance-pop"
+      ],
+      "moods": [
+        "intense"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:31.441Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:15:08.851Z",
+          "genres": [
+            "Dancehall",
+            "pop"
+          ],
+          "ref": "Cheap Thrills (song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:16:30.394Z",
+          "genres": [
+            "synth-pop",
+            "dancehall",
+            "tropical house"
+          ],
+          "ref": "Q22338688,Q24283755"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:31.441Z",
+          "genres": [
+            "dancehall",
+            "electropop",
+            "dance-pop",
+            "moombahton",
+            "pop",
+            "reggae",
+            "reggae-pop",
+            "synth-pop",
+            "todd in the shadows",
+            "tropical house"
+          ],
+          "ref": "release-group/c7d77cf5-03ea-40cc-9714-20615edf0e8a"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:15:08.869Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "Intense"
+          ],
+          "ref": "track/34529996"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:15:08.679Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "spice girls - wannabe": {
+      "artist": "Spice Girls",
+      "title": "Wannabe",
+      "videoIds": [
+        "fw-QRyQcFH8"
+      ],
+      "genres": [
+        "pop",
+        "dance-pop",
+        "pop rap",
+        "Britpop",
+        "pop rock",
+        "synth-pop"
+      ],
+      "moods": [
+        "excitable"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:40:25.426Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T03:56:51.809Z",
+          "genres": [
+            "Dance-pop",
+            "pop rap"
+          ],
+          "ref": "Wannabe"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T03:57:00.599Z",
+          "genres": [
+            "dance-pop",
+            "pop rap"
+          ],
+          "ref": "Q418833"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:40:25.426Z",
+          "genres": [
+            "pop",
+            "brit pop",
+            "electronic",
+            "house",
+            "pop rock",
+            "rock",
+            "synth-pop"
+          ],
+          "ref": "release-group/b50ee798-2b55-3c1b-9d67-f8d0d8395732"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T03:56:52.998Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "Excitable"
+          ],
+          "ref": "track/32821682"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T03:56:50.496Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "taio cruz - dynamite": {
+      "artist": "Taio Cruz",
+      "title": "Dynamite",
+      "videoIds": [
+        "sLqdRmwY6vc"
+      ],
+      "genres": [
+        "R&B",
+        "pop",
+        "electropop",
+        "dance-pop",
+        "pop rap",
+        "electronic"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:20.201Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:13:01.032Z",
+          "genres": [
+            "Electropop",
+            "dance-pop"
+          ],
+          "ref": "Dynamite (Taio Cruz song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:14:11.534Z",
+          "genres": [
+            "rhythm and blues"
+          ],
+          "ref": "Q1269045"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:20.201Z",
+          "genres": [
+            "contemporary r&b",
+            "electro",
+            "electronic",
+            "hip hop",
+            "house",
+            "pop",
+            "pop general",
+            "pop rap",
+            "r&b"
+          ],
+          "ref": "release-group/cdaf67a5-abc0-48da-a7df-510cc554fed6"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:12:58.044Z",
+          "genres": [
+            "R&B"
+          ],
+          "ref": "track/33014640"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:12:57.844Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "taylor swift - cruel summer": {
+      "artist": "Taylor Swift",
+      "title": "Cruel Summer",
+      "videoIds": [
+        "ic8j13piAhQ"
+      ],
+      "genres": [
+        "electropop",
+        "synth-pop",
+        "pop",
+        "bubblegum pop",
+        "industrial pop"
+      ],
+      "moods": [
+        "energetic"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:30.034Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:06:06.520Z",
+          "genres": [
+            "Electropop",
+            "synth-pop",
+            "bubblegum pop",
+            "industrial pop"
+          ],
+          "ref": "Cruel Summer (Taylor Swift song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:07:20.076Z",
+          "genres": [
+            "synth-pop",
+            "electropop"
+          ],
+          "ref": "Q67184416"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:30.034Z",
+          "genres": [
+            "electropop",
+            "artist on cover",
+            "pop",
+            "synth-pop"
+          ],
+          "ref": "release-group/e2a3933e-ef12-4279-bfb3-9a02b0ded904"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:06:06.638Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "Energetic"
+          ],
+          "ref": "track/35286922"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:06:06.394Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "taylor swift - shake it off": {
+      "artist": "Taylor Swift",
+      "title": "Shake It Off",
+      "videoIds": [
+        "8xG7mH8i-WE"
+      ],
+      "genres": [
+        "dance-pop",
+        "pop"
+      ],
+      "moods": [
+        "needy"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:37.590Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:06:14.807Z",
+          "genres": [
+            "Dance-pop"
+          ],
+          "ref": "Shake It Off"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:07:28.262Z",
+          "genres": [
+            "dance-pop"
+          ],
+          "ref": "Q17544624"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:37.590Z",
+          "genres": [
+            "pop",
+            "dance-pop",
+            "2014",
+            "artist on cover",
+            "billboard hot 100",
+            "todd in the shadows",
+            "year end chart"
+          ],
+          "ref": "release-group/999e9130-0fc3-4667-8455-f283d7f7fabf"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:06:14.876Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "Needy"
+          ],
+          "ref": "track/34100642"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:06:14.676Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "the kid laroi justin bieber - stay": {
+      "artist": "The Kid LAROI & Justin Bieber",
+      "title": "STAY",
+      "videoIds": [
+        "pd1_SxHh2vo"
+      ],
+      "genres": [
+        "pop rap",
+        "pop rock",
+        "synth-pop",
+        "pop",
+        "electropop",
+        "new wave"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:41:27.511Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:04:48.206Z",
+          "genres": [
+            "Electropop",
+            "pop rap",
+            "pop rock",
+            "synth-pop",
+            "new wave",
+            "hyperpop"
+          ],
+          "ref": "Stay (The Kid Laroi and Justin Bieber song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:06:14.673Z",
+          "genres": [
+            "pop rap",
+            "pop rock",
+            "synth-pop"
+          ],
+          "ref": "Q107439752"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:41:27.511Z",
+          "genres": [
+            "electronic",
+            "pop"
+          ],
+          "ref": "release-group/c23a7995-9f2a-4716-8812-3b35d05eddd3"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:04:44.079Z",
+          "genres": [
+            "Rap"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/35772708"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:04:43.807Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "the weeknd - blinding lights": {
+      "artist": "The Weeknd",
+      "title": "Blinding Lights",
+      "videoIds": [
+        "o6ytLPKscrU"
+      ],
+      "genres": [
+        "electropop",
+        "synthwave",
+        "synth-pop",
+        "R&B",
+        "deep house",
+        "electronic"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:40:46.592Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T03:59:41.686Z",
+          "genres": [
+            "Synth-pop",
+            "electropop",
+            "dance-pop",
+            "new wave",
+            "synthwave"
+          ],
+          "ref": "Blinding Lights"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:01:03.257Z",
+          "genres": [
+            "electropop",
+            "synthwave"
+          ],
+          "ref": "Q76566134,Q109612965"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:40:46.592Z",
+          "genres": [
+            "electronic",
+            "synth-pop",
+            "synthwave",
+            "ballad",
+            "deep house",
+            "electro house",
+            "electropop"
+          ],
+          "ref": "release-group/9b905cac-df8d-4942-bc4e-4fe0f2ed635f"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T03:59:41.795Z",
+          "genres": [
+            "R&B"
+          ],
+          "ref": "track/35374569"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T03:59:41.537Z",
+          "genres": [
+            "R&B/Soul"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "the weeknd - save your tears": {
+      "artist": "The Weeknd",
+      "title": "Save Your Tears",
+      "videoIds": [
+        "u6lihZAcy4s"
+      ],
+      "genres": [
+        "synth-pop",
+        "R&B",
+        "alternative R&B",
+        "pop",
+        "synth-rock",
+        "dance-pop"
+      ],
+      "moods": [
+        "intense"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:40:49.959Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:00:46.981Z",
+          "genres": [
+            "Synth-pop",
+            "synth-rock"
+          ],
+          "ref": "Save Your Tears"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:02:00.425Z",
+          "genres": [
+            "synth-pop"
+          ],
+          "ref": "Q96405034"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:40:49.959Z",
+          "genres": [
+            "alternative r&b",
+            "dance-pop",
+            "music video",
+            "new wave",
+            "pop",
+            "synth-pop",
+            "synthwave"
+          ],
+          "ref": "release-group/632c57d1-c677-45a6-b083-5c34944841fa"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:00:47.008Z",
+          "genres": [
+            "R&B"
+          ],
+          "moods": [
+            "Intense"
+          ],
+          "ref": "track/35399309"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:00:46.821Z",
+          "genres": [
+            "R&B/Soul"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "twenty one pilots - chlorine": {
+      "artist": "twenty one pilots",
+      "title": "Chlorine",
+      "videoIds": [
+        "UOQlKBlobRY"
+      ],
+      "genres": [
+        "alternative hip hop",
+        "trip hop",
+        "rap rock",
+        "electropop",
+        "alternative rock",
+        "alternative"
+      ],
+      "moods": [
+        "enlightened"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:08.766Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:23:11.513Z",
+          "genres": [
+            "Trip hop",
+            "rap rock",
+            "electropop"
+          ],
+          "ref": "Chlorine (song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:24:24.635Z",
+          "genres": [
+            "alternative hip-hop"
+          ],
+          "ref": "Q60943297"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:08.766Z",
+          "genres": [
+            "alternative hip hop",
+            "electronic",
+            "hip hop",
+            "pop",
+            "rock",
+            "synth-pop"
+          ],
+          "ref": "release-group/b2ca1922-026f-4df4-94c7-e0136c9951b2"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:23:11.370Z",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "moods": [
+            "Enlightened"
+          ],
+          "ref": "track/35072784"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:23:11.189Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "twenty one pilots - guns for hands": {
+      "artist": "twenty one pilots",
+      "title": "Guns for Hands",
+      "videoIds": [
+        "Pmv8aQKO6k0"
+      ],
+      "genres": [
+        "alternative rock",
+        "alternative",
+        "indietronica",
+        "indie pop",
+        "rock",
+        "electronic"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:26.924Z",
+      "sources": {
+        "wikipedia": {
+          "status": "none",
+          "at": "2026-11-14T04:26:00.950Z",
+          "reason": "the article lists no genre",
+          "ref": "Guns for Hands"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:27:07.720Z",
+          "genres": [
+            "indietronica"
+          ],
+          "ref": "Q17008137"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:26.924Z",
+          "genres": [
+            "unknown",
+            "indie pop",
+            "alternative",
+            "indietronica",
+            "electronic",
+            "rock",
+            "alternative rock",
+            "indie"
+          ],
+          "ref": "recording/1b60a734-79a7-4f7c-baa3-4ec637fa0729,51bdd587-0289-495c-a09a-1cbfe212912e,5df8b362-4953-47ad-9860-590a10857786,dc9941bf-b869-4089-9ba8-8192d68d76d9,dc43e5a6-009b-4790-841a-9ddb8bbd0e7c"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:25:46.377Z",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/33563009"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:25:46.196Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "twenty one pilots - heavydirtysoul": {
+      "artist": "twenty one pilots",
+      "title": "Heavydirtysoul",
+      "videoIds": [
+        "w5i-cwLH7s0"
+      ],
+      "genres": [
+        "alternative hip hop",
+        "rap rock",
+        "industrial hip hop",
+        "hip hop",
+        "rock",
+        "alternative"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:07.514Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:23:07.364Z",
+          "genres": [
+            "Alternative hip hop",
+            "rock",
+            "rap rock"
+          ],
+          "ref": "Heavydirtysoul"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:24:16.499Z",
+          "genres": [
+            "industrial hip-hop"
+          ],
+          "ref": "Q28128973"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:07.514Z",
+          "genres": [
+            "hip hop",
+            "pop"
+          ],
+          "ref": "release-group/d0b925ff-cb06-4a91-8927-71278874dfe4"
+        },
+        "theaudiodb": {
+          "status": "none",
+          "at": "2026-11-14T04:23:03.244Z",
+          "reason": "the track has no genre",
+          "ref": "track/34311563"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:23:03.050Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "twenty one pilots - house of gold": {
+      "artist": "twenty one pilots",
+      "title": "House of Gold",
+      "videoIds": [
+        "qX0cPZT3Lzg"
+      ],
+      "genres": [
+        "indie pop",
+        "indie folk",
+        "folk",
+        "pop rock",
+        "alternative rock",
+        "Americana"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:21.382Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:25:46.739Z",
+          "genres": [
+            "Alternative folk",
+            "folk",
+            "Americana",
+            "indie pop"
+          ],
+          "ref": "House of Gold (Twenty One Pilots song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:26:59.592Z",
+          "genres": [
+            "traditional folk music",
+            "pop rock"
+          ],
+          "ref": "Q16005643"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:21.382Z",
+          "genres": [
+            "pop",
+            "rock"
+          ],
+          "ref": "release-group/69b3192d-c176-4529-a9b2-aaf416a230f0"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:25:38.243Z",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/33563003"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:25:38.067Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "twenty one pilots - jumpsuit": {
+      "artist": "twenty one pilots",
+      "title": "Jumpsuit",
+      "videoIds": [
+        "ahvkAPbPGKw"
+      ],
+      "genres": [
+        "alternative rock",
+        "electronic rock",
+        "hard rock",
+        "progressive rock",
+        "rock",
+        "indietronica"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:24.171Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:25:30.042Z",
+          "genres": [
+            "Hard rock",
+            "alternative rock",
+            "progressive rock",
+            "electronic rock"
+          ],
+          "ref": "Jumpsuit (song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:26:51.444Z",
+          "genres": [
+            "alternative rock",
+            "electronic rock",
+            "indietronica"
+          ],
+          "ref": "Q56344909,Q55516958"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:24.171Z",
+          "genres": [
+            "unknown",
+            "rock",
+            "rap rock",
+            "reggae"
+          ],
+          "ref": "recording/e30b6ef6-3f5c-47a7-943a-2e64c3fccc48,cd0c9691-1e5b-4d12-983c-74b24bb65eef,11b59d83-355f-4420-9e50-6a66359a38c1,4f8fd3f9-b91d-40c9-b215-8f83aaa0611e,f5becdbd-9108-436f-926c-8785a785e77c"
+        },
+        "theaudiodb": {
+          "status": "none",
+          "at": "2026-11-14T04:25:30.185Z",
+          "reason": "the track has no genre",
+          "ref": "track/35072780"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:25:29.916Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "twenty one pilots - level of concern": {
+      "artist": "twenty one pilots",
+      "title": "Level of Concern",
+      "videoIds": [
+        "iFaKc8Bvk4Y"
+      ],
+      "genres": [
+        "dance-pop",
+        "pop rock",
+        "disco",
+        "dance-rock",
+        "nu-disco",
+        "alt-pop"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:16.756Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:24:24.781Z",
+          "genres": [
+            "Dance-pop",
+            "dance-rock",
+            "disco",
+            "pop rock"
+          ],
+          "ref": "Level of Concern"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:25:46.194Z",
+          "genres": [
+            "disco"
+          ],
+          "ref": "Q89990072"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:16.756Z",
+          "genres": [
+            "alternative dance",
+            "alternative pop",
+            "alternative rock",
+            "dance-pop",
+            "electronic",
+            "funk rock",
+            "indie pop",
+            "indietronica",
+            "nu disco",
+            "pop",
+            "pop rock",
+            "post-punk revival",
+            "rock",
+            "synth funk",
+            "synth-pop"
+          ],
+          "ref": "release-group/34fe4b57-2211-4720-b04b-b8002d3d4e20"
+        },
+        "theaudiodb": {
+          "status": "none",
+          "at": "2026-11-14T04:24:24.821Z",
+          "reason": "the track has no genre",
+          "ref": "track/35703711"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:24:24.636Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "twenty one pilots - overcompensate": {
+      "artist": "twenty one pilots",
+      "title": "Overcompensate",
+      "videoIds": [
+        "53tgVlXBZVg"
+      ],
+      "genres": [
+        "breakbeat",
+        "electronic rock",
+        "rap rock",
+        "trip hop",
+        "hip hop",
+        "alternative rock"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:29.446Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:26:51.571Z",
+          "genres": [
+            "Hip hop",
+            "breakbeat",
+            "electronic rock"
+          ],
+          "ref": "Overcompensate (song)"
+        },
+        "wikidata": {
+          "status": "none",
+          "at": "2026-11-14T04:28:04.820Z",
+          "reason": "the item has no genre",
+          "ref": "Q124711372,Q137716593,Q137715022"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:29.446Z",
+          "genres": [
+            "rap rock",
+            "reggae",
+            "unknown",
+            "alternative rock",
+            "big beat",
+            "breakbeat",
+            "pop",
+            "rock",
+            "electronic",
+            "rock music",
+            "trip hop"
+          ],
+          "ref": "recording/fe6565e0-fb7a-4a9c-b2dc-295ddf267042,ca81b5bd-d218-46c5-bdd7-1495129221f2,640306c8-fc97-45e2-b162-b42a760f2810,f57978f8-bb0f-4a0c-a744-f433d52f7b71"
+        },
+        "theaudiodb": {
+          "status": "none",
+          "at": "2026-11-14T04:26:51.730Z",
+          "reason": "the track has no genre",
+          "ref": "track/36310623"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:26:51.445Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "twenty one pilots - ride": {
+      "artist": "twenty one pilots",
+      "title": "Ride",
+      "videoIds": [
+        "hyzGXmPQzEg"
+      ],
+      "genres": [
+        "reggae",
+        "alternative",
+        "alternative hip hop",
+        "alternative rock",
+        "dub",
+        "electropop"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:06.259Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:23:03.286Z",
+          "genres": [
+            "Alternative hip hop",
+            "dub",
+            "rock",
+            "reggae",
+            "electropop"
+          ],
+          "ref": "Ride (Twenty One Pilots song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:24:08.351Z",
+          "genres": [
+            "reggae"
+          ],
+          "ref": "Q19961764"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:06.259Z",
+          "genres": [
+            "alternative",
+            "pop",
+            "reggae"
+          ],
+          "ref": "release-group/79e85868-7f8f-4b06-b9e3-4b1490b66ae3"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:22:55.079Z",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/34311565"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:22:54.883Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "twenty one pilots - shy away": {
+      "artist": "twenty one pilots",
+      "title": "Shy Away",
+      "videoIds": [
+        "niR2qJ3mGEE"
+      ],
+      "genres": [
+        "synth-pop",
+        "pop rock",
+        "alternative rock",
+        "new wave",
+        "indie rock",
+        "pop"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:12.136Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:24:08.495Z",
+          "genres": [
+            "Synth-pop",
+            "alternative rock",
+            "indie rock",
+            "pop rock",
+            "new wave"
+          ],
+          "ref": "Shy Away"
+        },
+        "wikidata": {
+          "status": "none",
+          "at": "2026-11-14T04:25:29.915Z",
+          "reason": "the item has no genre",
+          "ref": "Q106415155,Q137716564,Q137715018"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:12.136Z",
+          "genres": [
+            "pop"
+          ],
+          "ref": "release-group/b4fa32a8-a64e-4507-af86-8bd94adec583"
+        },
+        "theaudiodb": {
+          "status": "none",
+          "at": "2026-11-14T04:24:08.543Z",
+          "reason": "the track has no genre",
+          "ref": "track/35703702"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:24:08.352Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "twenty one pilots - stressed out": {
+      "artist": "twenty one pilots",
+      "title": "Stressed Out",
+      "videoIds": [
+        "XZe_pV2rXuk"
+      ],
+      "genres": [
+        "alternative rock",
+        "alternative hip hop",
+        "alternative",
+        "rap rock",
+        "rock",
+        "hip hop"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:05.006Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:21:49.597Z",
+          "genres": [
+            "Alternative hip hop",
+            "alternative rock",
+            "rap rock"
+          ],
+          "ref": "Stressed Out"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:23:11.188Z",
+          "genres": [
+            "alternative hip-hop",
+            "alternative rock"
+          ],
+          "ref": "Q19851006"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:05.006Z",
+          "genres": [
+            "alternative hip hop",
+            "alternative rock",
+            "electronic",
+            "hip hop",
+            "house",
+            "pop",
+            "rock"
+          ],
+          "ref": "release-group/9e0b49c8-cebb-4126-bed9-68699ad5e450"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:21:49.761Z",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/34311564"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:21:49.458Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "twenty one pilots - tear in my heart": {
+      "artist": "twenty one pilots",
+      "title": "Tear in My Heart",
+      "videoIds": [
+        "AMNNqQpU-i4"
+      ],
+      "genres": [
+        "alternative",
+        "indie pop",
+        "pop",
+        "alternative rock",
+        "synth-pop",
+        "pop rock"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:43:13.391Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:24:16.644Z",
+          "genres": [
+            "Pop",
+            "indie pop",
+            "rock",
+            "pop rock"
+          ],
+          "ref": "Tear in My Heart"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:25:38.066Z",
+          "genres": [
+            "pop music"
+          ],
+          "ref": "Q19816690"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:43:13.391Z",
+          "genres": [
+            "alternative",
+            "synth-pop"
+          ],
+          "ref": "release-group/8bf685b7-5480-48fe-8373-ac1f1507728a"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:24:16.745Z",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/34311567"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:24:16.501Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "walk the moon - shut up and dance": {
+      "artist": "WALK THE MOON",
+      "title": "Shut Up and Dance",
+      "videoIds": [
+        "nx3-XCtnEqU"
+      ],
+      "genres": [
+        "alternative rock",
+        "power pop",
+        "new wave",
+        "pop rock",
+        "alternative",
+        "synth-rock"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:42:17.701Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:11:21.421Z",
+          "genres": [
+            "Pop rock",
+            "power pop",
+            "synth rock",
+            "alternative rock",
+            "new wave"
+          ],
+          "ref": "Shut Up and Dance (Walk the Moon song)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:12:49.683Z",
+          "genres": [
+            "power pop",
+            "new wave",
+            "pop rock",
+            "electronic rock",
+            "alternative rock"
+          ],
+          "ref": "Q18786700"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:42:17.701Z",
+          "genres": [
+            "pop",
+            "indie pop",
+            "indie rock",
+            "rock",
+            "alternative rock",
+            "american",
+            "american rock",
+            "dance-rock",
+            "new wave",
+            "power pop",
+            "vocal",
+            "altrock"
+          ],
+          "ref": "recording/9656e1b2-87c1-4208-8a33-fa814961fc9e"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:11:17.116Z",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "moods": [
+            "..."
+          ],
+          "ref": "track/34131114"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:11:16.945Z",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "wham - wake me up before you go go": {
+      "artist": "Wham!",
+      "title": "Wake Me Up Before You Go-Go",
+      "videoIds": [
+        "JTBoLANhyVA"
+      ],
+      "genres": [
+        "pop",
+        "dance-pop",
+        "bubblegum pop",
+        "synth-pop",
+        "pop rock",
+        "electronic"
+      ],
+      "moods": [
+        "good natured"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:44:10.056Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:37:04.082Z",
+          "genres": [
+            "Dance-pop",
+            "bubblegum"
+          ],
+          "ref": "Wake Me Up Before You Go-Go"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:38:17.792Z",
+          "genres": [
+            "pop music",
+            "dance-pop"
+          ],
+          "ref": "Q1490448,Q104713420"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:44:10.056Z",
+          "genres": [
+            "synth-pop",
+            "electronic",
+            "pop",
+            "pop rock"
+          ],
+          "ref": "release-group/e56ea208-d428-4335-8826-0dd635420da6"
+        },
+        "theaudiodb": {
+          "status": "found",
+          "at": "2026-11-14T04:37:04.136Z",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "Good Natured"
+          ],
+          "ref": "track/32878992"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:37:03.951Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    },
+    "whitney houston - i wanna dance with somebody": {
+      "artist": "Whitney Houston",
+      "title": "I Wanna Dance with Somebody",
+      "videoIds": [
+        "id2-K3daNRQ"
+      ],
+      "genres": [
+        "dance-pop",
+        "pop",
+        "R&B",
+        "electronic"
+      ],
+      "complete": true,
+      "at": "2026-11-14T04:44:00.801Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "at": "2026-11-14T04:35:34.235Z",
+          "genres": [
+            "Pop",
+            "dance-pop",
+            "R&B"
+          ],
+          "ref": "I Wanna Dance with Somebody (Who Loves Me)"
+        },
+        "wikidata": {
+          "status": "found",
+          "at": "2026-11-14T04:36:55.815Z",
+          "genres": [
+            "dance-pop"
+          ],
+          "ref": "Q1458883"
+        },
+        "musicbrainz": {
+          "status": "found",
+          "at": "2026-11-14T04:44:00.801Z",
+          "genres": [
+            "dance-pop",
+            "electronic",
+            "pop"
+          ],
+          "ref": "release-group/b21936dd-d834-49c8-914a-f025ee13af08"
+        },
+        "theaudiodb": {
+          "status": "none",
+          "at": "2026-11-14T04:35:34.275Z",
+          "reason": "no track by this artist with this title"
+        },
+        "itunes": {
+          "status": "found",
+          "at": "2026-11-14T04:35:34.098Z",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored"
+        }
+      }
+    }
+  }
+}

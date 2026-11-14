@@ -1,0 +1,58 @@
+{
+ "url": "https://www.wikidata.org/w/api.php?format=json&origin=*&action=wbgetentities&ids=Q105105274%7CQ2899818%7CQ15697534%7CQ2913982%7CQ11401&props=labels&languages=en&languagefallback=1",
+ "body": {
+  "entities": {
+   "Q105105274": {
+    "type": "item",
+    "id": "Q105105274",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Pooh Shiesty"
+     }
+    }
+   },
+   "Q2899818": {
+    "type": "item",
+    "id": "Q2899818",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Lil Durk"
+     }
+    }
+   },
+   "Q15697534": {
+    "type": "item",
+    "id": "Q15697534",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "drill"
+     }
+    }
+   },
+   "Q2913982": {
+    "type": "item",
+    "id": "Q2913982",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "trap music"
+     }
+    }
+   },
+   "Q11401": {
+    "type": "item",
+    "id": "Q11401",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "hip-hop"
+     }
+    }
+   }
+  },
+  "success": 1
+ }
+}

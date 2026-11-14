@@ -6,7 +6,7 @@
  */
 
 import starterData from '../data/starter.json';
-import { cloudGenre, reloadCloudIndex } from '../beat/bpmIndex';
+import { cloudGenre, cloudGenres, reloadCloudIndex } from '../beat/bpmIndex';
 import type { AddedSong } from '../beat/cloud';
 import { getPlatform } from '../platform/platform';
 import { cleanTitle } from '../player/playlistReader';
@@ -329,6 +329,16 @@ export const library = new Library();
  */
 export function songGenre(videoId: string): string | undefined {
   return addedSongs.find(videoId)?.genre ?? cloudGenre(videoId);
+}
+
+/**
+ * A song's genres from several sources, best first, when known: from the
+ * added song itself (songs.json, or the TV's own store for songs added on the
+ * TV), else from the cloud index (catalog and starter songs).
+ */
+export function songGenres(videoId: string): string[] | undefined {
+  const own = addedSongs.find(videoId)?.genres;
+  return own?.length ? own : cloudGenres(videoId);
 }
 
 /** YouTube thumbnail sizes: 'hq' 480x360 (16:9 frame letterboxed in 4:3), 'mq' 320x180. */
