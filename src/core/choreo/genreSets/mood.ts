@@ -36,5 +36,5 @@ export const moves: Partial<Record<string, string>> = {
   punk: `shout-along-bounce slam-bump picking-up-change hardcore-windmill cross-skank
     grounded-pogo arm-in-arm-sway`,
   brazil: `samba-de-roda samba-turn forro-basic axe-wave-step descer-rebolando frevo-scissors passinho-tap frevo-squat`,
-  amapiano: `log-drum-bounce amapiano-shuffle low-squat-walk air-piano knee-drop-groove`,
+  amapiano: `log-drum-bounce amapiano-shuffle low-squat-walk air-piano knee-drop-groove wide-fist-roll`,
 };

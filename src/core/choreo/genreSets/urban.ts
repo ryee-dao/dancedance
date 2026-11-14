@@ -21,7 +21,7 @@
 export const moves: Partial<Record<string, string>> = {
   // families/urban.ts (genres.ts RAW already lists the-whip the-shoot the-woah griddy jet-griddy nae-nae)
   trap: `shoulder-lean lean-two-step hit-and-hold rap-hands turn-up-jump
-    low-rolling-sway stir-the-pot`,
+    low-rolling-sway stir-the-pot flex-knee-hit ear-chest-sway crank-flying-pose`,
   // (RAW already lists shmoney)
   drill: `drill-bounce shoulder-rock drill-arm-swing drill-strut sturdy-hop drill-glide drill-two-step
     finger-gun-point finger-gun-hits rifle-spray`,

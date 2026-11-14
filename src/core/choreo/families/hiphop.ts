@@ -215,10 +215,12 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'the-whip', name: 'Whip', tags: 'hiphop pop | full |', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms'], mirror: true,
-    desc: 'Lift the knee and throw the same arm forward like gripping a wheel, then drop into the knees.',
+    desc: 'Lift the knee and draw one hand back by the shoulder, then whip it straight out in front at chest height, gripping a wheel, as you drop wide into the knees and lean back.',
+    // Turned a quarter toward the whipping arm: thrown straight at the viewer it was foreshortened
+    // to a fist at the chest. The lean back and the wide dip are the rest of the shape.
     keys: [
-      [0, { y: -0.01, lean: -4, head: 3, rf: [0.12, 0.2, 0.13], r: at(1, 0.3, 0.9, 0.22, [1, -0.4, 0]), l: at(-1, -0.22, 0.56, -0.03, [1, 0, -0.5]), handR: 1, handL: 0.4 }],
-      [1, wide(-0.1, { kneeR: 0.15, kneeL: 0.12, bend: 6, nod: 6, r: at(1, 0.24, 0.72, 0.22, [1, -0.4, 0]), l: at(-1, -0.2, 0.56, 0.05, [1, 0, -0.5]), handR: 1, handL: 0.4 })],
+      [0, { spin: 12, y: -0.01, lean: -3, head: 3, rf: [0.12, 0.2, 0.13], r: at(1, 0.22, 0.98, -0.02, [1, -0.2, -0.4]), l: at(-1, -0.22, 0.56, -0.03, [1, 0, -0.5]), handR: 0.6, handL: 0.4 }],
+      [1, wide(-0.11, { spin: 32, kneeR: 0.15, kneeL: 0.12, bend: -6, nod: -2, head: 3, r: at(1, 0.16, 0.78, 0.3, [1, -0.5, 0]), l: at(-1, -0.24, 0.6, -0.1, [1, 0, -0.5]), handR: 0.2, handL: 0.4 })],
     ],
   }),
   full({
@@ -436,12 +438,14 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'running-man-shuffle', name: 'Running Man Shuffle', tags: 'hiphop pop | legs | walk', beats: 2, level: 'high', d: 3, parts: ['legs'],
-    desc: 'Shuffle running man facing front: drive one knee up as the standing foot slides back, then swap every beat.',
+    desc: 'Shuffle running man, turned on the diagonal: drive one knee up as the standing foot slides back, put it down in front as the other knee comes up, arms pumping; swap every beat.',
+    // Turned 40 deg so the knee drive and the slide back (toward / away from the viewer) read as
+    // up-and-across on the screen; head-on they looked like marching.
     keys: [
-      [0, { y: 0.0, rf: [0.08, 0.2, 0.12], lf: [-0.08, 0, -0.04], r: at(1, 0.2, 0.62, 0.08, [1, 0, -0.3]), l: at(-1, -0.2, 0.62, 0.08, [1, 0, -0.3]), ...FIST }],
-      [0.5, { y: -0.07, rf: [0.08, 0, 0.06], lf: [-0.08, 0.02, -0.12], kneeL: 0.1, r: at(1, 0.2, 0.55, 0.1, [1, 0, -0.3]), l: at(-1, -0.2, 0.55, 0.1, [1, 0, -0.3]), ...FIST }],
-      [1, { y: 0.0, lf: [-0.08, 0.2, 0.12], rf: [0.08, 0, -0.04], r: at(1, 0.2, 0.62, 0.08, [1, 0, -0.3]), l: at(-1, -0.2, 0.62, 0.08, [1, 0, -0.3]), ...FIST }],
-      [1.5, { y: -0.07, lf: [-0.08, 0, 0.06], rf: [0.08, 0.02, -0.12], kneeR: 0.1, r: at(1, 0.2, 0.55, 0.1, [1, 0, -0.3]), l: at(-1, -0.2, 0.55, 0.1, [1, 0, -0.3]), ...FIST }],
+      [0, { spin: 40, y: 0.0, rf: [0.08, 0.2, 0.12], lf: [-0.08, 0, -0.06], slideL: true, bend: 4, r: at(1, 0.24, 0.66, 0.16, [1, -0.3, -0.3]), l: at(-1, -0.2, 0.52, -0.08, [1, 0, -0.5]), ...FIST }],
+      [0.5, { spin: 40, y: -0.07, rf: [0.08, 0, 0.07], lf: [-0.08, 0.02, -0.13], kneeL: 0.1, bend: 6, r: at(1, 0.24, 0.66, 0.16, [1, -0.3, -0.3]), l: at(-1, -0.2, 0.52, -0.08, [1, 0, -0.5]), ...FIST }],
+      [1, { spin: 40, y: 0.0, lf: [-0.08, 0.2, 0.12], rf: [0.08, 0, -0.06], slideR: true, bend: 4, l: at(-1, -0.24, 0.66, 0.16, [1, -0.3, -0.3]), r: at(1, 0.2, 0.52, -0.08, [1, 0, -0.5]), ...FIST }],
+      [1.5, { spin: 40, y: -0.07, lf: [-0.08, 0, 0.07], rf: [0.08, 0.02, -0.13], kneeR: 0.1, bend: 6, l: at(-1, -0.24, 0.66, 0.16, [1, -0.3, -0.3]), r: at(1, 0.2, 0.52, -0.08, [1, 0, -0.5]), ...FIST }],
     ],
   }),
   full({
