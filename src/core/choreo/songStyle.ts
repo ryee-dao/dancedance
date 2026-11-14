@@ -37,7 +37,7 @@
  */
 import starterData from '../../data/starter.json';
 import { FAMILIES, FAMILY_LABEL, FOCI, isFamily, isTheme, THEMES, type Family, type Focus, type Theme } from './families';
-import { calmGate, CALM_CLOSED, GENRE_LABEL, SUB_STYLES, isSubStyle, type SubStyle } from './genres';
+import { calmGate, CALM_CLOSED, GENRE_LABEL, SUB_STYLES, THEME_LEAD, isSubStyle, type SubStyle } from './genres';
 import { readTraits, type SongTraits } from './songTraits';
 
 export type { SongTraits } from './songTraits';
@@ -48,6 +48,11 @@ export interface SongStyle {
   /** Multipliers around 1 (e.g. hips: 1.6). */
   focus?: Partial<Record<Focus, number>>;
   themes: Theme[];
+  /**
+   * Weight 0..1 of a theme only weaker genre evidence says (a name far down the list, the store's tag beside
+   * a list: THEME_FADE); absent = 1. Its set opens that much (genres.ts): a flavour, not the song's tradition.
+   */
+  themeW?: Partial<Record<Theme, number>>;
   /** Move ids, passed through from curated data. */
   signature?: string[];
   /** Where the families came from, for debugging / tests. */
@@ -676,6 +681,8 @@ interface GenreEvidence {
   fam: Weights | null;
   subs: Subs;
   themes: Set<Theme>;
+  /** Per theme, the weight of the strongest name saying it relative to the strongest name of all (1 = a leading name). */
+  themeRel: Map<Theme, number>;
   focus: FocusMap | null;
   /** Calm hint (weighted mean of the names that hint one, pulled toward neutral by the names that don't). */
   calm: number | null;
@@ -760,6 +767,13 @@ export const REFINE_OVERLAP = 0.5;
 export const REFINE_W = 0.5;
 /** Sub-style evidence of a refining name: this share of its score (punk 1 -> 0.6: opens the punk set). */
 export const REFINE_SUB = 0.6;
+/**
+ * A theme's weight (SongStyle.themeW) from its strongest name's weight relative to the strongest name of
+ * all (names weigh 1 / (1 + 0.5 i) at place i): 0 at THEME_FADE[0], whole from THEME_FADE[1]. The first
+ * three names say a tradition whole (0.5 at the third); the fourth 0.67, the fifth 0.44, the sixth 0.29;
+ * the store's tag beside a list (ITUNES_TIE) 0.33.
+ */
+export const THEME_FADE: readonly [number, number] = [0.2, 0.5];
 /** Family and label weight of a song form beside genre names. */
 const FORM_FAM = 0.3;
 export const ITUNES_SUB = 0.4;
@@ -819,7 +833,7 @@ function genreEvidence(list: readonly string[] | undefined, tag: string | undefi
    * count); refine: an artist name refining a bare umbrella; wc: weight of its calm / softness / tempo (a form's
    * counts wherever it is listed).
    */
-  type Item = { r: Reading; w: number; pos: number; tag: boolean; album?: true; adds?: boolean; refine?: true; wc: number };
+  type Item = { r: Reading; w: number; pos: number; tag: boolean; album?: true; adds?: boolean; refine?: true; wc: number; tw?: number };
   const items: Item[] = [];
   // Levels apply only when they match the list entry for entry; without them every name is song-level.
   const lv = Array.isArray(levels) && list && levels.length === list.length ? levels : undefined;
@@ -858,7 +872,8 @@ function genreEvidence(list: readonly string[] | undefined, tag: string | undefi
       const adds = narrowsSong(r, songNames) || (ref && isSpecific(r));
       const wa = w * (ref ? REFINE_W : ALBUM_FAM);
       const pa = adds ? posAt(at) * (ref && !narrowsSong(r, songNames) ? REFINE_SUB : 1) : Math.min(pos, ALBUM_SUB);
-      items.push({ r, w: wa, pos: pa, tag: false, album: true, adds, wc: wc || wa });
+      // A narrowing album name says its dance as a song-level name at its place would (its theme weight too).
+      items.push({ r, w: wa, pos: pa, tag: false, album: true, adds, wc: wc || wa, ...(adds ? { tw: r.conf / (1 + 0.5 * at) } : {}) });
     } else items.push({ r, w, pos, tag: false, wc: wc || w });
   });
   const listed = items.length > 0;
@@ -874,12 +889,14 @@ function genreEvidence(list: readonly string[] | undefined, tag: string | undefi
       items.push({ r, w, pos: REFINE_SUB * posAt(i), tag: false, refine: true, wc: w });
     });
   }
-  const out: GenreEvidence = { fam: null, subs: {}, themes: new Set(), focus: null, calm: null, soft: null, still: false, formed: new Set(), bright: new Set(), refined };
+  const out: GenreEvidence = { fam: null, subs: {}, themes: new Set(), themeRel: new Map(), focus: null, calm: null, soft: null, still: false, formed: new Set(), bright: new Set(), refined };
   if (!items.length) return out;
   const fam: Record<string, number> = {};
   let cw = 0, cs = 0, sw = 0, ss = 0, wAll = 0, lb = 0, lw = 0;
   let labelW = -1;
   let scene: Reading | null = null;
+  // A theme weighs as the strongest name saying it, against the strongest name of all (its place in the list).
+  const wTop = Math.max(...items.map((it) => it.tw ?? it.w));
   for (const it of items) {
     const { r, w, pos, wc } = it;
     wAll += Math.max(w, wc);
@@ -887,7 +904,13 @@ function genreEvidence(list: readonly string[] | undefined, tag: string | undefi
     for (const k of SUB_STYLES) if (r.subs[k]) out.subs[k] = Math.max(out.subs[k] ?? 0, r.subs[k]! * pos);
     // An album name that does not narrow the song's own names brings no tradition and no body focus.
     const own = !it.album || it.adds;
-    if (own) for (const t of r.themes) out.themes.add(t);
+    if (own) {
+      const rel = wTop > 0 ? Math.min(1, (it.tw ?? w) / wTop) : 1;
+      for (const t of r.themes) {
+        out.themes.add(t);
+        out.themeRel.set(t, Math.max(out.themeRel.get(t) ?? 0, rel));
+      }
+    }
     if (own && r.focus && !out.focus) out.focus = r.focus;
     if (r.calm !== null) (cw += wc), (cs += wc * r.calm);
     if (r.soft !== null) (sw += wc), (ss += wc * r.soft);
@@ -1253,6 +1276,14 @@ export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyl
   // The Western folk family on a bright song (major key, a steady unsoft beat) dances the country floor; else it stays gentle.
   if (ev.bright.size && traits && (traits.minor ?? 1) < BRIGHT_MINOR && soundsSoft !== undefined && soundsSoft < BRIGHT_SOFT && (traits.calm ?? 1) < BRIGHT_CALM) for (const t of ev.bright) themeSet.add(t);
   const themes = THEMES.filter((t) => themeSet.has(t));
+  // A theme only a trailing name says (or the store's tag beside a list) is a flavour of the song, not its tradition.
+  const curatedThemes = new Set<Theme>([...themesOf(curated?.themes), ...keywordThemes(song.title), ...(ev.bright.size ? [...ev.bright].filter((t) => themeSet.has(t)) : [])]);
+  const themeW: Partial<Record<Theme, number>> = {};
+  for (const t of themes) {
+    if (curatedThemes.has(t)) continue;
+    const w = ramp(ev.themeRel.get(t) ?? 1, THEME_FADE[0], THEME_FADE[1]);
+    if (w < 1) themeW[t] = Math.round(w * 1000) / 1000;
+  }
 
   let focus = normFocus(curated?.focus) ?? normFocus(ev.focus);
   if (!focus && themeSet.has('hips')) focus = { hips: 1.3 };
@@ -1260,6 +1291,7 @@ export function resolveSongStyle(song: SongInfo, priors?: StylePriors): SongStyl
   const signature = Array.isArray(curated?.signature) ? curated.signature.filter((s): s is string => typeof s === 'string') : songSignature(song.title, song.artist);
 
   const out: SongStyle = { families: ordered(families), themes, source };
+  if (Object.keys(themeW).length) out.themeW = themeW;
   if (focus) out.focus = focus;
   if (signature && signature.length) out.signature = [...signature];
   if (Object.keys(subs).length) out.subs = subs;
@@ -1333,7 +1365,8 @@ export const UNKNOWN_LABEL = 'Mixed styles';
  */
 export function styleLabel(s: SongStyle): string {
   const top = topFamilies(s);
-  const tradition = THEME_HEAD.find(([t]) => s.themes.includes(t))?.[1];
+  // A flavour theme (themeW) doesn't name the song.
+  const tradition = THEME_HEAD.find(([t]) => s.themes.includes(t) && (s.themeW?.[t] ?? 1) >= THEME_LEAD)?.[1];
   const fams = top.length ? top.map((f) => MUSIC_LABEL[f]).join(' · ') : null;
   if (s.still && s.label) return s.label;
   if (s.calm !== undefined && s.calm >= BALLAD_CALM) {

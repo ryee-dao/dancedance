@@ -454,6 +454,8 @@ const LATIN_PROXY_THEMES: readonly Theme[] = ['afro', 'amapiano', 'dancehall', '
 export interface GenreSource {
   families: Partial<Record<Family, number>>;
   themes: readonly Theme[];
+  /** A theme's weight 0..1 when weak evidence says it (songStyle.ts THEME_FADE); absent = 1. */
+  themeW?: Partial<Record<Theme, number>>;
   /** Sub-style scores 0..1 (songStyle.ts). */
   subs?: Partial<Record<SubStyle, number>>;
   /** The song's calm 0..1 (undefined = unknown: nothing closes). */
@@ -479,15 +481,38 @@ export function genreOpenness(style: GenreSource): Map<Genre, number> {
   return resolveOpenness(style).out;
 }
 
-/** genreOpenness, plus the sets the song's sub-styles replaced (closed). */
-function resolveOpenness(style: GenreSource): { out: Map<Genre, number>; replaced: Set<Genre> } {
+/** A theme from this weight (GenreSource.themeW) is the song's tradition: it keeps other family sets shut, names the song. */
+export const THEME_LEAD = 0.5;
+
+const themeWeight = (style: GenreSource, t: Theme) => Math.min(1, Math.max(0, style.themeW?.[t] ?? 1));
+
+/**
+ * How much of the usual genre time a song's open sets carry, 0..1: 1 unless
+ * every open set opened only through a flavour theme (GenreSource.themeW),
+ * then its weight (a trailing "Reggae" under soft rock: a few Caribbean
+ * moves, not half the routine in them). The generator scales the genre time
+ * by it.
+ */
+export function genreDepth(style: GenreSource): number {
+  return resolveOpenness(style).depth;
+}
+
+/** genreOpenness, plus the sets the song's sub-styles replaced (closed) and the genre depth (genreDepth). */
+function resolveOpenness(style: GenreSource): { out: Map<Genre, number>; replaced: Set<Genre>; depth: number } {
   const out = new Map<Genre, number>();
-  const open = (g: Genre, w: number) => out.set(g, Math.max(out.get(g) ?? 0, w));
+  // Per set, how far it carries genre time: a set opened only by flavour themes carries their weight.
+  const reach = new Map<Genre, number>();
+  const open = (g: Genre, w: number, r = 1) => {
+    out.set(g, Math.max(out.get(g) ?? 0, w));
+    reach.set(g, Math.max(reach.get(g) ?? 0, r));
+  };
   for (const t of style.themes) {
     const g = THEME_GENRES[t];
-    if (g) open(g, 1);
+    const w = themeWeight(style, t);
+    if (g && w > 0) open(g, w, w);
   }
-  const themed = out.size > 0;
+  // Only a tradition theme (THEME_LEAD) keeps the other family sets shut.
+  const themed = style.themes.some((t) => THEME_GENRES[t] && themeWeight(style, t) >= THEME_LEAD);
   let max = 0;
   for (const f of FAMILIES) max = Math.max(max, style.families[f] ?? 0);
   const proxy = style.themes.some((t) => LATIN_PROXY_THEMES.includes(t));
@@ -530,7 +555,9 @@ function resolveOpenness(style: GenreSource): { out: Map<Genre, number>; replace
     if (k < CALM_CLOSED * w || k <= 0) out.delete(g);
     else out.set(g, k);
   }
-  return { out, replaced };
+  let depth = out.size ? 0 : 1;
+  for (const g of out.keys()) depth = Math.max(depth, reach.get(g) ?? 1);
+  return { out, replaced, depth };
 }
 
 /** The genres a song's style opens (genreOpenness). */

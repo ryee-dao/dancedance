@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { SongTraits } from './songTraits';
-import { styleGenres } from './generator';
+import { generateRoutine, styleGenres, tierBeats } from './generator';
+import { genreDepth, genreOpenness } from './genres';
 import { resolveSongStyle, styleLabel, type SongInfo } from './songStyle';
+import { songMap } from './testutil';
 
 /**
  * Genre names -> dance sets: the faults the round-two random-song evaluation
@@ -131,5 +133,51 @@ describe('song forms ("ballad") are calm, soft, slow evidence, not a set', () =>
     expect([...styleGenres(ballad)].filter((g) => !styleGenres(plain).has(g) && g !== 'lyrical')).toEqual([]);
     // The genres still name the song.
     expect(styleLabel(ballad)).toBe(styleLabel(plain));
+  });
+});
+
+describe('a tradition theme follows its name\'s place in the list', () => {
+  const mraz: SongInfo = { genre: 'Pop', genres: ['soft rock', 'folk pop', 'surf pop', 'pop rock', 'pop', 'reggae'], artistGenres: ['pop rock', 'blue-eyed soul', 'pop', 'alternative rock'] };
+  const at = (i: number): SongInfo => {
+    const g = ['soft rock', 'folk pop', 'surf pop', 'pop rock', 'pop'];
+    return { genre: 'Pop', genres: [...g.slice(0, i), 'reggae', ...g.slice(i)] };
+  };
+  const share = (s: ReturnType<typeof resolveSongStyle>) => {
+    const t = tierBeats(generateRoutine(songMap(76, 'flavour'), 'cardio', { style: s }), s);
+    return t.genre / (t.genre + t.global);
+  };
+
+  it('a sixth-listed "Reggae" under soft rock is a flavour: a little Caribbean, not the whole set', () => {
+    const s = resolveSongStyle(mraz, { bpm: 76 });
+    expect(s.themes).toContain('reggae');
+    expect(s.themeW?.reggae).toBeLessThan(0.4);
+    expect(genreOpenness(s).get('caribbean')!).toBeLessThan(0.4);
+    expect(genreDepth(s)).toBeLessThan(0.4);
+    expect(styleLabel(s)).not.toMatch(/reggae/i);
+    expect(share(s)).toBeGreaterThan(0);
+    expect(share(s)).toBeLessThan(0.25);
+  });
+
+  it('the first three names say the tradition whole; it fades from the fourth', () => {
+    for (const i of [0, 1, 2]) {
+      const s = resolveSongStyle(at(i), { bpm: 76 });
+      expect(s.themeW?.reggae, `place ${i + 1}`).toBeUndefined();
+      expect(genreDepth(s), `place ${i + 1}`).toBe(1);
+    }
+    const w = [3, 4, 5].map((i) => resolveSongStyle(at(i), { bpm: 76 }).themeW?.reggae ?? 1);
+    expect(w[0]).toBeGreaterThan(w[1]);
+    expect(w[1]).toBeGreaterThan(w[2]);
+    expect(w[0]).toBeLessThan(1);
+    // The whole set when the song leads with it, or the store's tag is all there is.
+    expect(genreDepth(resolveSongStyle({ genre: 'Reggae' }, { bpm: 76 }))).toBe(1);
+    expect(share(resolveSongStyle(at(1), { bpm: 76 }))).toBeGreaterThan(0.35);
+  });
+
+  it('a flavour theme beside another open set leaves that set whole', () => {
+    const s = resolveSongStyle({ genre: 'Rock', genres: ['rock', 'hard rock', 'alternative rock', 'pop rock', 'pop punk', 'ska'] }, { bpm: 120 });
+    const o = genreOpenness(s);
+    expect(o.get('rock')).toBe(1);
+    if (o.has('caribbean')) expect(o.get('caribbean')!).toBeLessThan(0.5);
+    expect(genreDepth(s)).toBe(1);
   });
 });
