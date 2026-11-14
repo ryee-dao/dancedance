@@ -308,6 +308,15 @@ interface Lex {
    * major-key song with a steady, unsoft beat, and stays gentle (no tradition set; soft, lyrical) when minor or soft.
    */
   bright?: Theme;
+  /**
+   * Its sub-style evidence opens a set only from the song's LEADING name (the first song-level name, the store's
+   * tag alone, the artist's first name refining a bare umbrella); elsewhere it counts LEAD_ONLY_SUB of its score,
+   * and such trailing names corroborate each other (they add up, noisy-or) instead of the strongest counting
+   * alone: "indie pop" first opens the indie floor, a fourth-listed "Britpop" on a dance-pop list does not, two
+   * trailing indie names together may. For names that say a scene's floor only when they say what the song is
+   * (synth-pop, indie): as one of several names on a modern pop list they describe its sound, not its dancing.
+   */
+  lead?: true;
 }
 
 /**
@@ -407,11 +416,12 @@ const LEXICON: readonly Lex[] = [
   { re: word('post grunge|grunge'), fam: { rock: 1 }, sub: { metal: 0.3 }, bpm: 110 },
   { re: word('pop punk|emo pop|easycore'), fam: { rock: 0.8, pop: 0.4 }, sub: { punk: 0.8 }, bpm: 160 },
   // Synth-pop / new wave and indie (round three, genres.ts synthpop / indie): new wave and the New Romantics open the
-  // synth-pop floor, post-punk revival and dance-punk the indie disco; post-punk itself leans indie. The plain names
-  // (synth-pop 0.95, indie pop 0.95) open their set from the first four places of a list, not as a fifth name.
-  { re: word('post punk revival|dance punk|indie dance|indie disco|indie sleaze'), fam: { rock: 0.7, pop: 0.5, disco: 0.2 }, sub: { indie: 0.85 }, bpm: 130 },
-  { re: word('new wave'), fam: { rock: 0.7, pop: 0.5, disco: 0.2 }, sub: { punk: 0.25, synthpop: 0.9 }, bpm: 130 },
-  { re: word('new romantic|new romanticism|new pop'), fam: { pop: 0.7, disco: 0.3, rock: 0.2 }, sub: { synthpop: 0.9 }, bpm: 120 },
+  // synth-pop floor, post-punk revival and dance-punk the indie disco; post-punk itself leans indie. The era names
+  // (new wave, New Romantic, new pop, synthwave: 0.6) open the 80s floor from the first two places of a list; the
+  // plain "synth-pop" and the indie names only as the song's leading name, or corroborated (Lex.lead).
+  { re: word('post punk revival|dance punk|indie dance|indie disco|indie sleaze'), fam: { rock: 0.7, pop: 0.5, disco: 0.2 }, sub: { indie: 0.85 }, lead: true, bpm: 130 },
+  { re: word('new wave'), fam: { rock: 0.7, pop: 0.5, disco: 0.2 }, sub: { punk: 0.25, synthpop: 0.6 }, bpm: 130 },
+  { re: word('new romantic|new romanticism|new pop'), fam: { pop: 0.7, disco: 0.3, rock: 0.2 }, sub: { synthpop: 0.6 }, bpm: 120 },
   { re: word('post punk|coldwave|minimal wave'), fam: { rock: 0.7, pop: 0.5, disco: 0.2 }, sub: { punk: 0.25, indie: 0.6, synthpop: 0.4 }, bpm: 130 },
   { re: word('happy hardcore|uk hardcore|hardcore techno|gabber|hardstyle|jumpstyle|speedcore'), fam: { aerobic: 0.9, pop: 0.2 }, sub: { edm: 0.9 }, bpm: 155 },
   { re: word('breakcore|drill n bass|drill and bass|digital hardcore'), fam: { aerobic: 0.9, hiphop: 0.1 }, sub: { bass: 0.85 }, name: 'Breakcore', bpm: 175 },
@@ -422,18 +432,18 @@ const LEXICON: readonly Lex[] = [
   { re: word('power ballads?|rock ballad'), fam: { rock: 0.6, pop: 0.6 }, calm: 0.65, soft: 0.5, form: true, label: 'Power ballad', bpm: 75 },
   { re: word('soft rock|yacht rock|piano rock|acoustic rock|adult alternative'), fam: { rock: 0.6, pop: 0.6 }, calm: 0.62, soft: 0.6, bpm: 100 },
   { re: word('folk pop|pop folk'), fam: { pop: 0.7, rock: 0.4 }, calm: 0.55, soft: 0.5, bpm: 105 },
-  { re: word('indie folk|stomp and holler'), fam: { pop: 0.7, rock: 0.4 }, sub: { indie: 0.7 }, calm: 0.55, soft: 0.5, bright: 'country', bpm: 105 },
+  { re: word('indie folk|stomp and holler'), fam: { pop: 0.7, rock: 0.4 }, sub: { indie: 0.7 }, lead: true, calm: 0.55, soft: 0.5, bright: 'country', bpm: 105 },
   { re: word('folk rock|contemporary folk|freak folk|anti folk|chamber folk|americana folk|american folk|alternative folk|alt folk|psychedelic folk|psych folk|progressive folk|folktronica|neofolk|dark folk|folk punk'), fam: { pop: 0.7, rock: 0.4 }, calm: 0.55, soft: 0.5, bright: 'country', bpm: 105 },
   { re: word('rock and roll|rock n roll|rock n rollo|rockabilly|psychobilly|doo wop|skiffle'), fam: { rock: 1, pop: 0.3 }, themes: ['swing'], bpm: 150 },
   // Surf music is the 1960s floor (the twist, the swim, the pony: global and disco & funk moves), not the jive.
   { re: word('surf rock|surf pop|surf music|surf'), fam: { rock: 0.7, pop: 0.5, disco: 0.15 }, bpm: 140 },
   { re: word('funk rock|funk metal'), fam: { funk: 0.7, rock: 0.6 }, bpm: 115 },
   { re: word('pop rock|power pop|pop punk revival|pop rock'), fam: { pop: 0.7, rock: 0.6 }, bpm: 120 },
-  { re: word('dream pop|shoegaze|nu gaze|ethereal wave'), fam: { pop: 0.6, rock: 0.5 }, sub: { indie: 0.9 }, calm: 0.7, soft: 0.6, bpm: 90 },
+  { re: word('dream pop|shoegaze|nu gaze|ethereal wave'), fam: { pop: 0.6, rock: 0.5 }, sub: { indie: 0.9 }, lead: true, calm: 0.7, soft: 0.6, bpm: 90 },
   { re: word('slowcore|sadcore|post rock|space rock'), fam: { pop: 0.6, rock: 0.5 }, calm: 0.7, soft: 0.6, bpm: 90 },
   { re: word('darkwave|gothic rock|goth rock|deathrock|goth'), fam: { rock: 0.6, pop: 0.4, disco: 0.2 }, bpm: 125 },
-  { re: word('indie pop|twee pop|twee|jangle pop|jangle|c86|bedroom pop|lo fi indie|indie electronic'), fam: { pop: 0.9, rock: 0.3 }, sub: { indie: 0.95 }, calm: 0.5, bpm: 110 },
-  { re: word('chamber pop|baroque pop'), fam: { pop: 0.9, rock: 0.3 }, sub: { indie: 0.6 }, calm: 0.5, bpm: 110 },
+  { re: word('indie pop|twee pop|twee|jangle pop|jangle|c86|bedroom pop|lo fi indie|indie electronic'), fam: { pop: 0.9, rock: 0.3 }, sub: { indie: 0.95 }, lead: true, calm: 0.5, bpm: 110 },
+  { re: word('chamber pop|baroque pop'), fam: { pop: 0.9, rock: 0.3 }, sub: { indie: 0.6 }, lead: true, calm: 0.5, bpm: 110 },
   { re: word('art pop|sophisti pop|alt pop|alternative pop'), fam: { pop: 0.9, rock: 0.3 }, calm: 0.5, bpm: 110 },
   // --- Hip-hop, bass music and electronic.
   { re: word('drill|uk drill|ny drill|brooklyn drill|chicago drill|bronx drill|jersey drill'), fam: { hiphop: 1 }, sub: { drill: 1, trap: 0.3 }, label: 'Drill', bpm: 142 },
@@ -449,10 +459,10 @@ const LEXICON: readonly Lex[] = [
   { re: word('deep house|tech house|future house|french house|disco house|chicago house|acid house|soulful house|piano house|house'), fam: { disco: 0.5, aerobic: 0.5, pop: 0.3 }, sub: { house: 1 }, label: 'House', bpm: 124 },
   { re: word('eurodance|eurobeat|euro house|italo dance|hands up|hi nrg|hinrg'), fam: { pop: 0.5, aerobic: 0.6, disco: 0.2 }, sub: { edm: 0.5 }, bpm: 135 },
   { re: word('edm|electronic dance music|trance|psytrance|psychedelic trance|goa trance|uplifting trance|hard trance|techno|hard techno|minimal techno|detroit techno|acid techno|rave'), fam: { aerobic: 0.8, pop: 0.3 }, sub: { edm: 1 }, bpm: 132 },
-  { re: word('synth pop|synthpop|technopop|techno pop'), fam: { pop: 0.8, disco: 0.3, aerobic: 0.3 }, sub: { synthpop: 0.95 }, bpm: 120 },
-  { re: word('synthwave|retrowave|outrun|darksynth'), fam: { pop: 0.8, disco: 0.3, aerobic: 0.3 }, sub: { synthpop: 0.8 }, bpm: 120 },
-  // Modern electropop is mostly pop: it opens the synth-pop floor only beside other evidence.
-  { re: word('electropop|electro pop|electroclash'), fam: { pop: 0.8, disco: 0.3, aerobic: 0.3 }, sub: { synthpop: 0.45 }, bpm: 120 },
+  { re: word('synth pop|synthpop|technopop|techno pop'), fam: { pop: 0.8, disco: 0.3, aerobic: 0.3 }, sub: { synthpop: 0.95 }, lead: true, bpm: 120 },
+  { re: word('synthwave|retrowave|outrun|darksynth'), fam: { pop: 0.8, disco: 0.3, aerobic: 0.3 }, sub: { synthpop: 0.6 }, bpm: 120 },
+  // Electropop is today's pop sound, not the new wave floor: no synth-pop set.
+  { re: word('electropop|electro pop|electroclash'), fam: { pop: 0.8, disco: 0.3, aerobic: 0.3 }, bpm: 120 },
   { re: word('hyperpop|digicore|glitchcore|nightcore'), fam: { pop: 0.8, disco: 0.3, aerobic: 0.3 }, bpm: 120 },
   { re: word('dance pop|(?<!belly |folk |line |square )dance'), fam: { pop: 0.5, aerobic: 0.5, disco: 0.3 }, label: 'Dance', bpm: 122 },
   { re: word('dark ambient|ambient|drone|space music|new age|meditation|healing|relaxation|sleep|nature sounds|soundscape|field recording|sound art|musique concrete'), fam: STILL, calm: 0.85, soft: 0.9, still: true, bpm: 70 },
@@ -558,9 +568,9 @@ const LEXICON: readonly Lex[] = [
   { re: word('world music|worldbeat|world|worldwide|international'), fam: { pop: 0.6, latin: 0.3, disco: 0.2 }, conf: 0.5, label: 'World music', fixed: true, bpm: 110 },
   { re: word('chinese|japanese|thai|indonesian|malaysian|filipino|opm|original pilipino music|vietnamese'), fam: { pop: 0.8, kpop: 0.3 }, conf: 0.6, bpm: 110 },
   { re: word('teen pop|bubblegum pop|bubblegum|pop'), fam: { pop: 1, hiphop: 0.15, disco: 0.1 }, label: 'Pop', bpm: 112 },
-  { re: word('indie rock|britpop|madchester|baggy|garage rock revival|noise pop|lo fi rock'), fam: { rock: 1, pop: 0.25 }, sub: { indie: 0.9 }, bpm: 125 },
+  { re: word('indie rock|britpop|madchester|baggy|garage rock revival|noise pop|lo fi rock'), fam: { rock: 1, pop: 0.25 }, sub: { indie: 0.9 }, lead: true, bpm: 125 },
   { re: word('alternative rock|alt rock|garage rock|college rock|art rock|progressive rock|prog rock|psychedelic rock|psychedelic|stoner rock|arena rock|glam rock|southern rock|classic rock|heartland rock|roots rock|gothic rock|noise rock|math rock|krautrock|rock'), fam: { rock: 1, pop: 0.25 }, label: 'Rock', bpm: 120 },
-  { re: word('indie'), fam: { rock: 0.6, pop: 0.6 }, sub: { indie: 1 }, label: 'Indie', bpm: 118 },
+  { re: word('indie'), fam: { rock: 0.6, pop: 0.6 }, sub: { indie: 1 }, lead: true, label: 'Indie', bpm: 118 },
   { re: word('alternative|alt'), fam: { rock: 0.7, pop: 0.5 }, label: 'Alternative', bpm: 115 },
 ];
 
@@ -587,6 +597,8 @@ interface Reading {
   bright?: Theme;
   /** A bare umbrella name (BROAD_NAMES). */
   broad: boolean;
+  /** Sub-styles whose evidence here counts only from the leading name (Lex.lead). */
+  lead?: ReadonlySet<SubStyle>;
 }
 
 /** "R&B/Soul" -> "r and b soul"; "Hip-Hop/Rap" -> "hip hop rap"; "Rock 'n' Roll" -> "rock n roll". */
@@ -631,6 +643,7 @@ export function readGenre(name: string | undefined): Reading {
   let logBpm = 0, nBpm = 0;
   let form = true;
   let bright: Theme | undefined;
+  const lead = new Set<SubStyle>();
   const broad = BROAD_NAMES.has(s.trim());
   for (const e of LEXICON) {
     e.re.lastIndex = 0;
@@ -640,7 +653,7 @@ export function readGenre(name: string | undefined): Reading {
     placed = true;
     conf = Math.max(conf, e.conf ?? 1);
     for (const f of FAMILIES) if (e.fam[f]) fam[f] = (fam[f] ?? 0) + e.fam[f]!;
-    for (const k of SUB_STYLES) if (e.sub?.[k]) subs[k] = Math.max(subs[k] ?? 0, e.sub[k]!);
+    for (const k of SUB_STYLES) if (e.sub?.[k]) (subs[k] = Math.max(subs[k] ?? 0, e.sub[k]!)), e.lead && lead.add(k);
     for (const t of e.themes ?? []) themes.add(t);
     if (e.focus) {
       focus ??= {};
@@ -674,6 +687,7 @@ export function readGenre(name: string | undefined): Reading {
     form: placed && form,
     ...(bright ? { bright } : {}),
     broad: placed && broad,
+    ...(lead.size ? { lead } : {}),
   };
   READINGS.set(key, r);
   return r;
@@ -809,6 +823,8 @@ const SPECIFIC_SUB = 0.45;
  * house, R&B": no slow-jam R&B on a eurodance song).
  */
 const LIST_POS_FLOOR = 0.4;
+/** Share of a lead-only name's sub-style evidence when it isn't the song's leading name (Lex.lead). */
+export const LEAD_ONLY_SUB = 0.4;
 /** A scene a song-level name says takes this share of the families (it leads the dancing: BTS with "pop rap, boom bap, hip hop, alt-pop, K-pop"). */
 const SCENE_LEAD = 0.6;
 
@@ -849,7 +865,7 @@ function genreEvidence(list: readonly string[] | undefined, tag: string | undefi
    * count); refine: an artist name refining a bare umbrella; wc: weight of its calm / softness / tempo (a form's
    * counts wherever it is listed).
    */
-  type Item = { r: Reading; w: number; pos: number; tag: boolean; album?: true; adds?: boolean; refine?: true; wc: number; tw?: number };
+  type Item = { r: Reading; w: number; pos: number; tag: boolean; album?: true; adds?: boolean; refine?: true; wc: number; tw?: number; lead?: true };
   const items: Item[] = [];
   // Levels apply only when they match the list entry for entry; without them every name is song-level.
   const lv = Array.isArray(levels) && list && levels.length === list.length ? levels : undefined;
@@ -880,7 +896,7 @@ function genreEvidence(list: readonly string[] | undefined, tag: string | undefi
       // Nothing is known about the song itself: its album's names are the best evidence there is.
       w *= ALBUM_ALONE;
       pos *= ALBUM_ALONE;
-      items.push({ r, w, pos, tag: false, wc: wc || w });
+      items.push({ r, w, pos, tag: false, wc: wc || w, ...(i === 0 && !r.form ? { lead: true as const } : {}) });
     } else if (album) {
       // Beside the song's own names an album name is a weaker score; it adds a dance only where it narrows them
       // (or, under a bare umbrella, refines it as the artist's names do).
@@ -890,10 +906,10 @@ function genreEvidence(list: readonly string[] | undefined, tag: string | undefi
       const pa = adds ? posAt(at) * (ref && !narrowsSong(r, songNames) ? REFINE_SUB : 1) : Math.min(pos, ALBUM_SUB);
       // A narrowing album name says its dance as a song-level name at its place would (its theme weight too).
       items.push({ r, w: wa, pos: pa, tag: false, album: true, adds, wc: wc || wa, ...(adds ? { tw: r.conf / (1 + 0.5 * at) } : {}) });
-    } else items.push({ r, w, pos, tag: false, wc: wc || w });
+    } else items.push({ r, w, pos, tag: false, wc: wc || w, ...(i === 0 && !r.form ? { lead: true as const } : {}) });
   });
   const listed = items.length > 0;
-  if (tagR?.placed) items.push(listed ? { r: tagR, w: ITUNES_TIE * tagR.conf, pos: ITUNES_SUB, tag: true, wc: ITUNES_TIE * tagR.conf } : { r: tagR, w: tagR.conf, pos: tagR.conf, tag: true, wc: tagR.conf });
+  if (tagR?.placed) items.push(listed ? { r: tagR, w: ITUNES_TIE * tagR.conf, pos: ITUNES_SUB, tag: true, wc: ITUNES_TIE * tagR.conf } : { r: tagR, w: tagR.conf, pos: tagR.conf, tag: true, wc: tagR.conf, lead: true });
   // The artist's names within the bare umbrella's family refine it.
   const refined: string[] = [];
   if (bare && artist?.length) {
@@ -902,7 +918,7 @@ function genreEvidence(list: readonly string[] | undefined, tag: string | undefi
       if (!r?.placed || !refines(r)) return;
       refined.push(g);
       const w = (REFINE_W * r.conf) / (1 + 0.5 * i);
-      items.push({ r, w, pos: REFINE_SUB * posAt(i), tag: false, refine: true, wc: w });
+      items.push({ r, w, pos: REFINE_SUB * posAt(i), tag: false, refine: true, wc: w, ...(refined.length === 1 ? { lead: true as const } : {}) });
     });
   }
   const out: GenreEvidence = { fam: null, subs: {}, themes: new Set(), themeRel: new Map(), focus: null, calm: null, soft: null, still: false, formed: new Set(), bright: new Set(), refined };
@@ -913,11 +929,17 @@ function genreEvidence(list: readonly string[] | undefined, tag: string | undefi
   let scene: Reading | null = null;
   // A theme weighs as the strongest name saying it, against the strongest name of all (its place in the list).
   const wTop = Math.max(...items.map((it) => it.tw ?? it.w));
+  // Lead-only evidence (Lex.lead): whole from the leading name, LEAD_ONLY_SUB elsewhere, trailing names adding up.
+  const leadAcc: Subs = {};
   for (const it of items) {
     const { r, w, pos, wc } = it;
     wAll += Math.max(w, wc);
     for (const f of FAMILIES) if (r.fam[f]) fam[f] = (fam[f] ?? 0) + w * r.fam[f]!;
-    for (const k of SUB_STYLES) if (r.subs[k]) out.subs[k] = Math.max(out.subs[k] ?? 0, r.subs[k]! * pos);
+    for (const k of SUB_STYLES) {
+      if (!r.subs[k]) continue;
+      if (r.lead?.has(k)) leadAcc[k] = 1 - (1 - (leadAcc[k] ?? 0)) * (1 - r.subs[k]! * pos * (it.lead ? 1 : LEAD_ONLY_SUB));
+      else out.subs[k] = Math.max(out.subs[k] ?? 0, r.subs[k]! * pos);
+    }
     // An album name that does not narrow the song's own names brings no tradition and no body focus.
     const own = !it.album || it.adds;
     if (own) {
@@ -943,6 +965,7 @@ function genreEvidence(list: readonly string[] | undefined, tag: string | undefi
     // A tradition of bright music comes from the leading name only (the first song name, or the tag alone).
     if (r.bright && !it.album && !it.refine && (it.tag ? !listed : items.indexOf(it) === 0)) out.bright.add(r.bright);
   }
+  for (const k of SUB_STYLES) if (leadAcc[k]) out.subs[k] = Math.max(out.subs[k] ?? 0, leadAcc[k]!);
   out.fam = normWeights(fam);
   if (scene && out.fam) {
     out.fam = blend(out.fam, scene.fam, SCENE_LEAD);

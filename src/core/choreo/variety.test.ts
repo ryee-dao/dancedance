@@ -44,6 +44,15 @@ const OPENS: [readonly string[], Genre[], Genre[]][] = [
   [['bedroom pop'], ['indie'], []],
   [['Indie'], ['indie'], []],
   [['britpop'], ['indie'], []],
+  // Lead-only names (songStyle.ts Lex.lead): synth-pop and indie names open their floor as the song's leading name, or
+  // corroborated by another trailing name; an era name (new wave) from the first two places.
+  [['dance-pop', 'pop rap', 'synth-pop', 'Britpop'], [], ['synthpop', 'indie']],
+  [['pop rock', 'indie pop'], [], ['indie']],
+  [['pop rock', 'indie pop', 'indie rock'], ['indie'], []],
+  [['K-pop', 'pop rock', 'indie rock'], ['kpop'], ['indie']],
+  [['dance-pop', 'synth-pop'], [], ['synthpop']],
+  [['disco', 'new wave'], ['synthpop'], []],
+  [['pop rock', 'reggae rock', 'new wave'], [], ['synthpop']],
   // Grown sets, and names that opened nothing before although their set exists.
   [['bachata'], ['bachata'], ['salsa']],
   [['tango'], ['tango'], ['latin']],
@@ -118,6 +127,13 @@ describe('genre survey sets', () => {
   it('the iTunes tag alone opens gospel, but with a song list only as a tie-breaker', () => {
     expect(open({ genre: 'Christian & Gospel' }).has('gospel')).toBe(true);
     expect(open({ genres: ['pop'], genre: 'Christian & Gospel' }).has('gospel')).toBe(false);
+  });
+
+  it('a bare umbrella tag refined by the artist\'s leading synth-pop / indie name opens that floor', () => {
+    expect(open({ genres: ['pop'], genre: 'Pop', artistGenres: ['synth-pop', 'house', 'art pop'] }).has('synthpop')).toBe(true);
+    expect(open({ genres: ['alternative'], genre: 'Alternative', artistGenres: ['indie rock', 'shoegaze', 'alternative rock'] }).has('indie')).toBe(true);
+    // ... but not from a trailing artist name alone.
+    expect(open({ genres: ['pop'], genre: 'Pop', artistGenres: ['dance-pop', 'teen pop', 'synth-pop'] }).has('synthpop')).toBe(false);
   });
 
   it('labels the new sets\' songs by their own names', () => {
