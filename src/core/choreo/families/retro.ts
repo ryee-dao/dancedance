@@ -96,8 +96,21 @@ const logLoose: PoseSpec = { r: [26, 10, 40, 30], l: [26, 10, 40, 30], handR: 1,
 
 
 
-/** Mess Around: both hands on the hips, the body does the work (the phase is unused since the 2026-11 fix). */
-const messAt = (_ph: number): PoseSpec => ({ r: ARM.hip, l: ARM.hip, handR: 0, handL: 0 });
+/**
+ * Mess Around at phase ph of its circle (0 = hips out to the user's right, pi/2 = sat back, pi = out to the left,
+ * 3pi/2 = forward and up): a big sitting circle of the hips, the rib cage and the lean going against them, the
+ * knees opening as the seat sinks back; the fists ride on the hips (they follow the pelvis) and the elbows
+ * pump, the shoulder over the high hip shrugging up while the other drops.
+ */
+const messAt = (ph: number): PoseSpec => {
+  const c = Math.cos(ph), s = Math.sin(ph);
+  return {
+    x: 0.01 * c, y: -0.08 - 0.045 * s, hips: 0.088 * c, tilt: 13 * c, chestX: -0.045 * c, lean: -8 * c, bend: -5 * s, head: 5 * c, nod: 3 * s,
+    rf: [0.13, 0, 0], lf: [-0.13, 0, 0], kneeR: 0.08 + 0.14 * Math.max(0, s), kneeL: 0.08 + 0.14 * Math.max(0, s),
+    r: at(1, 0.19 + 0.088 * c, 0.56 + 0.012 * c, 0.05, [1, 0.1 + 0.3 * c, -0.3]), l: at(-1, -0.19 + 0.088 * c, 0.56 - 0.012 * c, 0.05, [1, 0.1 - 0.3 * c, -0.3]),
+    handR: 0, handL: 0, shR: Math.max(0, 0.5 * c), shL: Math.max(0, -0.5 * c),
+  };
+};
 
 /** Stomp Off: stomp the right foot slightly forward, right arm lifting... */
 const stompOut: PoseSpec = {
@@ -288,13 +301,8 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'mess-around', name: 'Mess Around', tags: 'pop latin | hips | swing hips', beats: 4, level: 'low', d: 2, parts: ['hips', 'arms'], mirror: true,
-    desc: 'Black Bottom era: hands on the hips, feet loose in one place, and let the body roll round in a slow, sitting circle.',
-    keys: [
-      [0, { y: -0.05, hips: 0.07, tilt: 9, lean: -3, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], ...messAt(0) }],
-      [1, { y: -0.11, hips: 0, bend: -4, kneeR: 0.2, kneeL: 0.2, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], ...messAt(Math.PI / 2) }],
-      [2, { y: -0.05, hips: -0.07, tilt: -9, lean: 3, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], ...messAt(Math.PI) }],
-      [3, { y: -0.03, hips: 0, bend: 5, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], ...messAt(1.5 * Math.PI) }],
-    ],
+    desc: 'Black Bottom era: fists on the hips, feet apart in one place, roll the hips round in a big, slow circle that sits back low behind you, the chest and the lean going the other way and the shoulder over the high hip shrugging up.',
+    keys: [0, 1, 2, 3, 4, 5, 6, 7].map((k): readonly [number, PoseSpec] => [k / 2, messAt((k * Math.PI) / 4)]),
   }),
   full({
     id: 'stomp-off', name: 'Stomp Off', tags: 'pop rock | legs | swing stomp', beats: 2, level: 'mid', d: 2, parts: ['legs'], mirror: true, impact: true,

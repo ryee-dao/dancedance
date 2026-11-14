@@ -30,6 +30,29 @@ const OPENS: [readonly string[], Genre[], Genre[]][] = [
   [['Schlager'], ['schlager'], ['latin', 'discofunk']],
   [['Partyschlager'], ['schlager'], []],
   [['Oktoberfest'], ['schlager'], []],
+  // Round three: synth-pop / new wave and indie (new sets).
+  [['synth-pop'], ['synthpop'], ['rock', 'indie']],
+  [['new wave', 'synth-pop', 'pop rock'], ['synthpop'], []],
+  [['new romantic'], ['synthpop'], []],
+  [['synthwave'], ['synthpop'], []],
+  [['indie pop'], ['indie'], ['synthpop']],
+  [['indie rock'], ['indie', 'rock'], []],
+  [['shoegaze'], ['indie'], ['rock']],
+  [['dream pop'], ['indie'], []],
+  [['jangle pop'], ['indie'], []],
+  [['twee pop'], ['indie'], []],
+  [['bedroom pop'], ['indie'], []],
+  [['Indie'], ['indie'], []],
+  [['britpop'], ['indie'], []],
+  // Lead-only names (songStyle.ts Lex.lead): synth-pop and indie names open their floor as the song's leading name, or
+  // corroborated by another trailing name; an era name (new wave) from the first two places.
+  [['dance-pop', 'pop rap', 'synth-pop', 'Britpop'], [], ['synthpop', 'indie']],
+  [['pop rock', 'indie pop'], [], ['indie']],
+  [['pop rock', 'indie pop', 'indie rock'], ['indie'], []],
+  [['K-pop', 'pop rock', 'indie rock'], ['kpop'], ['indie']],
+  [['dance-pop', 'synth-pop'], [], ['synthpop']],
+  [['disco', 'new wave'], ['synthpop'], []],
+  [['pop rock', 'reggae rock', 'new wave'], [], ['synthpop']],
   // Grown sets, and names that opened nothing before although their set exists.
   [['bachata'], ['bachata'], ['salsa']],
   [['tango'], ['tango'], ['latin']],
@@ -80,9 +103,13 @@ const UNCHANGED: [readonly string[], Genre[]][] = [
   [['brega funk'], ['brazil']],
   [['house'], ['discofunk', 'house']],
   [['Arabic'], ['bellydance']],
+  // Modern electropop alone stays pop (the synth-pop floor needs other evidence); "Alternative" stays rock.
+  [['electropop'], []],
+  [['Alternative'], ['rock']],
+  [['alternative rock'], ['rock']],
 ];
 
-const ADDED: readonly Genre[] = ['gospel', 'dangdut', 'schlager'];
+const ADDED: readonly Genre[] = ['gospel', 'dangdut', 'schlager', 'synthpop', 'indie'];
 
 describe('genre survey sets', () => {
   it.each(OPENS)('%j opens its set', (genres, want, not) => {
@@ -100,6 +127,13 @@ describe('genre survey sets', () => {
   it('the iTunes tag alone opens gospel, but with a song list only as a tie-breaker', () => {
     expect(open({ genre: 'Christian & Gospel' }).has('gospel')).toBe(true);
     expect(open({ genres: ['pop'], genre: 'Christian & Gospel' }).has('gospel')).toBe(false);
+  });
+
+  it('a bare umbrella tag refined by the artist\'s leading synth-pop / indie name opens that floor', () => {
+    expect(open({ genres: ['pop'], genre: 'Pop', artistGenres: ['synth-pop', 'house', 'art pop'] }).has('synthpop')).toBe(true);
+    expect(open({ genres: ['alternative'], genre: 'Alternative', artistGenres: ['indie rock', 'shoegaze', 'alternative rock'] }).has('indie')).toBe(true);
+    // ... but not from a trailing artist name alone.
+    expect(open({ genres: ['pop'], genre: 'Pop', artistGenres: ['dance-pop', 'teen pop', 'synth-pop'] }).has('synthpop')).toBe(false);
   });
 
   it('labels the new sets\' songs by their own names', () => {
@@ -121,6 +155,13 @@ describe('genre survey sets', () => {
     expect(gospel.filter((m) => m.level === 'low' && !m.jump).length).toBeGreaterThanOrEqual(3);
     expect(gospel.filter((m) => m.level === 'mid').length).toBeGreaterThanOrEqual(3);
     expect(gospel.filter((m) => m.level === 'high').length).toBeGreaterThanOrEqual(1);
+    // Synth-pop and indie (round three): at least 6 Easy-eligible moves each, and moves at every level.
+    for (const g of ['synthpop', 'indie'] as const) {
+      const ms = MOVES.filter((m) => m.genre === g && m.base === m.id);
+      expect(ms.filter((m) => m.difficulty === 1 && m.level !== 'high' && !m.jump).length, g).toBeGreaterThanOrEqual(6);
+      expect(ms.some((m) => m.level === 'mid'), g).toBe(true);
+      expect(ms.some((m) => m.level === 'high'), g).toBe(true);
+    }
     // The grown sets: each has an Easy move.
     for (const g of ['bachata', 'tango', 'mexican', 'cumbia', 'flamenco', 'bellydance', 'country'] as const) {
       expect(MOVES.some((m) => m.genre === g && m.level === 'low' && !m.jump), g).toBe(true);

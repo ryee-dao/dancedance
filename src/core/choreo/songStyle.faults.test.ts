@@ -161,6 +161,22 @@ describe('genre names that opened the wrong set', () => {
     expect(open({ genre: 'J-Pop', genres: ['J-pop'], artistGenres: ['J-pop'] }).has('kpop')).toBe(false);
     // An idol name at the song level says the idol floor.
     expect(open({ genre: 'J-Pop', genres: ['idol pop', 'J-pop'] }).has('kpop')).toBe(true);
+    // AKB48: the store's "J-Pop" shelf and the artist's MusicBrainz "idol" (3 votes, kept as "idol pop"): the idol
+    // floor leads, the shelf keeps the label. Another pop name of the artist (J-rock, anime) does not.
+    const akb = resolveSongStyle({ genre: 'J-Pop', genres: ['J-pop'], genreLevels: ['song'], artistGenres: ['J-pop', 'bubblegum pop', 'pop rock', 'idol pop'] });
+    expect(styleGenres(akb).has('kpop')).toBe(true);
+    expect(styleLabel(akb)).toBe('J-pop');
+    expect(open({ genre: 'J-Pop', genres: ['J-pop'], artistGenres: ['J-rock', 'anime'] }).has('kpop')).toBe(false);
+    // Not under a song-level name beyond the shelf, nor under K-pop (not a shelf).
+    expect(open({ genre: 'J-Pop', genres: ['J-pop', 'J-rock'], artistGenres: ['idol pop'] }).has('kpop')).toBe(false);
+  });
+
+  it('Latin trap is the trap floor with Latin hips, leaning to reggaeton (as "urbano")', () => {
+    const s = resolveSongStyle({ genre: 'Urbano latino', genres: ['Latin trap'] });
+    expect(styleGenres(s).has('trap')).toBe(true);
+    expect(styleGenres(s).has('reggaeton')).toBe(false);
+    expect(s.subs?.reggaeton ?? 0).toBeGreaterThan(0.3);
+    expect(styleGenres(resolveSongStyle({ genre: 'Urbano latino', genres: ['Latin trap', 'reggaeton'] })).has('reggaeton')).toBe(true);
   });
 });
 

@@ -25,6 +25,14 @@
  *   schlager  (new) schunkeln, the stein toast, the bird-dance beak snaps and
  *             wing flaps; opened by Schlager, Oktoberfest, apres-ski, party
  *             Schlager names; folk lends the polka (families/world3.ts).
+ *   synthpop  (new, round three) the new wave / synth-pop floor: the side step
+ *             with the arms swinging across, robot ticks, New Romantic poses,
+ *             keytar, shoulder pops, the stiff bounce and the pogo, the kick
+ *             shuffle, the post-punk flail stomp (families/synthpop.ts).
+ *   indie     (new, round three) the indie gig / indie disco floor: pockets
+ *             nod, shoegaze sway, the head shake, fringe sweep, twee claps,
+ *             tambourine, the gig two-step, baggy shuffle, festival arms, the
+ *             front-row jump and the stomp (families/indie.ts).
  */
 
 export const moves: Partial<Record<string, string>> = {
@@ -53,4 +61,19 @@ export const moves: Partial<Record<string, string>> = {
   salsa: `salsa-cross-step salsa-flare`,
   house: `house-farmer`,
   amapiano: `tshwala-groove`,
+  // Round three (Nov 2026): synth-pop / new wave and indie (families/synthpop.ts, families/indie.ts).
+  synthpop: `
+    // low (Easy)
+    new-wave-side-step robot-tick new-romantic-pose keytar-groove shoulder-pops stiff-bounce finger-snap-glide
+    // mid
+    kick-shuffle mannequin-hits skip-swing romantic-arm-sweep
+    // high
+    pogo-point flail-stomp`,
+  indie: `
+    // low (Easy)
+    pocket-nod shoegaze-sway indie-head-shake loose-arm-swing twee-clap tambourine-shake fringe-sweep
+    // mid
+    indie-two-step baggy-shuffle jangle-strum festival-arms
+    // high
+    arms-round-jump indie-disco-stomp`,
 };

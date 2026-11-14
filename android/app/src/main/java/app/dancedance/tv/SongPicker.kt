@@ -165,8 +165,74 @@ object SongPicker {
     fun requestCore(title: String): List<String> =
         coreTokens(title.replace(re("\\s[-–—]\\s.*\\b(?:remaster(?:ed)?|edit|version|mix|mono|stereo|single|live|acoustic|demo|from)\\b.*$"), ""))
 
-    /** Words a channel puts around the artist's name ("officialfacetoface", "Face To Face Band", "FaceToFaceVEVO"). */
-    private val CHANNEL_AFFIXES = listOf("official", "vevo", "music", "band", "tv", "topic", "channel")
+    /**
+     * Words a channel puts around the artist's name ("officialfacetoface", "Face To Face Band",
+     * "FaceToFaceVEVO"), "official" also in other languages ("Legendaire Officiel", "米津玄師 公式").
+     * Normalised like channel names (NFKD: 공식 is compared as its jamo).
+     */
+    private val CHANNEL_AFFIXES = listOf(
+        "official", "vevo", "music", "band", "tv", "topic", "channel",
+        "officiel", "oficial", "offiziell", "ufficiale", "officieel", "oficjalny", "официальный", "公式", "オフィシャル", "官方", "공식",
+    ).map(::joined)
+
+    /**
+     * A channel name made of the artist's name in two scripts or forms: "神山羊 / Yoh Kamiyama".
+     * Only " / " and " | " with spaces (not "AC/DC"), or their full-width forms.
+     */
+    private val CHANNEL_NAME_SPLIT = Regex("\\s+[/|]\\s+|\\s*[／｜]\\s*")
+
+    /**
+     * Ways the artist may be written in a channel name: [artistVariants], also with "&" / "+"
+     * spelled "and" and "and" spelled "&" ("Heavy D & The Boyz" -> "HeavyDAndTheBoyzVEVO").
+     */
+    private fun channelVariants(artist: String): List<String> =
+        (artistVariants(artist) + joined(artist.replace(Regex("\\s*[&+]\\s*"), " and ")) + joined(artist.replace(re("\\s+and\\s+"), " & ")))
+            .distinct()
+            .filter { it.length >= 2 }
+
+    /** "and" in a channel's billing ("X and the Y", "X & His Orchestra", "X y La Y", "X con Y"). */
+    private val BILLING_JOIN = re("\\s+(?:and|y|e|et|und|con|with|avec|mit)\\s+|\\s*[&+]\\s*")
+    /** Words that start a band billing: "the", "his", "La", "Su", ... */
+    private val BILLING_ARTICLE = setOf(
+        "the", "his", "her", "their", "la", "el", "los", "las", "le", "les", "su", "sus", "son", "sa", "ses", "seu", "sua", "os", "die", "der", "das", "seine", "ihre", "il",
+    )
+    /** Words that make a billing a band: "X & Orchestra", "X y Conjunto Azul". */
+    private val BILLING_ENSEMBLE = setOf(
+        "orchestra", "orquesta", "orquestra", "orchestre", "orchester", "band", "banda", "boys", "conjunto", "grupo", "combo", "ensemble",
+        "trio", "quartet", "quintet", "crew", "gang", "mariachi", "sonora", "singers", "choir", "coro", "players", "allstars",
+    )
+
+    /** [rest] reads as the artist's band, not another act: "the Boyz", "La Pura Sabrosura", "Orchestra". */
+    private fun bandBilling(rest: String): Boolean {
+        val w = toks(rest)
+        return w.isNotEmpty() && (w[0] in BILLING_ARTICLE || w.any { it in BILLING_ENSEMBLE })
+    }
+
+    /**
+     * Leading names of a channel billed as "<lead> <and> <band>" ("Fito Olivares Y La Pura
+     * Sabrosura" -> "Fito Olivares"). Only the first-billed side: "Calvin Harris & Disciples" is
+     * not Disciples', and a duo ("Brooks & Dunn") is not Brooks'.
+     */
+    private fun billingLeads(channel: String): List<String> =
+        BILLING_JOIN.findAll(channel).mapNotNull { m ->
+            val lead = channel.substring(0, m.range.first)
+            if (lead.isNotBlank() && bandBilling(channel.substring(m.range.last + 1))) lead else null
+        }.toList()
+
+    /**
+     * The channel is the artist's own: one of its cores spells the artist. A verified channel may
+     * also give the name in two forms ("神山羊 / Yoh Kamiyama"), either of which counts, or bill
+     * the artist with a band ("Fito Olivares Y La Pura Sabrosura"), when the artist leads.
+     */
+    private fun isArtistChannel(e: Entry, variants: List<String>): Boolean {
+        val names = mutableListOf(e.channel)
+        if (e.verified) {
+            val parts = e.channel.split(CHANNEL_NAME_SPLIT).filter { it.isNotBlank() }
+            if (parts.size >= 2) names += parts
+            names += names.flatMap(::billingLeads)
+        }
+        return names.any { n -> channelCores(n).any { it in variants } }
+    }
 
     /** [joinedName] without leading / trailing [CHANNEL_AFFIXES]; at least 3 letters stay. */
     private fun stripAffixes(joinedName: String): String {
@@ -334,8 +400,8 @@ object SongPicker {
         val musicVideo: Boolean,
     )
 
-    private fun facts(req: Request, e: Entry, variants: List<String>): Facts {
-        val artistChannel = channelCores(e.channel).any { it in variants }
+    private fun facts(req: Request, e: Entry, chanVariants: List<String>): Facts {
+        val artistChannel = isArtistChannel(e, chanVariants)
         val label = joined(e.channel) in LABELS
         val artTrack = PROVIDED.containsMatchIn(e.description) || TOPIC_CHANNEL.containsMatchIn(e.channel)
         return Facts(
@@ -420,6 +486,7 @@ object SongPicker {
     /** Rank the candidates: `ranked` in the order to offer them, `rejected` explains the rest. */
     fun rank(req: Request, entries: List<Entry>): Result {
         val variants = artistVariants(req.artist)
+        val chanVariants = channelVariants(req.artist)
         val tiers = Tier.entries.associateWith { ArrayList<Pair<Entry, List<Double>>>() }
         val rejected = ArrayList<Rejected>()
         val why = entries.associateWith { mismatch(req, it, variants) }
@@ -437,7 +504,7 @@ object SongPicker {
             if (whyNot != null) {
                 reject(whyNot); continue
             }
-            val f = facts(req, e, variants)
+            val f = facts(req, e, chanVariants)
             val views = (e.views ?: 0L).toDouble()
             val inWindow = f.dt in WINDOW
             if (inWindow && f.official && (f.lyric || f.audio)) {

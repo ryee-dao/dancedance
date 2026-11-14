@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { KOTLIN_FIXTURES, kotlinFixtures } from './pickFixturesKotlin';
 import {
+  bunny,
   delilah,
   dipped,
   extravagantEscalations,
@@ -11,8 +12,10 @@ import {
   homertonB,
   impersonator,
   insane,
+  nowThatWeFoundLove,
   nullification,
   purloin,
+  queTeVas,
   quieroSerTuyo,
   rapSavedMe,
   runAway,
@@ -20,6 +23,7 @@ import {
   stayinAlive,
   takeOnMe,
   touTou,
+  wayoo,
   youLie,
 } from './pick.fixtures';
 import {
@@ -313,6 +317,87 @@ describe('rankCandidates on real search results: misses from the 2026-11-14 rand
     expect(reasonFor(req, homertonB, 'fdvbG9VzAk4')).toBe('lyric video with only 9933 views');
     // An unverified channel of that name is not the platform.
     expect(reasonFor(req, homertonB.map((x) => ({ ...x, verified: false })), 'UrnACpUhe98')).toBe('not official, not a lyric video');
+  });
+});
+
+describe('rankCandidates on real search results: channel-name misses from run-20261116', () => {
+  it('Now That We Found Love (Heavy D & The Boyz): "HeavyDAndTheBoyzVEVO" spells "&" as "and"', () => {
+    const req = { artist: 'Heavy D & The Boyz', title: 'Now That We Found Love (feat. Aaron Hall)', durationSec: 258 };
+    expect(ids(req, nowThatWeFoundLove)).toEqual(['music-video:NNEgUPKxk7A']); // 258 s, 70 M views
+    expect(reasonFor(req, nowThatWeFoundLove, 'jQtZ2GdD2t0')).toBe('version'); // Club Version, 347 s
+    expect(reasonFor(req, nowThatWeFoundLove, '1k1lGGLKvCE')).toBe('live');
+    // Unverified, the same channel name is still an impostor.
+    const vevo = nowThatWeFoundLove.find((x) => x.id === 'NNEgUPKxk7A')!;
+    expect(reasonFor(req, [{ ...vevo, verified: false }], vevo.id)).toBe("unverified channel using the artist's name");
+    // Both ways round, and "+" too.
+    const sg = { artist: 'Simon and Garfunkel', title: 'The Boxer', durationSec: 308 };
+    expect(ids(sg, [e({ id: 'SIMONGARF00', title: 'Simon & Garfunkel - The Boxer (Official Audio)', channel: 'Simon & Garfunkel', verified: true, duration: 308 })])).toEqual(['official:SIMONGARF00']);
+    const fm = { artist: 'Florence + The Machine', title: 'Dog Days Are Over', durationSec: 252 };
+    expect(ids(fm, [e({ id: 'FLORENCEMAC', title: 'Florence + The Machine - Dog Days Are Over (Official Audio)', channel: 'FlorenceAndTheMachineVEVO', verified: true, duration: 252 })])).toEqual(['official:FLORENCEMAC']);
+  });
+
+  it('bunny (YOH KAMIYAMA): his verified channel "神山羊 / Yoh Kamiyama" names him in two scripts', () => {
+    const req = { artist: 'YOH KAMIYAMA', title: 'Bunny', durationSec: 214 };
+    expect(ids(req, bunny)).toEqual(['topic:Z4PTDfLt3i0']); // art track, 215 s, 1.1 M views
+    expect(reasonFor(req, bunny, 'Xm_fcaAGBd8')).toBe('translation');
+    const art = bunny.find((x) => x.id === 'Z4PTDfLt3i0')!;
+    for (const channel of ['神山羊 | Yoh Kamiyama', '神山羊／Yoh Kamiyama', 'Yoh Kamiyama / 神山羊']) {
+      expect(ids(req, [{ ...art, channel }])).toEqual(['topic:Z4PTDfLt3i0']);
+    }
+    // Only a verified channel's name is split: unverified, "<anything> / Artist" is not the artist's.
+    expect(reasonFor(req, [{ ...art, verified: false }], art.id)).toBe('art track from another channel');
+    const lev = { artist: 'Dua Lipa', title: 'Levitating', durationSec: 203 };
+    const fan = e({ id: 'FANSLASH000', title: 'Dua Lipa - Levitating (Official Audio)', channel: 'Fan Uploads / Dua Lipa', duration: 204, views: 2e6 });
+    expect(ids(lev, [fan])).toEqual([]);
+    // Nor is a name without spaced separators ("AC/DC"), or a verified channel naming someone else.
+    expect(ids(lev, [{ ...fan, id: 'OTHERSLASH0', channel: 'Pop Hits / Lyrics', verified: true }])).toEqual([]);
+  });
+
+  it('Wayoo (Legendaire): "Legendaire Officiel" is the artist\'s own channel; "official" in other languages too', () => {
+    const req = { artist: 'Legendaire', title: 'Wayoo', durationSec: 174 };
+    expect(ids(req, wayoo)).toEqual(['topic:8dZZGUK6J-s']); // art track, 175 s, 125 views, verified
+    expect(reasonFor(req, wayoo, 'U8gocOXyKis')).toBe('different artist'); // Tekno - Wayo
+    const art = wayoo.find((x) => x.id === '8dZZGUK6J-s')!;
+    for (const channel of ['Legendaire Oficial', 'LegendaireOffiziell', 'Legendaire Ufficiale', 'Legendaire 公式', 'Legendaire オフィシャル', 'Legendaire 官方', 'Legendaire 공식', 'Officiel Legendaire']) {
+      expect(ids(req, [{ ...art, channel }])).toEqual(['topic:8dZZGUK6J-s']);
+    }
+    // Unverified with 125 views it is not trusted; another name with the affix is not the artist.
+    expect(reasonFor(req, [{ ...art, verified: false }], art.id)).toBe('art track with only 125 views');
+    expect(ids(req, [{ ...art, channel: 'Legendaires Officiel' }])).toEqual([]);
+    // An unverified "Dua Lipa Officiel" is the impostor case: not official.
+    const lev = { artist: 'Dua Lipa', title: 'Levitating', durationSec: 203 };
+    const fake = e({ id: 'OFFICIEL000', title: 'Dua Lipa - Levitating (Official Lyric Video)', channel: 'Dua Lipa Officiel', duration: 204, views: 2e6 });
+    expect(reasonFor(lev, [fake], fake.id)).toBe("unverified channel using the artist's name");
+  });
+
+  it('Que Te Vas Y Te Vas (Fito Olivares): his verified channel bills him with his band, "Fito Olivares Y La Pura Sabrosura"', () => {
+    const req = { artist: 'Fito Olivares', title: 'Que Te Vas Y Te Vas', durationSec: 199 };
+    expect(ids(req, queTeVas)).toEqual(['topic:AkLs5ZRRroQ']); // art track, 200 s, 8.8 M views
+    expect(reasonFor(req, queTeVas, 'e_pwtPye-nA')).toBe('different song'); // "Que Te Vas", same channel
+    expect(reasonFor(req, queTeVas, 'zVDY16YDg6g')).toBe('remix');
+    const art = queTeVas.find((x) => x.id === 'AkLs5ZRRroQ')!;
+    for (const channel of ['Fito Olivares and the Sabrosura Band', 'Fito Olivares & His Band', 'Fito Olivares con La Pura Sabrosura', 'Fito Olivares + Orquesta', 'FitoOlivaresVEVO & The Band']) {
+      expect(ids(req, [{ ...art, channel }])).toEqual(['topic:AkLs5ZRRroQ']);
+    }
+    // Unverified, the billing is not trusted: a few views and it is another channel's art track.
+    expect(reasonFor(req, [{ ...art, verified: false, views: 5_000 }], art.id)).toBe('art track from another channel');
+    // Only the first-billed side, and only before a band billing: a duo or a feature is another act.
+    for (const channel of ['La Pura Sabrosura y Fito Olivares', 'Fito Olivares y Bronco', 'Fito Olivares & Ramón Ayala', 'Grupo Fito Olivares Tributo y La Banda']) {
+      expect(reasonFor(req, [{ ...art, channel }], art.id)).toBe('art track from another channel');
+    }
+    const lev = { artist: 'Dua Lipa', title: 'Levitating', durationSec: 203 };
+    const duo = e({ id: 'DUOCHANNEL0', title: 'Dua Lipa - Levitating (Official Audio)', channel: 'Calvin Harris & Dua Lipa', verified: true, duration: 204 });
+    expect(reasonFor(lev, [duo], duo.id)).toBe('not official, not a lyric video');
+    // An unverified "Dua Lipa & The Band" is the impostor case.
+    expect(reasonFor(lev, [{ ...duo, channel: 'Dua Lipa & The Band', verified: false }], duo.id)).toBe('not official, not a lyric video');
+  });
+
+  it('Never Since (Refraction): still not found; the only upload is 9 s longer than iTunes and on an unverified channel', () => {
+    const req = { artist: 'Refraction', title: 'Never Since', durationSec: 361 };
+    const only = e({ id: 'NhDi46hdlxo', title: 'Refraction ~ Never Since', channel: 'Chris Broomhead', views: 481, duration: 370, description: "Melbourne jazz trio Refraction performing 'Never Since' composed by Chris Broomhead and recorded o" });
+    expect(reasonFor(req, [only], only.id)).toBe('length 370 s vs 361 s');
+    // Even at the official length it is neither official nor a popular lyric video.
+    expect(reasonFor(req, [{ ...only, duration: 361 }], only.id)).toBe('not official, not a lyric video');
   });
 });
 
