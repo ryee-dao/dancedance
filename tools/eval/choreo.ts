@@ -10,6 +10,8 @@
  *   npx tsx tools/eval/choreo.ts --table before.json after.json  (every song, before / after side by side, markdown)
  *   npx tsx tools/eval/choreo.ts --set levels [--recombine] --out x.json   (the run with genre-lookups-levels.json)
  *   npx tsx tools/eval/choreo.ts --set catalog [--genres <genres.json>] [--recombine] --out x.json
+ *   npx tsx tools/eval/choreo.ts --set round2|round1r [--recombine] --out x.json   (data/run-20261115 and its
+ *            round1-rescore/: their genre-lookups.json, as saved or recombined; part of --set all)
  *
  * Inputs per set:
  *   run      data/run-20261113: sample, stats.json (traits re-mapped with the
@@ -33,7 +35,7 @@ import { generateRoutine, styleGenres, tierBeats, type Intensity } from '../../s
 import { resolveSongStyle, styleLabel, type SongInfo, type SongStyle } from '../../src/core/choreo/songStyle';
 import { traitsOf } from '../../src/core/choreo/songTraits';
 import starter from '../../src/data/starter.json';
-import { recombine } from '../../src/genre/lookup';
+import { recombineStored } from '../../src/genre/lookup';
 import type { GenreLevel, GenreLookup } from '../../src/genre/types';
 import { arg } from './common';
 import type { RecordedStats } from './stats';
@@ -150,13 +152,14 @@ function listInfo(l: Lists | undefined): Partial<SongInfo> {
   };
 }
 /** Stored lookups (genres.json records, genre-lookups-levels.json): as saved, or recombined from their source answers with the current combine.ts. */
-function readLookups(path: string, recombined: boolean): Map<string, Lists & { videoIds?: string[] }> {
+async function readLookups(path: string, recombined: boolean, titles?: Map<string, string>): Promise<Map<string, Lists & { videoIds?: string[] }>> {
   const raw = readJson<Record<string, unknown>>(path, {});
-  const recs = (raw.songs && typeof raw.songs === 'object' ? raw.songs : raw) as Record<string, GenreLookup & { videoIds?: string[] }>;
+  const recs = (raw.songs && typeof raw.songs === 'object' ? raw.songs : raw) as Record<string, GenreLookup & { videoIds?: string[]; title?: string }>;
   const out = new Map<string, Lists & { videoIds?: string[] }>();
   for (const [k, r] of Object.entries(recs)) {
     if (!r || !Array.isArray(r.genres)) continue;
-    const l = recombined && r.sources ? recombine(r.sources) : r;
+    // Recombined with the current rules; local sources added since (the title) answer as a new lookup would.
+    const l = recombined && r.sources ? await recombineStored(r, { artist: '', title: titles?.get(k) ?? r.title ?? '' }) : r;
     out.set(k, { genres: l.genres, ...(l.genreLevels ? { genreLevels: l.genreLevels } : {}), ...(l.artistGenres ? { artistGenres: l.artistGenres } : {}), ...(r.videoIds ? { videoIds: r.videoIds } : {}) });
   }
   return out;
@@ -226,10 +229,10 @@ function famous(): SongOut[] {
   return out;
 }
 
-function catalog(genresPath = join(ROOT, 'public', 'genres.json'), recombined = false): SongOut[] {
+async function catalog(genresPath = join(ROOT, 'public', 'genres.json'), recombined = false): Promise<SongOut[]> {
   const songs = readJson<{ songs: { videoId: string; title: string; artist: string; genre?: string; genres?: string[] }[] }>(join(ROOT, 'public', 'songs.json'), { songs: [] });
   const byVid = new Map<string, Lists>();
-  for (const e of readLookups(genresPath, recombined).values()) for (const v of e.videoIds ?? []) if (e.genres.length) byVid.set(v, e);
+  for (const e of (await readLookups(genresPath, recombined)).values()) for (const v of e.videoIds ?? []) if (e.genres.length) byVid.set(v, e);
   const info = new Map<string, { title: string; artist: string; genre?: string }>();
   for (const s of starter as { videoId: string; title: string; artist: string }[]) info.set(s.videoId, s);
   for (const s of songs.songs) if (!info.has(s.videoId)) info.set(s.videoId, s);
@@ -299,13 +302,18 @@ if (process.argv[1]?.endsWith('choreo.ts')) {
   } else {
     const which = arg('set', 'all')!;
     const recombined = process.argv.includes('--recombine');
+    const titlesOf = (dir: string) => new Map(readJson<{ songs: Sampled[] }>(join(dir, 'sample.json'), { songs: [] }).songs.map((x) => [x.key, x.title]));
     const out: SongOut[] = [];
     if (which === 'all' || which === 'run') out.push(...evalSet(join(DATA, 'run-20261113'), 'run', true));
     // The run's lookups by level (genre-lookups-levels.json), as saved or --recombine'd with the current combine.ts.
-    if (which === 'levels') out.push(...evalSet(join(DATA, 'run-20261113'), 'run', false, readLookups(join(DATA, 'run-20261113', 'genre-lookups-levels.json'), recombined)));
+    if (which === 'levels') out.push(...evalSet(join(DATA, 'run-20261113'), 'run', false, await readLookups(join(DATA, 'run-20261113', 'genre-lookups-levels.json'), recombined, titlesOf(join(DATA, 'run-20261113')))));
     if (which === 'all' || which === 'heldout') out.push(...evalSet(join(DATA, 'heldout-20261114'), 'heldout', false));
+    // Round two (seed 20261115) and round one re-looked-up (its round1-rescore/): the lookups as the app passes them.
+    for (const [name, sub] of [['round2', 'run-20261115'], ['round1r', join('run-20261115', 'round1-rescore')]] as const) {
+      if (which === 'all' || which === name) out.push(...evalSet(join(DATA, sub), name, false, await readLookups(join(DATA, sub, 'genre-lookups.json'), recombined, titlesOf(join(DATA, sub)))));
+    }
     if (which === 'all' || which === 'famous') out.push(...famous());
-    if (which === 'all' || which === 'catalog') out.push(...catalog(arg('genres') ?? undefined, recombined));
+    if (which === 'all' || which === 'catalog') out.push(...(await catalog(arg('genres') ?? undefined, recombined)));
     const file = arg('out');
     if (file) writeFileSync(file, `${JSON.stringify(out, null, 1)}\n`);
     console.error(`${out.length} song passes`);

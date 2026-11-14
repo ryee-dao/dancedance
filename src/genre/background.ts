@@ -15,7 +15,7 @@
  *  - a run stops early when every source failed for a song (offline).
  */
 import { PoliteHttp, type GenreFetch } from './http';
-import { lookupDue, lookupGenres } from './lookup';
+import { DEFAULT_SOURCES, lookupDue, lookupGenres } from './lookup';
 import type { SongQuery } from './match';
 import type { GenreLookup } from './types';
 
@@ -95,7 +95,8 @@ export class GenreRunner {
         const l = await lookupGenres(current, { http: this.http, previous: current.genreLookup ?? null, now: () => new Date(this.now()) });
         if (this.d.save(current.videoId, l)) saved++;
         this.d.log?.(`[dd:genres] ${current.artist} - ${current.title}: ${l.genres.join(', ') || 'none'}${l.complete ? '' : ' (some sources failed; retried later)'}`);
-        const answered = Object.values(l.sources).some((o) => o && o.status !== 'failed');
+        // Only a source that had to ask over the network says whether we are online (the title needs no request).
+        const answered = DEFAULT_SOURCES.some((src) => !src.local && l.sources[src.id] && l.sources[src.id]!.status !== 'failed');
         if (!answered) break; // offline or blocked everywhere: try again on a later run
       }
     } catch (e) {

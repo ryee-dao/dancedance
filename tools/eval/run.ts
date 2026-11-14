@@ -58,6 +58,7 @@
  *                    still a strict pick, marked fallbackSearch); --no-comments skips comments.
  *                    A hand-chosen video (VideoPick.manual) is judged apart.
  *   analyse          also records the trait statistics (stats.ts format) in W/stats.json.
+ *   score --recombine  the stored lookups recombined with the current src/genre rules (offline).
  *   score            pass B is what the app passes (src/ui/coachStage.ts routineInfo):
  *                    the looked-up list with its levels and the artist's genres; per level
  *                    also the borrowed share, the tempo feel and the danced tempo.
@@ -76,7 +77,7 @@ import { resolveSongStyle, styleLabel } from '../../src/core/choreo/songStyle';
 import { traitsOf } from '../../src/core/choreo/songTraits';
 import { degradedSearch, fallbackQuery, mergeSearches, parseSearch, rankCandidates, searchQueries, type SearchEntry } from '../beatmaps/pick';
 import { decodeWithFfmpeg, downloadAudio, PCM_RATE, searchVideos } from '../beatmaps/youtube';
-import { lookupGenres, type GenreLookup } from '../../src/genre';
+import { lookupGenres, recombineStored, type GenreLookup } from '../../src/genre';
 import type { RecordedStats } from './stats';
 import { genreHttp } from '../beatmaps/genreClient';
 import { arg, sleep, type Expectation, type LevelSummary, type ResultsFile, type SampleFile, type SongResult, type StyleSummary, type Verdict, type VideoPick } from './common';
@@ -293,7 +294,7 @@ function summarise(map: BeatMap, style: ReturnType<typeof resolveSongStyle>, lev
   };
 }
 
-function evaluate() {
+async function evaluate() {
   const out = arg('out');
   if (!out) throw new Error('--out results.json is required for --stage eval');
   const videos = readJson<Record<string, VideoPick>>(videosPath, {});
@@ -302,6 +303,17 @@ function evaluate() {
   const genresFile = arg('genres');
   const genres = readJson<Record<string, string[]>>(genresFile, {});
   const lookups = readJson<Record<string, GenreLookup>>(join(work!, 'genre-lookups.json'), {});
+  // --recombine: the stored source answers combined with the current rules (src/genre/combine.ts), as the app
+  // would combine them now; the --genres lists are then those recombined lists.
+  if (process.argv.includes('--recombine')) {
+    for (const s of sample.songs) {
+      const l = lookups[s.key];
+      if (!l?.sources) continue;
+      const { genreLevels: _l, artistGenres: _a, moods: _m, ...rest } = l;
+      lookups[s.key] = { ...rest, ...(await recombineStored(l, { artist: s.artist, title: s.title, durationSec: s.durationSec })) };
+      genres[s.key] = lookups[s.key].genres;
+    }
+  }
   const verdictsB = readJson<Record<string, Verdict>>(arg('verdicts-b'), {});
   const results: SongResult[] = [];
   for (const s of sample.songs) {

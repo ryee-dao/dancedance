@@ -304,7 +304,7 @@ const JUNK = new Set(
     'soundtrack', 'soundtracks', 'film soundtrack', 'original soundtrack', 'film score', 'score', 'tv soundtrack', 'video game music', 'anime',
     'music', 'musica', 'song', 'songs', 'single', 'singles', 'album', 'ep', 'other', 'unknown', 'misc', 'various', 'none', 'n a',
     'holiday', 'christmas', 'fitness workout', 'fitness and workout', 'fitness & workout', 'workout', 'karaoke', 'instrumental', 'acoustic', 'vocal', 'vocals',
-    'cover', 'covers', 'live', 'remix', 'remixes', 'mashup', 'ballad', 'ballads', 'power ballad', 'love song', 'love songs', 'love',
+    'cover', 'covers', 'live', 'remix', 'remixes', 'mashup', 'love song', 'love songs', 'love',
     'seen live', 'favorite', 'favorites', 'favourite', 'favourites', 'my favorite', 'awesome', 'beautiful', 'catchy', 'sexy', 'cool', 'fun',
     'party', 'summer', 'chill', 'sad', 'happy', 'epic', 'classic', 'classics', 'oldies', 'hits', 'top 40', 'top hits', 'chart', 'charts',
     'radio', 'billboard', 'number one', 'number one hit', 'eurovision', 'viral', 'tiktok', 'meme', 'spotify',
@@ -392,6 +392,27 @@ export interface GenreName {
   key: string;
   /** In the vocabulary (has a place in the family tree). */
   known: boolean;
+  /** A song form, not a genre ("ballad", "power ballad"): it says how the song moves, not what music it is (FORMS). */
+  form?: true;
+}
+
+/**
+ * Song forms the sources list among genres (MusicBrainz and Discogs tag
+ * "ballad"). They say nothing about the family of the music, so they never
+ * compete with genres (combine.ts keeps them apart and appends the best one),
+ * but they are real evidence of a slow, soft song: the choreographer reads
+ * them for its calm, softness and stepping tempo (songStyle.ts). Key ->
+ * display name.
+ */
+export const FORMS: ReadonlyMap<string, string> = new Map([
+  ['ballad', 'ballad'], ['ballads', 'ballad'], ['power ballad', 'power ballad'], ['power ballads', 'power ballad'],
+  ['piano ballad', 'piano ballad'], ['rock ballad', 'power ballad'], ['pop ballad', 'ballad'], ['love ballad', 'ballad'],
+  ['torch song', 'torch song'], ['lullaby', 'lullaby'], ['lullabies', 'lullaby'],
+]);
+
+/** Whether a key is a song form (FORMS), not a genre. */
+export function isForm(key: string): boolean {
+  return FORMS.has(key) || [...FORMS.values()].includes(key);
 }
 
 /**
@@ -405,6 +426,8 @@ export function canonicalGenre(raw: string, strict = false): GenreName | null {
   if (!text || text.length > 60) return null;
   const k = keyOf(text);
   if (!k || JUNK.has(k) || /^\d+$/.test(k) || /^(?:\d0|\d{4}) ?s$/.test(k) || /^(?:19|20)\d0s?$/.test(k)) return null;
+  const form = FORMS.get(k);
+  if (form) return { name: form, key: form, known: true, form: true };
   const known = ALIASES.get(k);
   if (known) return { name: NODES.get(known)!.name, key: known, known: true };
   if (strict && (k.split(' ').length > 3 || !(endsInKnownGenre(k) || mbKnows(k) || wdKnows(k)))) return null;
@@ -495,16 +518,19 @@ export function ancestors(key: string): ReadonlySet<string> {
 
 /** Whether one genre is a broader or narrower form of the other (not the same). */
 export function related(a: string, b: string): boolean {
+  if (isForm(a) || isForm(b)) return false;
   return a !== b && (ancestors(a).has(b) || ancestors(b).has(a));
 }
 
 /** Whether `broad` is a broader form of `narrow`. */
 export function broaderThan(broad: string, narrow: string): boolean {
+  if (isForm(broad) || isForm(narrow)) return false;
   return broad !== narrow && ancestors(narrow).has(broad) && !ancestors(broad).has(narrow);
 }
 
 /** The broad families (roots of the hand tree) a genre belongs to, through either tree; empty when nothing places it. */
 export function families(key: string): string[] {
+  if (isForm(key)) return [];
   const node = NODES.get(key);
   if (node && !node.parents.length) return [key];
   const out = new Set<string>();
