@@ -122,12 +122,12 @@ class LinkController(private val app: DanceApp) {
             }
         }
 
-        /** Step 1: song matches (official length) from iTunes. */
+        /** Step 1: song matches (official length) from iTunes and Deezer ([SongCatalog]). */
         private fun search(session: IHTTPSession): Response {
             val q = param(session, "q", 120)
             if (q.isEmpty()) return html(home())
             val hits = try {
-                app.songSearch.itunes(q)
+                app.songCatalog.search(q)
             } catch (e: Exception) {
                 Log.w(TAG, "iTunes search failed", e)
                 return html(LinkPage.searchResults("/$token", q, emptyList(), (e as? BridgeException)?.message ?: "The song search didn't work. Check the TV's internet connection and try again."))

@@ -1,5 +1,5 @@
 /**
- * "Add a song" (web): search real songs (iTunes), pick one, and ask the
+ * "Add a song" (web): search real songs (iTunes and Deezer), pick one, and ask the
  * GitHub beat-map job to find it on YouTube and make its beat map. The song
  * then waits in "My added songs" on the home screen until it is published.
  */
@@ -10,7 +10,7 @@ import { addedSongs } from './addedSongs';
 import { formatTime, h, type Nav, type Screen } from './dom';
 import { ensureFocus, focusEl, popScope, pushScope, type Scope } from './focusNav';
 import { connectionLabel, disconnectGithub, githubConnection, isConnected, openConnectDialog, sendSong } from './githubConnect';
-import { searchSongs, SongSearchError, type SongHit } from './songSearch';
+import { findItunesTrackId, searchSongs, SongSearchError, type SongHit } from './songSearch';
 import { toast } from './toast';
 
 const DEBOUNCE_MS = 350;
@@ -249,6 +249,20 @@ export function createAddSong(nav: Nav): Screen {
       busy = true;
       addBtn.textContent = 'Sending…';
       msg.textContent = '';
+      // The relay checks songs against Apple by iTunes ID; a song found only on Deezer has none yet.
+      if (!hit.trackId && githubConnection().relay) {
+        const trackId = await findItunesTrackId(hit);
+        if (!alive) return;
+        if (!trackId) {
+          busy = false;
+          addBtn.textContent = 'Add song';
+          msg.textContent = 'The relay can only add songs listed in Apple’s catalogue, and this version isn’t listed there. Try another version from the list, or connect with a GitHub token instead.';
+          return;
+        }
+        hit = { ...hit, trackId };
+        const at = hits.findIndex((x) => x.key === hit.key && x.durationSec === hit.durationSec);
+        if (at >= 0) hits[at] = hit;
+      }
       const res = await sendSong({
         key: hit.key,
         artist: hit.artist,

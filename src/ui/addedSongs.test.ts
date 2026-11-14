@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { songKey } from '../beat/cloud';
 import { AddedSongs, bust, pollDelayMs, reconcile } from './addedSongs';
-import { itunesUrl, parseItunesResults, searchSongs, SongSearchError } from './songSearch';
+import { Backoff, itunesUrl, parseItunesResults, searchSongs, SongSearchError } from './songSearch';
 
 const T = Date.parse('2026-11-10T12:00:00Z');
 const pend = (artist: string, title: string, sentAt = T) => ({ key: songKey(artist, title), artist, title, durationSec: 200, sentAt });
@@ -91,13 +91,15 @@ describe('iTunes song search', () => {
     const blocked = async () => {
       throw new TypeError('Failed to fetch');
     };
-    expect(await searchSongs('x', { fetchFn: blocked, jsonpFn: async () => sample, online: () => true })).toHaveLength(2);
+    // (No document here, so the Deezer half fails and only iTunes counts.)
+    const fresh = () => ({ backoff: new Backoff() });
+    expect(await searchSongs('x', { fetchFn: blocked, jsonpFn: async () => sample, online: () => true, ...fresh() })).toHaveLength(2);
     await expect(searchSongs('x', { online: () => false })).rejects.toEqual(new SongSearchError('offline'));
     const busy = async () => ({ ok: false, status: 403, json: async () => ({}) });
-    await expect(searchSongs('x', { fetchFn: busy, online: () => true })).rejects.toMatchObject({ kind: 'busy' });
+    await expect(searchSongs('x', { fetchFn: busy, online: () => true, ...fresh() })).rejects.toMatchObject({ kind: 'busy' });
     const fail = async () => {
       throw new Error('jsonp failed');
     };
-    await expect(searchSongs('x', { fetchFn: blocked, jsonpFn: fail, online: () => true })).rejects.toMatchObject({ kind: 'failed' });
+    await expect(searchSongs('x', { fetchFn: blocked, jsonpFn: fail, online: () => true, ...fresh() })).rejects.toMatchObject({ kind: 'failed' });
   });
 });

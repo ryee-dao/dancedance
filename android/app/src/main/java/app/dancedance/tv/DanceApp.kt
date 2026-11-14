@@ -27,6 +27,9 @@ class DanceApp : Application() {
         private set
     lateinit var songSearch: SongSearch
         private set
+    /** "Find a song" step 1: iTunes and Deezer, merged. */
+    lateinit var songCatalog: SongCatalog
+        private set
     lateinit var addedSongs: AddedSongsStore
         private set
     lateinit var genreBackfill: GenreBackfill
@@ -52,6 +55,7 @@ class DanceApp : Application() {
         youtube = YouTube(http)
         playlists = Playlists(youtube)
         songSearch = SongSearch(http)
+        songCatalog = SongCatalog(http, itunes = { term -> songSearch.itunes(term) })
         addedSongs = AddedSongsStore(filesDir.resolve("added-songs.json"))
         // Genres for songs saved before the TV kept them; the page hears about it as addedSongsChanged.
         genreBackfill = GenreBackfill(

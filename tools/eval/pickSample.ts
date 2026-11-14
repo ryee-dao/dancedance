@@ -153,3 +153,67 @@ export const SAMPLE: SampleSong[] = [
   s('indie', 'Cafuné', 'Tek It'),
   s('indie', 'Mk.gee', 'Are You Looking Up'),
 ];
+
+/**
+ * Explicit-heavy songs for the search measurement (tools/eval/searchEval.ts):
+ * rap, trap, drill, reggaeton and metal, many of them without a clean version
+ * (so missing from the anonymous iTunes search) or with a censored clean title.
+ */
+export const EXPLICIT_SAMPLE: SampleSong[] = [
+  // --- rap / trap ----------------------------------------------------------------------------
+  s('rap', 'Drake', 'Nokia'),
+  s('rap', 'Kendrick Lamar', 'HUMBLE.'),
+  s('rap', 'Kendrick Lamar', 'tv off'),
+  s('rap', 'Travis Scott', 'goosebumps'),
+  s('rap', 'Travis Scott', 'HIGHEST IN THE ROOM'),
+  s('rap', '21 Savage', 'redrum'),
+  s('rap', 'Metro Boomin', 'Superhero (Heroes & Villains)'),
+  s('rap', 'Yeat', 'Get Busy'),
+  s('rap', 'Ken Carson', 'Fighting My Demons'),
+  s('rap', 'Playboi Carti', 'Sky'),
+  s('rap', 'Lil Uzi Vert', 'Just Wanna Rock'),
+  s('rap', 'Cardi B', 'Up'),
+  s('rap', 'Megan Thee Stallion', 'HISS'),
+  s('rap', 'Sexyy Red', 'Pound Town'),
+  s('rap', 'GloRilla', "F.N.F. (Let's Go)"),
+  s('rap', 'Doechii', 'DENIAL IS A RIVER'),
+  s('rap', 'City Girls', 'Act Up'),
+  s('rap', 'Lil Jon & The East Side Boyz', 'Get Low'),
+  s('rap', 'Juvenile', 'Back That Azz Up'),
+  s('rap', 'Future', 'Mask Off'),
+  s('rap', 'A$AP Ferg', 'Plain Jane'),
+  s('rap', 'Lil Pump', 'Gucci Gang'),
+  s('rap', 'Kanye West', 'Carnival'),
+  s('rap', 'Tyga', 'Rack City'),
+  // --- drill ---------------------------------------------------------------------------------
+  s('drill', 'Pop Smoke', 'Welcome To The Party'),
+  s('drill', 'Fivio Foreign', 'Big Drip'),
+  s('drill', 'Kay Flock', 'Shake It'),
+  s('drill', 'Chief Keef', 'Love Sosa'),
+  s('drill', 'King Von', 'Crazy Story'),
+  s('drill', 'Central Cee', 'Doja'),
+  s('drill', 'Digga D', 'Woi'),
+  s('drill', 'Sheff G', 'No Suburban'),
+  s('drill', 'Unknown T', 'Homerton B'),
+  s('drill', 'Headie One', 'Both'),
+  // --- reggaeton -----------------------------------------------------------------------------
+  s('reggaeton', 'Bad Bunny', 'Safaera'),
+  s('reggaeton', 'Bad Bunny', 'MONACO'),
+  s('reggaeton', 'Bad Bunny', 'Yo Perreo Sola'),
+  s('reggaeton', 'Myke Towers', 'LALA'),
+  s('reggaeton', 'Feid', 'Normal'),
+  s('reggaeton', 'Rauw Alejandro', 'Todo de Ti'),
+  s('reggaeton', 'Anuel AA', 'China'),
+  s('reggaeton', 'Daddy Yankee', 'Con Calma'),
+  s('reggaeton', 'Young Miko', 'offline'),
+  // --- metal ---------------------------------------------------------------------------------
+  s('metal', 'Slipknot', 'Duality'),
+  s('metal', 'Slipknot', 'Psychosocial'),
+  s('metal', 'System Of A Down', 'Chop Suey!'),
+  s('metal', 'Rage Against The Machine', 'Killing In the Name'),
+  s('metal', 'Bring Me The Horizon', 'Can You Feel My Heart'),
+  s('metal', 'Limp Bizkit', 'Break Stuff'),
+  s('metal', 'Korn', 'Freak On a Leash'),
+  s('metal', 'Disturbed', 'Down with the Sickness'),
+  s('metal', 'Pantera', 'Walk'),
+];
