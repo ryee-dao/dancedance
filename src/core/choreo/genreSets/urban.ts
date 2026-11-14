@@ -23,6 +23,6 @@ export const moves: Partial<Record<string, string>> = {
   trap: `shoulder-lean lean-two-step hit-and-hold rap-hands turn-up-jump`,
   // (RAW already lists shmoney)
   drill: `drill-bounce shoulder-rock drill-arm-swing woo-walk sturdy-hop drill-glide drill-two-step`,
-  rnb: `body-roll slow-hip-roll hip-roll-down snap-sway slow-jam-sway chest-roll`,
+  rnb: `body-roll slow-hip-roll hip-roll-down snap-sway slow-jam-sway`,
   reggaeton: `dembow-step perreo-bounce reggaeton-hip-roll dembow-knee-pop sandungueo-bounce dembow-shimmy`,
 };

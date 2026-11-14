@@ -7,8 +7,8 @@
  * half-time feel: most of their moves hit sharply and hold (a quick change
  * into the beat, then a held or slowly released shape), so their speed limit
  * (speed.ts) sits around 90-130 and the generator dances them at half time
- * there; a few small actions (Rap Hands, Shoulder Rock) stay on the counted
- * beat. R&B (60-110) and reggaeton (88-100) moves run at full time.
+ * there; a few small actions (Rap Hands, Shoulder Rock, Drill Arm Swing) stay
+ * on the counted beat. R&B (60-110) and reggaeton (88-100) moves run at full time.
  *
  * Gestures stay neutral: open hands, loose fists, no pointed "fingers", no
  * signs. Reggaeton hip work stays upright and family-friendly.
@@ -162,13 +162,6 @@ const jamA: PoseSpec = {
   r: at(1, 0.04, 0.72, 0.17, E_DOWN), l: at(-1, -0.3, 0.6, 0.12, E_OUT), handR: 1, handL: 0.8,
 };
 
-// Chest roll: the rib cage circles over still hips (right, forward, left, back).
-const chest = (cx: number, bend: number, nod: number): PoseSpec =>
-  wide(-0.05, {
-    chestX: cx, bend, nod, head: -cx * 60, shR: cx > 0 ? 0.5 : 0.2, shL: cx < 0 ? 0.5 : 0.2,
-    r: at(1, 0.24, 0.6, 0.12, E_OUT), l: at(-1, -0.24, 0.6, 0.12, E_OUT), handR: 1, handL: 1,
-  });
-
 // --- Reggaeton --------------------------------------------------------------------
 // Dembow step: step out, bounce on the "a", close, bounce on the "and" (the dembow: 1 . . a 2 . & .).
 const dembowOut: PoseSpec = {
@@ -182,7 +175,7 @@ const dembowIn: PoseSpec = {
 };
 const dembowAnd: PoseSpec = { ...dembowIn, y: -0.05, hips: -0.01, tilt: -1, shL: 0, r: at(1, 0.14, 0.76, 0.2, E_DOWN), l: at(-1, -0.2, 0.76, 0.16, E_DOWN) };
 
-// Perreo bounce, upright: the hips pop to one side on the beat and twice to the other on the dembow.
+// Perreo bounce, upright: the hips pop from side to side on the dembow hits (1, the "a", 2, the "and").
 const perreo = (side: 1 | -1, y: number): PoseSpec =>
   wide(y, {
     hips: 0.042 * side, tilt: 7 * side, bend: 5, lean: -2 * side, head: -4 * side,
@@ -227,7 +220,7 @@ const shim = (side: 1 | -1, y: number): PoseSpec => ({
   r: at(1, 0.18, 0.86, 0.12, E_OUT), l: at(-1, -0.18, 0.86, 0.12, E_OUT), handR: 0.6, handL: 0.6,
 });
 
-// Turn-up jump: crouch with the arms swung back, jump on the drop flinging both arms up, land low.
+// Turn-up jump: crouch with the fists low, jump on the drop flinging both arms open and up, land low.
 const tuLand: PoseSpec = wide(-0.12, {
   bend: 8, nod: 6, kneeR: 0.12, kneeL: 0.12,
   r: at(1, 0.22, 0.5, 0.1, E_OUT), l: at(-1, -0.22, 0.5, 0.1, E_OUT), ...FIST,
@@ -365,11 +358,6 @@ export const moves: MoveDef[] = [
     desc: 'Roll the weight slowly from foot to foot over two beats each, leaning and tipping the head with it, one hand resting on the chest and the other arm hanging soft.',
     keys: [[0, jamA], [1, { ...jamA, y: -0.05, lean: 4 }], [2, mir(jamA)], [3, mir({ ...jamA, y: -0.05, lean: 4 })]],
   }),
-  full({
-    id: 'chest-roll', name: 'Chest Roll', tags: 'funk hiphop | full |', beats: 2, level: 'low', d: 2, parts: ['torso'], bounce: 0.3,
-    desc: 'Hips still and knees soft, circle the rib cage: slide it to one side, push it forward, slide it to the other side, pull it back, hands open low in front.',
-    keys: [[0, chest(0.06, 0, 0)], [0.5, chest(0, -9, -5)], [1, chest(-0.06, 0, 0)], [1.5, chest(0, 9, 5)]],
-  }),
 
   // --- Reggaeton ------------------------------------------------------------------
   full({
@@ -379,7 +367,7 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'perreo-bounce', name: 'Perreo Bounce', tags: 'latin hiphop | hips | hips shake', beats: 2, level: 'mid', d: 2, parts: ['hips', 'legs'],
-    desc: 'Upright with the knees bent, pop the hips to one side on the beat and twice to the other on the dembow, one hand behind the head and the other low in front.',
+    desc: 'Upright with the knees bent, pop the hips from side to side on the dembow rhythm (on the beat, the "a", the next beat, the "and"), one hand behind the head and the other low in front.',
     keys: [[0, perreo(1, -0.09)], [0.75, perreo(-1, -0.07)], [1, perreo(1, -0.09)], [1.5, perreo(-1, -0.07)]],
   }),
   full({
@@ -389,7 +377,7 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'dembow-knee-pop', name: 'Dembow Knee Pop', tags: 'latin hiphop | legs | hips', beats: 2, level: 'mid', d: 2, parts: ['legs', 'hips'],
-    desc: 'Pop one knee in with the heel up on the beat, the other on the "a", then the first again, fists pumping low with the knees.',
+    desc: 'Pop one knee in with the heel up on the beat, the other on the "a", the first again on the next beat and the other on the "and", fists pumping low with the knees.',
     keys: [[0, kneePop(1, -0.08, 0.58)], [0.75, kneePop(-1, -0.07, 0.64)], [1, kneePop(1, -0.08, 0.58)], [1.5, kneePop(-1, -0.07, 0.64)]],
   }),
   full({
