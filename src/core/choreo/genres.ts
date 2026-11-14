@@ -10,8 +10,8 @@
  *   music: headbangs and air guitar for rock, salsa and cumbia steps for
  *   Latin, line-dance steps for country, Lindy steps for swing ... They are
  *   only ever used on songs whose style opens that genre (songGenres), and
- *   there they are the kit's accents, 20-40 % of the danced time
- *   (generator.ts GENRE_MIN / GENRE_MAX).
+ *   there they carry about half of the danced time, 40-60 % (generator.ts
+ *   GENRE_MIN / GENRE_MAX), the generic moves the rest.
  *
  * Genre groups and sub-styles. The broad groups (rock, hip-hop, Latin, afro,
  * disco & funk ...) open from the song's family weights and themes; their

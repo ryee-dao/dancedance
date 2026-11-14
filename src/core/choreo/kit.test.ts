@@ -44,8 +44,9 @@ describe('the kit on every published map', () => {
     return x;
   };
 
-  it(`gives genre moves ${GENRE_MIN * 100}-${GENRE_MAX * 100} % of the danced time on songs that open a genre, none elsewhere (both routine modes)`, { timeout: 120_000 }, () => {
+  it(`gives genre moves ${GENRE_MIN * 100}-${GENRE_MAX * 100} % of the danced time on songs that open a genre, about half on average, none elsewhere (both routine modes)`, { timeout: 120_000 }, () => {
     for (const lv of LEVELS) {
+      const shares: number[] = [];
       for (const fresh of [undefined, 3]) {
         for (const s of songs) {
           const r = fresh ? generateRoutine(s.map, lv, { style: s.style, fresh }) : routines(lv).find((x) => x.s === s)!.r;
@@ -59,18 +60,27 @@ describe('the kit on every published map', () => {
           // A level can't dance a set at all (all of it jumps, on Easy): no genre time, and that's fine.
           if (![...open].some((g) => DANCE.some((m) => m.genre === g && levelFactor(m, lv) > 0))) continue;
           const share = t.genre / (t.genre + t.global);
-          expect(share, tag).toBeGreaterThanOrEqual(GENRE_MIN - 0.02);
+          // Easy keeps to simple moves (EASY_HARD_CAP): sets with only a few of them (Latin: 2 of its 21) carry
+          // what those and the budget allow, about the genre time all songs had before GENRE_TARGET 0.5.
+          const simple = DANCE.filter((m) => m.genre && open.has(m.genre) && levelFactor(m, lv) > 0 && m.difficulty <= 1).length;
+          const floor = lv === 'chill' && simple < 4 ? 0.17 : GENRE_MIN;
+          expect(share, tag).toBeGreaterThanOrEqual(floor - 0.02);
           expect(share, tag).toBeLessThanOrEqual(GENRE_MAX + 0.02);
+          shares.push(share);
         }
       }
+      // Nov 2026: 31 / 31 / 32 % before GENRE_TARGET 0.5, then 48 / 50 / 51 %.
+      expect(shares.length, lv).toBeGreaterThan(100);
+      expect(mean(shares), lv).toBeGreaterThan(lv === 'chill' ? 0.44 : 0.47);
     }
   });
 
   it('spreads a song\'s genre time over several accents: no one genre move takes most of it', () => {
     // Mean per-song share of the top genre move (and distinct genre moves per song) over the published maps,
-    // Nov 2026: before GENRE_SLOT_CAP 46 / 45 / 41 % (3.6 / 4.3 / 4.8 moves), with it 43 / 35 / 33 % (3.7 / 4.9 / 5.4).
-    const most: Record<Intensity, number> = { chill: 0.46, cardio: 0.4, sweaty: 0.37 };
-    const least: Record<Intensity, number> = { chill: 3.4, cardio: 4.5, sweaty: 5 };
+    // Nov 2026: before GENRE_SLOT_CAP 46 / 45 / 41 % (3.6 / 4.3 / 4.8 moves), with it 43 / 35 / 33 % (3.7 / 4.9 / 5.4);
+    // with half the time in genre moves (GENRE_TARGET 0.5, split slots, GENRE_FLAT) 36 / 32 / 28 % (5.0 / 6.6 / 7.6).
+    const most: Record<Intensity, number> = { chill: 0.4, cardio: 0.35, sweaty: 0.32 };
+    const least: Record<Intensity, number> = { chill: 4.5, cardio: 6, sweaty: 7 };
     for (const lv of LEVELS) {
       const tops: number[] = [];
       const counts: number[] = [];

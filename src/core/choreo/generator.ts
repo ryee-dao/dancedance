@@ -61,9 +61,14 @@
  * limit).
  *
  * Tiers (genres.ts): genre-exclusive moves are used only when the song's
- * style opens their genre, as the kit's accents (GENRE_MIN..GENRE_MAX of the
- * danced time); global moves everywhere. Signature nods open their own
- * song's chorus regardless.
+ * style opens their genre, for about half of the danced time
+ * (GENRE_MIN..GENRE_MAX); global moves everywhere. Signature nods open their
+ * own song's chorus regardless.
+ *
+ * Tone (calmTone, songDrive): the calm-moves file's flows and ballet arms
+ * stay in warm-ups, intros and the cool-down unless the song is calm; the
+ * high-intensity share follows the song's drive as well as the level
+ * (highCap, a budget like the jumps').
  *
  * Live mode (no sections known) uses LivePlanner: the same phrase logic with
  * a repeating verse / verse / chorus phrase cycle.
@@ -84,7 +89,7 @@ import { BORROW_CLOSE, BORROW_MAX, FAMILY_GENRE, LATIN_DANCES, SUB_OPEN, THEME_G
 import { IDLE_MOVE, MOVES, keysOf, type Level, type Move } from './moves';
 import { getPool, warmPool } from './pool';
 import { BALANCED_POP, readGenre, signatureMoveIds, styleKey, type SongStyle } from './songStyle';
-import { busyFactor, calmFactor, difficultyFactor, impactFactor, moveSmoothness, moveVigour, moveWeights, poseStepCost, tempoFactor } from './weights';
+import { busyFactor, calmFactor, difficultyFactor, impactFactor, isNovelty, moveSmoothness, moveVigour, moveWeights, poseStepCost, tempoFactor } from './weights';
 import { moveSpeed, moveTempoMode, readsAtHalf, type TempoMode } from './speed';
 import { enforceCards, partOf, pauseOf, renamed, tileMove } from './cards';
 import { smoothSteps } from './flow';
@@ -767,15 +772,16 @@ export function targetVigour(feels: readonly BarFeel[], section: SectionType, wa
 // against (a break doesn't use the groove's body parts). Flow and contrast
 // are weights among the others, never filters.
 //
-// Tiers: on a song that opens genre sets, the kit is mostly global and a few
-// slots are genre accents, placed deliberately (GENRE_PRIORITY: the drop's
-// power move first, then the hook's third move, the verse motif's C, the
-// second build move ...), chosen so that genre moves get GENRE_MIN..GENRE_MAX
-// (aiming at GENRE_TARGET) of the danced time; the verse motif's A and the
-// hook's H1 stay global, so verses and choruses are carried by global moves.
-// No genre slot carries more than GENRE_SLOT_CAP of the genre time when the
-// kit has room (several accents, not one move for half of it), and a
-// leading sub-style takes LEAD_SHARE of the genre beats (leadSubStyle).
+// Tiers: on a song that opens genre sets, about half of the kit's time is
+// genre moves, placed deliberately (GENRE_PRIORITY: the drop's power move
+// first, then the hook's third move, the verse motif's C, the second build
+// move ...), chosen so that genre moves get GENRE_MIN..GENRE_MAX (aiming at
+// GENRE_TARGET) of the danced time; the verse motif's A and the hook's H1
+// stay global where the song allows, so the first verse and the choruses
+// open on familiar moves. No genre slot carries more than GENRE_SLOT_CAP of
+// the genre time when the kit has room (several moves, not one for half of
+// it; a big verse slot alternates two, Slot.odd), and a leading sub-style
+// takes LEAD_SHARE of the genre beats (leadSubStyle).
 
 type Role = 'warm' | 'intro' | 'groove' | 'build' | 'hook' | 'power' | 'break';
 
@@ -789,6 +795,12 @@ interface Slot {
   genre: Genre | null;
   /** A thin genre set's slot filled with a move borrowed from a neighbour (borrowPlan). */
   borrow?: boolean;
+  /**
+   * Every other run of its section (odd `occ`) dances a second slot ('~b') of this genre: a genre slot too
+   * big for one accent (GENRE_SLOT_CAP) alternates two moves of its set, and a global slot too big to be a
+   * genre accent whole (a short song's verse motif) can still give its later runs to the set.
+   */
+  odd?: Genre;
   move: Move | null;
   /** Planned beats and target vigour x beats (map routines). */
   beats: number;
@@ -853,14 +865,18 @@ export function leadSubStyle(ok: readonly Genre[], openness: ReadonlyMap<Genre, 
   return best;
 }
 
+/** Exponent on a genre slot's pick weights (1 = as weighted): half the routine comes from a set's few moves. */
+const GENRE_FLAT = 0.6;
+/** Roles whose over-big genre slots split between two moves of the set (the hook and the power moves keep one identity). */
+const SPLIT_ROLES: ReadonlySet<Role> = new Set(['groove', 'build', 'break']);
 /** The verse motif's A and the hook's H1: global unless a song can't reach GENRE_MIN without them. */
 const MOTIF_ANCHORS = new Set(['groove.0', 'hook.0']);
 /** Genre accent slots of live plans (no song plan to measure). */
-const LIVE_GENRE_SLOTS = new Set(['power.0', 'hook.2', 'groove.2', 'build.1', 'break.1']);
+const LIVE_GENRE_SLOTS = new Set(['power.0', 'hook.2', 'groove.2', 'build.1', 'break.1', 'groove.1', 'hook.1', 'hook.3', 'groove.s1', 'groove.c1', 'groove.t1', 'build.2', 'break.2', 'power.2']);
 /** Share of the danced time genre moves get on a song that opens a genre: aim, floor, ceiling. */
-export const GENRE_TARGET = 0.3;
-export const GENRE_MIN = 0.2;
-export const GENRE_MAX = 0.4;
+export const GENRE_TARGET = 0.5;
+export const GENRE_MIN = 0.4;
+export const GENRE_MAX = 0.6;
 /** Kept for callers: the genre share aimed at. */
 export const GENRE_SHARE = GENRE_TARGET;
 /** Weight of a transition's pose distance (exp(-FLOW_W * mean cost)). */
@@ -893,6 +909,10 @@ export class Choreographer {
   private levelF: Float64Array;
   private vig: Float64Array;
   private partsM: Uint8Array;
+  /** Calm-toned pool moves (calmToned; index-aligned with pool). */
+  private calmT: Uint8Array;
+  /** Pick factor of each pool move's tone on this song: its punches (punchTone), novelty (noveltyTone). */
+  private toneW: Float64Array;
   private ornaments: { get(base: string): readonly Move[] } | null;
   /** Genre-exclusive moves of genres the song doesn't open (never used). */
   private outside = new Set<Move>();
@@ -935,6 +955,17 @@ export class Choreographer {
   readonly jumpCap: number;
   private plannedBeats = 0;
   private jumpBeats = 0;
+  /** The song's calm tone for calm-toned moves (calmTone) and its drive (songDrive). */
+  private tone: number;
+  private drive: number;
+  /** Most of the danced time high-intensity moves may take (highCap), and the planned / cast high beats. */
+  readonly highCap: number;
+  private highBeats = 0;
+  /** Easy's planned / cast beats of moves above difficulty 1 (EASY_HARD_CAP). */
+  private hardBeats = 0;
+  /** The genre beats the plan chose (assignGenres), and the beats of borrowed moves cast so far. */
+  private genrePlanned = 0;
+  private lentBeats = 0;
 
   constructor(seedKey: string, intensity: Intensity, half: boolean, opts: RoutineOpts = {}, bpm?: number) {
     this.intensity = intensity;
@@ -954,18 +985,25 @@ export class Choreographer {
     const open = styleGenres(this.style);
     this.genres = open;
     this.openness = genreOpenness(this.style, open);
+    this.tone = calmTone(this.style, open);
+    this.drive = songDrive(this.style);
+    this.highCap = highCap(this.style, intensity);
     const none = new Map<Genre, number>();
     // Static weight: style x tempo (the tier is the kit's choice), the variations scaled to their share.
     this.base = new Float64Array(moves.length);
     this.levelF = new Float64Array(moves.length);
     this.vig = new Float64Array(moves.length);
     this.partsM = new Uint8Array(moves.length);
+    this.calmT = new Uint8Array(moves.length);
+    this.toneW = new Float64Array(moves.length);
     let mb = 0, mv = 0;
     for (let i = 0; i < moves.length; i++) {
       const m = moves[i];
       this.levelF[i] = levelFactor(m, intensity);
       this.vig[i] = moveVigour(m);
       this.partsM[i] = partsMask(m);
+      this.calmT[i] = calmToned(m) ? 1 : 0;
+      this.toneW[i] = punchTone(m, this.tone) * noveltyTone(m, open);
       if (!genreFits(m, open)) {
         this.outside.add(m);
         continue;
@@ -1015,7 +1053,7 @@ export class Choreographer {
     const genreK = genreScale(this.style, open, intensity, bpm);
     this.dance = danceOf(this.style);
     this.jumpCap = jumpCap(this.style, intensity, bpm);
-    this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}|${sk}`)), intensity, this.style, open, bpm, genreK, this.jumpCap >= SIG_JUMP_CAP);
+    this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}|${sk}`)), intensity, this.style, open, bpm, genreK, this.jumpCap >= SIG_JUMP_CAP, this.tone);
     this.comboName = comboName(this.signature);
     this.sigMult = this.signature.some((x) => this.mode(x.move) === 'half') ? 2 : 1;
   }
@@ -1078,7 +1116,9 @@ export class Choreographer {
       // The combo's jumps count against the song's jump budget.
       const sb = barsEnd(bars.slice(0, take)) - bars[0].start;
       this.plannedBeats += sb;
-      this.jumpBeats += sb * this.sigJumpShare();
+      this.jumpBeats += sb * this.sigShare((m) => m.jump);
+      this.highBeats += sb * this.sigShare((m) => m.level === 'high');
+      this.hardBeats += sb * this.sigShare((m) => m.difficulty > 1);
       from = take;
     }
     if (from >= bars.length) return items;
@@ -1234,6 +1274,8 @@ export class Choreographer {
     const sigCounted = sigBeats ? this.signature.reduce((t, s) => t + (nodIds.has(s.move.id) ? 0 : s.move.beats), 0) / sigBeats : 0;
     const sigGenre = sigBeats ? this.signature.reduce((t, s) => t + (s.move.genre && !nodIds.has(s.move.id) ? s.move.beats : 0), 0) / sigBeats : 0;
     const groups = new Map<string, number>();
+    /** Beats of each group in the odd runs of its section (a slot's later runs alone: '<key>@odd'). */
+    const odd = new Map<string, number>();
     for (const it of items) {
       const beats = barsEnd(it.bars) - it.bars[0].start;
       if (it.kind === 'sig') {
@@ -1246,6 +1288,7 @@ export class Choreographer {
       total += beats;
       const k = this.slots.get(it.slot)!.of ?? it.slot;
       groups.set(k, (groups.get(k) ?? 0) + beats);
+      if ((it.o.occ ?? 0) % 2 === 1) odd.set(k, (odd.get(k) ?? 0) + beats);
     }
     if (total <= 0) return;
     // A selection of genre slots: GENRE_PRIORITY order until GENRE_TARGET, no slot above `cap`; with a
@@ -1287,6 +1330,7 @@ export class Choreographer {
     const chosen = sel.keys;
     const chosenBeats = sel.kb;
     cur = sel.c;
+    this.genrePlanned = cur;
     const take = (k: string) => {
       chosen.push(k);
       chosenBeats.set(k, groups.get(k)!);
@@ -1294,12 +1338,18 @@ export class Choreographer {
       groups.delete(k);
     };
     if (cur < GENRE_MIN * total) {
-      // Last resort, smallest first, the motif anchors last.
+      // Last resort, smallest first, the motif anchors last; a slot too big whole may give the set its odd runs.
       const rest = [...groups.entries()].filter(([k]) => !k.startsWith('warm')).sort((a, b) => +MOTIF_ANCHORS.has(a[0]) - +MOTIF_ANCHORS.has(b[0]) || a[1] - b[1] || (a[0] < b[0] ? -1 : 1));
       for (const [k, b] of rest) {
         if (cur >= GENRE_MIN * total) break;
         if (cur + b <= GENRE_MAX * total) take(k);
+        else if ((odd.get(k) ?? 0) > 0 && cur + odd.get(k)! <= GENRE_MAX * total) {
+          groups.set(`${k}@odd`, odd.get(k)!);
+          groups.delete(k);
+          take(`${k}@odd`);
+        }
       }
+      this.genrePlanned = cur;
     }
     const genreOf = new Map<string, Genre | null>();
     const lead = this.lead;
@@ -1326,9 +1376,13 @@ export class Choreographer {
         got.set(g!, (got.get(g!) ?? 0) + chosenBeats.get(k)!);
       } else g = this.pickGenre();
       genreOf.set(k, g);
-      for (const s of this.slots.values()) if (s.key === k || s.of === k) s.genre = g;
+      this.setGenre(k, g);
     }
     if (this.borrows.size) this.assignBorrowing(chosen, genreOf, chosenBeats);
+    // A verse, build or break slot carrying more than its share of the genre time (Easy's few, long slots) splits:
+    // its later runs alternate with a second move of its set, so one genre move doesn't stand for the style.
+    const cap = GENRE_SLOT_CAP * GENRE_TARGET * total;
+    for (const s of this.slots.values()) if (s.genre && !s.of && SPLIT_ROLES.has(s.role) && s.beats > cap) s.odd = s.genre;
   }
 
   /**
@@ -1346,7 +1400,8 @@ export class Choreographer {
       for (const s of this.slots.values()) if (s.key === k || s.of === k) f(s);
     };
     for (const [g, bp] of this.borrows) {
-      const keys = chosen.filter((k) => genreOf.get(k) === g);
+      // A slot's odd runs ('@odd') dance the set's own moves (never borrowed).
+      const keys = chosen.filter((k) => genreOf.get(k) === g && !k.endsWith('@odd'));
       if (!keys.length) continue;
       const total = keys.reduce((t, k) => t + (beats.get(k) ?? 0), 0);
       // Fisher-Yates on the plan's random stream.
@@ -1402,7 +1457,8 @@ export class Choreographer {
 
   /** The kit move for a hold (cast on first use); never the move just danced (an alternate instead). */
   private moveFor(it: HoldItem): Move {
-    const s = this.slots.get(it.slot!)!;
+    let s = this.slots.get(it.slot!)!;
+    if (s.odd && (it.o.occ ?? 0) % 2 === 1) s = this.oddOf(s, it);
     if (!s.move) s.move = this.cast(s, it);
     const prev = this.lastMove;
     let m = s.move;
@@ -1419,6 +1475,33 @@ export class Choreographer {
     return m;
   }
 
+  /** A slot's genre ('<key>@odd': the genre of its odd runs), on it and its variations. */
+  private setGenre(k: string, g: Genre | null): void {
+    const odd = k.endsWith('@odd');
+    const base = odd ? k.slice(0, -4) : k;
+    for (const s of this.slots.values()) {
+      if (s.key !== base && s.of !== base) continue;
+      if (odd) s.odd = g ?? undefined;
+      else s.genre = g;
+    }
+  }
+
+  /** The slot an odd run of a slot's section dances ('~b', of its `odd` genre; cast on first use: the slot's own move when the set has nothing left). */
+  private oddOf(s: Slot, it: HoldItem): Slot {
+    const base = s.of ? this.slots.get(s.of)! : s;
+    if (!base.move) base.move = this.cast(base, it);
+    const key = `${base.key}~b`;
+    let b = this.slots.get(key);
+    if (!b) {
+      const same = base.odd === base.genre;
+      b = { key, role: base.role, of: null, section: base.section, genre: base.odd ?? null, ...(same && base.borrow ? { borrow: true } : {}), move: null, beats: base.beats / 2, tSum: base.tSum / 2 };
+      this.slots.set(key, b);
+      b.move = this.cast(b, it);
+      if (!b.genre) b.move = base.move;
+    }
+    return b;
+  }
+
   /** Cast a kit slot: a variation of its base slot, or a fresh weighted pick for its role. */
   private cast(s: Slot, it: HoldItem): Move {
     if (s.of) {
@@ -1431,7 +1514,7 @@ export class Choreographer {
     const o = it.o;
     const t0 = s.beats > 0 ? s.tSum / s.beats : it.target;
     const target = s.role === 'power' ? Math.max(t0, 0.7) : s.role === 'break' || s.role === 'warm' ? Math.min(t0, 0.35) : t0;
-    const lw = levelWeights(s.role === 'warm' ? 'warmup' : s.section, this.intensity, target);
+    const lw = driveLean(levelWeights(s.role === 'warm' ? 'warmup' : s.section, this.intensity, target), this.drive);
     // Moves it plays against: a break and the hook contrast with the verse motif, the motif's moves with its first.
     const against: Move[] = [];
     const add = (k: string) => {
@@ -1464,9 +1547,18 @@ export class Choreographer {
     // The jump budget (jumpCap): a jump only while this slot's planned time (with its variations') still fits in it.
     const groupBeats = this.groupBeats(s);
     const jumpsOk = this.jumpRoom(groupBeats);
+    // ... and the high-intensity budget (highCap) likewise; a genre slot may overrun it rather than go global.
+    const highOk = this.highRoom(groupBeats);
+    // Easy keeps to simple moves (EASY_HARD_CAP; a genre slot a little more, its set's simple moves first, else it goes
+    // global); a thin set (one that borrows) keeps what it has, as its plan counts on (borrowPlan).
+    const hardOk = (cap: number) => this.intensity !== 'chill' || this.hardBeats + groupBeats <= cap * this.plannedBeats + 1e-9;
+    const hardFree = hardOk(EASY_HARD_CAP), hardGenre = hardOk(EASY_HARD_CAP_GENRE);
+    // Calm-toned moves: a minor choice in the warm-up of a song without the calm for them, the main choice on a calm
+    // one; in the main sections only as far as the song is calm (calmTone).
+    const toneK = calm ? WARM_TONE + (WARM_TONE_CALM - WARM_TONE) * this.tone : this.tone;
     const dance = this.dance;
     // A genre's own moves, or (`lent`) the moves its slot borrows, weighted by their fit.
-    const pick = (genre: Genre | null, lent?: Float64Array): Move | null => {
+    const pick = (genre: Genre | null, lent?: Float64Array, budget = true): Move | null => {
       const w = new Float64Array(pool.length);
       let max = 0;
       for (let i = 0; i < pool.length; i++) {
@@ -1476,6 +1568,8 @@ export class Choreographer {
         if (!lent && (genre ? m.genre !== genre : !!m.genre)) continue;
         if (this.kit.has(m)) continue;
         if (m.jump && !jumpsOk) continue;
+        if (budget && m.level === 'high' && !highOk) continue;
+        if (m.difficulty > 1 && !(genre ? hardGenre || this.borrows.has(genre) : hardFree)) continue;
         x *= lw[m.level] * this.levelF[i];
         if (x <= 0) continue;
         if (dance && namedSets(m).includes(dance)) x *= NAMED_DANCE;
@@ -1484,7 +1578,11 @@ export class Choreographer {
         if (m.foot && this.kitFeet.has(m.foot)) x *= 0.3;
         // Moves that develop later (the motif's A, the hook's H1 / H2) start from a base move, so a variation can intensify them.
         if (develops && m.base !== m.id) x *= 0.1;
-        if (calm && m.file === 'cooldown') x *= 2.5;
+        if (this.calmT[i]) {
+          x *= toneK;
+          if (x <= 0) continue;
+        }
+        x *= this.toneW[i];
         const pm = this.partsM[i];
         for (const a of againstM) x *= 1 - 0.5 * maskOverlap(a, pm);
         if (prevM >= 0) {
@@ -1521,20 +1619,38 @@ export class Choreographer {
           w[i] *= Math.exp(-FLOW_W * (c / n));
         }
       }
+      // A set's few fitting moves: flatter odds, so songs of one style don't all cast the same favourites
+      // (the song's own Latin dance keeps its full lead).
+      if (genre && GENRE_FLAT < 1) {
+        for (let i = 0; i < pool.length; i++) {
+          if (w[i] <= 0) continue;
+          w[i] = Math.pow(w[i] / max, GENRE_FLAT);
+          if (dance && namedSets(pool[i]).includes(dance)) w[i] *= NAMED_DANCE ** (1 - GENRE_FLAT);
+        }
+      }
       return pickWeighted(this.rng, pool, w);
     };
     const lent = s.genre && s.borrow ? this.borrows.get(s.genre)?.w : undefined;
     let m = lent ? pick(s.genre, lent) : null;
     if (!m && s.genre) m = pick(s.genre);
+    if (!m && lent) m = pick(s.genre, lent, false);
+    if (!m && s.genre) m = pick(s.genre, undefined, false);
+    // A thin set out of moves that fit here borrows one rather than lose the slot, while what is lent stays
+    // within BORROW_MAX of the song's genre time.
+    const bw = s.genre && !lent ? this.borrows.get(s.genre)?.w : undefined;
+    if (!m && bw && this.lentBeats + groupBeats <= BORROW_MAX * this.genrePlanned + 1e-9) m = pick(s.genre, bw, false);
     if (!m) {
       s.genre = null;
-      m = pick(null);
+      m = pick(null) ?? pick(null, undefined, false);
     }
     if (!m) m = this.choose(o, prev, target);
     this.kit.add(m);
     this.kitBases.add(m.base);
     if (m.foot) this.kitFeet.add(m.foot);
     if (m.jump) this.jumpBeats += groupBeats;
+    if (m.level === 'high') this.highBeats += groupBeats;
+    if (m.difficulty > 1) this.hardBeats += groupBeats;
+    if (m.genre && !this.genres.has(m.genre)) this.lentBeats += groupBeats;
     return m;
   }
 
@@ -1551,12 +1667,20 @@ export class Choreographer {
     return this.jumpBeats + beats <= this.jumpCap * this.plannedBeats + 1e-9;
   }
 
-  /** Share of the song combo's beats that jump. */
-  private sigJumpShare(): number {
+  /**
+   * Whether `beats` more of high-intensity moves still fit in the song's high budget (highCap of the danced
+   * time planned): at most half of them over it, so a long slot isn't all or nothing (the budget is met on average).
+   */
+  private highRoom(beats: number): boolean {
+    return this.highBeats + HIGH_OVER * beats <= this.highCap * this.plannedBeats + 1e-9;
+  }
+
+  /** Share of the song combo's beats whose move is `f` (jumps, high intensity). */
+  private sigShare(f: (m: Move) => boolean): number {
     let all = 0, j = 0;
     for (const x of this.signature) {
       all += x.move.beats;
-      if (x.move.jump) j += x.move.beats;
+      if (f(x.move)) j += x.move.beats;
     }
     return all ? j / all : 0;
   }
@@ -1578,7 +1702,8 @@ export class Choreographer {
     for (const v of this.varsByBase.get(m.base) ?? []) if (v !== m && this.allowed(v, o)) list.push(v);
     const min = 0.5 * levelFactor(m, this.intensity);
     // A variation that jumps where its move doesn't would spend jump time the budget never gave it.
-    return list.filter((v) => v.genre === m.genre && levelFactor(v, this.intensity) >= min && this.mode(v) !== 'out' && (!v.jump || m.jump));
+    // ... and one with the port de bras arms where its move has none would bring them into a song without the calm for them.
+    return list.filter((v) => v.genre === m.genre && levelFactor(v, this.intensity) >= min && this.mode(v) !== 'out' && (!v.jump || m.jump) && (this.tone > 0 || !calmToned(v) || calmToned(m)));
   }
 
   /** One variation of `m` (evenly), or null. */
@@ -1723,7 +1848,9 @@ export class Choreographer {
   /** A per-hold pick (the cool-down flows, and the last resort). */
   private choose(o: PhraseOpts, avoid: Move | null, target = o.energy): Move {
     const pool = o.cooldown ? COOLDOWN_MOVES : this.pool;
-    const lw = levelWeights(o.warmup ? 'warmup' : o.section, this.intensity, target);
+    const lw0 = levelWeights(o.warmup ? 'warmup' : o.section, this.intensity, target);
+    const lw = o.cooldown ? lw0 : driveLean(lw0, this.drive);
+    const toneK = o.warmup ? WARM_TONE + (WARM_TONE_CALM - WARM_TONE) * this.tone : this.tone;
     const prev = this.lastMove;
     const prevPose = prev ? lastKeyPose(prev, this.lastMirror) : null;
     const weights = pool.map((m, i) => {
@@ -1731,6 +1858,9 @@ export class Choreographer {
       let w = o.cooldown ? (m.cooldown || levelFactor(m, this.intensity) > 0 ? 1 : 0) : lw[m.level] * levelFactor(m, this.intensity) * this.base[i];
       if (w <= 0) return 0;
       if (!o.cooldown && (this.outside.has(m) || m.genre)) return 0;
+      if (!o.cooldown && this.calmT[i]) w *= toneK;
+      if (!o.cooldown) w *= this.toneW[i];
+      if (w <= 0) return 0;
       if (o.cooldown && this.kit.has(m)) w *= 0.15;
       if (prev && m.base === prev.base) w *= 0.1;
       if (prev && !prev.idle) w *= 1 - 0.6 * partsOverlap(prev, m);
@@ -1883,6 +2013,112 @@ export function jumpCap(style: SongStyle, intensity: Intensity, bpm: number | un
   const ch = (calm === undefined ? 1 : 1 - r(calm, 0.3, 0.65)) * (1 - 0.8 * Math.min(1, Math.max(0, style.soft ?? 0)));
   const tempo = bpm && Number.isFinite(bpm) && bpm > 0 ? 0.45 + 0.55 * r(bpm, 92, 118) : 1;
   return base * ch * tempo;
+}
+
+// ---------------------------------------------------------------------------
+// Tone: calm-toned fill and the song's drive
+//
+// The calm-moves file's flows (tai chi / qigong, standing yoga, warm-up
+// circles, lyrical arms) and ballet's port de bras look like a gym class or a
+// yoga mat in the middle of a driving song. They are for warm-ups, intros, the
+// cool-down, and songs that are calm themselves: on any other song they stay
+// out of the main sections (verses, choruses, drops, the combo) and are a
+// minor choice in its warm-up. And the generic fill's intensity follows the
+// song as well as the level: a soft song on Hard works through big, sustained
+// moves more than high-intensity ones, a hard-hitting one gets more of them,
+// within a budget of the danced time (highCap) as jumps have theirs.
+
+const ramp = (x: number, a: number, b: number) => Math.min(1, Math.max(0, (x - a) / (b - a)));
+
+/** Calm-toned moves: the calm-moves file's flows (not its stretches, which are the cool-down) and the port de bras arms. */
+export function calmToned(m: Move): boolean {
+  if (m.cooldown || m.idle) return false;
+  if (m.file === 'cooldown') return true;
+  return m.arms === 'popPortDeBras' || /(^|-)(port-de-bras|grand-plie)(-|$)/.test(m.base);
+}
+
+/**
+ * How calm a song is for calm-toned moves in its main sections, 0..1: its
+ * calm (from CALM_TONE), soft-but-steady character (from SOFT_TONE), or the
+ * lyrical set open. 0 = not at all (they stay in the warm-up and outro).
+ */
+export function calmTone(style: SongStyle, open: ReadonlySet<Genre> = styleGenres(style)): number {
+  if (open.has('lyrical')) return 1;
+  return Math.max(style.calm === undefined ? 0 : ramp(style.calm, CALM_TONE[0], CALM_TONE[1]), style.soft === undefined ? 0 : ramp(style.soft, SOFT_TONE[0], SOFT_TONE[1]));
+}
+/** Calm over which calm-toned moves come into a song's main sections (none below, fully from the top). */
+export const CALM_TONE: readonly [number, number] = [0.5, 0.65];
+/** ... and the same by softness. */
+export const SOFT_TONE: readonly [number, number] = [0.4, 0.6];
+/** Punches (jabs, uppercuts, the speed bag) are fitness boxing: on a calm song they lose this much of their weight at calmTone 1. */
+const PUNCH_TONE = 0.9;
+/** Pick factor of a punch on a song of calm tone `tone`. */
+export function punchTone(m: Move, tone: number): number {
+  return m.themes.includes('punch') ? 1 - PUNCH_TONE * tone : 1;
+}
+/**
+ * Novelty fill (cheerleading kicks, the Floss, mime and sports moves; weights.ts isNovelty) on a song that opens a
+ * genre set: that set's own moves are its showpieces, so global novelty moves keep this share of their weight,
+ * except on the party-friendly sets (hip-hop fads, K-pop, schlager).
+ */
+const NOVELTY_GENRE = 0.35;
+const NOVELTY_SETS: ReadonlySet<Genre> = new Set(['hiphop', 'kpop', 'schlager', 'trap', 'drill']);
+/** Pick factor of a global novelty move on a song opening these sets. */
+export function noveltyTone(m: Move, open: ReadonlySet<Genre>): number {
+  if (m.genre || !open.size || !isNovelty(m)) return 1;
+  for (const g of open) if (NOVELTY_SETS.has(g)) return 1;
+  return NOVELTY_GENRE;
+}
+/** Pick factor of a calm-toned move in the warm-up / intro of a song with no calm tone (3 x less than a gentle dance move), up to WARM_TONE_CALM on a calm song. */
+const WARM_TONE = 0.3;
+const WARM_TONE_CALM = 2.5;
+
+/**
+ * How hard-driving a song's sound is, 0 (soft) .. 1 (hard-hitting); 0.5 = an
+ * ordinary groove or unknown: its hard-hitting sound (songStyle.ts hard, from
+ * the audio intensity) raises it, a soft one (soft: low intensity, or genre
+ * names that say soft) lowers it. Calm is the character's other half and has
+ * its own weights (weights.ts calmFactor: Hard on a ballad works through big,
+ * sustained moves).
+ */
+export function songDrive(style: SongStyle): number {
+  const d = 0.5 + 0.5 * (style.hard ?? 0) - 0.5 * (style.soft ?? 0);
+  return Math.min(1, Math.max(0, d));
+}
+
+/**
+ * Most of the danced time high-intensity moves may take, by level, at drive
+ * 0 / 0.5 / 1 (linear between). Measured Nov 2026 over the saved evaluation
+ * samples before it: Medium 14 % mean, Hard 32 % (soft or calm songs 25 %,
+ * hard-hitting ones 40 %, the top 66-71 %).
+ */
+export const HIGH_CAP: Readonly<Record<Intensity, readonly [number, number, number]>> = { chill: [0.05, 0.1, 0.15], cardio: [0.14, 0.25, 0.36], sweaty: [0.3, 0.45, 0.6] };
+
+/**
+ * Most of Easy's danced time moves above difficulty 1 may take (a weight keeps them rare; with half the time in
+ * genre moves, this keeps it so), and how far a genre slot may take it (most sets have few simple moves: Latin 2 of
+ * its 21, so a Latin song on Easy dances some of its harder steps rather than none).
+ */
+export const EASY_HARD_CAP = 0.08;
+export const EASY_HARD_CAP_GENRE = 0.14;
+
+/** Share of a slot that may lie past the high budget when it is cast (generator highRoom). */
+const HIGH_OVER = 0.5;
+/** The high-intensity budget of a song at a level (HIGH_CAP at its drive). */
+export function highCap(style: SongStyle, intensity: Intensity): number {
+  const [a, b, c] = HIGH_CAP[intensity];
+  const d = songDrive(style);
+  return d <= 0.5 ? a + (b - a) * (d / 0.5) : b + (c - b) * ((d - 0.5) / 0.5);
+}
+
+/**
+ * The level mix leaned toward the song's drive: high-intensity moves lose
+ * weight on a soft song (x0.67 at drive 0) and gain a little on a
+ * hard-hitting one (x1.4 at 1), low ones the other way.
+ */
+function driveLean(w: LevelWeights, drive: number): LevelWeights {
+  const k = drive - 0.5;
+  return k < 0 ? { low: w.low * (1 - 0.4 * k), mid: w.mid, high: w.high * Math.exp(0.8 * k) } : { low: w.low * Math.exp(-1.2 * k), mid: w.mid, high: w.high * (1 + 0.8 * k) };
 }
 
 // ---------------------------------------------------------------------------
@@ -2172,15 +2408,17 @@ function staticWeight(m: Move, style: SongStyle, bpm: number | undefined, genreK
  */
 function pickSignature(
   rng: () => number, intensity: Intensity, style: SongStyle = BALANCED_POP, open: ReadonlySet<Genre> = styleGenres(style),
-  bpm?: number, genreK: ReadonlyMap<Genre, number> = new Map(), jumps = true,
+  bpm?: number, genreK: ReadonlyMap<Genre, number> = new Map(), jumps = true, tone = calmTone(style, open),
 ): SigStep[] {
   const mode = (m: Move) => moveTempoMode(m, bpm, intensity);
   const fitsAny = (m: Move) => m.beats <= 4 && levelFactor(m, intensity) > 0 && !(m.travel !== 0 && m.beats === 4) && mode(m) !== 'out';
   // A curated nod keeps its jumps (it is the song's own move); picked combos jump only where the song's jump budget is ample.
-  const fits = (m: Move) => fitsAny(m) && (jumps || !m.jump);
+  // The combo opens every chorus: a calm-toned move only on a song with the calm for it (calmTone).
+  const fits = (m: Move) => fitsAny(m) && (jumps || !m.jump) && (tone > 0 || !calmToned(m));
   const pool = DANCE_MOVES.filter((m) => fits(m) && genreFits(m, open) && (m.level !== 'low' || intensity === 'chill'));
+  const lean = driveLean({ low: 1, mid: 1, high: 1 }, songDrive(style));
   const weight = (m: Move) =>
-    (m.level === 'high' ? (intensity === 'chill' ? 0.3 : intensity === 'cardio' ? 1 : 1.8) : 1.2) * (m.beats === 2 ? 2 : 1) * levelFactor(m, intensity) * staticWeight(m, style, bpm, genreK, intensity);
+    (m.level === 'high' ? (intensity === 'chill' ? 0.3 : intensity === 'cardio' ? 1 : 1.8) * lean.high : 1.2) * (m.beats === 2 ? 2 : 1) * levelFactor(m, intensity) * staticWeight(m, style, bpm, genreK, intensity) * (calmToned(m) ? tone : 1) * punchTone(m, tone) * noveltyTone(m, open);
   // The combo is danced at one speed: half time when either move needs it, so a full-time move in it must read at half time.
   const together = (a: Move, b: Move) => mode(a) === mode(b) || (mode(a) === 'full' ? readsAtHalf(a, bpm ?? 0) : readsAtHalf(b, bpm ?? 0));
   const nods = (style.signature ?? []).map((id) => DANCE_MOVES.find((m) => m.id === id)).filter((m): m is Move => !!m && fitsAny(m));
