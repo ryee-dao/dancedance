@@ -45,7 +45,10 @@ traditions) open from the song's family weights and themes; the sub-styles
 below open from the style's sub-style scores (genre words + traits,
 `SUB_OPEN` 0.5). Each sub-style either ADDS to its group (a metal song
 dances rock and metal) or REPLACES it (reggaeton never gets salsa). A set
-with fewer than `MIN_GENRE_SET` (6) moves falls back: its parent opens too.
+with fewer than `MIN_GENRE_SET` (6) moves falls back: its parent opens too;
+and a sub-style with a parent keeps it open (`SUB_INFO` `withParent`) until
+its own set reaches `SUB_STANDALONE` (16) moves, so songs of a small style
+don't all dance the same few accents (a replaced parent stays open then).
 The song's calm closes showpiece sets (no headbangs on a ballad;
 `CALM_TOLERANCE` in `genres.ts`) and opens `lyrical`.
 

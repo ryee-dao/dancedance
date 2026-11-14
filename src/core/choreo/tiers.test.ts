@@ -4,7 +4,7 @@ import levitatingMap from '../../../public/beatmaps/1j_XvebOg4c.json';
 import onTheFloorMap from '../../../public/beatmaps/9lybsz-7TFM.json';
 import { generateDuoRoutine } from './duo';
 import { GENRE_SHARE, generateRoutine, genreFits, styleGenres, type Intensity, type MoveInstance } from './generator';
-import { GENRES, GENRE_CONFLICTS, GENRE_MOVES, GENRE_SET_UNKNOWN, MIN_GENRE_SET, SUB_INFO, SUB_STYLES, calmGate, genreListedIds, genreOfId, genreOpenness, songGenres, type Genre } from './genres';
+import { GENRES, GENRE_CONFLICTS, GENRE_MOVES, GENRE_SET_UNKNOWN, MIN_GENRE_SET, SUB_INFO, SUB_STANDALONE, SUB_STYLES, calmGate, genreListedIds, genreOfId, genreOpenness, songGenres, type Genre } from './genres';
 import type { Theme } from './families';
 import { MOVES, findMove } from './moves';
 import { getPool } from './pool';
@@ -91,7 +91,11 @@ describe('two tiers: global and genre-exclusive', () => {
       expect(open.has(s), s).toBe(true);
       if (info.parent && (info.withParent || GENRE_MOVES[s].length < MIN_GENRE_SET)) expect(open.has(info.parent), `${s} -> ${info.parent}`).toBe(true);
       if (info.replaces && info.replaces !== info.parent) expect(open.has(info.replaces), `${s} closes ${info.replaces}`).toBe(false);
+      // The withParent rule (genres.ts SUB_STANDALONE): a small set keeps its parent open.
+      if (info.parent && GENRE_MOVES[s].length < SUB_STANDALONE) expect(info.withParent, `${s} (${GENRE_MOVES[s].length} moves) keeps ${info.parent}`).toBe(true);
     }
+    // A small set that replaces its parent keeps it open while small: Brazilian songs keep Latin's samba steps.
+    expect(genreOpenness({ families: {}, themes: [], subs: { brazil: 0.9 } }).has('latin')).toBe(GENRE_MOVES.brazil.length < SUB_STANDALONE);
     // A sub-style below SUB_OPEN opens nothing.
     expect(genreOpenness({ families: {}, themes: [], subs: { metal: 0.3 } }).size).toBe(0);
   });
