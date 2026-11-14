@@ -24,8 +24,8 @@
  * polygons, no strokes). See the "Sprite mode" section at the end.
  */
 
-import { BODY, J, NUM_JOINTS, type Skeleton } from './skeleton';
-import { CAM, PIV_Y, type CoachBuild } from './styles';
+import { BODY, J, NUM_JOINTS, spineBend, type Skeleton } from './skeleton';
+import { VIEW, depthScale, screenUp, type CoachBuild } from './styles';
 import { scaleOf, spriteKey, type PieceArtist, type SpriteCache, type SpriteEntry } from './sprites';
 import { M, bandQuad, blitOrDraw, blitSegment, boneMatrix, fillClippedToQuad, fillGrown, flattenSmooth, frameMatrix, qFigure, segBucket, segLength, spriteEllipse, spriteLine } from './spriteParts';
 
@@ -119,6 +119,7 @@ const PASS_FILL = 2;
 // 3 pelvis (at PELVIS). x values are filled from the look at draw time.
 const SHIRT_N = 9;
 const WAIST_Y = -0.185; // chest frame; = BODY.torso + WAIST_Y in the pelvis frame
+const WAIST_U = (BODY.torso + WAIST_Y) / BODY.torso; // the waist's fraction up the spine
 const SHORTS_N = 4;
 
 // Limb layers (one fill each, in path order): outline, skin, covers.
@@ -145,6 +146,17 @@ const K_SHOE = 18;
 const K_NECK = 19;
 const K_HEAD = 20;
 const P_BONE = 1;
+/** Hand direction toward the viewer (z) past which a pointing finger is drawn in front of its fist. */
+const FINGER_FRONT = 0.62;
+/** Palm openness under spread fingers (the fingers carry the rest of the hand). */
+const FINGERS_PALM = 0.5;
+/** Fingers per hand form: [offset across the hand, spread (toward the thumb +), length factor] each. */
+const FINGERS_POINT = [0.006, 0, 1];
+const FINGERS_HORNS = [0.012, 0.3, 0.8, -0.012, -0.3, 0.8];
+const FINGERS_SPREAD = [0.018, 0.22, 0.74, 0.006, 0.08, 0.86, -0.006, -0.08, 0.84, -0.018, -0.22, 0.7];
+const FINGER_LISTS = [FINGERS_POINT, FINGERS_POINT, FINGERS_HORNS, FINGERS_SPREAD];
+/** Finger radius (× hand size) per form. */
+const FINGER_R = [0.0085, 0.0085, 0.0085, 0.0074];
 const P_HAND = 2;
 const P_SHOE = 3;
 const P_NECK = 4;
@@ -244,6 +256,8 @@ export class HumanPainter implements PieceArtist {
   private pcForm = 0;
   private pcOpen = 0;
   private pcHxy = 1;
+  private pcAway = 0;
+  private readonly bend = new Float64Array(3);
   private pcHead = 0;
   private pcPhi = 0;
 
@@ -263,10 +277,10 @@ export class HumanPainter implements PieceArtist {
   // Projection helpers
 
   private proj(x: number, y: number, z: number): void {
-    const s = CAM / (CAM - z);
+    const s = depthScale(z);
     this.qs = s * this.scale;
     this.qx = this.cx + x * this.qs;
-    this.qy = this.floorY - (PIV_Y + (y - PIV_Y) * s) * this.scale;
+    this.qy = this.floorY - screenUp(y, z, s) * this.scale;
   }
 
   /** World point = joint origin + R * (x, y, z) -> (wx, wy, wz). */
@@ -585,9 +599,11 @@ export class HumanPainter implements PieceArtist {
         this.torsoPt(p, RT, J.CHEST, side * L.waistW, WAIST_Y, 0, L.depth);
         const ax = this.wx, ay = this.wy, az = this.wz;
         this.torsoPt(p, RP, J.PELVIS, side * L.waistW, BODY.torso + WAIST_Y, 0, L.depth);
-        this.wx = (this.wx + ax) * 0.5;
-        this.wy = (this.wy + ay) * 0.5;
-        this.wz = (this.wz + az) * 0.5;
+        // ... bent with the spine (an arc / S instead of a straight box side).
+        spineBend(p, RT, RP, WAIST_U, this.bend);
+        this.wx = (this.wx + ax) * 0.5 + this.bend[0];
+        this.wy = (this.wy + ay) * 0.5 + this.bend[1];
+        this.wz = (this.wz + az) * 0.5 + this.bend[2];
         break;
       }
       case 7:
@@ -912,7 +928,7 @@ export class HumanPainter implements PieceArtist {
 
   private hand(ctx: CanvasRenderingContext2D, p: Float64Array, ha: number, side: number, open: number, pass: number, form = 0): void {
     const L = this.look;
-    const o = form > 0 ? 0 : open < 0 ? 0 : open > 1 ? 1 : open;
+    const o = form === 3 ? FINGERS_PALM : form > 0 ? 0 : open < 0 ? 0 : open > 1 ? 1 : open;
     const hs = L.hand;
     const d = this.handDir;
     const b = side === 1 ? 0 : 5;
@@ -933,15 +949,18 @@ export class HumanPainter implements PieceArtist {
     this.proj(ax + hx * te + tx * tw, ay + hy * te + ty * tw, az + hz * te);
     const tx1 = this.qx, ty1 = this.qy, ts1 = this.qs;
     const tr = 0.0105 * hs;
+    // A finger pointed at the viewer is in front of its own fist: drawn over
+    // it, foreshortened to a stub with a round fingertip (see fingersFront).
+    const front = form > 0 && hz > FINGER_FRONT;
     if (pass !== PASS_FILL) {
       ctx.beginPath();
       this.cap(ctx, px0, py0, (r0 + g) * s0, px1, py1, (r1 + g) * s1);
       this.cap(ctx, tx0, ty0, (tr + g) * ts0, tx1, ty1, (tr * 0.9 + g) * ts1);
-      if (form > 0) this.fingers(ctx, ax, ay, az, hx, hy, hz, tx, ty, d1, hs, form, g);
+      if (form > 0 && !front) this.fingers(ctx, ax, ay, az, hx, hy, hz, tx, ty, d1, hs, form, g);
       this.paint(ctx, pass, L.skin, false);
       return;
     }
-    if (form > 0) {
+    if (form > 0 && !front) {
       ctx.beginPath();
       this.fingers(ctx, ax, ay, az, hx, hy, hz, tx, ty, d1, hs, form, 0);
       ctx.fillStyle = L.skin;
@@ -965,13 +984,82 @@ export class HumanPainter implements PieceArtist {
         ctx.stroke();
       }
     }
+    if (front) this.fingersFront(ctx, ax, ay, az, hx, hy, hz, tx, ty, d1, hs, form);
   }
 
-  /** Pointing index finger (form 1) or index + pinky horns (form 2), out of the fist along the hand. */
+  /**
+   * Fingers pointing at the viewer (hand direction z > FINGER_FRONT): drawn
+   * over the fist with their own outline, at least a short stub long on
+   * screen (along the hand's on-screen direction, or up when it has none),
+   * thicker the more they face the viewer (they are nearer), each ending in a
+   * round fingertip pad with a nail crease: the foreshortened "pointing at
+   * you" hand instead of a plain fist.
+   */
+  private fingersFront(ctx: CanvasRenderingContext2D, ax: number, ay: number, az: number, hx: number, hy: number, hz: number, tx: number, ty: number, d1: number, hs: number, form: number): void {
+    const L = this.look;
+    const list = FINGER_LISTS[form] ?? FINGERS_POINT;
+    const k = Math.min(1, (hz - FINGER_FRONT) / (1 - FINGER_FRONT));
+    const len0 = 0.05 * hs, fr = (FINGER_R[form] ?? 0.0085) * hs * (1.2 + (form === 1 ? 0.5 : 0.3) * k);
+    const e = this.olPx * 0.5;
+    for (let pass = 0; pass < 2; pass++) {
+      for (let i = 0; i < list.length; i += 3) {
+        const off = list[i], spread = list[i + 1], len = len0 * list[i + 2];
+        const bx = ax + hx * d1 * 0.4 + tx * off * hs, by = ay + hy * d1 * 0.4 + ty * off * hs, bz = az + hz * d1 * 0.4;
+        const dx = hx + tx * spread, dy = hy + ty * spread, dz = hz;
+        const dl = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+        this.proj(bx, by, bz);
+        const x0 = this.qx, y0 = this.qy, s0 = this.qs;
+        this.proj(bx + (dx / dl) * len, by + (dy / dl) * len, bz + (dz / dl) * len);
+        let x1 = this.qx, y1 = this.qy;
+        const s1 = this.qs;
+        // Minimum on-screen stub: 0.6 of a finger length.
+        const minL = 0.6 * len * s0;
+        let vx = x1 - x0, vy = y1 - y0;
+        const vl = Math.sqrt(vx * vx + vy * vy);
+        if (vl < minL) {
+          // Screen direction of the hand (+ the horns' spread), or straight up.
+          let ux = dx, uy = -dy;
+          const ul = Math.sqrt(ux * ux + uy * uy);
+          if (ul > 0.05) {
+            ux /= ul;
+            uy /= ul;
+          } else {
+            ux = 0;
+            uy = -1;
+          }
+          vx = ux * minL;
+          vy = uy * minL;
+          x1 = x0 + vx;
+          y1 = y0 + vy;
+        }
+        const r0 = fr * s0, r1 = fr * 1.08 * s1;
+        ctx.beginPath();
+        this.cap(ctx, x0, y0, r0 + (pass === 0 ? e : 0), x1, y1, r1 + (pass === 0 ? e : 0));
+        ctx.fillStyle = pass === 0 ? L.outline : L.skin;
+        ctx.fill();
+        if (pass === 1) {
+          // Nail crease across the fingertip pad, on the side away from the knuckles.
+          const ml = Math.sqrt(vx * vx + vy * vy) || 1;
+          const nx = vx / ml, ny = vy / ml;
+          ctx.strokeStyle = L.skinLine;
+          ctx.lineWidth = Math.max(1, 0.0055 * s1 * hs);
+          ctx.beginPath();
+          ctx.arc(x1 - nx * r1 * 0.15, y1 - ny * r1 * 0.15, r1 * 0.55, Math.atan2(ny, nx) - 1.1, Math.atan2(ny, nx) + 1.1);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  /** Pointing index finger (form 1), index + pinky horns (2) or four spread fingers (3), out of the hand along it. */
   private fingers(ctx: CanvasRenderingContext2D, ax: number, ay: number, az: number, hx: number, hy: number, hz: number, tx: number, ty: number, d1: number, hs: number, form: number, g: number): void {
-    const list = form === 2 ? [[0.012, 0.3], [-0.012, -0.3]] : [[0.006, 0]];
-    const len = (form === 2 ? 0.04 : 0.05) * hs, fr = 0.0085 * hs;
-    for (const [off, spread] of list) {
+    const list = FINGER_LISTS[form] ?? FINGERS_POINT;
+    const fr = (FINGER_R[form] ?? 0.0085) * hs;
+    // Spread fingers start inside the open palm's tip.
+    const d = form === 3 ? d1 * 0.75 : d1;
+    for (let i = 0; i < list.length; i += 3) {
+      const off = list[i], spread = list[i + 1], len = 0.05 * hs * list[i + 2];
+      const d1 = d;
       const bx = ax + hx * d1 + tx * off * hs, by = ay + hy * d1 + ty * off * hs, bz = az + hz * d1;
       const dx = hx + tx * spread, dy = hy + ty * spread, dz = hz;
       const dl = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
@@ -1551,7 +1639,7 @@ export class HumanPainter implements PieceArtist {
     // Canonical projection: the anchor (at the perspective pivot height, so
     // points off the picture plane scale about it) at (0, 0), pcR px per unit.
     this.cx = 0;
-    this.floorY = PIV_Y * this.pcR;
+    this.floorY = VIEW.piv * this.pcR;
     this.scale = this.pcR;
     this.olPx = this.look.ol * (this.mini ? 0.75 : 1) * this.pcR;
     const L = this.look;
@@ -1560,7 +1648,7 @@ export class HumanPainter implements PieceArtist {
         const q = this.synP;
         const len = this.pcLen;
         q.fill(0, 0, 9);
-        q[1] = q[4] = q[7] = PIV_Y;
+        q[1] = q[4] = q[7] = VIEW.piv;
         if (this.pcBone === 0) {
           q[3] = len;
           q[6] = len + 1;
@@ -1592,11 +1680,11 @@ export class HumanPainter implements PieceArtist {
         const h = this.pcHxy;
         d[b] = h;
         d[b + 1] = 0;
-        d[b + 2] = Math.sqrt(Math.max(0, 1 - h * h));
+        d[b + 2] = Math.sqrt(Math.max(0, 1 - h * h)) * (this.pcAway ? -1 : 1);
         d[b + 3] = 0;
         d[b + 4] = this.pcSide * h;
         this.synP.fill(0, 0, 3);
-        this.synP[1] = PIV_Y;
+        this.synP[1] = VIEW.piv;
         this.hand(ctx, this.synP, 0, this.pcSide, this.pcOpen, this.pcPass, this.pcForm);
         for (let i = 0; i < 5; i++) d[b + i] = this.saveDir[i];
         break;
@@ -1777,7 +1865,7 @@ export class HumanPainter implements PieceArtist {
     const ha = side === 1 ? J.HA_R : J.HA_L;
     const open = side === 1 ? sk.handR : sk.handL;
     const form = side === 1 ? sk.formR : sk.formL;
-    const o = form > 0 ? 0 : open < 0 ? 0 : open > 1 ? 1 : open;
+    const o = form === 3 ? FINGERS_PALM : form > 0 ? 0 : open < 0 ? 0 : open > 1 ? 1 : open;
     const d = this.handDir;
     const b = side === 1 ? 0 : 5;
     const hx = d[b], hy = d[b + 1];
@@ -1786,8 +1874,11 @@ export class HumanPainter implements PieceArtist {
     const wx = this.qx, wy = this.qy;
     const qs = this.qFig, R = scaleOf(qs), k = this.qs / R;
     const ob = Math.round(o * 3), hb = Math.round(Math.min(1, hxy) * 8);
-    const f = form < 0 ? 0 : form > 2 ? 2 : form;
-    const key = this.key(K_HAND, qs, (side === 1 ? 32 : 0) + f * 2 + (pass === PASS_FILL ? 1 : 0), ob, 0, hb);
+    const f = form < 0 ? 0 : form > 3 ? 3 : form;
+    // Pointing away from the viewer: the canonical hand's depth flips (a finger toward the viewer is drawn over the fist).
+    const away = d[b + 2] < 0 ? 1 : 0;
+    this.pcAway = away;
+    const key = this.key(K_HAND, qs, (side === 1 ? 32 : 0) + f * 2 + (pass === PASS_FILL ? 1 : 0), ob + away * 4, 0, hb);
     this.pcSide = side;
     this.pcPass = pass;
     this.pcForm = f;

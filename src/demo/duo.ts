@@ -20,7 +20,7 @@ import { DUO_HOME } from '../core/choreo/duoMoves';
 import type { Intensity } from '../core/choreo/generator';
 import { COLORS } from '../core/coach/renderer';
 import { DEPTH_RISE, DuoFigure, drawHook, drawRope, PLAYER_COLORS } from '../core/coach/duoRenderer';
-import { CAM, DEFAULT_COACH_BUILD, duoBuilds, parseCoachBuild, parseCoachStyle, type CoachStyle } from '../core/coach/styles';
+import { CAM, DEFAULT_COACH_BUILD, duoBuilds, parseCoachBuild, parseCoachStyle, viewFromParams, type CoachStyle } from '../core/coach/styles';
 import { createCoachStage } from '../ui/coachStage';
 import { createDuoStage } from '../ui/duoStage';
 import type { FrameInfo, StageRenderer } from '../ui/play';
@@ -32,6 +32,7 @@ const expose = (o: Record<string, unknown>): void => {
 
 const q = new URLSearchParams(location.search);
 const mode = q.get('mode') ?? 'song';
+viewFromParams(q);
 const style: CoachStyle = parseCoachStyle(q.get('style')) ?? 'human';
 /** ?build=female|male: the chosen version (P1); P2 dances the other one. */
 const build = parseCoachBuild(q.get('build')) ?? DEFAULT_COACH_BUILD;

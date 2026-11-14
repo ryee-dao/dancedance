@@ -94,7 +94,7 @@ export function specFromPose(q: Pose, like: PoseSpec): PoseSpec {
     o.pitchL = q[CH.PITCH_L];
   }
   if (hasPair('formR', 'formL')) {
-    const f = (v: number) => (v > 1.5 ? 'horns' : v > 0.5 ? 'point' : undefined);
+    const f = (v: number) => (v > 2.5 ? 'fingers' : v > 1.5 ? 'horns' : v > 0.5 ? 'point' : undefined);
     const fr = f(q[CH.FORM_R]), fl = f(q[CH.FORM_L]);
     if (fr) o.formR = fr;
     if (fl) o.formL = fl;
