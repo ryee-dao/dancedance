@@ -3,8 +3,8 @@ import type { BeatMap } from '../analysis/beatmap';
 import levitatingMap from '../../../public/beatmaps/1j_XvebOg4c.json';
 import onTheFloorMap from '../../../public/beatmaps/9lybsz-7TFM.json';
 import { generateDuoRoutine } from './duo';
-import { GENRE_SHARE, generateRoutine, genreFits, styleGenres, type Intensity, type MoveInstance } from './generator';
-import { GENRES, GENRE_CONFLICTS, GENRE_MOVES, GENRE_SET_UNKNOWN, MIN_GENRE_SET, SUB_INFO, SUB_STANDALONE, SUB_STYLES, calmGate, genreListedIds, genreOfId, genreOpenness, songGenres, type Genre } from './genres';
+import { GENRE_SHARE, borrowPlan, generateRoutine, genreFits, moveAllowed, styleGenres, type Intensity, type MoveInstance } from './generator';
+import { GENRES, GENRE_CONFLICTS, GENRE_MOVES, GENRE_SET_UNKNOWN, MIN_GENRE_SET, NEIGHBOURS, SUB_INFO, SUB_STANDALONE, SUB_STYLES, borrowSources, calmGate, genreListedIds, genreOfId, genreOpenness, songGenres, type Genre } from './genres';
 import type { Theme } from './families';
 import { MOVES, findMove } from './moves';
 import { getPool } from './pool';
@@ -84,18 +84,26 @@ describe('two tiers: global and genre-exclusive', () => {
     expect(GENRE_SET_UNKNOWN).toEqual([]);
   });
 
-  it('a sub-style set too small to carry a song opens its parent group (graceful fallback)', () => {
+  it('a sub-style opens its parent when it adds to it or is too small to be a vocabulary; otherwise its parent lends to it', () => {
     for (const s of SUB_STYLES) {
       const info = SUB_INFO[s];
-      const open = genreOpenness({ families: {}, themes: [], subs: { [s]: 0.9 } });
+      const style = { families: {}, themes: [], subs: { [s]: 0.9 } };
+      const open = genreOpenness(style);
       expect(open.has(s), s).toBe(true);
-      if (info.parent && (info.withParent || GENRE_MOVES[s].length < MIN_GENRE_SET)) expect(open.has(info.parent), `${s} -> ${info.parent}`).toBe(true);
-      if (info.replaces && info.replaces !== info.parent) expect(open.has(info.replaces), `${s} closes ${info.replaces}`).toBe(false);
-      // The withParent rule (genres.ts SUB_STANDALONE): a small set keeps its parent open.
-      if (info.parent && GENRE_MOVES[s].length < SUB_STANDALONE) expect(info.withParent, `${s} (${GENRE_MOVES[s].length} moves) keeps ${info.parent}`).toBe(true);
+      const small = GENRE_MOVES[s].length < MIN_GENRE_SET;
+      if (info.parent) expect(open.has(info.parent), `${s} -> ${info.parent}`).toBe(info.withParent || small);
+      if (info.replaces && !(small && info.replaces === info.parent)) expect(open.has(info.replaces), `${s} closes ${info.replaces}`).toBe(false);
+      // One rule for thin sets (genres.ts NEIGHBOURS): a parent it doesn't open is its nearest neighbour, and lends while the set is small.
+      if (info.parent && !info.withParent) {
+        expect(NEIGHBOURS[s]?.[0]?.from, `${s}: parent ${info.parent} lends first`).toBe(info.parent);
+        if (!small && GENRE_MOVES[s].length < SUB_STANDALONE) expect(borrowSources(style).get(s)?.has(info.parent), `${s} borrows from ${info.parent}`).toBe(true);
+      }
     }
-    // A small set that replaces its parent keeps it open while small: Brazilian songs keep Latin's samba steps.
-    expect(genreOpenness({ families: {}, themes: [], subs: { brazil: 0.9 } }).has('latin')).toBe(GENRE_MOVES.brazil.length < SUB_STANDALONE);
+    // Brazilian replaces Latin, which lends it only the moves named for it (the samba steps live in Latin for the variation pool).
+    if (GENRE_MOVES.brazil.length >= MIN_GENRE_SET) {
+      const lend = borrowSources({ families: { latin: 1 }, themes: [], subs: { brazil: 0.9 } }).get('brazil')?.get('latin');
+      expect(lend?.namedOnly).toBe(true);
+    }
     // A sub-style below SUB_OPEN opens nothing.
     expect(genreOpenness({ families: {}, themes: [], subs: { metal: 0.3 } }).size).toBe(0);
   });
@@ -125,27 +133,33 @@ describe('two tiers: global and genre-exclusive', () => {
     const byLabel = (l: string) => SONGS.find((x) => x[0] === l)![1];
     expect(styleGenres(styleOf(byLabel('country'))).has('rock')).toBe(false);
     expect(styleGenres(styleOf(byLabel('afro'))).has('latin')).toBe(false);
-    const reggaeton = styleGenres(styleOf({ genre: 'Latin', genres: ['Reggaeton'] }));
+    const rs = styleOf({ genre: 'Latin', genres: ['Reggaeton'] });
+    const reggaeton = styleGenres(rs);
     expect(reggaeton.has('reggaeton')).toBe(true);
     expect(reggaeton.has('latin')).toBe(false);
-    // Its set is still nearly empty: it falls back to the dancehall set it grew out of.
-    expect(reggaeton.has('caribbean')).toBe(true);
+    // It gets the dancehall set it grew out of: opened while its own set is too small to stand, lent from then on.
+    if (GENRE_MOVES.reggaeton.length < MIN_GENRE_SET) expect(reggaeton.has('caribbean')).toBe(true);
+    else expect(borrowSources(rs).get('reggaeton')?.has('caribbean')).toBe(true);
   });
 });
 
 describe('genre-exclusive moves stay in their genre', () => {
-  it('never appear on a song that does not open their genre (any level, tempo, duo); signature nods aside', () => {
+  it('never appear on a song that does not open their genre (any level, tempo, duo); signature nods and a thin set\'s borrowed moves aside', () => {
     for (const [label, info] of SONGS) {
       const style = styleOf(info);
       const open = styleGenres(style);
       const nods = new Set(style.signature ?? []);
       for (const map of mapsFor(info.videoId!)) {
         for (const lv of LEVELS) {
+          const plan = borrowPlan(style, lv, map.bpm);
           const r = generateRoutine(map, lv, { style });
-          const out = r.instances.filter((i) => !genreFits(i.move, open) && !(i.sig && nods.has(i.move.base)));
+          const out = r.instances.filter((i) => !moveAllowed(i.move, open, plan) && !(i.sig && nods.has(i.move.base)));
           expect(out.map((i) => i.move.id), `${label} ${lv} @${map.bpm}`).toEqual([]);
+          // Without borrowing, nothing outside the open sets at all.
+          const strict = generateRoutine(map, lv, { style, borrow: false }).instances.filter((i) => !genreFits(i.move, open) && !(i.sig && nods.has(i.move.base)));
+          expect(strict.map((i) => i.move.id), `${label} ${lv} @${map.bpm} (no borrowing)`).toEqual([]);
           const duo = generateDuoRoutine(map, lv, { style });
-          const duoOut = [...duo.p1, ...duo.p2].filter((i) => !genreFits(i.move, open) && !(i.sig && nods.has(i.move.base)));
+          const duoOut = [...duo.p1, ...duo.p2].filter((i) => !moveAllowed(i.move, open, plan) && !(i.sig && nods.has(i.move.base)));
           expect(duoOut.map((i) => i.move.id), `${label} duo ${lv}`).toEqual([]);
         }
       }

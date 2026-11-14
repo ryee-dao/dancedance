@@ -77,11 +77,11 @@
 
 import type { BeatMap, SectionType } from '../analysis/beatmap';
 import type { Pose } from '../coach/skeleton';
-import { genreOpenness as styleOpenness, songGenres, type Genre } from './genres';
+import { BORROW_CLOSE, BORROW_MAX, FAMILY_GENRE, SUB_OPEN, THEME_GENRES, borrowShare, borrowSources, genreOpenness as styleOpenness, songGenres, type Genre, type Lend } from './genres';
 import { IDLE_MOVE, MOVES, keysOf, type Level, type Move } from './moves';
 import { getPool, warmPool } from './pool';
-import { BALANCED_POP, styleKey, type SongStyle } from './songStyle';
-import { busyFactor, calmFactor, difficultyFactor, impactFactor, moveVigour, moveWeights, poseStepCost, tempoFactor } from './weights';
+import { BALANCED_POP, readGenre, signatureMoveIds, styleKey, type SongStyle } from './songStyle';
+import { busyFactor, calmFactor, difficultyFactor, impactFactor, moveSmoothness, moveVigour, moveWeights, poseStepCost, tempoFactor } from './weights';
 import { moveSpeed, moveTempoMode, readsAtHalf, type TempoMode } from './speed';
 import { enforceCards, partOf, pauseOf, renamed, tileMove } from './cards';
 import { smoothSteps } from './flow';
@@ -158,6 +158,8 @@ export interface RoutineOpts {
   fresh?: number;
   /** Use the variation pool (default true). */
   variations?: boolean;
+  /** Thin genre sets borrow fitting moves from their neighbours (default true; genres.ts NEIGHBOURS). */
+  borrow?: boolean;
 }
 
 /** Share of picks that may be variations, per level. */
@@ -219,6 +221,177 @@ function genreOpenness(style: SongStyle, open: ReadonlySet<Genre>): Map<Genre, n
   const out = new Map<Genre, number>();
   for (const g of open) out.set(g, all.get(g) ?? 1);
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// Borrowing: a thin set's accents topped up from its neighbours
+//
+// A genre set smaller than SUB_STANDALONE usable moves makes every song of
+// its style dance the same few accents. Such a set's accent slots borrow, up
+// to borrowShare (at most half, none from SUB_STANDALONE on), from the
+// neighbour sets genres.ts NEIGHBOURS lists, move by move: a borrowed move
+// must suit the song (borrowFit): its level, tempo and character, the
+// borrower's own way of moving, and from a neighbour that isn't very close,
+// no showpiece of its own style and families the song carries. The overall
+// genre share (GENRE_MIN..GENRE_MAX) doesn't change: borrowing only decides
+// which moves fill the thin set's slots.
+
+/**
+ * A borrowed move dances like the borrower: its smoothness and its impact
+ * (flowing vs hard-hitting) lie within the range of the borrower's own usable
+ * moves, widened by this much each way. Vigour is left to the level and the
+ * slot (a thin set's own moves needn't cover every intensity).
+ */
+export const BORROW_NEAR = 0.15;
+/** ... suits the song's families at least this well, relative to the borrower's own moves (median), from a neighbour below BORROW_CLOSE. */
+const BORROW_STYLE = 0.5;
+/** ... and its tempo weight at the tempo it is danced at is at least this. */
+const BORROW_TEMPO = 0.6;
+/** Easy borrows only gentle moves: not high intensity, impact at most this (no jumps: levelFactor; no difficulty 3 below Hard). */
+const BORROW_EASY_IMPACT = 0.45;
+
+/** What a song borrows for one thin set: the share of its slots, its own usable moves, and the fitting moves with their weights. */
+export interface BorrowPlan {
+  share: number;
+  own: number;
+  moves: Map<Move, number>;
+}
+
+/** Tonality of a move for the borrower match: [smoothness, impact]. */
+function tonality(m: Move): [number, number] {
+  return [moveSmoothness(m), moveWeights(m).impact];
+}
+
+let SIGNATURE_IDS: Set<string> | null = null;
+/** Families whose genre words in a move name are dance names ("Salsa", "Merengue", "Disco"); rock / pop / hip-hop words ("Shoulder Rock", "Bounce") are not. */
+const NAMING_FAMILIES = new Set(['latin', 'disco']);
+const NAMED = new Map<string, Genre[]>();
+/**
+ * The genre sets a move's name names, read word by word (and word pairs:
+ * "Cha Cha", "Samba No") with the song-genre lexicon (songStyle.ts
+ * readGenre): a sub-style ("Drill Bounce", "Samba Basic"), a tradition
+ * ("Reggae Skank"), else a Latin or disco dance name ("Salsa Basic", "Jazz
+ * Walk Disco Point").
+ */
+function namedSets(m: Move): Genre[] {
+  const hit = NAMED.get(m.name);
+  if (hit) return hit;
+  const out: Genre[] = [];
+  const add = (g: Genre | undefined) => {
+    if (g && !out.includes(g)) out.push(g);
+  };
+  const words = m.name.toLowerCase().split(/[^a-z\u00c0-\u024f]+/).filter(Boolean);
+  const parts = [...words, ...words.slice(1).map((w, i) => `${words[i]} ${w}`)];
+  for (const part of parts) {
+    const r = readGenre(part);
+    if (!r.placed) continue;
+    const before = out.length;
+    for (const [sub, v] of Object.entries(r.subs)) if ((v ?? 0) >= SUB_OPEN) add(sub as Genre);
+    for (const t of r.themes) add(THEME_GENRES[t]);
+    if (out.length > before || r.themes.size) continue;
+    let top: string | null = null, tv = 0;
+    for (const [f, v] of Object.entries(r.fam)) if ((v ?? 0) > tv) (tv = v ?? 0), (top = f);
+    if (top && NAMING_FAMILIES.has(top)) add(FAMILY_GENRE[top as keyof typeof FAMILY_GENRE]);
+  }
+  NAMED.set(m.name, out);
+  return out;
+}
+
+/**
+ * A showpiece of its own style, which only a very close neighbour lends: a
+ * signature party dance (a song's curated nod, songStyle.ts), a party /
+ * novelty move (the `party` family), or a move named for its own style but
+ * not for the borrower's ("Salsa Basic" for Brazilian; "Samba Basic" names
+ * Brazilian, so it may be borrowed).
+ */
+function showpiece(m: Move, host: Genre): boolean {
+  SIGNATURE_IDS ??= new Set(signatureMoveIds());
+  if (SIGNATURE_IDS.has(m.id) || SIGNATURE_IDS.has(m.base)) return true;
+  if (m.families.includes('party')) return true;
+  const named = namedSets(m);
+  return !!m.genre && named.includes(m.genre) && !named.includes(host);
+}
+
+/**
+ * How a lender's move fits a borrowing set on this song (0 = not borrowed):
+ *   - it can be danced here: within its speed limit, or at half time when it
+ *     reads there (speed.ts), with a tempo weight of at least BORROW_TEMPO;
+ *     the level allows it (below Hard no difficulty 3; Easy: no jumps or
+ *     fast turns, nothing high-intensity, impact <= BORROW_EASY_IMPACT);
+ *   - the song's character: on a calm song (calm > 0.5) no jumps and only
+ *     moves its calm favours (calmFactor >= 1: smooth, not percussive);
+ *   - it dances like the borrower: its smoothness and impact within the
+ *     range of the borrower's own usable moves, +- BORROW_NEAR (`range`:
+ *     [smooth lo, smooth hi, impact lo, impact hi]);
+ *   - from a set the song replaced (lending to the sub-style it is the
+ *     parent of), only a move named for the borrower ("Samba Basic");
+ *   - from a neighbour below BORROW_CLOSE: no showpiece of its own style,
+ *     and it suits the song's families at least BORROW_STYLE as well as the
+ *     borrower's own moves do (styleFactor, median).
+ * The weight is the neighbour's closeness x the move's static weight here.
+ */
+function borrowFit(
+  m: Move, host: Genre, lend: Lend, range: readonly number[], ownStyle: number,
+  style: SongStyle, bpm: number | undefined, intensity: Intensity,
+): number {
+  if (moveTempoMode(m, bpm, intensity) === 'out' || levelFactor(m, intensity) <= 0) return 0;
+  if (intensity !== 'sweaty' && m.difficulty > 2) return 0;
+  if (intensity === 'chill' && (m.level === 'high' || moveWeights(m).impact > BORROW_EASY_IMPACT)) return 0;
+  const calm = style.calm;
+  if (calm !== undefined && calm > 0.5 && (m.jump || calmFactor(m, calm, intensity) < 1)) return 0;
+  if (tempoFactor(m, dancedBpm(m, bpm, intensity)) < BORROW_TEMPO) return 0;
+  const [sm, imp] = tonality(m);
+  if (sm < range[0] - BORROW_NEAR || sm > range[1] + BORROW_NEAR || imp < range[2] - BORROW_NEAR || imp > range[3] + BORROW_NEAR) return 0;
+  if (lend.namedOnly && !namedSets(m).includes(host)) return 0;
+  if (lend.w < BORROW_CLOSE && (showpiece(m, host) || styleFactor(m, style) < BORROW_STYLE * ownStyle)) return 0;
+  return lend.w * staticWeight(m, style, bpm, new Map(), intensity);
+}
+
+/**
+ * What a song borrows at a level and tempo, per thin open set (genres.ts
+ * borrowSources: its lendable neighbours; borrowShare: how much, at most
+ * k / (own + k) for k fitting moves). A set the
+ * level can't dance at all borrows nothing (its slots go global), and so
+ * does one with nothing that fits.
+ */
+export function borrowPlan(style: SongStyle, intensity: Intensity, bpm?: number): Map<Genre, BorrowPlan> {
+  const out = new Map<Genre, BorrowPlan>();
+  const src = borrowSources(style);
+  if (!src.size) return out;
+  const usable = (m: Move) => levelFactor(m, intensity) > 0 && moveTempoMode(m, bpm, intensity) !== 'out';
+  for (const [host, lenders] of src) {
+    const own = DANCE_MOVES.filter((m) => m.genre === host && usable(m));
+    const share = borrowShare(own.length);
+    if (share <= 0) continue;
+    const sf = own.map((m) => styleFactor(m, style)).sort((a, b) => a - b);
+    const ownStyle = sf[(sf.length - 1) >> 1];
+    const range = [Infinity, -Infinity, Infinity, -Infinity];
+    for (const m of own) {
+      const [sm, imp] = tonality(m);
+      range[0] = Math.min(range[0], sm);
+      range[1] = Math.max(range[1], sm);
+      range[2] = Math.min(range[2], imp);
+      range[3] = Math.max(range[3], imp);
+    }
+    const moves = new Map<Move, number>();
+    for (const m of DANCE_MOVES) {
+      const lend = m.genre ? lenders.get(m.genre) : undefined;
+      if (lend === undefined) continue;
+      const w = borrowFit(m, host, lend, range, ownStyle, style, bpm, intensity);
+      if (w > 0) moves.set(m, w);
+    }
+    // A borrowed move is used no more than an own move on average: a pool of k fitting moves
+    // takes at most k / (own + k) of the slots (one fitting move can't stand in for half a style).
+    if (moves.size) out.set(host, { share: Math.min(share, moves.size / (own.length + moves.size)), own: own.length, moves });
+  }
+  return out;
+}
+
+/** Whether a move may appear on a song: its genre is open, or it (or the move it ornaments) is borrowed by one of the song's thin sets at this level and tempo. */
+export function moveAllowed(m: Move, open: ReadonlySet<Genre>, plan: ReadonlyMap<Genre, BorrowPlan>): boolean {
+  if (genreFits(m, open)) return true;
+  for (const p of plan.values()) for (const b of p.moves.keys()) if (b === m || b.id === m.base) return true;
+  return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -590,6 +763,8 @@ interface Slot {
   /** Section type it is danced in (its level mix). */
   section: SectionType;
   genre: Genre | null;
+  /** A thin genre set's slot filled with a move borrowed from a neighbour (borrowPlan). */
+  borrow?: boolean;
   move: Move | null;
   /** Planned beats and target vigour x beats (map routines). */
   beats: number;
@@ -693,6 +868,8 @@ export class Choreographer {
   /** Open genres that have moves this level can dance, with how strongly the song opens them. */
   private genreOk: Genre[] = [];
   private openness: Map<Genre, number>;
+  /** Thin open sets that borrow: the share of their slots, and the borrowed moves' weights (index-aligned with pool). */
+  private borrows = new Map<Genre, { share: number; w: Float64Array }>();
   /** Display name of the song combo (one card). */
   private comboName = '';
   /** How each move is danced on this song at this level (speed.ts), cached. */
@@ -753,6 +930,20 @@ export class Choreographer {
       else this.varsByBase.set(m.base, [m]);
     }
     for (const g of open) if (moves.some((m, i) => m.genre === g && this.base[i] > 0 && this.levelF[i] > 0)) this.genreOk.push(g);
+    const plan = opts.borrow !== false && this.genreOk.length ? borrowPlan(this.style, intensity, bpm) : null;
+    if (plan?.size) {
+      const at = new Map<Move, number>();
+      moves.forEach((m, i) => at.set(m, i));
+      for (const [g, p] of plan) {
+        if (!this.genreOk.includes(g)) continue;
+        const w = new Float64Array(moves.length);
+        for (const [m, x] of p.moves) {
+          const i = at.get(m);
+          if (i !== undefined) w[i] = x;
+        }
+        this.borrows.set(g, { share: p.share, w });
+      }
+    }
     for (const m of DANCE_MOVES) {
       if (m.beats > 2 || m.travel !== 0 || m.genre || levelFactor(m, intensity) <= 0) continue;
       const w = staticWeight(m, this.style, bpm, none, intensity) * levelFactor(m, intensity) * (m.beats === 1 ? 2 : 1);
@@ -916,7 +1107,13 @@ export class Choreographer {
       if (s.of) {
         const b = this.slot(s.of, o);
         s.genre = b.genre;
-      } else if (this.liveGenres && LIVE_GENRE_SLOTS.has(key)) s.genre = this.pickGenre();
+        s.borrow = b.borrow;
+      } else if (this.liveGenres && LIVE_GENRE_SLOTS.has(key)) {
+        s.genre = this.pickGenre();
+        // Live plans can't measure the song: each thin-set slot borrows with its share's chance.
+        const bp = s.genre ? this.borrows.get(s.genre) : undefined;
+        if (bp) s.borrow = this.planRng() < bp.share;
+      }
       this.slots.set(key, s);
     }
     return s;
@@ -974,8 +1171,10 @@ export class Choreographer {
     }
     if (total <= 0) return;
     const chosen: string[] = [];
+    const chosenBeats = new Map<string, number>();
     const take = (k: string) => {
       chosen.push(k);
+      chosenBeats.set(k, groups.get(k)!);
       cur += groups.get(k)!;
       groups.delete(k);
     };
@@ -991,9 +1190,44 @@ export class Choreographer {
         if (cur + b <= GENRE_MAX * total) take(k);
       }
     }
+    const genreOf = new Map<string, Genre | null>();
     for (const k of chosen) {
       const g = this.pickGenre();
+      genreOf.set(k, g);
       for (const s of this.slots.values()) if (s.key === k || s.of === k) s.genre = g;
+    }
+    if (this.borrows.size) this.assignBorrowing(chosen, genreOf, chosenBeats);
+  }
+
+  /**
+   * Which of a thin set's accent slots borrow: in a random order, each with
+   * the chance that brings the set's expected borrowed beats to its share
+   * (borrowPlan), while all borrowed beats stay within BORROW_MAX of the
+   * song's genre beats (at most half: a song whose only genre slot belongs
+   * to the thin set keeps it).
+   */
+  private assignBorrowing(chosen: readonly string[], genreOf: ReadonlyMap<string, Genre | null>, beats: ReadonlyMap<string, number>): void {
+    const all = chosen.reduce((t, k) => t + (beats.get(k) ?? 0), 0);
+    let lent = 0;
+    for (const [g, bp] of this.borrows) {
+      const keys = chosen.filter((k) => genreOf.get(k) === g);
+      if (!keys.length) continue;
+      const total = keys.reduce((t, k) => t + (beats.get(k) ?? 0), 0);
+      // Fisher-Yates on the plan's random stream.
+      for (let i = keys.length - 1; i > 0; i--) {
+        const j = Math.floor(this.planRng() * (i + 1));
+        [keys[i], keys[j]] = [keys[j], keys[i]];
+      }
+      const target = bp.share * total;
+      let cur = 0;
+      for (const k of keys) {
+        const b = beats.get(k) ?? 0;
+        if (b <= 0 || cur >= target - 1e-9 || lent + b > BORROW_MAX * all + 1e-9) continue;
+        if (this.planRng() >= Math.min(1, (target - cur) / b)) continue;
+        cur += b;
+        lent += b;
+        for (const s of this.slots.values()) if (s.key === k || s.of === k) s.borrow = true;
+      }
     }
   }
 
@@ -1018,6 +1252,7 @@ export class Choreographer {
       const alt = this.slot(`${s.key}~alt`, it.o);
       alt.role = s.role;
       alt.genre = s.genre;
+      alt.borrow = s.borrow;
       if (!alt.move || alt.move.base === prev.base) alt.move = this.cast(alt, it);
       m = alt.move;
     }
@@ -1066,14 +1301,15 @@ export class Choreographer {
     const againstM = against.map(partsMask);
     const prevM = prev && !prev.idle ? partsMask(prev) : -1;
     const tiltK = VIGOUR_TILT * (target - 0.5);
-    const pick = (genre: Genre | null): Move | null => {
+    // A genre's own moves, or (`lent`) the moves its slot borrows, weighted by their fit.
+    const pick = (genre: Genre | null, lent?: Float64Array): Move | null => {
       const w = new Float64Array(pool.length);
       let max = 0;
       for (let i = 0; i < pool.length; i++) {
         const m = pool[i];
-        let x = this.base[i];
+        let x = lent ? lent[i] : this.base[i];
         if (x <= 0 || m === prev) continue;
-        if (genre ? m.genre !== genre : !!m.genre) continue;
+        if (!lent && (genre ? m.genre !== genre : !!m.genre)) continue;
         if (this.kit.has(m)) continue;
         x *= lw[m.level] * this.levelF[i];
         if (x <= 0) continue;
@@ -1121,7 +1357,9 @@ export class Choreographer {
       }
       return pickWeighted(this.rng, pool, w);
     };
-    let m = s.genre ? pick(s.genre) : null;
+    const lent = s.genre && s.borrow ? this.borrows.get(s.genre)?.w : undefined;
+    let m = lent ? pick(s.genre, lent) : null;
+    if (!m && s.genre) m = pick(s.genre);
     if (!m) {
       s.genre = null;
       m = pick(null);

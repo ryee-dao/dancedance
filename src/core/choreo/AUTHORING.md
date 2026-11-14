@@ -44,27 +44,65 @@ The broad groups (rock, hip-hop, Latin, disco & funk, K-pop, the
 traditions) open from the song's family weights and themes; the sub-styles
 below open from the style's sub-style scores (genre words + traits,
 `SUB_OPEN` 0.5). Each sub-style either ADDS to its group (a metal song
-dances rock and metal) or REPLACES it (reggaeton never gets salsa). A set
-with fewer than `MIN_GENRE_SET` (6) moves falls back: its parent opens too;
-and a sub-style with a parent keeps it open (`SUB_INFO` `withParent`) until
-its own set reaches `SUB_STANDALONE` (16) moves, so songs of a small style
-don't all dance the same few accents (a replaced parent stays open then).
-The song's calm closes showpiece sets (no headbangs on a ballad;
-`CALM_TOLERANCE` in `genres.ts`) and opens `lyrical`.
+dances rock and metal: `SUB_INFO` `withParent`, metal / punk / trap /
+drill) or REPLACES it (reggaeton never gets salsa). A set with fewer than
+`MIN_GENRE_SET` (6) moves falls back: its parent opens too. The song's calm
+closes showpiece sets (no headbangs on a ballad; `CALM_TOLERANCE` in
+`genres.ts`) and opens `lyrical`.
+
+### Thin sets borrow from their neighbours
+
+A song uses about 3-4 moves of its genre part, so a set with few moves makes
+every song of its style look alike. A set the song can dance fewer than
+`SUB_STANDALONE` (16) moves of (at its level and tempo) has some of its
+accent slots filled with moves BORROWED from neighbouring sets
+(`NEIGHBOURS` in `genres.ts`, weighted, one-directional, chosen by how the
+styles are danced; a sub-style's parent that it doesn't open is its nearest
+neighbour). One rule replaces the old "keep the parent open until 16":
+
+- How much (`borrowShare`): half of the set's slots while it has at most
+  `MIN_GENRE_SET` usable moves, falling linearly to none at
+  `SUB_STANDALONE`, and never more than k / (own + k) for k fitting
+  moves (a borrowed move is used no more than an own move on average).
+  All borrowed beats stay within half of the song's genre time, so a song
+  whose only genre slot is the thin set's keeps its own move. The genre
+  share (20-40 %) doesn't change: borrowing only decides what fills the
+  set's slots.
+- From where (`borrowSources`): a neighbour the song doesn't open itself
+  (open sets are its own vocabulary), never one it closes: calm-closed, or
+  replaced by its sub-style (a replaced PARENT lends only moves named for
+  the borrower: Brazilian takes Latin's samba steps, not its salsa).
+- Which moves (`borrowFit` in `generator.ts`, all from measurements the code
+  already has): danceable here (speed limit / reads at half time, tempo
+  weight >= 0.6); the level (below Hard no difficulty 3; Easy: no jumps or
+  fast turns, nothing high-intensity, impact <= 0.45); the song's character
+  (a calm song: no jumps, only moves its calm favours); it dances like the
+  borrower (smoothness and impact within the borrower's own range, +- 0.15);
+  and from a neighbour below `BORROW_CLOSE` (0.75): no showpiece (a song's
+  signature nod, a `party`-family move, a move named for its own style,
+  "Salsa Basic", "Disco Dip", "Drill Bounce", read with the song-genre
+  lexicon) and families that suit the song at least half as well as the
+  borrower's own moves do (`styleFactor`; this is what keeps a "Billie
+  Jean" with R&B in its genre list off the hip-hop moves).
+
+Large sets have no neighbours and never borrow: their songs come out exactly
+as without borrowing (`borrow.test.ts`). When you grow a thin set, its songs
+borrow less on their own; nothing needs retuning. A new set that should
+borrow needs a `NEIGHBOURS` entry with the dance reason next to it.
 
 | Set | Real dance vocabulary | Opened by | Parent / fallback | Ids go in |
 | --- | --- | --- | --- | --- |
-| `metal` | headbanging (incl. hair windmill), horns, chug squats, wall-of-death crouch, slow heavy sway with fist | metal names (nu / heavy / death / gothic metal, metalcore ...), "hard rock" partly; heavy + driving audio on a rock song | adds to rock | `genreSets/mood.ts` |
-| `punk` | pogo, ska skank, hardcore two-step, circle-pit running, slam dancing | punk / hardcore / pop punk / ska / emo names; fast (150+), driving, rough rock | adds to rock | `genreSets/mood.ts` |
-| `trap` | the whip, nae nae, shoot, woah, griddy; quick poses on hi-hat rolls, bounce on the half-time snare | trap, crunk, snap, rage, cloud rap names; half-time feel + hat rolls / heavy 808 | adds to hip-hop | `genreSets/urban.ts` |
-| `drill` | drill bounce, arm swings, shoulder rocks, shmoney, the strut | drill (UK / NY / Chicago ...), grime partly; half-time feel + syncopated hats and sliding bass | adds to hip-hop | `genreSets/urban.ts` |
-| `rnb` | body rolls, smooth two-steps, shoulder / hip isolations, slow grind grooves | R&B, neo soul, new jack swing, quiet storm; a swung, unhurried groove | none: the family mix opens what it leads | `genreSets/urban.ts` |
-| `house` | jacking, lofting, heel-toe footwork, skate / train / farmer, loose legs, voguing hands and frames | house names (deep / tech / Chicago / French, nu-disco, UK garage); four-on-the-floor at ~115-127 BPM | disco & funk (when small) | `genreSets/electronic.ts` |
-| `edm` | fist pumping, shuffle (cutting shapes), the jump on the drop, hands-up builds | EDM, big room, electro / progressive house, trance, techno, hardstyle; four-on-the-floor at 124+ | none (global aerobic moves) | `genreSets/electronic.ts` |
-| `bass` | DnB skank, rail / wobble bounce, liquid and popping hits, phonk drift arms | dubstep, drum and bass, phonk, future bass; heavy sub-bass with half-time feel, or dense hats at ~170 | none | `genreSets/electronic.ts` |
-| `reggaeton` | perreo, dembow step, reggaeton bounce, hip rolls | reggaeton, dembow, urbano, Latin trap; dembow syncopation around 88-100 BPM | dancehall (caribbean); replaces Latin | `genreSets/urban.ts` |
-| `brazil` | samba no pé, axé, frevo, passinho / quadradinho (funk carioca), forró | samba, axé, baile funk, sertanejo, forró, MPB, bossa nova | Latin (when small); replaces Latin once big enough | `genreSets/mood.ts` |
-| `amapiano` | vosho, pouncing cat, tshwala bam, slow knee bounces on the log drum | amapiano, gqom, kwaito, South African house; log-drum bass at ~108-116 BPM | afro (when small) | `genreSets/mood.ts` |
+| `metal` | headbanging (incl. hair windmill), horns, chug squats, wall-of-death crouch, slow heavy sway with fist | metal names (nu / heavy / death / gothic metal, metalcore ...), "hard rock" partly; heavy + driving audio on a rock song | adds to rock; borrows punk | `genreSets/mood.ts` |
+| `punk` | pogo, ska skank, hardcore two-step, circle-pit running, slam dancing | punk / hardcore / pop punk / ska / emo names; fast (150+), driving, rough rock | adds to rock; borrows metal | `genreSets/mood.ts` |
+| `trap` | the whip, nae nae, shoot, woah, griddy; quick poses on hi-hat rolls, bounce on the half-time snare | trap, crunk, snap, rage, cloud rap names; half-time feel + hat rolls / heavy 808 | adds to hip-hop; borrows drill, bass | `genreSets/urban.ts` |
+| `drill` | drill bounce, arm swings, shoulder rocks, shmoney, the strut | drill (UK / NY / Chicago ...), grime partly; half-time feel + syncopated hats and sliding bass | adds to hip-hop; borrows trap | `genreSets/urban.ts` |
+| `rnb` | body rolls, smooth two-steps, shoulder / hip isolations, slow grind grooves | R&B, neo soul, new jack swing, quiet storm; a swung, unhurried groove | none: the family mix opens what it leads; borrows soul / funk grooves, smooth hip-hop, lyrical (calm) | `genreSets/urban.ts` |
+| `house` | jacking, lofting, heel-toe footwork, skate / train / farmer, loose legs, voguing hands and frames | house names (deep / tech / Chicago / French, nu-disco, UK garage); four-on-the-floor at ~115-127 BPM | borrows disco & funk (parent), EDM | `genreSets/electronic.ts` |
+| `edm` | fist pumping, shuffle (cutting shapes), the jump on the drop, hands-up builds | EDM, big room, electro / progressive house, trance, techno, hardstyle; four-on-the-floor at 124+ | borrows house, bass | `genreSets/electronic.ts` |
+| `bass` | DnB skank, rail / wobble bounce, liquid and popping hits, phonk drift arms | dubstep, drum and bass, phonk, future bass; heavy sub-bass with half-time feel, or dense hats at ~170 | borrows trap, EDM, drill | `genreSets/electronic.ts` |
+| `reggaeton` | perreo, dembow step, reggaeton bounce, hip rolls | reggaeton, dembow, urbano, Latin trap; dembow syncopation around 88-100 BPM | dancehall (caribbean: opens below 6 moves, then lends); Brazilian lends; replaces Latin | `genreSets/urban.ts` |
+| `brazil` | samba no pé, axé, frevo, passinho / quadradinho (funk carioca), forró | samba, axé, baile funk, sertanejo, forró, MPB, bossa nova | replaces Latin, which lends its samba-named steps; reggaeton lends | `genreSets/mood.ts` |
+| `amapiano` | vosho, pouncing cat, tshwala bam, slow knee bounces on the log drum | amapiano, gqom, kwaito, South African house; log-drum bass at ~108-116 BPM | borrows afro (parent; usually open by the theme) | `genreSets/mood.ts` |
 | `lyrical` | reaches, arm sweeps, port de bras, slow turns, arcing lunges, balances, contractions / releases, body waves | a calm song (`calm` trait ~0.55+), ballads, soft / piano rock, ambient, singer-songwriter, any family | none (smooth global moves) | `genreSets/mood.ts` |
 
 Country is one set: its moves are line-dance / hoedown steps, which serve

@@ -23,6 +23,14 @@
  * A sub-style set with fewer than MIN_GENRE_SET moves degrades gracefully:
  * its parent opens too, so the song still gets that group's vocabulary.
  *
+ * Borrowing. A set smaller than SUB_STANDALONE usable moves makes every song
+ * of its style dance the same few accents, so its slots borrow fitting moves
+ * from the sets NEIGHBOURS lists (by how the styles are danced; a parent the
+ * set doesn't open is its nearest neighbour): borrowShare of its slots, at
+ * most half and none from SUB_STANDALONE on, only from sets the song neither
+ * opens nor closes, move by move through the fit filter (generator.ts
+ * borrowFit). Large sets never borrow.
+ *
  * Character: the song's calm (the audio `calm` trait) closes the showpiece
  * sets as it rises (no headbangs on a ballad: rock closes above ~0.65,
  * metal and punk sooner, hula hardly ever), and opens `lyrical`.
@@ -109,22 +117,28 @@ export interface SubInfo {
 }
 
 /**
- * Own moves a sub-style set needs before it carries its songs' genre time
- * alone. A Medium / Hard routine uses about 3-4 genre moves (its accent kit),
- * so two songs of a set of S moves share about 16 / S of them: from 16 moves
- * on, two songs of the style share about one accent at most. Below that the
- * whole style looks alike song to song (measured, 20 songs per set, Nov 2026:
+ * Own moves a genre set needs before it carries its songs' genre time alone.
+ * A Medium / Hard routine uses about 3-4 genre moves (its accent kit), so two
+ * songs of a set of S moves share about 16 / S of them: from 16 moves on, two
+ * songs of the style share about one accent at most. Below that the whole
+ * style looks alike song to song (measured, 20 songs per set, Nov 2026:
  * Brazilian alone, 9 moves, has 9 genre moves in all and its top move takes
  * 23 % of the genre time on Medium, 58 % on Easy; with Latin open too, 32
  * moves and 12 %, with the Brazilian set still 14 % of the danced time).
+ * A smaller set's accent slots borrow fitting moves from its NEIGHBOURS
+ * (borrowShare: none from SUB_STANDALONE usable moves on).
  */
 export const SUB_STANDALONE = 16;
 
 /**
- * Rule for withParent: a sub-style with a parent keeps opening it while its
- * own set has fewer than SUB_STANDALONE moves (set sizes Nov 2026 in
- * brackets); sets that ADD to their group keep it whatever their size. Flip
- * a set to false only once it is that big (tiers.test checks the rule).
+ * withParent = the sub-style ADDS to its group by design (a metal song is
+ * still a rock song, a drill song a hip-hop song): the parent opens whatever
+ * the set's size. The other sub-styles with a parent (house, reggaeton,
+ * Brazilian, amapiano) don't open it: their parent is their nearest
+ * NEIGHBOUR and lends them its fitting moves while their own set is small
+ * (one rule for every thin set, fading out at SUB_STANDALONE). Only a set
+ * below MIN_GENRE_SET, too small to be a vocabulary at all, opens its parent
+ * outright (set sizes Nov 2026 in brackets).
  */
 export const SUB_INFO: Readonly<Record<SubStyle, SubInfo>> = {
   // Add to their group by design (a metal song is still a rock song).
@@ -132,19 +146,140 @@ export const SUB_INFO: Readonly<Record<SubStyle, SubInfo>> = {
   punk: { parent: 'rock', withParent: true, replaces: null }, // [9]
   trap: { parent: 'hiphop', withParent: true, replaces: null }, // [11]
   drill: { parent: 'hiphop', withParent: true, replaces: null }, // [8]
-  // R&B falls back to nothing extra: its family mix (funk / hip-hop / pop) opens what it leads. [5]
+  // No parent: a song whose families lead funk / hip-hop opens those itself (a "Billie Jean" must not
+  // open the hip-hop party dances through its R&B). Borrows from its neighbours. [5]
   rnb: { parent: null, withParent: false, replaces: null },
-  house: { parent: 'discofunk', withParent: true, replaces: null }, // [9] small: keeps disco & funk
-  // EDM and bass music have no group to borrow from (global aerobic / hip-hop moves carry the rest). [7] [8]
+  // House grew out of disco: disco & funk lends to it (and the families usually open it anyway). [9]
+  house: { parent: 'discofunk', withParent: false, replaces: null },
+  // EDM and bass music have no group: they borrow from each other, house and trap. [7] [8]
   edm: { parent: null, withParent: false, replaces: null },
   bass: { parent: null, withParent: false, replaces: null },
-  // Reggaeton grew out of dancehall: it keeps the Caribbean set, and never opens Latin's salsa / merengue. [5]
-  reggaeton: { parent: 'caribbean', withParent: true, replaces: 'latin' },
-  // Small: keeps Latin (and its layered samba steps, which stay there for the variation pool). [9]
-  brazil: { parent: 'latin', withParent: true, replaces: 'latin' },
-  amapiano: { parent: 'afro', withParent: true, replaces: null }, // [7] small: keeps afrobeats
+  // Reggaeton grew out of dancehall (the Caribbean set lends to it), and never opens Latin's salsa / merengue. [5]
+  reggaeton: { parent: 'caribbean', withParent: false, replaces: 'latin' },
+  // Replaces Latin, which still lends its fitting moves (the layered samba steps live there for the variation pool). [9]
+  brazil: { parent: 'latin', withParent: false, replaces: 'latin' },
+  amapiano: { parent: 'afro', withParent: false, replaces: null }, // [7] afrobeats lends to it
   lyrical: { parent: null, withParent: false, replaces: null },
 };
+
+// ---------------------------------------------------------------------------
+// Neighbours: what a thin set borrows
+
+/** A set a thin genre set may borrow from: how close the two DANCE (0..1); `slow`: only on a calm song. */
+export interface Neighbour {
+  from: Genre;
+  w: number;
+  slow?: boolean;
+}
+
+/**
+ * Who lends to whom, by how the styles are danced (not by music history),
+ * one-directional, nearest first (a parent first). A song only borrows from
+ * a neighbour it doesn't open itself (open sets are its own vocabulary) and
+ * never from one it closes (calm-closed; replaced, unless it is the
+ * borrower's parent, which then lends only the moves named for the
+ * borrower: Brazilian takes Latin's samba steps, never its salsa or paso
+ * doble). Each borrowed move must fit (generator.ts borrowFit);
+ * a neighbour below BORROW_CLOSE lends no showpieces (signature party dances,
+ * moves named for their own style) and only moves that suit the song's
+ * families as well as the borrower's own.
+ *
+ *   rnb       soul / funk grooves (R&B is soul's continuation: camel walk,
+ *             boogaloo, four corners; the families keep the disco points out),
+ *             hip-hop's smooth grooves, and on a calm song the lyrical set
+ *             (slow jams' waves and reaches). Not swing / jazz: Lindy and
+ *             Charleston are kicked, bouncy, partner-born steps, nothing like
+ *             R&B's isolations, whatever the shared history; not dancehall /
+ *             reggaeton (their wine and perreo name their scenes) nor trap
+ *             (its party dances).
+ *   house     disco & funk (its parent: the hustle and roller footwork lives
+ *             on in jacking), EDM (same four-on-the-floor floor, louder).
+ *   edm       house (big room / electro / progressive house ARE house: the
+ *             shuffle, jacking), bass music (dubstep drops at the same
+ *             festivals). Not disco & funk: four-on-the-floor, but its moves
+ *             (hustle, the pony, the jerk) are a different era's floor.
+ *   bass      trap (the same half-time bounce on heavy 808 / sub), EDM (the
+ *             festival crossover), drill (sliding-bass half-time bounce).
+ *   trap      drill, bass music (the half-time bounce); hip-hop is open already.
+ *   drill     trap (half-time bounce, arm swings); hip-hop is open already.
+ *   reggaeton dancehall (dembow came from it; its parent), Brazilian (funk
+ *             carioca's hip-led grind). Never Latin (it replaces it).
+ *   brazil    Latin (its parent: the samba steps; salsa and merengue are kept
+ *             out as moves named for their own style), reggaeton (perreo is
+ *             close to funk carioca's rebolar).
+ *   amapiano  afrobeats (its parent). Not house: the music descends from it,
+ *             but the vosho and knee drops are danced nothing like jacking.
+ *   metal     punk (the shared pit: circle pit, slam, two-step); rock is open.
+ *   punk      metal (the shared pit); rock is open.
+ * Lyrical lends but never borrows; the big groups and traditions don't
+ * borrow (the small traditions have no style close enough to lend).
+ */
+export const NEIGHBOURS: Readonly<Partial<Record<Genre, readonly Neighbour[]>>> = {
+  rnb: [{ from: 'discofunk', w: 0.7 }, { from: 'hiphop', w: 0.5 }, { from: 'lyrical', w: 0.5, slow: true }],
+  house: [{ from: 'discofunk', w: 1 }, { from: 'edm', w: 0.6 }],
+  edm: [{ from: 'house', w: 0.8 }, { from: 'bass', w: 0.4 }],
+  bass: [{ from: 'trap', w: 0.6 }, { from: 'edm', w: 0.5 }, { from: 'drill', w: 0.4 }],
+  trap: [{ from: 'drill', w: 0.6 }, { from: 'bass', w: 0.5 }],
+  drill: [{ from: 'trap', w: 0.6 }],
+  reggaeton: [{ from: 'caribbean', w: 0.9 }, { from: 'brazil', w: 0.4 }],
+  brazil: [{ from: 'latin', w: 0.7 }, { from: 'reggaeton', w: 0.4 }],
+  amapiano: [{ from: 'afro', w: 0.9 }],
+  metal: [{ from: 'punk', w: 0.6 }],
+  punk: [{ from: 'metal', w: 0.6 }],
+};
+
+/** Calm from which a `slow` neighbour lends (where the lyrical score starts, songStyle.ts). */
+export const SLOW_CALM = 0.55;
+/** Neighbours at least this close lend any fitting move (showpieces and other families included). */
+export const BORROW_CLOSE = 0.75;
+/** Most of a thin set's accent time that may be borrowed (at most half: the song's own moves stay in front). */
+export const BORROW_MAX = 0.5;
+
+/**
+ * Share of a thin set's accent slots that borrow, from the number of its own
+ * moves the song can dance (at its level and tempo): BORROW_MAX while the set
+ * is barely a vocabulary (MIN_GENRE_SET), falling linearly to none at
+ * SUB_STANDALONE, so a growing set needs no retuning.
+ */
+export function borrowShare(own: number): number {
+  if (!(own > 0)) return 0;
+  return BORROW_MAX * Math.min(1, Math.max(0, (SUB_STANDALONE - own) / (SUB_STANDALONE - MIN_GENRE_SET)));
+}
+
+/** How a lendable set lends to a borrower on a song: its closeness, and whether it lends only moves named for the borrower. */
+export interface Lend {
+  w: number;
+  /** A set the song replaced, lending to the sub-style it is the parent of: only moves named for that sub-style. */
+  namedOnly: boolean;
+}
+
+/**
+ * The sets each open genre of a song may borrow from, with their closeness
+ * (the neighbour's weight x how open the song's calm leaves it): neighbours
+ * the song doesn't open, minus the sets it closes (calm-closed, or replaced
+ * by an open sub-style unless that set is the borrower's parent, which then
+ * lends `namedOnly`); `slow` neighbours only on a calm song (calm >=
+ * SLOW_CALM).
+ */
+export function borrowSources(style: GenreSource): Map<Genre, Map<Genre, Lend>> {
+  const { out: open, replaced } = resolveOpenness(style);
+  const res = new Map<Genre, Map<Genre, Lend>>();
+  for (const h of open.keys()) {
+    const list = NEIGHBOURS[h];
+    if (!list) continue;
+    const parent = isSubStyle(h) ? SUB_INFO[h].parent : null;
+    const m = new Map<Genre, Lend>();
+    for (const nb of list) {
+      if (open.has(nb.from) || (replaced.has(nb.from) && nb.from !== parent)) continue;
+      if (nb.slow && !((style.calm ?? 0) >= SLOW_CALM)) continue;
+      const k = calmGate(nb.from, style.calm);
+      if (k < CALM_CLOSED) continue;
+      m.set(nb.from, { w: nb.w * k, namedOnly: replaced.has(nb.from) });
+    }
+    if (m.size) res.set(h, m);
+  }
+  return res;
+}
 
 /**
  * Calm tolerance of each set: its openness falls from 1 at calm <= tol to 0
@@ -226,11 +361,17 @@ export interface GenreSource {
  *     already names a tradition, so a country song isn't also "rock"), by
  *     its share;
  *   - each sub-style scoring at least SUB_OPEN, by its score; with its
- *     parent when it adds to it or when its own set is small, closing the
- *     set it replaces;
+ *     parent when it adds to it or when its own set is below MIN_GENRE_SET,
+ *     closing the set it replaces;
  *   - then the calm closes what it closes (calmGate).
+ * (A thin set's neighbours don't open: they lend fitting moves, borrowSources.)
  */
 export function genreOpenness(style: GenreSource): Map<Genre, number> {
+  return resolveOpenness(style).out;
+}
+
+/** genreOpenness, plus the sets the song's sub-styles replaced (closed). */
+function resolveOpenness(style: GenreSource): { out: Map<Genre, number>; replaced: Set<Genre> } {
   const out = new Map<Genre, number>();
   const open = (g: Genre, w: number) => out.set(g, Math.max(out.get(g) ?? 0, w));
   for (const t of style.themes) {
@@ -268,13 +409,18 @@ export function genreOpenness(style: GenreSource): Map<Genre, number> {
     // A replacing sub-style never opens the set it replaces (unless that is the fallback it needs or keeps).
     if (info.replaces && !((small || info.withParent) && info.parent === info.replaces)) closes.add(info.replaces);
   }
-  for (const g of closes) if (!style.themes.some((t) => THEME_GENRES[t] === g)) out.delete(g);
+  const replaced = new Set<Genre>();
+  for (const g of closes) {
+    if (style.themes.some((t) => THEME_GENRES[t] === g)) continue;
+    out.delete(g);
+    replaced.add(g);
+  }
   for (const [g, w] of out) {
     const k = w * calmGate(g, style.calm);
     if (k < CALM_CLOSED * w || k <= 0) out.delete(g);
     else out.set(g, k);
   }
-  return out;
+  return { out, replaced };
 }
 
 /** The genres a song's style opens (genreOpenness). */
