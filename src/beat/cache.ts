@@ -37,6 +37,20 @@ export function isBetterMap(existing: BeatMap | null | undefined, incoming: Beat
   return true;
 }
 
+/** Cheap "is this the same analysis" check (source, completeness, analyser version, tempo, beat count and ends). */
+export function sameAnalysis(a: BeatMap, b: BeatMap): boolean {
+  return (
+    a.source === b.source &&
+    !!a.partial === !!b.partial &&
+    a.analyzerVersion === b.analyzerVersion &&
+    a.duration === b.duration &&
+    a.bpm === b.bpm &&
+    a.beats.length === b.beats.length &&
+    a.beats[0] === b.beats[0] &&
+    a.beats[a.beats.length - 1] === b.beats[b.beats.length - 1]
+  );
+}
+
 export function fileKey(file: { name: string; size: number; lastModified: number }): string {
   return `file:${file.name}:${file.size}:${file.lastModified}`;
 }
@@ -66,17 +80,19 @@ export class BeatMapCache {
 
   /**
    * Store `map` under `key` if it is better than what is cached.
-   * Resolves true when stored. Never rejects.
+   * Song traits filled in on this device are kept when the same analysis
+   * arrives again without them. Resolves true when stored. Never rejects.
    */
   async offer(key: string, map: BeatMap): Promise<boolean> {
-    let json: string;
     try {
-      json = serialize(map);
+      serialize(map);
     } catch {
       return false; // invalid map: never cache it
     }
     const existing = await this.get(key);
     if (!isBetterMap(existing, map)) return false;
+    if (existing?.traits && !map.traits && sameAnalysis(existing, map)) map = { ...map, traits: existing.traits };
+    const json = serialize(map);
     try {
       await this.store.set(key, { json, savedAt: Date.now() } satisfies Entry);
     } catch {

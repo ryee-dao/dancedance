@@ -11,6 +11,12 @@
  *  Dropped file: local cache -> whole-file analysis in a Worker (progress on
  *                the starting screen; first 30 s if it takes too long).
  *
+ * Song traits (analyser 1.3.0): where the audio is at hand (TV, dropped file)
+ * and the resolved map is complete but older than the traits, they are
+ * computed from the audio on the map's beat grid while the song loads (up
+ * to TRAITS_WAIT_MS) and cached (traitsFill.ts). Web YouTube songs stream
+ * without decoded audio: their maps are used as they are.
+ *
  * A partial map is used where it reaches, while live listening fills in the
  * rest. Live recordings covering >= 45 s are saved when the song ends.
  */
@@ -31,6 +37,7 @@ import { beatCache, fileKey, isBetterMap, type BeatMapCache } from './cache';
 import { cloudStatus, describeCloudStatus, fetchCloudMap } from './cloud';
 import { holdBackgroundFill } from './helperFill';
 import { resolveBeatMap } from './resolve';
+import { fillTraits, needsTraits, type FillTraitsOptions } from './traitsFill';
 import { queueMapUpload, tabCoverageGate } from './shareMap';
 
 export type NoSyncReason = 'off' | 'denied' | 'unsupported' | 'no-device' | 'no-beat' | 'error';
@@ -79,6 +86,8 @@ export class BeatSession {
     private readonly devices: LiveDevices,
     private readonly platform: Pick<Platform, 'beatmapBase' | 'liveSync' | 'deviceAudio' | 'noteAnalysis' | 'localHelper'>,
     cache?: BeatMapCache,
+    /** Tests: decoding / trait job overrides for the traits fill-in. */
+    private readonly traitsOpts: Omit<FillTraitsOptions, 'getAudio'> = {},
   ) {
     this.cache = cache ?? beatCache();
     if (item.kind === 'youtube') {
@@ -145,6 +154,11 @@ export class BeatSession {
       if (this.disposed) return 'ready';
       const map = this.hub.map();
       if (!map || map.partial) await this.prepareDevice(this.videoId);
+      else if (needsTraits(map)) {
+        const getAudio = this.platform.deviceAudio;
+        const id = this.videoId;
+        await this.fillTraits(map, () => getAudio(id));
+      }
       return 'ready';
     }
     const helper = this.platform.localHelper;
@@ -425,7 +439,10 @@ export class BeatSession {
     this.resolving = false;
     if (this.disposed) return;
     if (cached) this.useMap(cached);
-    if (cached && !cached.partial) return;
+    if (cached && !cached.partial) {
+      if (needsTraits(cached)) await this.fillTraits(cached, () => file.arrayBuffer());
+      return;
+    }
     this.progress = 0;
     try {
       const buf = await file.arrayBuffer();
@@ -462,6 +479,25 @@ export class BeatSession {
       console.warn('[dd:beats] file analysis failed', err);
       if (!this.hub.map()) this.none('error');
     }
+  }
+
+  /**
+   * Compute the song traits a complete older map lacks from the song's
+   * audio. Waits up to TRAITS_WAIT_MS (the song is still loading); the
+   * result is cached whenever it lands, but only swapped in if it came in
+   * time, so nothing changes once the song plays.
+   */
+  private async fillTraits(map: BeatMap, getAudio: () => Promise<ArrayBuffer>): Promise<void> {
+    const t0 = performance.now();
+    const job = fillTraits(map, { ...this.traitsOpts, getAudio });
+    void job.done.then((m) => {
+      if (!m) return;
+      console.info('[dd:beats] song traits', { ms: Math.round(performance.now() - t0), ...m.traits });
+      void this.cache.offer(this.key, m);
+    });
+    const ready = await job.ready;
+    if (ready && !this.disposed && this.hub.map() === map) this.useMap(ready);
+    else if (!ready) console.info('[dd:beats] song traits not ready in time; cached for next time');
   }
 
   /** Call every animation frame. */
