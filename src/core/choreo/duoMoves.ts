@@ -216,17 +216,22 @@ function orbitSpinOffset(dir: 1 | -1, face: number): number {
   return dir > 0 ? face : 180 - face;
 }
 
-function orbitKeys(r: number, dir: 1 | -1, face: number, th0: number, body: PoseSpec, beats = 8): { p1: Keys; p2: Keys } {
+function orbitKeys(r: number | readonly [number, number], dir: 1 | -1, face: number, th0: number, body: PoseSpec, beats = 8, warp = 0): { p1: Keys; p2: Keys } {
   const p1: Keys = [];
   const p2: Keys = [];
   const n = beats * 2;
   const off = orbitSpinOffset(dir, face);
+  // r = [rx, rz]: an ellipse, wider across the screen than in depth (the depth comes from
+  // PartnerMove.orbit, which is then rz). `warp` (0..0.5) speeds the pair through the moments one
+  // stands straight in front of the other (th 90 / 270) and slows them where they are side by side.
+  const rx = typeof r === 'number' ? r : r[0];
   for (let i = 0; i < n; i++) {
     const at = i / 2;
-    const th = th0 + (dir * 360 * i) / n;
+    const u = (2 * Math.PI * i) / n;
+    const th = th0 + (dir * 180 * (u - (warp * Math.sin(2 * u)) / 2)) / Math.PI;
     const rad = (th * Math.PI) / 180;
-    const X1 = H - r * Math.cos(rad);
-    const X2 = r * Math.cos(rad) - H;
+    const X1 = H - rx * Math.cos(rad);
+    const X2 = rx * Math.cos(rad) - H;
     // Small skipping steps: one foot rises every half beat, alternating.
     const liftR = i % 4 === 1 ? 0.035 : 0, liftL = i % 4 === 3 ? 0.035 : 0;
     const y = i % 2 === 1 ? -0.03 : -0.05;
@@ -809,10 +814,28 @@ const counterbalance: Keys = [
 ];
 
 // Two-hand turn (lyrical): facing each other, both hands joined, walking slowly round each other.
-const TWO_R = 0.22;
-const twoHandTurn = orbitKeys(TWO_R, 1, 90, 0, {
-  r: at(1, 0.09, 0.84, TWO_R - 0.02, E_LOW), l: at(-1, -0.09, 0.84, TWO_R - 0.02, E_LOW), ...SOFT, nod: 4,
-});
+// On a circle the two bodies spent the middle of each half-turn on top of each other (one straight in
+// front of the other); the orbit is an ellipse about twice as wide across the screen as it is deep,
+// so they stay apart on the screen longer and pass close in front / behind only briefly. The joined
+// hands are placed for every key (reachTo: the partner distance changes round the ellipse); P2 is P1
+// turned 180 deg about the centre, so the same arm angles meet P1's hands from the other side.
+const TWO_RX = 0.29;
+const TWO_RZ = 0.15;
+const twoHandTurn = ((): { p1: Keys; p2: Keys } => {
+  const o = orbitKeys([TWO_RX, TWO_RZ], 1, 90, 0, { ...SOFT, nod: 4 }, 8, 0.35);
+  const p1: Keys = o.p1.map(([t, k]) => {
+    const rad = (((k.spin ?? 90) - 90) * Math.PI) / 180;
+    // From P1 toward the centre (x across, z toward the viewer), and P1's right of that line.
+    const ux = TWO_RX * Math.cos(rad), uz = -TWO_RZ * Math.sin(rad);
+    const ul = Math.hypot(ux, uz);
+    const rx = uz / ul, rz = -ux / ul;
+    const z1 = TWO_RZ * Math.sin(rad);
+    const W = 0.08, Y = 0.8;
+    return [t, K(1, { ...k, R: [W * rx, Y, W * rz - z1, E_LOW], L: [-W * rx, Y, -W * rz - z1, E_LOW] })] as const;
+  });
+  const p2: Keys = o.p2.map(([t, k], i) => [t, { ...k, r: p1[i][1].r, l: p1[i][1].l }] as const);
+  return { p1, p2 };
+})();
 
 // Lunge and gather (lyrical, deep): hands joined, lunge away with a long reach, then pull in turned to each other.
 const lungeGather: Keys = [
@@ -858,13 +881,19 @@ const shoulderBounce: Keys = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5].map((t) => {
 });
 
 // Back to back (hip-hop): backs turned to each other, arms folded, bounce; lean back on each other, then point out.
-const B2B_SPIN = -60;
+// Truly back to back: each turned a full quarter AWAY from the partner (spin -90, P2 mirrored), roots
+// 0.40 apart so the two backs nearly touch; at -60 they read as two people facing the front, and at
+// -105 the backs of the heads show. On the lean the roots come in a little (x 0.32, not further:
+// the leaning bodies must not cross).
+const B2B_SPIN = -90;
 const B2B_X = 0.3;
+const B2B_LEAN_X = 0.32;
 const backLean: Keys = [
   [0, { x: B2B_X, y: -0.07, spin: B2B_SPIN, ...feet(B2B_X, 0.09), ...FOLD, nod: 10 }],
   [1, { x: B2B_X, y: -0.03, spin: B2B_SPIN, ...feet(B2B_X, 0.09), ...FOLD, nod: -4 }],
-  [2, { x: B2B_X + 0.01, y: -0.05, spin: B2B_SPIN, ...feet(B2B_X, 0.09), ...FOLD, bend: -10, nod: -10 }],
-  [3, { x: B2B_X, y: -0.04, spin: B2B_SPIN + 15, ...feet(B2B_X, 0.09), r: ARM.hip, l: at(-1, -0.2, 0.92, 0.28, [0.3, -1, 0]), formL: 'point', handR: 0, handL: 0, turn: -10 }],
+  [2, { x: B2B_LEAN_X, y: -0.05, spin: B2B_SPIN, ...feet(B2B_X, 0.09), ...FOLD, bend: -10, nod: -10 }],
+  // Opening out to the crowd: turned back a little toward the front, the near (right) hand points out on the diagonal.
+  [3, { x: B2B_X, y: -0.04, spin: B2B_SPIN + 20, ...feet(B2B_X, 0.09), l: ARM.hip, r: at(1, 0.38, 0.92, 0.12, [0.3, -1, 0]), formR: 'point', handR: 0, handL: 0, turn: 10 }],
 ];
 
 // Toprock face-off (hip-hop): turned toward each other, one steps in and opens the arms as the other steps back and kicks.
@@ -929,8 +958,9 @@ const shuffleCrossKeys = shuffleCross();
 
 // Dance-hold side step (R&B / Latin): turned toward each other holding both hands, step-touch side to side together.
 const HOLD_SPIN = 50;
-const HOLD_X = 0.32;
-const holdStep = together([[0, 0.06], [1, 0.06], [2, -0.02], [3, -0.02]], (s, i) => {
+// Roots 0.40 apart (0.36 overlapped the two turned bodies) and a bigger step each way, so the travel together shows.
+const HOLD_X = 0.3;
+const holdStep = together([[0, 0.08], [1, 0.08], [2, -0.06], [3, -0.06]], (s, i) => {
   const X = HOLD_X + s;
   const tap = i % 2 === 1;
   const right = i < 2;
@@ -971,28 +1001,34 @@ const sambaSide = together([[0, 0.04], [0.75, 0.07], [1, 0.1], [2, 0.06], [2.75,
 });
 
 // Mirror body roll (R&B): turned toward each other, inner palms pressed, rolling the body down and back up together.
-const ROLL_SPIN = 40;
+// The wave is staged for the front as a sequence (the front-to-back roll alone read as two people
+// standing still): chin and chest lift high, the chest drops and slides over toward the partner, the
+// hips push out under it as the knees sink deep, then a slow rise with the free arm opening. The
+// pressed palms slide down with the wave from above the heads to the waist.
+const ROLL_SPIN = 35;
 const ROLL_X = 0.26;
 const bodyRoll: Keys = [
-  [0, K(1, { x: ROLL_X, y: -0.02, spin: ROLL_SPIN, ...feet(ROLL_X, 0.1), bend: -8, nod: -8, R: [-0.025, 0.96, 0.06, E_LOW], l: ARM.hip, handR: 1, handL: 0 })],
-  [0.5, K(1, { x: ROLL_X, y: -0.04, spin: ROLL_SPIN, ...feet(ROLL_X, 0.1), bend: -1, nod: -1, hips: -0.015, R: [-0.025, 0.9, 0.07, E_LOW], l: ARM.hip, handR: 1, handL: 0 })],
-  [1, K(1, { x: ROLL_X, y: -0.06, spin: ROLL_SPIN, ...feet(ROLL_X, 0.1), bend: 6, nod: 6, hips: -0.03, R: [-0.025, 0.84, 0.08, E_LOW], l: ARM.hip, handR: 1, handL: 0 })],
-  [2, K(1, { x: ROLL_X, y: -0.12, spin: ROLL_SPIN, ...feet(ROLL_X, 0.1), kneeR: 0.1, kneeL: 0.1, bend: 12, nod: 10, hips: 0.03, R: [-0.025, 0.7, 0.1, E_LOW], l: ARM.hip, handR: 1, handL: 0 })],
-  [3, { x: ROLL_X, y: -0.05, spin: ROLL_SPIN - 10, ...feet(ROLL_X, 0.1), bend: 2, nod: 0, r: [70, 20, 100, 40], l: ARM.hip, handR: 1, handL: 0 }],
+  [0, K(1, { x: ROLL_X, y: -0.01, spin: ROLL_SPIN, ...feet(ROLL_X, 0.1), bend: -10, nod: -12, chestX: -0.02, lean: -3, shR: 0.8, shL: 0.6, R: [-0.025, 0.95, 0.07, E_LOW], l: ARM.hip, handR: 1, handL: 0 })],
+  [1, K(1, { x: ROLL_X, y: -0.06, spin: ROLL_SPIN, ...feet(ROLL_X, 0.1), bend: 10, nod: 8, chestX: 0.03, lean: 3, hips: -0.02, R: [-0.025, 0.84, 0.1, E_LOW], l: ARM.hip, handR: 1, handL: 0 })],
+  [2, K(1, { x: ROLL_X, y: -0.15, spin: ROLL_SPIN, ...feet(ROLL_X, 0.11), kneeR: 0.12, kneeL: 0.22, bend: 4, nod: 4, chestX: -0.02, lean: -3, hips: 0.07, tilt: 9, R: [-0.025, 0.7, 0.1, E_LOW], l: ARM.hip, handR: 1, handL: 0 })],
+  [3, { x: ROLL_X, y: -0.06, spin: ROLL_SPIN - 10, ...feet(ROLL_X, 0.1), bend: -2, nod: -2, hips: 0.02, tilt: 2, r: [70, 20, 100, 40], l: [80, 10, 90, 20], handR: 1, handL: 1 }],
 ];
 
 // Back-to-back air guitar (rock): backs together, both shredding, headbanging on the beat; lean back on each other.
-const STRUM_DOWN = at(1, 0.1, 0.47, 0.18);
-const STRUM_UP = at(1, 0.06, 0.58, 0.16);
-const NECK = at(-1, -0.4, 0.86, 0.12, [0.2, -1, 0]);
-const NECK_UP = at(-1, -0.36, 1.0, 0.1, [0.2, -1, 0]);
+// Same staging as the back-to-back lean (spin -90, roots 0.40 apart). In profile the guitar is placed
+// for the turned body: the neck reaches FORWARD (which is out to the side on the screen) and a little
+// up, the strumming hand works in front of the hips.
+const STRUM_DOWN = at(1, 0.08, 0.48, 0.2);
+const STRUM_UP = at(1, 0.06, 0.6, 0.19);
+const NECK = at(-1, -0.12, 0.84, 0.3, [0.2, -1, 0]);
+const NECK_UP = at(-1, -0.12, 0.98, 0.26, [0.2, -1, 0]);
 const backGuitar: Keys = [
   [0, { x: B2B_X, y: -0.1, spin: B2B_SPIN, ...feet(B2B_X, 0.11), r: STRUM_DOWN, l: NECK, handR: 0, handL: 0, nod: 14 }],
   [0.5, { x: B2B_X, y: -0.06, spin: B2B_SPIN, ...feet(B2B_X, 0.11), r: STRUM_UP, l: NECK, handR: 0, handL: 0, nod: -2 }],
   [1, { x: B2B_X, y: -0.1, spin: B2B_SPIN, ...feet(B2B_X, 0.11), r: STRUM_DOWN, l: NECK, handR: 0, handL: 0, nod: 14 }],
   [1.5, { x: B2B_X, y: -0.06, spin: B2B_SPIN, ...feet(B2B_X, 0.11), r: STRUM_UP, l: NECK, handR: 0, handL: 0, nod: -2 }],
-  [2, { x: B2B_X + 0.01, y: -0.07, spin: B2B_SPIN, ...feet(B2B_X, 0.11), bend: -10, r: STRUM_DOWN, l: NECK_UP, handR: 0, handL: 0, nod: -6 }],
-  [3, { x: B2B_X + 0.01, y: -0.05, spin: B2B_SPIN, ...feet(B2B_X, 0.11), bend: -8, r: STRUM_UP, l: NECK_UP, handR: 0, handL: 0, nod: -10 }],
+  [2, { x: B2B_LEAN_X, y: -0.07, spin: B2B_SPIN, ...feet(B2B_X, 0.11), bend: -10, r: STRUM_DOWN, l: NECK_UP, handR: 0, handL: 0, nod: -6 }],
+  [3, { x: B2B_LEAN_X, y: -0.05, spin: B2B_SPIN, ...feet(B2B_X, 0.11), bend: -8, r: STRUM_UP, l: NECK_UP, handR: 0, handL: 0, nod: -10 }],
 ];
 
 // Shoulder-bump hop (rock / punk): crouch, hop in and knock inner shoulders in the air, land, fist up.
@@ -1042,8 +1078,8 @@ const STYLE_DEFS: PartnerDef[] = [
   },
   {
     id: 'duo-two-hand-turn', name: 'Two-Hand Turn', tags: 'pop | turn | spin hands walk', level: 'low', d: 2, beats: 8, parts: ['turn', 'legs'], styles: ['lyrical'], gentle: true,
-    desc: 'Face each other holding both hands and walk slowly round each other in a full circle, arms soft, eyes on your partner.',
-    p1: twoHandTurn.p1, p2: twoHandTurn.p2, orbit: TWO_R, orbitSpin: orbitSpinOffset(1, 90),
+    desc: 'Face each other holding both hands and walk slowly round each other in a full circle, wide to the sides and passing quickly in front and behind, arms soft, eyes on your partner.',
+    p1: twoHandTurn.p1, p2: twoHandTurn.p2, orbit: TWO_RZ, orbitSpin: orbitSpinOffset(1, 90),
     contacts: [0, 2, 4, 6].flatMap((t) => [HANDS(t, 0.08), { at: t, a: [1, J.HA_L] as const, b: [2, J.HA_R] as const, tol: 0.08 }]),
   },
   {
@@ -1068,7 +1104,7 @@ const STYLE_DEFS: PartnerDef[] = [
   },
   {
     id: 'duo-back-lean', name: 'Back-to-Back Lean', tags: 'hiphop | full | point', level: 'mid', d: 2, beats: 4, parts: ['torso', 'legs'], styles: ['hiphop'],
-    desc: 'Turn your backs to each other with arms folded and bounce, lean back on each other with the chin up, then point out to the crowd.',
+    desc: 'Turn a full quarter away from each other so your backs are together, arms folded, and bounce; lean back on each other with the chin up, then turn out a little and point to the crowd.',
     p1: backLean,
   },
   {
@@ -1118,7 +1154,7 @@ const STYLE_DEFS: PartnerDef[] = [
   },
   {
     id: 'duo-body-roll', name: 'Mirror Body Roll', tags: 'funk pop | full | wave hands', level: 'mid', d: 2, beats: 4, parts: ['torso', 'hips'], styles: ['rnb'], gentle: true,
-    desc: 'Turned toward each other, inner palms pressed together, roll the body down from the chest through the hips into the knees, the palms sliding down together; rise and release.',
+    desc: 'Turned toward each other, inner palms pressed together up high, roll the body down: chin and chest lift, the chest drops and leans in, the hips push out as the knees sink deep, the palms sliding down together; rise and open the arms.',
     p1: bodyRoll,
     contacts: [0, 1, 2].map((t) => HANDS(t, 0.08)),
   },
@@ -1126,7 +1162,7 @@ const STYLE_DEFS: PartnerDef[] = [
   // --- Rock: metal and punk open it too -----------------------------------------
   {
     id: 'duo-back-guitar', name: 'Back-to-Back Air Guitar', tags: 'rock | arms |', level: 'mid', d: 2, beats: 4, parts: ['arms', 'torso'], styles: ['rock'],
-    desc: 'Backs to each other, both shred an air guitar and headbang on the beat, then lean back on each other with the necks raised.',
+    desc: 'Turned a full quarter away from each other with your backs together, both shred an air guitar with the neck out in front of you and headbang on the beat, then lean back on each other with the necks raised.',
     p1: backGuitar,
   },
   {

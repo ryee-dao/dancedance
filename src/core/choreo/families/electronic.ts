@@ -30,13 +30,16 @@ export const patterns: PatternSet = {};
 // House
 
 /** Jacking: the chest drops forward with the knees on the beat, arms swinging back; the chest arches back up on the and. */
+// The jack is a forward / back wave of the chest, which head-on read as a small bob: turned a little
+// toward the diagonal (spin) so the fold and arch show, bigger, with the knees and shoulders pumping
+// and the arms swinging well back and forward through it.
 const jackDown: PoseSpec = {
-  y: -0.06, bend: 13, nod: 10, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], kneeR: 0.06, kneeL: 0.06,
-  r: at(1, 0.21, 0.5, -0.08, [1, 0, -0.5]), l: at(-1, -0.21, 0.5, -0.08, [1, 0, -0.5]), handR: 0.4, handL: 0.4,
+  spin: 22, y: -0.1, bend: 18, nod: 12, shR: 0.7, shL: 0.7, rf: [0.11, 0, 0], lf: [-0.11, 0, 0], kneeR: 0.1, kneeL: 0.1,
+  r: at(1, 0.22, 0.5, -0.12, [1, 0, -0.5]), l: at(-1, -0.22, 0.5, -0.12, [1, 0, -0.5]), handR: 0.4, handL: 0.4,
 };
 const jackUp: PoseSpec = {
-  y: -0.015, bend: -8, nod: -7, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], kneeR: 0, kneeL: 0,
-  r: at(1, 0.19, 0.58, 0.15, [1, -0.3, -0.2]), l: at(-1, -0.19, 0.58, 0.15, [1, -0.3, -0.2]), handR: 0.4, handL: 0.4,
+  spin: 22, y: -0.015, bend: -10, nod: -9, shR: 0.1, shL: 0.1, rf: [0.11, 0, 0], lf: [-0.11, 0, 0], kneeR: 0, kneeL: 0,
+  r: at(1, 0.18, 0.66, 0.2, [1, -0.3, -0.2]), l: at(-1, -0.18, 0.66, 0.2, [1, -0.3, -0.2]), handR: 0.4, handL: 0.4,
 };
 
 /** House stomp: the free foot stamps beside the standing one (no weight) as the chest jacks down. */
@@ -46,7 +49,8 @@ const stompDown: PoseSpec = {
 };
 const stompLift = (side: 1 | -1): PoseSpec => ({
   y: -0.03, bend: -3, nod: -4,
-  ...(side > 0 ? { rf: [0.12, 0.08, 0.05], lf: [-0.1, 0, 0], kneeR: 0.1 } : { rf: [0.11, 0, 0.02], lf: [-0.11, 0.08, 0.05], kneeL: 0.1 }),
+  // The stamping foot lifts high and a little out to the side, so the stamp has somewhere to come down from.
+  ...(side > 0 ? { rf: [0.15, 0.12, 0.05], lf: [-0.1, 0, 0], kneeR: 0.25 } : { rf: [0.11, 0, 0.02], lf: [-0.15, 0.12, 0.05], kneeL: 0.25 }),
   r: at(1, 0.2, 0.62, 0.12, [1, -0.3, -0.2]), l: at(-1, -0.2, 0.62, 0.12, [1, -0.3, -0.2]), ...FIST,
 });
 
@@ -75,10 +79,10 @@ const tranceTop: PoseSpec = { x: 0, hips: 0, y: -0.04, lean: 0, turn: 0, nod: -1
 // Bass music
 
 /** Rail grip: both fists out in front at chest height, as if holding the barrier. */
-const rail = (y: number): PoseSpec => ({ r: at(1, 0.14, y, 0.24, [1, -0.3, -0.2]), l: at(-1, -0.14, y, 0.24, [1, -0.3, -0.2]), ...FIST });
+const rail = (y: number): PoseSpec => ({ r: at(1, 0.17, y, 0.22, [1, -0.3, -0.2]), l: at(-1, -0.17, y, 0.22, [1, -0.3, -0.2]), ...FIST });
 
 /** Liquid contour: open hands tracing round a ball in front of the chest, opposite sides of it. */
-const LQ = { cx: 0, cy: 0.8, cz: 0.22, r: 0.13 };
+const LQ = { cx: 0, cy: 0.8, cz: 0.22, r: 0.155 };
 const liquid = (k: number): PoseSpec => {
   const a = (k * Math.PI) / 4;
   const sway = Math.cos(a);
@@ -111,12 +115,15 @@ const CHOP_L = at(-1, -0.1, 0.66, 0.26, [1, -0.3, -0.2]);
 
 // --- Added Nov 2026 -----------------------------------------------------------------
 /** Techno stomp: flat-footed weight change on every beat, the free heel up, fists swinging low in opposition. */
+// Bigger than the real (minimal) step so it reads on the wall: a clear weight change from foot to foot
+// with the hip over the standing leg, the free heel up high with its knee in, the fists swinging well
+// forward and back in opposition, the head nodding down with each step.
 const technoA: PoseSpec = {
-  y: -0.06, x: 0.02, hips: 0.015, bend: 6, nod: 9, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], pitchL: 22, kneeL: 0.12, kneeR: 0.04,
-  r: at(1, 0.19, 0.55, -0.05, [1, 0, -0.5]), l: at(-1, -0.12, 0.64, 0.18, [1, -0.3, -0.2]), handR: 0.2, handL: 0.2,
+  y: -0.08, x: 0.035, hips: 0.04, tilt: 5, lean: -2, bend: 7, nod: 11, rf: [0.11, 0, 0], lf: [-0.11, 0, 0], pitchL: 34, kneeL: -0.3, kneeR: 0.08,
+  r: at(1, 0.2, 0.52, -0.1, [1, 0, -0.5]), l: at(-1, -0.1, 0.68, 0.22, [1, -0.3, -0.2]), handR: 0.2, handL: 0.2,
 };
 const technoMid: PoseSpec = {
-  y: -0.035, x: 0, hips: 0, bend: 3, nod: 1, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], pitchL: 0, pitchR: 0, kneeL: 0.03, kneeR: 0.03,
+  y: -0.035, x: 0, hips: 0, tilt: 0, lean: 0, bend: 3, nod: 1, rf: [0.11, 0, 0], lf: [-0.11, 0, 0], pitchL: 0, pitchR: 0, kneeL: 0.03, kneeR: 0.03,
   r: at(1, 0.18, 0.58, 0.07, [1, -0.3, -0.2]), l: at(-1, -0.18, 0.58, 0.07, [1, -0.3, -0.2]), handR: 0.2, handL: 0.2,
 };
 
@@ -155,7 +162,7 @@ export const moves: MoveDef[] = [
   // --- House --------------------------------------------------------------------
   full({
     id: 'house-jack', name: 'Jacking', tags: 'disco hiphop | full |', beats: 1, level: 'low', d: 1, parts: ['torso', 'legs'],
-    desc: 'The house groove: on every beat let the chest drop forward with a little knee bend and the arms swing back, then arch the chest up and back on the and.',
+    desc: 'The house groove, turned a little to the diagonal: on every beat let the chest drop forward with a knee bend and the shoulders hunching as the arms swing back, then arch the chest up and back on the and with the arms swinging forward.',
     keys: [[0, jackDown], [0.5, jackUp]],
   }),
   full({
@@ -165,22 +172,28 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'crossroads', name: 'Crossroads', tags: 'disco hiphop | legs |', beats: 2, level: 'mid', d: 2, parts: ['legs'], mirror: true,
-    desc: 'House footwork on the balls of the feet: cross one foot in front of the other, step it out to the side, cross it behind, step it out again, arms loose and open.',
+    desc: 'House footwork on the balls of the feet: cross one foot over in front of the other with the body turning toward the diagonal, step it out wide to the side and square up, cross it behind turning the other way, step it out wide again, arms swinging open and closed.',
+    // Checked against a house tutorial (Nov 2026). In front of / behind is depth, so each cross turns
+    // the body to the diagonal it opens toward and goes well past the standing foot: the legs make a
+    // clear X on the screen; the out steps go wide with the arms opening.
     keys: [
-      [0, { y: -0.06, x: -0.02, twist: -6, rf: [-0.04, 0, 0.07], lf: [-0.1, 0, -0.01], kneeR: 0.15, pitchR: 15, ...ARMS_IN }],
-      [0.5, { y: -0.03, x: 0.01, twist: 0, rf: [0.18, 0, 0], lf: [-0.1, 0, 0], ...ARMS_WIDE }],
-      [1, { y: -0.06, x: -0.02, twist: 6, rf: [-0.04, 0, -0.07], lf: [-0.1, 0, 0.01], kneeR: -0.1, pitchR: 20, ...ARMS_IN }],
-      [1.5, { y: -0.03, x: 0.01, twist: 0, rf: [0.18, 0, 0], lf: [-0.1, 0, 0], ...ARMS_WIDE }],
+      [0, { spin: -22, y: -0.08, x: -0.03, hips: -0.02, rf: [-0.12, 0, 0.07], lf: [-0.09, 0, -0.01], kneeR: 0.2, kneeL: 0.1, pitchR: 18, ...ARMS_IN }],
+      [0.5, { spin: 0, y: -0.04, x: 0.02, hips: 0.02, tilt: 2, rf: [0.21, 0, 0], lf: [-0.1, 0, 0], kneeR: 0.08, ...ARMS_WIDE }],
+      [1, { spin: 22, y: -0.08, x: -0.03, hips: -0.02, rf: [-0.12, 0, -0.07], lf: [-0.09, 0, 0.01], kneeR: -0.1, kneeL: 0.1, pitchR: 25, ...ARMS_IN }],
+      [1.5, { spin: 0, y: -0.04, x: 0.02, hips: 0.02, tilt: 2, rf: [0.21, 0, 0], lf: [-0.1, 0, 0], kneeR: 0.08, ...ARMS_WIDE }],
     ],
   }),
   full({
     id: 'floor-sweep', name: 'Floor Sweep', tags: 'disco hiphop | legs |', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms'], mirror: true,
-    desc: 'Sit into one bent knee and sweep the other foot round on the floor in a half circle, out to the side, through the front and across, the arms opening and closing against it.',
+    desc: 'Sit low into one bent knee and sweep the other straight leg round on the floor, from far out to the side through the front to crossed over, the body turning with the sweep and the arms opening and closing against it.',
+    // A circle on the floor is depth and collapses to a line head-on, so the sweep is staged for what
+    // does show: a long straight leg travelling the whole width from far out to crossed over, a deep sit
+    // on the standing knee, and the body turning with the foot (spin) so the arc reads as a turn.
     keys: [
-      [0, { y: -0.08, x: -0.03, hips: -0.02, lean: 4, rf: [0.27, 0, 0], lf: [-0.1, 0, 0], kneeL: 0.15, r: at(1, 0.36, 0.72, 0.04, [1, 0, -0.3]), l: at(-1, -0.3, 0.66, 0.08, [1, 0, -0.3]), ...OPEN }],
-      [0.5, { y: -0.1, x: -0.02, hips: -0.02, lean: 0, rf: [0.17, 0, 0.2], lf: [-0.1, 0, 0], kneeL: 0.15, slideR: true, r: at(1, 0.24, 0.66, 0.16, [1, -0.3, -0.2]), l: at(-1, -0.3, 0.66, 0.1, [1, 0, -0.3]), ...OPEN }],
-      [1, { y: -0.08, x: -0.02, twist: -8, lean: -3, rf: [-0.03, 0, 0.13], lf: [-0.1, 0, 0], kneeL: 0.12, slideR: true, r: at(1, -0.06, 0.6, 0.22, [0.6, -1, 0]), l: at(-1, -0.34, 0.7, 0.04, [1, 0, -0.3]), ...OPEN }],
-      [1.5, { y: -0.03, x: 0, twist: 0, lean: 0, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], r: at(1, 0.2, 0.56, 0.1, [1, 0, -0.3]), l: at(-1, -0.2, 0.56, 0.1, [1, 0, -0.3]), ...OPEN }],
+      [0, { spin: 10, y: -0.13, x: -0.04, hips: -0.03, lean: 6, rf: [0.33, 0, 0.02], lf: [-0.1, 0, 0], kneeL: 0.22, pitchR: 15, r: at(1, 0.4, 0.74, 0.02, [1, 0, -0.3]), l: at(-1, -0.34, 0.7, 0.06, [1, 0, -0.3]), ...OPEN }],
+      [0.5, { spin: -6, y: -0.15, x: -0.04, hips: -0.03, lean: 1, rf: [0.2, 0, 0.2], lf: [-0.1, 0, 0], kneeL: 0.24, slideR: true, pitchR: 12, r: at(1, 0.26, 0.68, 0.16, [1, -0.3, -0.2]), l: at(-1, -0.34, 0.68, 0.08, [1, 0, -0.3]), ...OPEN }],
+      [1, { spin: -24, y: -0.12, x: -0.03, lean: -4, rf: [-0.08, 0, 0.14], lf: [-0.1, 0, 0], kneeL: 0.2, kneeR: -0.2, slideR: true, pitchR: 20, r: at(1, -0.08, 0.62, 0.22, [0.6, -1, 0]), l: at(-1, -0.38, 0.74, 0.02, [1, 0, -0.3]), ...OPEN }],
+      [1.5, { spin: 0, y: -0.04, x: 0, lean: 0, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], r: at(1, 0.2, 0.58, 0.1, [1, 0, -0.3]), l: at(-1, -0.2, 0.58, 0.1, [1, 0, -0.3]), ...OPEN }],
     ],
   }),
   full({
@@ -194,13 +207,15 @@ export const moves: MoveDef[] = [
     ],
   }),
   full({
-    id: 'scissor-step', name: 'Scissor Step', tags: 'disco hiphop | legs | jump', beats: 2, level: 'high', d: 3, parts: ['legs', 'jump'], jump: true, impact: true,
-    desc: 'Light hops on the balls of the feet, switching the feet front and back like scissor blades on every beat, the arms swinging against the legs.',
+    id: 'scissor-step', name: 'Scissor Step', tags: 'disco hiphop | legs | jump', beats: 2, level: 'high', d: 3, parts: ['legs', 'jump'], mirror: true, jump: true, impact: true,
+    desc: 'Turned to a diagonal, light hops on the balls of the feet, switching the feet front and back like scissor blades on every beat, the arms swinging against the legs; then the other diagonal.',
+    // Front / back is depth: head-on the scissor read as hopping on the spot. On a 32 deg diagonal
+    // (alternating with each repeat) the split opens across the screen like the blades it is named for.
     keys: [
-      [0, { y: -0.06, rf: [0.08, 0, 0.13], lf: [-0.08, 0, -0.12], pitchL: 20, r: at(1, 0.22, 0.56, -0.08, [1, 0, -0.5]), l: at(-1, -0.16, 0.66, 0.2, [1, -0.3, 0]), handR: 0.5, handL: 0.5 }],
-      [0.5, { y: 0.03, rf: [0.08, 0.03, 0.02], lf: [-0.08, 0.03, -0.02], r: at(1, 0.2, 0.6, 0.06, [1, 0, -0.3]), l: at(-1, -0.2, 0.6, 0.06, [1, 0, -0.3]), handR: 0.5, handL: 0.5 }],
-      [1, { y: -0.06, rf: [0.08, 0, -0.12], lf: [-0.08, 0, 0.13], pitchR: 20, l: at(-1, -0.22, 0.56, -0.08, [1, 0, -0.5]), r: at(1, 0.16, 0.66, 0.2, [1, -0.3, 0]), handR: 0.5, handL: 0.5 }],
-      [1.5, { y: 0.03, rf: [0.08, 0.03, -0.02], lf: [-0.08, 0.03, 0.02], r: at(1, 0.2, 0.6, 0.06, [1, 0, -0.3]), l: at(-1, -0.2, 0.6, 0.06, [1, 0, -0.3]), handR: 0.5, handL: 0.5 }],
+      [0, { spin: 32, y: -0.07, rf: [0.08, 0, 0.17], lf: [-0.08, 0, -0.15], pitchL: 25, kneeL: 0.1, r: at(1, 0.22, 0.54, -0.12, [1, 0, -0.5]), l: at(-1, -0.14, 0.7, 0.22, [1, -0.3, 0]), handR: 0.5, handL: 0.5 }],
+      [0.5, { spin: 32, y: 0.03, rf: [0.08, 0.04, 0.02], lf: [-0.08, 0.04, -0.02], r: at(1, 0.2, 0.6, 0.06, [1, 0, -0.3]), l: at(-1, -0.2, 0.6, 0.06, [1, 0, -0.3]), handR: 0.5, handL: 0.5 }],
+      [1, { spin: 32, y: -0.07, rf: [0.08, 0, -0.15], lf: [-0.08, 0, 0.17], pitchR: 25, kneeR: 0.1, l: at(-1, -0.22, 0.54, -0.12, [1, 0, -0.5]), r: at(1, 0.14, 0.7, 0.22, [1, -0.3, 0]), handR: 0.5, handL: 0.5 }],
+      [1.5, { spin: 32, y: 0.03, rf: [0.08, 0.04, -0.02], lf: [-0.08, 0.04, 0.02], r: at(1, 0.2, 0.6, 0.06, [1, 0, -0.3]), l: at(-1, -0.2, 0.6, 0.06, [1, 0, -0.3]), handR: 0.5, handL: 0.5 }],
     ],
   }),
 
@@ -234,21 +249,24 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'jumpstyle-kick', name: 'Jumpstyle Kick', tags: 'aerobic | legs | jump kick', beats: 2, level: 'high', d: 3, parts: ['legs', 'jump'], mirror: true, jump: true, impact: true,
-    desc: 'Hard dance basic: hop and kick one straight leg forward, land and swing it back behind, hop and kick it forward again, then land on both feet and switch legs.',
+    desc: 'Hard dance basic, turned to the diagonal: hop and kick one straight leg forward, land and swing it back behind, hop and kick it forward again, then land on both feet and switch legs and diagonals.',
+    // The kick and the swing back go toward / away from the viewer: on a 28 deg diagonal (how the step
+    // is usually taught) they open across the screen; head-on they read as a knee lift.
     keys: [
-      [0, { y: 0.03, bend: -6, rf: [0.08, 0.16, 0.24], lf: [-0.07, 0.03, 0], r: at(1, 0.24, 0.56, -0.12, [1, 0, -0.5]), l: at(-1, -0.08, 0.7, 0.24, [0.6, -1, 0]), ...FIST }],
-      [0.5, { y: -0.06, bend: 6, rf: [0.08, 0.08, -0.1], lf: [-0.08, 0, 0], kneeR: 0.1, r: at(1, 0.16, 0.7, 0.22, [0.6, -1, 0]), l: at(-1, -0.24, 0.56, -0.12, [1, 0, -0.5]), ...FIST }],
-      [1, { y: 0.03, bend: -6, rf: [0.08, 0.16, 0.24], lf: [-0.07, 0.03, 0], r: at(1, 0.24, 0.56, -0.12, [1, 0, -0.5]), l: at(-1, -0.08, 0.7, 0.24, [0.6, -1, 0]), ...FIST }],
-      [1.5, { y: -0.08, bend: 6, rf: [0.09, 0, 0], lf: [-0.09, 0, 0], kneeR: 0.1, kneeL: 0.1, r: at(1, 0.2, 0.6, 0.1, [1, 0, -0.3]), l: at(-1, -0.2, 0.6, 0.1, [1, 0, -0.3]), ...FIST }],
+      [0, { spin: 28, y: 0.03, bend: -6, rf: [0.08, 0.16, 0.24], lf: [-0.07, 0.03, 0], r: at(1, 0.24, 0.56, -0.12, [1, 0, -0.5]), l: at(-1, -0.08, 0.7, 0.24, [0.6, -1, 0]), ...FIST }],
+      [0.5, { spin: 28, y: -0.06, bend: 6, rf: [0.08, 0.08, -0.1], lf: [-0.08, 0, 0], kneeR: 0.1, r: at(1, 0.16, 0.7, 0.22, [0.6, -1, 0]), l: at(-1, -0.24, 0.56, -0.12, [1, 0, -0.5]), ...FIST }],
+      [1, { spin: 28, y: 0.03, bend: -6, rf: [0.08, 0.16, 0.24], lf: [-0.07, 0.03, 0], r: at(1, 0.24, 0.56, -0.12, [1, 0, -0.5]), l: at(-1, -0.08, 0.7, 0.24, [0.6, -1, 0]), ...FIST }],
+      [1.5, { spin: 28, y: -0.08, bend: 6, rf: [0.09, 0, 0], lf: [-0.09, 0, 0], kneeR: 0.1, kneeL: 0.1, r: at(1, 0.2, 0.6, 0.1, [1, 0, -0.3]), l: at(-1, -0.2, 0.6, 0.1, [1, 0, -0.3]), ...FIST }],
     ],
   }),
   full({
     id: 'hakken', name: 'Hakken', tags: 'aerobic rock | legs | jump kick', beats: 2, level: 'high', d: 3, parts: ['legs', 'jump'], jump: true, impact: true,
-    desc: 'Hardcore footwork: little hops from foot to foot, the free heel jabbing forward low with the toes up on every beat, fists punching down and forward in turn.',
+    desc: 'Hardcore footwork: little hops from foot to foot, the free heel jabbing out low on the forward diagonal with the toes up on every beat, fists punching down and forward in turn.',
+    // The heel jab goes out to the side as well as forward: straight at the viewer it barely showed.
     keys: [
-      [0, { y: 0.02, bend: -3, rf: [0.08, 0.05, 0.19], lf: [-0.08, 0.02, -0.02], pitchR: -22, r: at(1, 0.12, 0.56, 0.28, [0.6, -1, 0]), l: at(-1, -0.2, 0.68, 0.0, [1, 0, -0.5]), ...FIST }],
+      [0, { y: 0.02, bend: -3, rf: [0.17, 0.06, 0.15], lf: [-0.08, 0.02, -0.02], pitchR: -22, r: at(1, 0.12, 0.56, 0.28, [0.6, -1, 0]), l: at(-1, -0.2, 0.68, 0.0, [1, 0, -0.5]), ...FIST }],
       [0.5, { y: -0.06, bend: 5, rf: [0.08, 0, 0.02], lf: [-0.08, 0, 0], r: at(1, 0.17, 0.62, 0.16, [1, -0.3, 0]), l: at(-1, -0.17, 0.62, 0.16, [1, -0.3, 0]), ...FIST }],
-      [1, { y: 0.02, bend: -3, lf: [-0.08, 0.05, 0.19], rf: [0.08, 0.02, -0.02], pitchL: -22, l: at(-1, -0.12, 0.56, 0.28, [0.6, -1, 0]), r: at(1, 0.2, 0.68, 0.0, [1, 0, -0.5]), ...FIST }],
+      [1, { y: 0.02, bend: -3, lf: [-0.17, 0.06, 0.15], rf: [0.08, 0.02, -0.02], pitchL: -22, l: at(-1, -0.12, 0.56, 0.28, [0.6, -1, 0]), r: at(1, 0.2, 0.68, 0.0, [1, 0, -0.5]), ...FIST }],
       [1.5, { y: -0.06, bend: 5, lf: [-0.08, 0, 0.02], rf: [0.08, 0, 0], r: at(1, 0.17, 0.62, 0.16, [1, -0.3, 0]), l: at(-1, -0.17, 0.62, 0.16, [1, -0.3, 0]), ...FIST }],
     ],
   }),
@@ -292,7 +310,7 @@ export const moves: MoveDef[] = [
     id: 'half-time-bounce', name: 'Half-Time Bounce', tags: 'hiphop | full |', beats: 2, level: 'low', d: 1, parts: ['torso', 'legs'],
     desc: 'Dubstep head bob: one heavy drop every two beats on the half-time snare, knees bending, chest folding and the head nodding down with the shoulders hunched, then a slow rise.',
     keys: [
-      [0, { y: -0.1, bend: 12, nod: 16, shR: 0.9, shL: 0.9, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], kneeR: 0.1, kneeL: 0.1, r: at(1, 0.2, 0.56, 0.14, [1, 0, -0.3]), l: at(-1, -0.2, 0.56, 0.14, [1, 0, -0.3]), handR: 0.2, handL: 0.2 }],
+      [0, { y: -0.15, bend: 15, nod: 18, shR: 1.1, shL: 1.1, rf: [0.13, 0, 0], lf: [-0.13, 0, 0], kneeR: 0.15, kneeL: 0.15, r: at(1, 0.22, 0.5, 0.14, [1, 0, -0.3]), l: at(-1, -0.2, 0.56, 0.14, [1, 0, -0.3]), handR: 0.2, handL: 0.2 }],
       [1, { y: -0.03, bend: 0, nod: -4, shR: 0.2, shL: 0.2, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], kneeR: 0, kneeL: 0, r: at(1, 0.18, 0.64, 0.16, [1, -0.3, -0.2]), l: at(-1, -0.18, 0.64, 0.16, [1, -0.3, -0.2]), handR: 0.2, handL: 0.2 }],
     ],
   }),
@@ -300,10 +318,10 @@ export const moves: MoveDef[] = [
     id: 'wobble-bounce', name: 'Wobble Bounce', tags: 'hiphop | legs |', beats: 2, level: 'mid', d: 1, parts: ['legs', 'torso'],
     desc: 'Low wide stance with the fists out front as if gripping the rail, bounce twice to every beat with the wobble bass, rocking the shoulders from side to side.',
     keys: [
-      [0, wide(-0.13, { lean: 4, chestX: 0.02, nod: 6, kneeR: 0.12, kneeL: 0.12, ...rail(0.72) })],
-      [0.5, wide(-0.08, { lean: 2, chestX: 0.01, nod: 0, kneeR: 0.06, kneeL: 0.06, ...rail(0.76) })],
-      [1, wide(-0.13, { lean: -4, chestX: -0.02, nod: 6, kneeR: 0.12, kneeL: 0.12, ...rail(0.72) })],
-      [1.5, wide(-0.08, { lean: -2, chestX: -0.01, nod: 0, kneeR: 0.06, kneeL: 0.06, ...rail(0.76) })],
+      [0, wide(-0.14, { lean: 8, chestX: 0.045, hips: -0.03, tilt: -4, shR: 0.1, shL: 0.9, nod: 7, kneeR: 0.12, kneeL: 0.12, ...rail(0.72) })],
+      [0.5, wide(-0.08, { lean: 3, chestX: 0.015, hips: -0.01, tilt: -1, shR: 0.3, shL: 0.5, nod: 0, kneeR: 0.06, kneeL: 0.06, ...rail(0.76) })],
+      [1, wide(-0.14, { lean: -8, chestX: -0.045, hips: 0.03, tilt: 4, shR: 0.9, shL: 0.1, nod: 7, kneeR: 0.12, kneeL: 0.12, ...rail(0.72) })],
+      [1.5, wide(-0.08, { lean: -3, chestX: -0.015, hips: 0.01, tilt: 1, shR: 0.5, shL: 0.3, nod: 0, kneeR: 0.06, kneeL: 0.06, ...rail(0.76) })],
     ],
   }),
   full({
