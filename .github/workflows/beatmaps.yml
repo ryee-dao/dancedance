@@ -78,6 +78,11 @@ on:
         type: string
         required: false
         default: ''
+      session_only:
+        description: Only check the YouTube sign-in (YT_COOKIES); make no beat maps
+        type: boolean
+        required: false
+        default: false
       map_json:
         description: Used by the relay (a contributed beat map, as JSON); leave empty
         type: string
@@ -156,7 +161,7 @@ jobs:
 
       - name: Make beat maps
         id: run
-        if: ${{ !inputs.map_json }}
+        if: ${{ !inputs.map_json && !inputs.session_only }}
         env:
           PLAYLIST_URL: ${{ vars.PLAYLIST_URL }}
           YT_COOKIES: ${{ secrets.YT_COOKIES }}
@@ -188,11 +193,13 @@ jobs:
       # (no audio is downloaded), so the session stays in use, and it stops asking at the first rejection (until the cookies are
       # replaced). Cookies are never printed and the file is deleted.
       - name: Keep the YouTube session fresh
+        id: session
         if: ${{ !cancelled() && !inputs.map_json }}
         env:
           YT_COOKIES: ${{ secrets.YT_COOKIES }}
           GH_TOKEN: ${{ secrets.COOKIE_REFRESH_TOKEN }}
           SCHEDULED: ${{ github.event_name == 'schedule' }}
+          SESSION_ONLY: ${{ inputs.session_only }}
           REJECTED_AT: ${{ secrets.YT_SESSION_REJECTED }}
           RUN_OUTCOME: ${{ steps.run.outcome }}
         run: |
@@ -212,14 +219,16 @@ jobs:
           # secret YT_SESSION_REJECTED; new cookies change that time and lift the stop.
           updated=$(gh api "repos/$GITHUB_REPOSITORY/actions/secrets/YT_COOKIES" --jq .updated_at 2>/dev/null || true)
           if [ -n "$updated" ] && [ "$updated" = "${REJECTED_AT:-}" ]; then
-            echo "::notice title=YouTube session::YouTube rejected these cookies earlier, so no signed-in request was made. Export fresh cookies into YT_COOKIES to start again."
+            echo "::warning title=YouTube sign-in is rejected::YouTube rejected these cookies earlier, so no signed-in request was made. Export fresh cookies into YT_COOKIES to start again."
+            printf '%s\n\n%s\n' '### :warning: YouTube sign-in is rejected' 'YouTube refused the `YT_COOKIES` session on an earlier run. No signed-in requests are made until you export fresh cookies into `YT_COOKIES`.' >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-          if [ "$SCHEDULED" = "true" ]; then
+          if [ "$SCHEDULED" = "true" ] || [ "$SESSION_ONLY" = "true" ]; then
             # Every scheduled run, after a random wait of 0 to 90 s (to the millisecond). The
             # wait is short because app requests (add a song) queue behind this job. GitHub
             # starts scheduled runs late and skips many, so the times are irregular anyway.
-            wait_ms=$(node -e 'console.log(require("crypto").randomInt(0, 90001))')
+            wait_ms=0
+            if [ "$SCHEDULED" = "true" ]; then wait_ms=$(node -e 'console.log(require("crypto").randomInt(0, 90001))'); fi
             sleep "$(printf '%d.%03d' $((wait_ms / 1000)) $((wait_ms % 1000)))"
             id=$(node -e 'const a=require("./public/beatmaps/index.json").ids||[];if(a.length)console.log(a[Math.floor(Math.random()*a.length)])')
             if [ -z "$id" ]; then echo "No published song to ask about; skipping."; exit 0; fi
@@ -227,9 +236,12 @@ jobs:
             if yt-dlp --cookies "$jar" --skip-download --no-warnings --print id -- "$id" >/dev/null 2>"$err"; then
               rm -f "$err"
               echo "Signed-in request succeeded."
+              echo "YouTube sign-in: the signed-in request succeeded." >> "$GITHUB_STEP_SUMMARY"
             elif grep -Eiq 'not a bot|sign in to confirm|cookies are no longer valid|account has been|login required' "$err"; then
               rm -f "$err"
-              echo "::warning title=YouTube session::YouTube rejected the signed-in request: the YT_COOKIES session has ended. No more requests are made until you export fresh cookies into YT_COOKIES."
+              echo "::error title=YouTube rejected the sign-in::YouTube rejected the signed-in request: the YT_COOKIES session has ended. No more requests are made until you export fresh cookies into YT_COOKIES."
+              printf '%s\n\n%s\n' '### :x: YouTube rejected the sign-in' 'The `YT_COOKIES` session has ended. No more signed-in requests are made until you export fresh cookies into `YT_COOKIES` (README: "When a job goes red").' >> "$GITHUB_STEP_SUMMARY"
+              echo "rejected=true" >> "$GITHUB_OUTPUT"
               if [ -n "$updated" ]; then
                 gh secret set YT_SESSION_REJECTED --repo "$GITHUB_REPOSITORY" --body "$updated" >/dev/null 2>&1 || echo "Could not record the rejection; the next run will ask again."
               fi
@@ -328,6 +340,14 @@ jobs:
           fi
           echo "changed=true" >> "$GITHUB_OUTPUT"
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      # Last, so the commit above still happens: turn the run red on the run that
+      # sees YouTube reject the sign-in (later runs only warn, see the step above).
+      - name: YouTube rejected the sign-in
+        if: ${{ !cancelled() && steps.session.outputs.rejected == 'true' }}
+        run: |
+          echo "::error title=YouTube rejected the sign-in::Export fresh cookies from the spare account into the YT_COOKIES secret."
+          exit 1
 
   # Pushes made with GITHUB_TOKEN don't trigger deploy.yml, so deploy from here.
   deploy:
