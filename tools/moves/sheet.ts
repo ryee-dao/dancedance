@@ -35,6 +35,8 @@
  *   --per <n>          moves per page (default 8; long selections write page files)
  *   --cw / --ch <px>   cell size
  *   --build female|male
+ *   --at <rev>         render the app as it was at that revision (before / after,
+ *                      e.g. --at HEAD~1 --name before); ids are looked up there
  *   --url <http://..>  use a running dev server instead of starting one
  *
  * Prints the written paths. Images are scratch output: never commit them.
@@ -43,7 +45,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { launch, startVite, type Page } from './headless';
+import { checkoutAt, launch, startVite, type Page } from './headless';
 
 const args = process.argv.slice(2);
 const opt = (name: string): string | undefined => {
@@ -99,7 +101,8 @@ async function save(page: Page, file: string): Promise<void> {
   written.push(path);
 }
 
-const server = await startVite(opt('url'));
+const at = opt('at') ? checkoutAt(opt('at')!) : null;
+const server = await startVite(opt('url'), at?.root);
 const browser = await launch();
 try {
   const page = await browser.newPage();
@@ -112,7 +115,7 @@ try {
     const { MOVES } = await import('../../src/core/choreo/moves');
     const known = new Set(MOVES.map((m) => m.id));
     const missing = sel.ids.filter((id) => !known.has(id) && !id.includes('~'));
-    if (missing.length) console.warn(`not in the catalogue (skipped unless a pool variation): ${missing.join(', ')}`);
+    if (missing.length && !at) console.warn(`not in the catalogue (skipped unless a pool variation): ${missing.join(', ')}`);
     const pages = Math.max(1, Math.ceil(sel.ids.length / per));
     const name = opt('name') ?? sel.name;
     for (let pg = 0; pg < pages; pg++) {
@@ -166,5 +169,6 @@ try {
 } finally {
   await browser.close();
   await server.close();
+  at?.cleanup();
 }
 for (const w of written) console.log(w);

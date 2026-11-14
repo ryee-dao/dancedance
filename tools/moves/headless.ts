@@ -11,8 +11,8 @@
  * user-data-dir that is deleted afterwards.
  */
 
-import { spawn, type ChildProcess } from 'node:child_process';
-import { existsSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import { execFileSync, spawn, type ChildProcess } from 'node:child_process';
+import { existsSync, mkdtempSync, readdirSync, rmSync, symlinkSync } from 'node:fs';
 import { createServer as netServer } from 'node:net';
 import { homedir, tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -38,14 +38,28 @@ export interface DevServer {
   close(): Promise<void>;
 }
 
-/** Start the project's Vite dev server (or reuse one given as `url`). */
-export async function startVite(url?: string): Promise<DevServer> {
+/**
+ * A copy of the app source at a revision (for before / after renders), in a
+ * temporary directory with node_modules linked; returns its root and a
+ * cleanup function.
+ */
+export function checkoutAt(ref: string): { root: string; cleanup(): void } {
+  const root = mkdtempSync(join(tmpdir(), 'dd-at-'));
+  const paths = ['src', 'public', 'coach-demo.html', 'duo-demo.html', 'vite.config.ts', 'tsconfig.json', 'package.json'];
+  const tar = execFileSync('git', ['archive', '--format=tar', ref, '--', ...paths], { cwd: REPO, maxBuffer: 1 << 30 });
+  execFileSync('tar', ['-x', '-C', root], { input: tar });
+  symlinkSync(join(REPO, 'node_modules'), join(root, 'node_modules'));
+  return { root, cleanup: () => rmSync(root, { recursive: true, force: true }) };
+}
+
+/** Start the project's Vite dev server (or reuse one given as `url`); `root` serves another copy of the app. */
+export async function startVite(url?: string, root = REPO): Promise<DevServer> {
   if (url) return { url: url.replace(/\/$/, ''), close: async () => {} };
   const { createServer } = await import('vite');
   const port = await freePort();
   const server = await createServer({
-    root: REPO,
-    configFile: join(REPO, 'vite.config.ts'),
+    root,
+    configFile: join(root, 'vite.config.ts'),
     logLevel: 'error',
     clearScreen: false,
     server: { port, strictPort: true, host: '127.0.0.1', open: false, hmr: false, watch: null },

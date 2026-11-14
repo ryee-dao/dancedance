@@ -448,6 +448,24 @@ const PIANO = (x: number, y: number): PoseSpec => ({ r: at(1, x + 0.1, y, 0.26, 
 const SHOULDER_A: PoseSpec = { y: -0.09, x: 0.02, hips: 0.015, chestX: 0.035, twist: -12, lean: 4, nod: 4, shR: 1.0, shL: 0, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], kneeR: 0.1, r: at(1, 0.2, 0.6, 0.18, E_DOWN), l: at(-1, -0.16, 0.56, 0.1, E_DOWN), handR: 0.5, handL: 0.5 };
 const KNEE_A: PoseSpec = { y: -0.11, x: -0.02, hips: -0.03, tilt: -6, lean: 3, nod: 4, rf: [0.11, 0, 0.02], lf: [-0.11, 0, 0], kneeR: -0.45, kneeL: 0.1, pitchR: 20, r: at(1, -0.02, 0.6, 0.22, E_DOWN), l: at(-1, -0.28, 0.56, 0.06, E_DOWN), handR: 0.5, handL: 0.5 };
 
+// Wide plié fist roll (the 2024 amapiano dance commonly called "Tshwala Bam", after the song):
+// a wide, low, planted stance with the knees open over the toes, sinking on every beat, the fists
+// churning round each other in front of the belly as the shoulders pop in turn. The real roll goes
+// toward and away from the body; staged as a wheel in the front plane so it reads head-on.
+const fistRoll = (k: number): PoseSpec => {
+  const a = Math.PI / 2 - (k * Math.PI) / 2;
+  const cx = 0.055, cy = 0.63, rad = 0.045;
+  const side: 1 | -1 = k % 2 ? -1 : 1;
+  return {
+    y: k % 2 ? -0.1 : -0.16, bend: 8, nod: k % 2 ? 3 : 6, twist: -9 * side, turn: -6 * side,
+    shR: side > 0 ? 1.0 : 0.2, shL: side > 0 ? 0.2 : 1.0,
+    rf: [0.2, 0, 0], lf: [-0.2, 0, 0], kneeR: 0.32, kneeL: 0.32,
+    // Each fist circles on its own side, half a turn apart: they roll round each other.
+    r: at(1, cx + rad * Math.cos(a), cy + rad * Math.sin(a), 0.19, [1, -0.1, -0.2]),
+    l: at(-1, -cx - rad * Math.cos(a), cy - rad * Math.sin(a), 0.19, [1, -0.1, -0.2]), ...FIST,
+  };
+};
+
 const amapiano: MoveDef[] = [
   full({
     id: 'log-drum-bounce', name: 'Log Drum Bounce', tags: 'hiphop | legs | amapiano', beats: 2, level: 'low', d: 1, parts: ['legs', 'torso'], bounce: 0.2,
@@ -498,6 +516,12 @@ const amapiano: MoveDef[] = [
     id: 'knee-drop-groove', name: 'Knee Drop Groove', tags: 'hiphop | legs hips | amapiano', beats: 2, level: 'mid', d: 2, parts: ['legs', 'hips'], mirror: true, bounce: 0.2,
     desc: 'Weight on one leg, drop the other knee in toward it with the hip sinking, arms swinging loosely across, then pop back up tall; switch sides.',
     keys: [[0, KNEE_A], [1, { y: -0.04, x: 0, hips: 0, tilt: 0, nod: -2, rf: [0.11, 0, 0], lf: [-0.11, 0, 0], kneeR: 0.05, kneeL: 0.05, r: at(1, 0.2, 0.62, 0.12, E_DOWN), l: at(-1, -0.2, 0.62, 0.12, E_DOWN), handR: 0.5, handL: 0.5 }]],
+  }),
+  // Commonly called "Tshwala Bam" (named after the song): descriptive name.
+  full({
+    id: 'wide-fist-roll', name: 'Wide Plié Fist Roll', tags: 'hiphop | full | amapiano', beats: 2, level: 'mid', d: 1, parts: ['arms', 'legs', 'torso'], bounce: 0.2,
+    desc: 'Feet wide and turned out, knees open over the toes, sink on every beat while the fists roll round each other in front of the belly and the shoulders pop one after the other.',
+    keys: [[0, fistRoll(0)], [0.5, fistRoll(1)], [1, fistRoll(2)], [1.5, fistRoll(3)]],
   }),
 ];
 

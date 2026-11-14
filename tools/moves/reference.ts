@@ -7,6 +7,9 @@
  *   # candidate videos (anonymous yt-dlp search; only the phrase is sent)
  *   npx tsx tools/moves/reference.ts search "dougie dance tutorial" [--n 8]
  *
+ *   # title, length and chapters of a video (find the teaching part of a long tutorial)
+ *   npx tsx tools/moves/reference.ts info <url | video id>
+ *
  *   # frames of one video over a time range (seconds or m:ss)
  *   npx tsx tools/moves/reference.ts frames <url | video id> --from 0:42 --to 0:48 [--fps 4]
  *
@@ -23,6 +26,8 @@
  *   --fps <n>      frames per second sampled (default 4; 6-8 for fast footwork)
  *   --cols <n>     tiles per row (default 8)
  *   --width <px>   width of one tile (default 200)
+ *   --crop x0,y0,x1,y1  keep this part of the frame (fractions 0..1), e.g.
+ *                  0.3,0,0.7,1 for a dancer small in the middle of a wide shot
  *   --flip         mirror the footage left-right (the coach is a mirror of the
  *                  player, so a tutorial filmed from the front compares best flipped)
  *   --out <dir>    output directory (default $TMPDIR/dancedance-refs)
@@ -74,6 +79,8 @@ function secs(v: string | undefined, dflt: number): number {
   if (v === undefined) return dflt;
   return v.split(':').reduce((acc, p) => acc * 60 + Number(p), 0);
 }
+
+const mmss = (t: number): string => `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, '0')}`;
 
 const slug = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
 
@@ -149,6 +156,7 @@ async function frames(src: string): Promise<void> {
   const fps = Number(opt('fps') ?? 4);
   const cols = Number(opt('cols') ?? 8);
   const width = Number(opt('width') ?? 200);
+  if (cols * width > 1900) console.warn(`note: ${cols} x ${width}px = ${cols * width}px wide; image viewers scale this down. Keep cols x width under ~1900 (or use --crop).`);
   mkdirSync(out, { recursive: true });
   const tmp = mkdtempSync(join(tmpdir(), 'dd-ref-'));
   try {
@@ -161,11 +169,20 @@ async function frames(src: string): Promise<void> {
     const rows = Math.ceil(n / cols);
     const name = opt('name') ?? `${slug(src.replace(/^https?:\/\/(www\.)?/, ''))}-${from}-${to}`;
     const dest = join(out, `${name}.png`);
-    const vf = [`fps=${fps}`, `scale=${width}:-2`, ...(opts.flip ? ['hflip'] : []), `tile=${cols}x${rows}:padding=4:margin=4:color=white`].join(',');
-    run(FFMPEG, ['-y', '-v', 'error', '-ss', String(t0), '-t', String(len), '-i', clip.path, '-vf', vf, '-frames:v', '1', '-update', '1', dest]);
+    const crop = opt('crop')?.split(',').map(Number);
+    const cropF = crop && crop.length === 4 && crop.every(Number.isFinite)
+      ? [`crop=iw*${crop[2] - crop[0]}:ih*${crop[3] - crop[1]}:iw*${crop[0]}:ih*${crop[1]}`]
+      : [];
+    const vf = [`fps=${fps}`, ...cropF, `scale=${width}:-2`, ...(opts.flip ? ['hflip'] : []), `tile=${cols}x${rows}:padding=4:margin=4:color=white`].join(',');
+    const ff = ['-y', '-v', 'error', '-ss', String(t0), '-t', String(len), '-i', clip.path, '-vf', vf, '-frames:v', '1', '-update', '1', dest];
+    try {
+      run(FFMPEG, ff);
+    } catch {
+      run(FFMPEG, ff); // a cut clip sometimes needs a second read; a real error throws with ffmpeg's message
+    }
     console.log(`clip ${kb} KB, ${len.toFixed(1)} s from ${from}s; ${n} tiles at ${fps} fps, ${cols} per row${opts.flip ? ', mirrored' : ''}`);
     const legend: string[] = [];
-    for (let i = 0; i < n; i++) legend.push(`${i + 1}:${(from + i / fps).toFixed(2)}s`);
+    for (let i = 0; i < n; i++) legend.push(`#${i + 1}@${mmss(from + i / fps)}`);
     console.log(`tile times: ${legend.join(' ')}`);
     if (opts.keep) {
       const kept = join(out, `${name}-clip${clip.path.slice(clip.path.lastIndexOf('.'))}`);
@@ -183,8 +200,21 @@ async function frames(src: string): Promise<void> {
   }
 }
 
+function info(src: string): void {
+  const url = /^[\w-]{11}$/.test(src) ? `https://www.youtube.com/watch?v=${src}` : src;
+  const j = JSON.parse(run(YTDLP, [...YT_BASE, '--skip-download', '--dump-single-json', url])) as {
+    title?: string; duration?: number; channel?: string; chapters?: { start_time: number; title: string }[]; description?: string;
+  };
+  console.log(`${j.title ?? ''}  [${j.channel ?? ''}]  ${j.duration ? mmss(j.duration) : '?'}`);
+  for (const c of j.chapters ?? []) console.log(`  ${mmss(c.start_time)}  ${c.title}`);
+  if (!j.chapters?.length) console.log('  (no chapters)');
+  const stamps = (j.description ?? '').split('\n').filter((l) => /\b\d{1,2}:\d{2}\b/.test(l)).slice(0, 30);
+  if (stamps.length) console.log(`timestamps in the description:\n  ${stamps.join('\n  ')}`);
+}
+
 try {
   if (cmd === 'search' && positional[0]) search(positional.join(' '), Number(opt('n') ?? 6));
+  else if (cmd === 'info' && positional[0]) info(positional[0]);
   else if (cmd === 'frames' && positional[0]) await frames(positional[0]);
   else if (cmd === 'compare' && positional.length === 2) {
     mkdirSync(out, { recursive: true });

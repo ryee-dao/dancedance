@@ -90,17 +90,27 @@ const srA: PoseSpec = {
 };
 const srMid: PoseSpec = { y: -0.03, bend: 5, twist: 0, turn: 0, nod: 0, shR: 0.4, shL: 0.4, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], ...LOOSE };
 
-// Drill strut: a heavy strut on the spot, the opposite arm swinging up across the chest.
+// Drill strut: the New York drill "woo walk" (checked against video references, Nov 2026). A bouncy
+// strut on the spot: drop onto one foot as the other flicks out on the forward diagonal and lands
+// heel-first, toes up; one fist held up by the head (elbow out at shoulder height), the other hand
+// at the belt buckle, a little hunched, nodding on every step. The flick goes out to the side as
+// well as forward so it reads head-on.
+const WOO_ARMS: PoseSpec = { r: at(1, 0.22, 1.0, 0.04, [1, -0.2, -0.2]), l: at(-1, -0.03, 0.5, 0.15, E_DOWN), ...FIST };
 const strutA: PoseSpec = {
-  y: -0.1, x: 0.02, hips: 0.02, twist: -16, bend: -4, nod: -6, turn: 6, shL: 0.8, shR: 0.1,
-  rf: [0.1, 0, 0.03], lf: [-0.09, 0.09, 0.06], kneeL: 0.15, kneeR: 0.08,
-  r: at(1, 0.26, 0.54, -0.1, E_BACK), l: at(-1, 0.05, 0.8, 0.24, E_ACROSS), handR: 0.6, handL: 0.6,
+  y: -0.1, x: 0.02, hips: 0.025, tilt: 2, bend: 8, nod: 7, lean: 2, turn: -6, shR: 0.7, shL: 0.1,
+  rf: [0.08, 0, 0], lf: [-0.21, 0.03, 0.09], kneeR: 0.12, kneeL: 0.04, pitchL: -24, ...WOO_ARMS,
+};
+const strutB: PoseSpec = {
+  ...strutA, x: -0.02, hips: -0.025, tilt: -2, lean: -2, turn: 4,
+  lf: [-0.08, 0, 0], rf: [0.21, 0.03, 0.09], kneeL: 0.12, kneeR: 0.04, pitchL: 0, pitchR: -24,
 };
 const strutMid: PoseSpec = {
-  y: -0.04, x: 0, hips: 0, twist: 0, bend: -2, nod: -2, turn: 0, shL: 0.3, shR: 0.3,
-  rf: [0.1, 0, 0.02], lf: [-0.1, 0, 0.02], kneeL: 0.04, kneeR: 0.04,
-  r: at(1, 0.2, 0.58, 0.08, E_OUT), l: at(-1, -0.2, 0.58, 0.08, E_OUT), handR: 0.6, handL: 0.6,
+  y: -0.04, x: 0, hips: 0, tilt: 0, bend: 5, nod: 0, lean: 0, turn: 0, shR: 0.5, shL: 0.2,
+  rf: [0.08, 0, 0.01], lf: [-0.08, 0, 0.01], kneeL: 0.05, kneeR: 0.05, pitchL: 0, pitchR: 0,
+  ...WOO_ARMS, r: at(1, 0.22, 0.95, 0.05, [1, -0.2, -0.2]),
 };
+// Before the other side: the raised fist drops to the chest so the arms can swap.
+const strutSwap: PoseSpec = { ...strutMid, r: at(1, 0.1, 0.76, 0.18, E_OUT), l: at(-1, -0.1, 0.66, 0.17, E_OUT) };
 
 // Sturdy: bent over, hopping from foot to foot, the free foot flicking out low, fists pumping.
 const sturdyLand: PoseSpec = {
@@ -371,6 +381,62 @@ const rgTurn = (spin: number, hit: boolean): PoseSpec => ({
   r: at(1, 0.17, hit ? 0.66 : 0.72, 0.18, E_DOWN), l: at(-1, -0.17, hit ? 0.72 : 0.66, 0.18, E_DOWN), ...FIST,
 });
 
+// --- Added from video references (tools/moves/reference.ts), Nov 2026 ------------------
+// Trap. Flex & knee hit (the dance commonly called "Hit Dem Folks", Atlanta 2015): one fist
+// flexed up beside the head, elbow high, the opposite knee snapping up with a crunch of the
+// body toward it; the flexed forearm pumps down in front of the face between hits.
+const flexHit: PoseSpec = {
+  y: -0.06, x: 0.015, hips: 0.03, tilt: -4, lean: -9, bend: 7, head: -7, nod: 6, turn: -6, shR: 0.7, shL: 0,
+  rf: [0.08, 0, 0], lf: [-0.1, 0.25, -0.02], kneeR: 0.08, kneeL: 0.2,
+  r: at(1, 0.21, 1.05, 0.03, [1, -0.2, -0.2]), l: at(-1, -0.23, 0.5, 0.03, E_OUT), ...FIST,
+};
+const flexPump: PoseSpec = {
+  y: -0.1, x: 0, hips: 0.01, tilt: 0, lean: -3, bend: 4, head: -2, nod: 3, turn: -2, shR: 0.3, shL: 0.1,
+  rf: [0.08, 0, 0], lf: [-0.09, 0, 0], kneeR: 0.1, kneeL: 0.1,
+  r: at(1, 0.0, 0.88, 0.2, E_OUT), l: at(-1, -0.22, 0.5, 0.04, E_OUT), ...FIST,
+};
+
+// Trap. Ear-to-chest sway (the step commonly called "the juju", from "Juju on That Beat"):
+// knees dip on every beat as the body sways side to side, both bent arms swinging together
+// on a diagonal, one hand up by its ear while the other crosses the chest, passing in front
+// of the chest on the "and" as the knees straighten.
+const jujuA: PoseSpec = {
+  y: -0.1, x: -0.03, hips: -0.035, tilt: -4, lean: -6, head: -4, nod: 3, turn: -14, shR: 0.1, shL: 0.6,
+  rf: [0.11, 0, 0], lf: [-0.11, 0, 0], kneeR: 0.1, kneeL: 0.06,
+  l: at(-1, -0.22, 0.98, 0.05, E_OUT), r: at(1, -0.1, 0.7, 0.2, E_ACROSS), handR: 0.5, handL: 0.5,
+};
+const jujuMid: PoseSpec = {
+  y: -0.03, x: 0, hips: 0, tilt: 0, lean: 0, head: 0, nod: 0, turn: 0, shR: 0.3, shL: 0.3,
+  rf: [0.11, 0, 0], lf: [-0.11, 0, 0], kneeR: 0.03, kneeL: 0.03,
+  l: at(-1, -0.06, 0.74, 0.22, E_OUT), r: at(1, 0.08, 0.68, 0.21, E_OUT), handR: 0.5, handL: 0.5,
+};
+
+// Trap. Crank lean & flying pose (the main step of "Crank That", with its "Superman"): sit back
+// into one hip with the other knee bent in on its toe, fists together in front of the chest
+// cranking from side to side with the hips, three cranks; palms together at the chest on the dip, then
+// hop into the flying pose, the
+// free knee lifted out to the side, one fist punched up and the other arm out.
+const crank = (side: 1 | -1, y: number): PoseSpec => ({
+  y, hips: 0.04, tilt: 5, lean: -4, bend: -3, twist: 12 * side, turn: 10 * side, nod: 2, head: 2,
+  rf: [0.1, 0, 0], lf: [-0.035, 0, 0.03], kneeR: 0.1, kneeL: -0.45, pitchL: 26,
+  r: at(1, side > 0 ? 0.32 : -0.08, 0.74, side > 0 ? 0.14 : 0.22, E_DOWN),
+  l: at(-1, side > 0 ? 0.08 : -0.32, 0.74, side > 0 ? 0.22 : 0.14, E_DOWN), ...FIST,
+});
+const crankDip: PoseSpec = {
+  y: -0.13, hips: 0, tilt: 0, lean: 0, bend: 8, twist: 0, turn: 0, nod: 6, head: 0,
+  rf: [0.1, 0, 0], lf: [-0.1, 0, 0], kneeR: 0.12, kneeL: 0.12, pitchL: 0,
+  r: at(1, 0.03, 0.82, 0.2, E_DOWN), l: at(-1, -0.03, 0.82, 0.2, E_DOWN), ...OPEN,
+};
+const flying: PoseSpec = {
+  y: 0.05, hips: -0.02, tilt: -6, lean: 7, bend: 3, twist: 0, turn: -10, nod: -6, head: 5,
+  rf: [0.07, 0.03, 0], lf: [-0.2, 0.2, 0.05], kneeR: 0.05, kneeL: 0.5, pitchL: 0,
+  r: at(1, 0.2, 1.08, 0.02, [1, -0.2, -0.2]), l: at(-1, -0.42, 0.78, 0.05, E_OUT), handR: 0, handL: 1,
+};
+const flyingLand: PoseSpec = {
+  ...flying, y: -0.08, rf: [0.07, 0, 0], lf: [-0.15, 0.1, 0.04], kneeL: 0.3, lean: 4, nod: -2, turn: -5,
+  r: at(1, 0.2, 0.96, 0.08, [1, -0.2, -0.2]), l: at(-1, -0.32, 0.72, 0.08, E_OUT),
+};
+
 export const patterns: PatternSet = {};
 
 export const moves: MoveDef[] = [
@@ -412,6 +478,27 @@ export const moves: MoveDef[] = [
     desc: 'Bouncing on the knees and looking down into it, one hand stirs a big pot in front of the waist, round once every two beats, while the other hand holds the rim; switch hands.',
     keys: [[0, stir(0, -0.08, 10)], [0.5, stir(1, -0.05, 6)], [1, stir(2, -0.08, 10)], [1.5, stir(3, -0.05, 6)]],
   }),
+  // Commonly called "Hit Dem Folks" (named after a phrase from one scene): descriptive name.
+  full({
+    id: 'flex-knee-hit', name: 'Flex & Knee Hit', tags: 'hiphop | full |', beats: 2, level: 'mid', d: 2, parts: ['arms', 'legs', 'torso'], mirror: true,
+    desc: 'Flex one fist up beside the head with the elbow high and snap the opposite knee up on the beat, crunching the body toward it; pump the forearm down in front of the face as the foot lands, then hit again; switch sides.',
+    keys: [[0, flexHit], [0.5, flexPump], [1, flexHit], [1.5, flexPump]],
+  }),
+  // The step commonly called "the juju" (from the song "Juju on That Beat"): descriptive name.
+  full({
+    id: 'ear-chest-sway', name: 'Ear-to-Chest Sway', tags: 'hiphop | arms full |', beats: 2, level: 'low', d: 1, parts: ['arms', 'torso'],
+    desc: 'Dip the knees and sway to one side on every beat, both bent arms swinging together on a diagonal so one hand ends by its ear and the other across the chest; straighten through the middle with the hands passing in front, then sway to the other side.',
+    keys: [[0, jujuA], [0.5, jujuMid], [1, mir(jujuA)], [1.5, jujuMid]],
+  }),
+  // The main step of "Crank That" with its "Superman" pose (named after a song): descriptive name.
+  full({
+    id: 'crank-flying-pose', name: 'Crank Lean & Flying Pose', tags: 'hiphop | full | jump', beats: 4, level: 'high', d: 3, parts: ['arms', 'hips', 'jump'], mirror: true, jump: true,
+    desc: 'Sit back into one hip with the other knee bent in on its toe and crank both fists from side to side in front of the chest with the hips, three times; dip, then hop into a flying pose with the free knee lifted out to the side, one fist punched up and the other arm out.',
+    keys: [
+      [0, crank(-1, -0.08)], [0.5, crank(1, -0.06)], [1, crank(-1, -0.08)], [1.5, crank(1, -0.06)], [2, crank(-1, -0.09)],
+      [2.5, crankDip], [3, flying], [3.5, flyingLand],
+    ],
+  }),
 
   // --- Drill ----------------------------------------------------------------------
   full({
@@ -430,9 +517,9 @@ export const moves: MoveDef[] = [
     keys: [[0, swingFwd], [0.5, swingBack], [1, swingFwd], [1.5, swingBack]],
   }),
   full({
-    id: 'drill-strut', name: 'Drill Strut', tags: 'hiphop | full | walk', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms', 'torso'],
-    desc: 'Strut on the spot with a heavy bounce: step down onto one foot as the other knee lifts, the opposite arm swinging up across the chest and the shoulders rocking with it, chin up; then the other side.',
-    keys: [[0, strutA], [0.75, strutMid], [1, mir(strutA)], [1.75, strutMid]],
+    id: 'drill-strut', name: 'Drill Strut', tags: 'hiphop | full | walk', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms', 'torso'], mirror: true,
+    desc: 'Bouncy strut on the spot (the "woo walk"): drop onto one foot as the other flicks out on the diagonal and lands heel-first, toes up, then the other foot; one fist held up by the head and the other hand at the belt buckle, nodding on every step.',
+    keys: [[0, strutA], [0.5, strutMid], [1, strutB], [1.5, strutSwap]],
   }),
   full({
     id: 'sturdy-hop', name: 'Sturdy Hop', tags: 'hiphop | legs | jump', beats: 2, level: 'high', d: 2, parts: ['legs', 'jump', 'arms'], jump: true, impact: true,
