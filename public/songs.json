@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-14T03:24:29.998Z",
+  "updatedAt": "2026-11-14T04:44:21.250Z",
   "songs": [
     {
       "videoId": "_Vj092UgKwQ",
@@ -8,7 +8,11 @@
       "addedAt": "2026-11-11T04:49:10.285Z",
       "durationSec": 283,
       "hasMap": true,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "disco",
+        "pop"
+      ]
     },
     {
       "videoId": "fw-QRyQcFH8",
@@ -17,7 +21,15 @@
       "addedAt": "2026-11-11T05:44:26.169Z",
       "durationSec": 176,
       "hasMap": true,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "pop",
+        "dance-pop",
+        "pop rap",
+        "Britpop",
+        "pop rock",
+        "synth-pop"
+      ]
     },
     {
       "videoId": "s8ZXJ5QUYvQ",
@@ -26,7 +38,15 @@
       "addedAt": "2026-11-11T17:11:29.488Z",
       "durationSec": 236,
       "hasMap": true,
-      "genre": "Hard Rock"
+      "genre": "Hard Rock",
+      "genres": [
+        "nu metal",
+        "rap rock",
+        "alternative rock",
+        "rock",
+        "hard rock",
+        "alternative metal"
+      ]
     },
     {
       "videoId": "dWErisOfeyE",
@@ -35,7 +55,15 @@
       "addedAt": "2026-11-11T17:41:56.174Z",
       "durationSec": 220,
       "hasMap": true,
-      "genre": "Pop"
+      "genre": "Pop",
+      "genres": [
+        "Latin pop",
+        "reggaeton",
+        "salsa",
+        "latin",
+        "pop",
+        "cumbia"
+      ]
     },
     {
       "videoId": "aF18NehJxos",
@@ -44,7 +72,15 @@
       "addedAt": "2026-11-11T21:16:05.704Z",
       "durationSec": 208,
       "hasMap": true,
-      "genre": "Rock"
+      "genre": "Rock",
+      "genres": [
+        "alternative rock",
+        "rock",
+        "funk rock",
+        "dance-rock",
+        "hard rock",
+        "post-grunge"
+      ]
     }
   ]
 }
