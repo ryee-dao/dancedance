@@ -1,0 +1,1729 @@
+{
+ "713691774": {
+  "memory": {
+   "family": "rock",
+   "sub": "Brazilian rock / post-punk (BRock)",
+   "energy": "mid",
+   "rhythm": "steady 4/4 rock beat, strummed guitar"
+  },
+  "consensus": {
+   "family": "rock",
+   "sub": "post-punk (Brazilian rock)",
+   "energy": "mid",
+   "rhythm": "steady 4/4 rock groove; songbpm reads 186 with half-time 93, tab site 94",
+   "line": "Rock / Brazilian post-punk, tense and melancholic but anthemic, steady 4/4 rock beat, step ~93 BPM (songbpm 186 / half 93; Cifra Club tab 94)"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (song)",
+    "says": "Infobox genre: post-punk; album version 5:01; Russo called the track 'too dense for extensive airplay'.",
+    "url": "https://en.wikipedia.org/wiki/Tempo_Perdido_(Legi%C3%A3o_Urbana_song)"
+   },
+   {
+    "site": "Last.fm track wiki",
+    "says": "Genre given as Pós-punk.",
+    "url": "https://www.last.fm/music/Legi%C3%A3o+Urbana/_/Tempo+Perdido/+wiki"
+   },
+   {
+    "site": "Rolling Stone Brasil (Dois retrospective)",
+    "says": "On Dois the punk aggression gave way to constant tension; 'Tempo Perdido' became the album's biggest hit.",
+    "url": "https://rollingstone.com.br/?p=140393"
+   },
+   {
+    "site": "songbpm.com",
+    "says": "186 BPM (half-time 93), E minor, 5:02.",
+    "url": "https://songbpm.com/@legiao-urbana/tempo-perdido"
+   },
+   {
+    "site": "paidtabs (Cifra Club lesson)",
+    "says": "Tab listed at 94 BPM.",
+    "url": "https://paidtabs.com/search/7MnT7msJZg3XBAS0OTfGrB"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "reflective, melancholic ('makes me want to cry', 'a reflective song'); nothing on the beat"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "mid",
+   "danceBpm": [
+    92,
+    95
+   ],
+   "altBpm": [
+    184,
+    188
+   ],
+   "bpmSource": "songbpm.com (186, half 93); Cifra Club tab via paidtabs (94)",
+   "pulse": "clear",
+   "note": "Album version 5:02 matches durationSec 302. Genre/sound evidence is mostly genre labels (Wikipedia, Last.fm) plus Rolling Stone Brasil on the album's tense feel; no source describes the beat in detail."
+  }
+ },
+ "1469579653": {
+  "memory": {
+   "family": "R&B/soul",
+   "sub": "Motown soul",
+   "energy": "mid",
+   "rhythm": "easy mid-tempo 4/4, famous bass/guitar intro"
+  },
+  "consensus": {
+   "family": "R&B/soul",
+   "sub": "Motown soul / pop-soul",
+   "energy": "mid",
+   "rhythm": "gentle mid-tempo 4/4 with a light shuffle lilt; ~105 BPM",
+   "line": "R&B/soul / Motown soul, sweet and joyful, gentle shuffle-lilted 4/4 groove, step ~105 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (song)",
+    "says": "Genres soul, pop; Cash Box: 'a pulsating, shuffle-wobble ballad'; Record World: 'a sweet and slow tribute'.",
+    "url": "https://en.wikipedia.org/wiki/My_Girl_(The_Temptations_song)"
+   },
+   {
+    "site": "songbpm.com",
+    "says": "105 BPM (half 53, double 210), 2:45.",
+    "url": "https://songbpm.com/@the-temptations/my-girl"
+   },
+   {
+    "site": "UBC/Waterloo DJ track database",
+    "says": "Analyses of several releases put it at about 104-106 BPM.",
+    "url": "https://cs.uwaterloo.ca/~dtompkin/music/track/TEMPTTNS_G1A/TEMPTTNS_G1A-05.html"
+   },
+   {
+    "site": "Karaoke-Version",
+    "says": "Tempo variable, around 105 BPM.",
+    "url": "https://www.karaoke-version.com/mp3-backingtrack/the-temptations/my-girl.html"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "nostalgic, tender ('sounds this crisp, solid and beautiful'); nothing on the beat"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "soft",
+   "danceBpm": [
+    104,
+    106
+   ],
+   "bpmSource": "songbpm.com (105), UBC/Waterloo DJ database (104-106), Karaoke-Version (~105)",
+   "pulse": "clear",
+   "note": "Contemporary trade reviews called it a ballad / 'sweet and slow', but the measured tempo is a steady ~105; gentle rather than driving. Soundtrack track is the original 1964/65 recording (2:44)."
+  }
+ },
+ "1099843209": {
+  "memory": {
+   "family": "metal",
+   "sub": "nu metal / alternative metal",
+   "energy": "driving",
+   "rhythm": "heavy slow-feeling riff, quiet/loud dynamics"
+  },
+  "consensus": {
+   "family": "metal",
+   "sub": "nu metal / alternative metal",
+   "energy": "driving",
+   "rhythm": "heavy downtuned riff, quiet-verse/loud-chorus dynamics; tempo reads ~143-148 or half-time ~72-76",
+   "line": "Metal / nu metal-alt metal, dark and tense, heavy distorted riff with quiet/loud dynamics, ~144 BPM (also read as half-time ~72)"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (song)",
+    "says": "Genres nu metal, alternative metal; Kerrang!: 'quiet/loud dynamism'; Rolling Stone: 'master class in tension building'.",
+    "url": "https://en.wikipedia.org/wiki/My_Own_Summer_(Shove_It)"
+   },
+   {
+    "site": "songbpm.com",
+    "says": "72 BPM (double-time 144), 3:35.",
+    "url": "https://songbpm.com/@deftones/my-own-summer-shove-it"
+   },
+   {
+    "site": "UBC/Waterloo DJ track database",
+    "says": "Mixmeister 143.7 BPM, Traktor 75.6 BPM, F#m.",
+    "url": "https://cs.uwaterloo.ca/~dtompkin/music/track/MATRX____ST1/MATRX____ST1-09.html"
+   },
+   {
+    "site": "Karaoke-Version",
+    "says": "Tempo variable, around 143 BPM.",
+    "url": "https://www.karaoke-version.com/custombackingtrack/deftones/my-own-summer-shove-it.html"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "heavy ('this beat is heavier than the earth itself', 'badass bass riff', played at a fight arena)"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "driving",
+   "danceBpm": [
+    143,
+    148
+   ],
+   "altBpm": [
+    72,
+    76
+   ],
+   "bpmSource": "Mixmeister 143.7, Karaoke-Version ~143, jog.fm 148; songbpm 72 and Traktor 75.6 read half-time",
+   "pulse": "clear",
+   "feels": [
+    "heavy-distortion",
+    "half-time"
+   ],
+   "note": "Sources split by a factor of two; the heavy riff is commonly felt at the slower half-time pulse (~72) even though most analyzers report ~144."
+  }
+ },
+ "1570993122": {
+  "memory": {
+   "family": "electronic",
+   "sub": "electro swing with dubstep drops",
+   "energy": "driving",
+   "rhythm": "swung/vaudeville verses into heavy electronic drop"
+  },
+  "consensus": {
+   "family": "electronic",
+   "sub": "dubstep / electro swing (sources differ)",
+   "energy": "driving",
+   "rhythm": "electronic dance beat; ~105 BPM per Hooktheory and Karaoke-Version",
+   "line": "Electronic / dubstep-electro swing (labels differ), theatrical villain song with vaudeville showman delivery, step ~105 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (Black Gryph0n page, via Kiwix mirror)",
+    "says": "'Insane' single (11 June 2021), genre: Dubstep, length 2:39.",
+    "url": "https://wiki.autismit.com/content/wikipedia_en_all_maxi_2025-08/Black_Gryph0n"
+   },
+   {
+    "site": "Last.fm track tags",
+    "says": "Tags: demonic, electro-swing, electroswing.",
+    "url": "https://www.last.fm/music/Black+Gryph0n/_/Insane"
+   },
+   {
+    "site": "Karaoke-Version",
+    "says": "105 BPM, E minor; genres Dance, Electro.",
+    "url": "https://www.karaoke-version.com/karaoke/black-gryph0n/insane.html"
+   },
+   {
+    "site": "Hooktheory TheoryTab",
+    "says": "INSANE: E minor, 105 BPM.",
+    "url": "https://www.hooktheory.com/theorytab/artist/black-gryph0n"
+   },
+   {
+    "site": "Songtell",
+    "says": "Intro 'functions like a vaudeville showman announcing a grotesque act'; chorus mood 'Violent Glee'.",
+    "url": "https://songtell.com/baasik-black-gryph0n/insane"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "the picked upload is the '1920' re-arrangement: 'Originally Insane is an electro swing song... This version itself is classic swing', '1920s vibe', 'an absolute banger'"
+   }
+  ],
+  "disagreement": "Sub-style is contested: Wikipedia (and the store genre) say dubstep, Last.fm listeners tag electro-swing. Family 'electronic' is agreed. Note 105 BPM is unusual for dubstep (typically ~140 with half-time feel), so the 'dubstep' label may describe the drop production rather than tempo. The picked video is not the original single but its 1920s classic-swing re-arrangement (same length); the consensus describes the song, and the 1920 version is swing as well.",
+  "known": true,
+  "audio": {
+   "character": "driving",
+   "danceBpm": [
+    104,
+    106
+   ],
+   "bpmSource": "Hooktheory (105), Karaoke-Version (105, 'same as original')",
+   "pulse": "clear",
+   "note": "Hazbin Hotel fan song written from Alastor's perspective; 2:39 matches durationSec 160. No source describes the beat pattern in detail; driving character inferred from genre labels (dubstep/dance/electro) and 'Violent Glee' chorus."
+  }
+ },
+ "716071285": {
+  "memory": {
+   "family": "Latin",
+   "sub": "reggaeton (R&B-vocal reggaeton)",
+   "energy": "driving",
+   "rhythm": "dembow"
+  },
+  "consensus": {
+   "family": "Latin",
+   "sub": "reggaeton",
+   "energy": "mid",
+   "rhythm": "dembow (by genre; no source describes the beat)",
+   "line": "Latin / reggaeton (feat. Alexis y Fido), R&B singer over reggaeton, dembow rhythm assumed from genre; no tempo source (artist-level / list-level only)"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Shazam",
+    "says": "'Reggaeton (ft. Alexis y Fido)', Tony Sunshine, Capitol Latin, 1 Jan 2006, 'Reggaeton - Single'; store genre Pop. Confirms this is the right track.",
+    "url": "https://www.shazam.com/song/716071285/reggaeton"
+   },
+   {
+    "site": "Salsa Forums list",
+    "says": "Listed as 'Reggaeton - Tony Sunshine Feat. Alexis & Fido' in a list of popular reggaeton songs since 2005; no description.",
+    "url": "https://www.salsaforums.com/threads/reggaeton-recommendion-plz.3319/"
+   },
+   {
+    "site": "Wikipedia (artist)",
+    "says": "Artist-level only: Tony Sunshine is an R&B / hip hop singer (Terror Squad); the single is not mentioned.",
+    "url": "https://en.wikipedia.org/wiki/Tony_Sunshine"
+   },
+   {
+    "site": "Rolling Stone en Espanol",
+    "says": "Artist-level only: notes collaborations with Alexis & Fido, Ivy Queen, Pitbull and a separate track over 'el ritmo del dembow'.",
+    "url": "https://es.rollingstone.com/tony-sunshine-mas-de-tres-decadas-de-impacto-en-la-industria-musical/"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "confirms reggaeton ('proof that you did reggaeton a while ago')"
+   }
+  ],
+  "disagreement": "Memory guessed driving; no source supports an energy level, so consensus energy is set to mid as a neutral default.",
+  "known": true,
+  "audio": {
+   "pulse": "clear",
+   "note": "Only a fan list classifies the track as reggaeton; rest is title, featured duo (Alexis y Fido, a reggaeton duo) and artist-level info. Mid-2000s reggaeton convention is dembow at roughly 90-100 BPM, but no source states this track's tempo, so danceBpm is omitted."
+  }
+ },
+ "1745576607": {
+  "memory": {
+   "family": "pop",
+   "sub": "power ballad / adult contemporary",
+   "energy": "calm",
+   "rhythm": "slow 4/4, builds to big chorus, ~70 BPM"
+  },
+  "consensus": {
+   "family": "pop",
+   "sub": "power ballad (adult contemporary)",
+   "energy": "calm",
+   "rhythm": "slow 4/4 ballad, soft verses building to a big chorus; ~67-70 BPM (some tools 140)",
+   "line": "Pop / power ballad, tender then soaring, slow 4/4 building to a huge chorus, step ~70 BPM (analyzers also report 140)"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (The Power of Love, Jennifer Rush song: Dion version)",
+    "says": "Pop, 5:42 album version; Music & Media: 'the obligatory majestic ballad'; Network Forty: 'a reflective ballad'.",
+    "url": "https://en.wikipedia.org/wiki/The_Power_of_Love_(Jennifer_Rush_song)"
+   },
+   {
+    "site": "Wikipedia (I Am: Celine Dion soundtrack)",
+    "says": "Track 2 'The Power of Love', 5:44 (i.e. the album version, matches durationSec 344).",
+    "url": "https://en.wikipedia.org/wiki/I_Am:_Celine_Dion_(soundtrack)"
+   },
+   {
+    "site": "songbpm.com",
+    "says": "140 BPM (half-time 70), G#/Ab major, 5:42.",
+    "url": "https://songbpm.com/@celine-dion/the-power-of-love"
+   },
+   {
+    "site": "Karaoke-Version",
+    "says": "Tempo variable, around 70 BPM.",
+    "url": "https://www.karaoke-version.com/mp3-backingtrack/celine-dion/the-power-of-love.html"
+   },
+   {
+    "site": "UBC/Waterloo DJ track database",
+    "says": "Traktor 70.0 BPM; Mixmeister 140.0.",
+    "url": "https://www.cs.ubc.ca/~davet/music/track/POWERTRK_056/POWERTRK_056-10.html"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "emotional power ballad ('magnificent voice', 'power in her voice'); nothing on the beat"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "calm",
+   "danceBpm": [
+    67,
+    72
+   ],
+   "altBpm": [
+    138,
+    142
+   ],
+   "bpmSource": "Karaoke-Version (~70), Traktor (70.0), musiciwant (67); songbpm and Mixmeister report 140 (double)",
+   "pulse": "weak",
+   "note": "Quiet, sparse opening; drums and full arrangement only in the build, so pulse is weak early and clear in the choruses."
+  }
+ },
+ "6819932400": {
+  "consensus": {
+   "family": "K-pop",
+   "sub": "unspecified (dreamy melodies over heavy beats)",
+   "rhythm": "'weighty beats' (no pattern or tempo stated)",
+   "line": "K-pop / performance-track EP opener, 'dreamy melodies and weighty beats', intense and unpredictable per listeners; no tempo source",
+   "energy": "driving"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Bandwagon Asia (EP release coverage)",
+    "says": "EP opens with 'ANEMIA', combining 'dreamy melodies with weighty beats' to explore the confusion of losing oneself.",
+    "url": "https://www.bandwagon.asia/articles/ateez-break-through-their-limits-in-up-music-video-usher-in-golden-hour-part-6-ep"
+   },
+   {
+    "site": "Mama's Geeky",
+    "says": "Same description: pairs 'dreamy melodies with weighty beats'; no genre named.",
+    "url": "https://mamasgeeky.com/2026/11/ateez-golden-hour-part-6.html"
+   },
+   {
+    "site": "Apple Music",
+    "says": "GOLDEN HOUR : Part.6 EP, 13 Nov 2026, KQ Entertainment; ANEMIA is 2:56 (matches durationSec 176).",
+    "url": "https://music.apple.com/us/album/golden-hour-part-6-ep/6819932396"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "'THE INSTRUMENTAL IS CRAZY', 'unpredictable', 'sounds so much like THE WORLD and OUTLAW' (the group's hard-hitting performance eras)"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "note": "Every outlet repeats the same label press-release phrase, so this counts as one source. No genre, energy level or BPM stated; released one day before this research. Energy deliberately omitted."
+  },
+  "disagreement": "Energy 'driving' rests only on the press line 'weighty beats' plus listener comparisons with the group's hard-hitting eras."
+ },
+ "6812412667": {
+  "consensus": {
+   "family": "rock",
+   "sub": "anthemic arena rock (compared to the 'Vertigo' era)",
+   "energy": "driving",
+   "rhythm": "steady rock beat with prominent bass; chant-like refrain; no tempo source",
+   "line": "Rock / anthemic U2 arena rock, buzzy and uplifting (compared to 'Vertigo'), prominent bass and big chorus; no tempo source"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (song)",
+    "says": "Rock track, 3:54; Irish Times: 'buzzy, uplifting number', sound compared to How to Dismantle an Atomic Bomb, especially 'Vertigo'.",
+    "url": "https://en.wikipedia.org/wiki/Street_of_Dreams_(U2_song)"
+   },
+   {
+    "site": "Atwood Magazine",
+    "says": "A 'rousing' 'rock anthem of hope'; bilingual refrain has 'the immediacy of a chant'.",
+    "url": "https://atwoodmagazine.com/usod-u2-street-of-dreams-song-review/"
+   },
+   {
+    "site": "ClutchPoints (via Wikipedia)",
+    "says": "Large-scale sound with Adam Clayton's bass prominent in Jacknife Lee's production.",
+    "url": "https://clutchpoints.com/entertainment/u2-street-of-dreams-2026-bono-single-review"
+   },
+   {
+    "site": "JamBase",
+    "says": "Headline calls it an 'Anthemic Single'.",
+    "url": "https://www.jambase.com/article/u2-street-of-dreams-single-video-2026-album"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "triumphant return, 'the Larry Mullen Jr. Band' (drum-forward), 'should have been the World Cup song' (anthem)"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "driving",
+   "pulse": "clear",
+   "note": "Studio version 3:54 matches durationSec 235. 'Driving' rests on the 'Vertigo' comparison and 'rousing/buzzy' descriptions; could be closer to mid. Stereogum notes it is not the AC/DC-style rock Bono had teased. No BPM source found."
+  }
+ },
+ "1563274812": {
+  "memory": {
+   "family": "reggae/dancehall",
+   "sub": "dancehall (bashment)",
+   "energy": "driving",
+   "rhythm": "dancehall riddim, syncopated kick/snare"
+  },
+  "consensus": {
+   "family": "reggae/dancehall",
+   "sub": "dancehall / bashment",
+   "energy": "driving",
+   "rhythm": "syncopated dancehall riddim, hiccuping snares, thudding kicks, timbales; 90 BPM",
+   "line": "Reggae/dancehall / club bashment, hard-hitting party banger, syncopated dancehall riddim with heavy bass, step 90 BPM (Beatport)"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "The Singles Jukebox",
+    "says": "'hiccuping snares and thudding kicks', murky bass synths, timbales; Inskeep: 'A slammer'.",
+    "url": "https://thesinglesjukebox.com/?p=9251"
+   },
+   {
+    "site": "DancehallMag",
+    "says": "'clearly made with the club in mind'; retains 'an authentic bashment sound'; middle-eastern and 90s dancehall influences.",
+    "url": "https://dancehallmag.com/?p=34993"
+   },
+   {
+    "site": "Beatport",
+    "says": "VP Records, genre Dancehall, 90 BPM, G major, 2021-04-30.",
+    "url": "https://www.beatport.com/track/drift/20841786"
+   },
+   {
+    "site": "Digital Journal",
+    "says": "Nonchalant, sassy and upbeat dancehall collaboration.",
+    "url": "https://www.digitaljournal.com/entertainment/spice-sean-paul-and-shaggy-charm-on-go-down-deh/article"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "dancehall party anthem ('will always be remembered, danced to', 'song of the summer')"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "driving",
+   "danceBpm": [
+    88,
+    92
+   ],
+   "bpmSource": "Beatport (90 BPM, several listings)",
+   "pulse": "clear",
+   "feels": [
+    "syncopated"
+   ],
+   "note": "Beatport search result URL is a listing page that showed the track; the 90 BPM figure was consistent across Beatport entries for the original."
+  }
+ },
+ "1383548445": {
+  "memory": {
+   "family": "reggae/dancehall",
+   "sub": "reggae fusion / dancehall-pop",
+   "energy": "driving",
+   "rhythm": "dancehall bounce, Latin guitar touches"
+  },
+  "consensus": {
+   "family": "reggae/dancehall",
+   "sub": "dancehall / reggae fusion with Latin (flamenco/tango) touches",
+   "energy": "driving",
+   "rhythm": "dancehall riddim (Sexy Lady Explosion riddim with added beats); ~102 BPM",
+   "line": "Reggae/dancehall / reggae-fusion pop with Latin guitar touches, upbeat party single, dancehall riddim, step ~102 BPM (single DJ-database reading)"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (song)",
+    "says": "Genres reggae, dancehall, tango; 3:19; built on the Sexy Lady Explosion riddim with additional beats; Billboard: chorus 'relentless'.",
+    "url": "https://en.wikipedia.org/wiki/Hey_Sexy_Lady"
+   },
+   {
+    "site": "Wikipedia (Lucky Day album)",
+    "says": "Album genres dancehall, reggae fusion; Rolling Stone: Shaggy's faster songs work best, names 'Hey Sexy Lady' a highlight.",
+    "url": "https://en.wikipedia.org/wiki/Lucky_Day_(album)"
+   },
+   {
+    "site": "UBC/Waterloo DJ track database",
+    "says": "3:20, 101.7 BPM (Traktor).",
+    "url": "https://cs.uwaterloo.ca/~dtompkin/music/track/HOTSTUFF_006/HOTSTUFF_006-06.html"
+   }
+  ],
+  "disagreement": "A search snippet attributed 'dancehall and funk with Spanish flamenco' and 'mariachi trumpet, flamenco guitar, castanets' to reviews (Metacritic aggregate), but the pages could not be opened to verify; the Latin element is supported by Wikipedia's 'tango' genre tag only.",
+  "known": true,
+  "audio": {
+   "character": "driving",
+   "danceBpm": [
+    100,
+    104
+   ],
+   "bpmSource": "UBC/Waterloo DJ database (Traktor 101.7) - single source",
+   "pulse": "clear",
+   "feels": [
+    "syncopated"
+   ],
+   "note": "Length 3:19-3:20 matches durationSec 200."
+  }
+ },
+ "1769025042": {
+  "memory": {
+   "family": "country",
+   "sub": "country ballad",
+   "energy": "calm",
+   "rhythm": "slow steady 4/4"
+  },
+  "consensus": {
+   "family": "country",
+   "sub": "country ballad (minor-key, steel and fiddle, builds to a crescendo)",
+   "energy": "calm",
+   "rhythm": "slow steady 4/4; slow build that swells about three-quarters through, then subsides",
+   "line": "Country / reflective minor-key ballad ('haunting, plaintive'), steel guitar + fiddle, slow 4/4 that builds to a big late chorus; ~80 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (The Fall, Cody Johnson song)",
+    "says": "Country ballad; Entertainment Focus calls it 'haunting, plaintive'; minor-chord verses, chorus crescendos ~3/4 through then subsides; Johnson asked to slightly slow the demo tempo.",
+    "url": "https://en.wikipedia.org/wiki/The_Fall_(Cody_Johnson_song)"
+   },
+   {
+    "site": "Country Central review (Leather Deluxe)",
+    "says": "Tame through early progressions, then shifts into a 'high-energy drive' on the final chorus; raspy vocal 'snarls' through the back half.",
+    "url": "https://countrycentral.com/reviews/cody-johnson-leather-deluxe-edition-album-review/"
+   },
+   {
+    "site": "Songfacts",
+    "says": "A 'philosophical country number', 'quiet reckoning', compared with Garth Brooks' 'The Dance'.",
+    "url": "https://www.songfacts.com/facts/cody-johnson/the-fall"
+   },
+   {
+    "site": "Karaoke-Version",
+    "says": "Original tempo 80 BPM, key C minor; country ballad with pedal steel and fiddle.",
+    "url": "https://www.karaoke-version.com/mp3-backingtrack/cody-johnson/the-fall.html"
+   },
+   {
+    "site": "Shazam",
+    "says": "BPM 80, Country, Leather Deluxe Edition, 3:18.",
+    "url": "https://www.shazam.com/song/1769025042/the-fall"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "deeply emotional, redemption and grief stories; nothing on the beat"
+   }
+  ],
+  "disagreement": "Not with memory. Sources differ on emphasis: most call it a ballad, Country Central stresses the high-energy final section. Overall still a ballad that builds.",
+  "known": true,
+  "audio": {
+   "character": "soft",
+   "danceBpm": [
+    78,
+    82
+   ],
+   "bpmSource": "Karaoke-Version (80, 'same as original'), Shazam (80)",
+   "pulse": "clear",
+   "note": "Dynamic build: quiet verses, loud late chorus with guitar solo in place of a bridge."
+  }
+ },
+ "6778607829": {
+  "consensus": {
+   "family": "country",
+   "sub": "contemporary country ballad / reflective mid-slow (steel guitar, 808 drum programming)",
+   "energy": "calm",
+   "rhythm": "slow steady beat with programmed 808 drums; chorus 'swings up'",
+   "line": "Country / warm, reflective, nostalgic breakup song, contemporary production with steel guitar and 808 drum programming, slow steady beat; ~73 BPM (Shazam only)"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Holler (lyrics and meaning)",
+    "says": "Warm, reflective, nostalgic; feels calm rather than a typical heartbreak song; 'unmistakably Chesney'.",
+    "url": "https://holler.country/lyrics/remember-me-that-way-by-kenny-chesney-lyrics-and-meaning/"
+   },
+   {
+    "site": "Saving Country Music album review",
+    "says": "Calls out 'some of the 808 drum programming in the production of the song'; album is 'mostly contemporary production that forgoes twang'.",
+    "url": "https://savingcountrymusic.com/?p=239274"
+   },
+   {
+    "site": "The Music Universe",
+    "says": "'Meandering' melody, chorus that 'swings up'; philosophical, reflective, conversational lyric.",
+    "url": "https://themusicuniverse.com/kenny-chesney-preps-remember-me-that-way/"
+   },
+   {
+    "site": "Shazam",
+    "says": "Country, BPM 73, ~3:27, Silver Sands Marina (HEY NOW Records, 2026); writers Hardy, McAnally, Abend.",
+    "url": "https://www.shazam.com/song/6778607829/remember-me-that-way"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "nostalgic, warm; 'reminded of one of his old songs, where it had a similar beat'"
+   }
+  ],
+  "disagreement": "No memory (2026 song, unknown to me). No source explicitly says 'ballad' or 'mid-tempo'; 'calm' rests on the reflective/calm mood descriptions plus the 73 BPM Shazam figure.",
+  "known": true,
+  "audio": {
+   "character": "soft",
+   "danceBpm": [
+    70,
+    76
+   ],
+   "bpmSource": "Shazam (73) only",
+   "pulse": "clear",
+   "note": "Programmed 808 drums under steel and acoustic guitars."
+  }
+ },
+ "1244743915": {
+  "memory": {
+   "family": "hip-hop",
+   "sub": "Miami bass / pop rap",
+   "energy": "driving",
+   "rhythm": "808 bass-heavy party beat, ~128 BPM"
+  },
+  "consensus": {
+   "family": "hip-hop",
+   "sub": "Miami bass / pop rap (party chant, Italo-disco synth sample)",
+   "energy": "driving",
+   "rhythm": "uptempo 808 bass-music beat, steady dance pulse ~129 BPM",
+   "line": "Hip-hop / Miami bass pop-rap party anthem (jock jam), upbeat and buoyant, 808 beat with a Kano Italo-disco synth line; ~129 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (song)",
+    "says": "Genre Miami bass, pop rap; synth line from Kano's Italo-disco 'I'm Ready'; praised for 'positive and uplifting tone'; arena/jock-jam staple.",
+    "url": "https://en.wikipedia.org/wiki/Whoomp!_(There_It_Is)"
+   },
+   {
+    "site": "songbpm.com",
+    "says": "129 BPM.",
+    "url": "https://songbpm.com/@tag-team/whoomp-there-it-is"
+   },
+   {
+    "site": "DJ track database (uWaterloo, Mixmeister/Traktor)",
+    "says": "129.4 BPM, F#m, 4:31 version.",
+    "url": "https://cs.uwaterloo.ca/~dtompkin/music/track/POWERTRK_010/POWERTRK_010-05.html"
+   },
+   {
+    "site": "Meet in Montauk (Song of the Day)",
+    "says": "Hip-hop; praises the 'playfulness and buoyancy' of the verses.",
+    "url": "https://meetinmontauk.com/tag/tag-team"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "driving",
+   "danceBpm": [
+    127,
+    131
+   ],
+   "bpmSource": "songbpm.com (129), DJ database Mixmeister/Traktor (129.4)",
+   "pulse": "clear",
+   "note": "4:33 length matches the ~4:31 longer version, not the 3:45 radio single."
+  }
+ },
+ "1003813290": {
+  "memory": {
+   "family": "sertanejo",
+   "sub": "moda de viola / caipira (sertanejo raiz)",
+   "energy": "mid",
+   "rhythm": "acoustic viola caipira + violão, duet in thirds, steady strummed caipira rhythm"
+  },
+  "consensus": {
+   "family": "sertanejo",
+   "sub": "sertanejo raiz / caipira, moda de viola (compilation framing only)",
+   "rhythm": "not documented for this song",
+   "line": "Sertanejo raiz / caipira duo, released on a 'Moda de Viola' compilation; acoustic viola tradition; mood and rhythm not documented; Shazam lists 89 BPM"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Shazam",
+    "says": "Peão Carreiro & Praense, on 'Sertanejo Raiz - Moda de Viola, Vol.1' (Atração, 1998); writer Peão Carreiro; BPM 89.",
+    "url": "https://www.shazam.com/song/1003813290/sertanejo"
+   },
+   {
+    "site": "Recanto Caipira (Peão Carreiro page)",
+    "says": "Lists 'Sertanejo' (Peão Carreiro) on the 1998 CD 'Peão Carreiro e Praense'; artist-level only, no genre/rhythm for the song.",
+    "url": "https://recantocaipira.com.br/duplas/peao_carreiro/peao_carreiro.html"
+   },
+   {
+    "site": "Letras.com.br biography",
+    "says": "Artist-level only: duo of 'música raiz' tradition; 1998 reunion CD for Atração, Peão Carreiro's voice weakened by illness.",
+    "url": "https://www.letras.com.br/peao-carreiro-e-praense/biografia"
+   }
+  ],
+  "disagreement": "Nothing describes this track's sound; the 'moda de viola' label comes only from the compilation title. Whether it is a moda de viola, pagode de viola, cururu or toada is unconfirmed. 6:30 length fits a long narrative moda.",
+  "known": true,
+  "audio": {
+   "feels": [
+    "acoustic"
+   ],
+   "note": "Acoustic feel inferred from the moda de viola / sertanejo raiz framing (viola caipira tradition), not from a song-level description. Shazam's 89 BPM is algorithmic and unconfirmed, so no danceBpm given."
+  }
+ },
+ "277635828": {
+  "memory": {
+   "family": "pop",
+   "sub": "acoustic pop with reggae lilt",
+   "energy": "mid",
+   "rhythm": "laid-back reggae-ish offbeat strum, ~76 BPM (or 151 double)"
+  },
+  "consensus": {
+   "family": "pop",
+   "sub": "acoustic folk-pop / lite reggae (Jawaiian-style)",
+   "energy": "mid",
+   "rhythm": "laid-back strummed groove with reggae offbeat 'bounce'; sparse arrangement; ~76 BPM, double-time reading ~151",
+   "line": "Pop / acoustic folk-pop with lite-reggae bounce, happy and mellow, sparse strummed groove; ~76 BPM (some sources ~151 double-time, Wikipedia 70)"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (song)",
+    "says": "Genres reggae, folk-pop, soft rock, Jawaiian, surf pop; 'lite-reggae anthem'; B major, moderate tempo 70 BPM; album version 4:03.",
+    "url": "https://en.wikipedia.org/wiki/I%27m_Yours_(Jason_Mraz_song)"
+   },
+   {
+    "site": "Songfacts",
+    "says": "Mraz: written 'minding my reggae influences'; so little production it's almost spoken-word yet 'rhythmic'; a 'happy little hippie song' with 'a nice bounce'.",
+    "url": "https://www.songfacts.com/facts/Jason-Mraz/Im-yours"
+   },
+   {
+    "site": "DJ track database (uWaterloo, Mixmeister/Traktor)",
+    "says": "75.5 BPM.",
+    "url": "https://cs.uwaterloo.ca/~dtompkin/music/track/CHRRADIO_178/CHRRADIO_178-08.html"
+   },
+   {
+    "site": "Karaoke-Version / Mixgraph",
+    "says": "Karaoke-Version gives 75.5 BPM original tempo; Mixgraph lists 151 BPM (double-time reading).",
+    "url": "https://www.karaoke-version.com/custombackingtrack/jason-mraz/i-m-yours.html"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "peaceful, nostalgic ('make someone peace of mind'); nothing on the beat"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "soft",
+   "danceBpm": [
+    74,
+    77
+   ],
+   "altBpm": [
+    150,
+    152
+   ],
+   "bpmSource": "DJ database (75.5), Karaoke-Version (75.5), other tempo sites 76-77; Mixgraph 151 (double); Wikipedia 70",
+   "pulse": "clear",
+   "feels": [
+    "acoustic",
+    "syncopated"
+   ],
+   "note": "Syncopated = reggae offbeat strum ('lite reggae')."
+  }
+ },
+ "696891524": {
+  "memory": {
+   "family": "electronic",
+   "sub": "synth-pop / Latin freestyle",
+   "energy": "mid",
+   "rhythm": "syncopated Latin freestyle drum-machine beat, ~110-120 BPM"
+  },
+  "consensus": {
+   "family": "pop",
+   "sub": "synth-pop / Latin freestyle (Miami, Lewis Martinée production)",
+   "energy": "mid",
+   "rhythm": "mid-tempo Latin-freestyle dance beat with Latin percussion and brass; ~110 BPM",
+   "line": "Synth-pop / Latin freestyle (Miami-produced, Cuban brass), 'strangely mellow, downtempo' minor-key dance-pop, Latin-tinged beat; ~110 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (song)",
+    "says": "Synth-pop, Latin pop, dance-pop, freestyle; produced in Miami by Lewis A. Martinée (Exposé); 7-inch 4:18; Pitchfork: 'strangely mellow, downtempo Latin freestyle'.",
+    "url": "https://en.wikipedia.org/wiki/Domino_Dancing"
+   },
+   {
+    "site": "Pop Culture Experiment (Freestyle Friday)",
+    "says": "Has 'freestyle trappings'; synth is 'a slower, minor key version' of a bouncy freestyle hook; felt 'sluggish'.",
+    "url": "https://popcultureexperiment.com/2016/10/07/freestyle-friday-domino-dancing/"
+   },
+   {
+    "site": "DJ track database (uWaterloo, Mixmeister/Traktor)",
+    "says": "110.0 BPM, 4:18 version (greatest hits).",
+    "url": "https://cs.uwaterloo.ca/~dtompkin/music/track/PETSHOPB_GH1/PETSHOPB_GH1-10.html"
+   },
+   {
+    "site": "GetSongBPM",
+    "says": "Alternative version (2001 remaster) 110 BPM, 4/4.",
+    "url": "https://getsongbpm.com/song/domino-dancing-alternative-version-2001-remastered-version/MZG28m"
+   }
+  ],
+  "disagreement": "Memory said family electronic; sources frame it as pop (synth-pop/dance-pop). One fan site lists 125 BPM, outlier vs 110 from DJ databases.",
+  "known": true,
+  "audio": {
+   "character": "mid",
+   "danceBpm": [
+    108,
+    112
+   ],
+   "bpmSource": "DJ database Mixmeister/Traktor (110, 4:18 version), GetSongBPM (110, alt version), AcousticBrainz (109 alt)",
+   "pulse": "clear",
+   "feels": [
+    "syncopated"
+   ],
+   "note": "Syncopated = Latin freestyle percussion; described as mellow/downtempo for freestyle."
+  }
+ },
+ "1440911925": {
+  "memory": {
+   "family": "jazz",
+   "sub": "jazz ballad (modern/post-bop quartet)",
+   "energy": "calm",
+   "rhythm": "slow ballad 4/4, loose/near-rubato feel, brushes"
+  },
+  "consensus": {
+   "family": "jazz",
+   "sub": "jazz ballad (Ellington piano + Coltrane tenor quartet)",
+   "energy": "calm",
+   "rhythm": "slow ballad in 4/4, ~73 BPM, loose rhythm-section feel",
+   "line": "Jazz / slow, supremely lyrical quartet ballad (Ellington piano, Coltrane tenor, Elvin Jones, Aaron Bell), calm and sparse, slow 4/4; ~73 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "AllSolos",
+    "says": "Ballad, 4/4, 73 BPM, D-flat; recording from Duke Ellington & John Coltrane (1962).",
+    "url": "https://www.allsolos.com/recording/658/in-a-sentimental-mood"
+   },
+   {
+    "site": "AllMusic review (via Douban repost)",
+    "says": "'A supremely lyrical In a Sentimental Mood'; album a 'casual, respectful' meeting.",
+    "url": "https://music.douban.com/review/8022586"
+   },
+   {
+    "site": "Wikipedia (album)",
+    "says": "Recorded 26 Sept 1962, Ellington piano, Coltrane tenor, Elvin Jones drums, Aaron Bell bass; 4:14.",
+    "url": "https://en.wikipedia.org/wiki/Duke_Ellington_%26_John_Coltrane"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "calm",
+   "danceBpm": [
+    70,
+    76
+   ],
+   "bpmSource": "AllSolos (73); a tempo-analysis site lists 75",
+   "pulse": "weak",
+   "note": "Ballad: sparse, floating tenor over spare piano; step pulse exists but is soft."
+  }
+ },
+ "430276711": {
+  "consensus": {
+   "family": "",
+   "sub": "",
+   "rhythm": "",
+   "line": ""
+  },
+  "evidence": "none",
+  "sources": [
+   {
+    "site": "Apple Music (single)",
+    "says": "Super Mario Bros. Theme - Single, Boogie Heights, Soundtrack, 2011, Odessa Mama Records, 1 song; no description.",
+    "url": "https://music.apple.com/us/album/super-mario-bros-theme-single/430276709"
+   },
+   {
+    "site": "Apple Music (artist)",
+    "says": "Artist-level only: novelty genre-remix covers of TV/game themes (Mario 'Hot Salsa', 'Bossa 66', 'Deep House', 'Reggaeton', 'Radio Dance' mixes); no style given for this plain version.",
+    "url": "https://music.apple.com/us/artist/boogie-heights/41476789"
+   },
+   {
+    "site": "Shazam",
+    "says": "Soundtrack, composer Koji Kondo, BPM 197 (algorithmic); no description.",
+    "url": "https://www.shazam.com/song/430276711/super-mario-bros-theme"
+   }
+  ],
+  "disagreement": "No memory of this artist/version. Boogie Heights releases many genre-styled mixes of the same theme; which style this unlabelled 2011 version uses is undocumented. Shazam's 197 BPM is unverified (could be a double reading of ~98).",
+  "known": false
+ },
+ "1444103245": {
+  "memory": {
+   "family": "pop",
+   "sub": "new wave / sophisti-pop (new pop, Trevor Horn)",
+   "energy": "mid",
+   "rhythm": "disco-funk four-on-the-floor, ~125 BPM"
+  },
+  "consensus": {
+   "family": "pop",
+   "sub": "new pop / disco-influenced dance-pop (orchestral, Trevor Horn production)",
+   "energy": "mid",
+   "rhythm": "moderate disco beat, ~125 BPM",
+   "line": "Pop / new-pop disco-dance-pop with orchestral sweep (Trevor Horn), dramatic and danceable, moderate disco beat; ~125 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (song)",
+    "says": "Genres disco, dance-pop, new pop, orchestral pop, lounge; Trevor Horn: Minimoog bass, TR-808 programming; congas; 3:24.",
+    "url": "https://en.wikipedia.org/wiki/Poison_Arrow_(song)"
+   },
+   {
+    "site": "Wikipedia (The Lexicon of Love)",
+    "says": "Aimed to merge disco (Chic strings) and post-punk; sophisti-pop/new wave/synth-pop; BBC: 'very, very funky'.",
+    "url": "https://en.wikipedia.org/wiki/The_Lexicon_of_Love"
+   },
+   {
+    "site": "Musicnotes sheet music",
+    "says": "Tempo marking: moderate disco beat, q = 125.",
+    "url": "https://www.musicnotes.com/sheetmusic/abc/poison-arrow/MN0122987"
+   },
+   {
+    "site": "Karaoke-Version",
+    "says": "125.62 BPM, same tempo as the original.",
+    "url": "https://www.karaoke-version.com/custombackingtrack/abc/poison-arrow.html"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "'What a great dance tune!! We used to boogie to this', synth-pop new wave (Vice City Wave 103)"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "mid",
+   "danceBpm": [
+    124,
+    127
+   ],
+   "bpmSource": "Musicnotes (125), Karaoke-Version (125.6), AcousticBrainz (125), AudioKeychain (126)",
+   "pulse": "clear",
+   "feels": [
+    "four-on-the-floor"
+   ],
+   "note": "Four-on-the-floor inferred from 'disco beat' (Musicnotes) and the disco genre label."
+  }
+ },
+ "1440912354": {
+  "memory": {
+   "family": "hip-hop",
+   "sub": "rap rock / rap metal",
+   "energy": "driving",
+   "rhythm": "heavy rock drums with distorted metal riffs, ~100 BPM"
+  },
+  "consensus": {
+   "family": "hip-hop",
+   "sub": "rap rock / rap metal (metal riffs, Kerry King solo)",
+   "energy": "driving",
+   "rhythm": "heavy rock backbeat, distorted guitar riffs; ~96-97 BPM",
+   "line": "Hip-hop / rap rock-rap metal, raucous and high-energy, heavy rock backbeat with distorted riffs and a Kerry King guitar solo; ~97 BPM"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Wikipedia (song)",
+    "says": "Rap rock, hard rock, heavy metal, rap metal; Rick Rubin riffs, Kerry King solo; Cash Box: 'raucous, rambunctious blend of rap, smart-ass and heavy metal'.",
+    "url": "https://en.wikipedia.org/wiki/No_Sleep_till_Brooklyn"
+   },
+   {
+    "site": "Musicnotes sheet music",
+    "says": "Moderate rap rock, around 96 BPM.",
+    "url": "https://www.musicnotes.com/sheetmusic/beastie-boys/no-sleep-til-brooklyn/MN0064089"
+   },
+   {
+    "site": "DJ track database (uWaterloo, Mixmeister/Traktor)",
+    "says": "97.0 BPM.",
+    "url": "https://cs.uwaterloo.ca/~dtompkin/music/track/DEFJAM___G1A/DEFJAM___G1A-09.html"
+   },
+   {
+    "site": "Shazam",
+    "says": "Hip-Hop/Rap, BPM 96, Licensed to Ill, ~4:07.",
+    "url": "https://www.shazam.com/song/1440912354/no-sleep-till-brooklyn"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "'One of the GREATEST Metal/Rap combos', 'they are shouting the whole thing', loud"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "driving",
+   "danceBpm": [
+    95,
+    98
+   ],
+   "bpmSource": "Musicnotes (96), Shazam (96), DJ database Mixmeister/Traktor (97), AudioKeychain (97)",
+   "pulse": "clear",
+   "feels": [
+    "heavy-distortion"
+   ]
+  }
+ },
+ "1837972823": {
+  "consensus": {
+   "family": "",
+   "sub": "",
+   "energy": "",
+   "rhythm": "",
+   "line": ""
+  },
+  "evidence": "none",
+  "sources": [
+   {
+    "site": "iTunes lookup API",
+    "says": "Confirms track: STASIS, PARAGENESIS, album N.O.V.A (10 tracks, all tagged Metal), 2025-08-20, 3:11, (p) 2025 STASIS, USA. Store genre tag only, no description.",
+    "url": "https://itunes.apple.com/lookup?id=1837972819&entity=song"
+   },
+   {
+    "site": "Apple Music artist page",
+    "says": "No bio, genre or hometown; releases: Enigma of Thy Maker EP (2024), DECENIUM single (2024), N.O.V.A (2025).",
+    "url": "https://music.apple.com/us/artist/stasis/1725045885"
+   }
+  ],
+  "disagreement": "Many unrelated acts are called Stasis (Bologna crust punk band, Kelowna BC band, Hippotraktor's album Stasis, Monuments' In Stasis). None is linked to N.O.V.A or PARAGENESIS, so none was used.",
+  "known": false,
+  "audio": {
+   "note": "Nothing found describing the music; only the store's 'Metal' genre tag."
+  }
+ },
+ "1681356899": {
+  "memory": {
+   "family": "pop",
+   "sub": "bedroom pop / indie pop with 70s soft-rock and soul touches",
+   "energy": "calm",
+   "rhythm": "laid-back steady backbeat"
+  },
+  "consensus": {
+   "family": "pop",
+   "sub": "indie pop / singer-songwriter bedroom pop",
+   "energy": "calm",
+   "rhythm": "soft, relaxed 4/4; songbpm 78 BPM (double-time 156)",
+   "line": "Indie pop / singer-songwriter bedroom pop, intimate and vulnerable, soft acoustic-guitar-led with hushed vocals; songbpm gives 78 BPM in 4/4 (double-time 156)"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Bandcamp Daily feature (Teresa Xie, 2021)",
+    "says": "Album-level: 'vulnerable indie pop', soft acoustic guitar strums, hushed soulful vocals, recorded in his bedroom. Does not mention Ambiguous Love.",
+    "url": "https://daily.bandcamp.com/features/michael-seyer-a-good-fool-interview"
+   },
+   {
+    "site": "Bandcamp album page",
+    "says": "Tags: alternative, indie, indie pop, singer-songwriter, Los Angeles. Ambiguous Love is track 2, 4:00 (matches length).",
+    "url": "https://michaelseyer.bandcamp.com/album/a-good-fool"
+   },
+   {
+    "site": "songbpm.com",
+    "says": "Ambiguous Love: 78 BPM, C#/Db major, 4 beats per bar, 4:01; notes it can be used double-time at 156.",
+    "url": "https://songbpm.com/@michael-seyer/ambiguous-love-FJz-dc4YcN"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "'very peaceful', 'sounds like young DeMarco', 'so pretty'"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "soft",
+   "danceBpm": [
+    76,
+    80
+   ],
+   "altBpm": [
+    152,
+    160
+   ],
+   "bpmSource": "songbpm.com (78 BPM, double-time 156)",
+   "pulse": "clear",
+   "feels": [
+    "acoustic"
+   ],
+   "note": "Sound description is album-level only (Bandcamp Daily, Bandcamp tags); no source describes this track specifically. 'Clear' pulse is an inference from the steady 4/4 BPM listing."
+  }
+ },
+ "1437002165": {
+  "memory": {
+   "family": "rock",
+   "sub": "hardcore punk / d-beat moving toward heavy metal",
+   "energy": "driving",
+   "rhythm": "fast punk beat"
+  },
+  "consensus": {
+   "family": "rock",
+   "sub": "metal-leaning UK hardcore punk (Discharge's mid-80s turn toward heavy metal)",
+   "energy": "driving",
+   "rhythm": "slower than their d-beat era, metal-oriented beat; songbpm 107 BPM (standard 2:03 version)",
+   "line": "Metal-leaning UK hardcore punk from Discharge's 1984 shift toward heavy metal: aggressive and driving but a bit slower than their d-beat records; songbpm gives 107 BPM for the 7-inch version"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Maximum RocknRoll #15 review (Jeff Bale, 1984)",
+    "says": "Panned the single: 'both the music and the vocals have a full-out metal sound.'",
+    "url": "https://maximumrocknroll.com/review/mrr-15/the-more-i-see-protest-and-survive-7"
+   },
+   {
+    "site": "RareVinyl.com 12-inch listing (as quoted in search results)",
+    "says": "The music 'might have stepped off the gas just slightly' versus their earliest releases but 'lost none of its power or anger.'",
+    "url": "https://uk.rarevinyl.com/products/discharge-the-more-i-see-uk-12-inch-vinyl-single-maxi-12clay34-817244"
+   },
+   {
+    "site": "Wikipedia (Discharge)",
+    "says": "Artist/period-level: in this era, d-beat replaced by 'metal-oriented beats', 'significantly slower tempos', Ozzy-style singing.",
+    "url": "https://en.wikipedia.org/wiki/Discharge_(band)"
+   },
+   {
+    "site": "Punky Gibbon discography",
+    "says": "12-inch CLAY 34 carries 'The More I See (Extended Version)' at 4:00 vs 2:06 for the 7-inch; matches the given length.",
+    "url": "https://punkygibbon.co.uk/bands/d/discharge_more.html"
+   },
+   {
+    "site": "songbpm.com",
+    "says": "Discharge, The More I See: 107 BPM, G#/Ab minor, 2:03 (standard version only).",
+    "url": "https://songbpm.com/@discharge/the-more-i-see"
+   }
+  ],
+  "disagreement": "My memory guessed a fast punk beat. The sources describe a heavier, metal-oriented, somewhat slower song.",
+  "known": true,
+  "audio": {
+   "character": "driving",
+   "danceBpm": [
+    104,
+    110
+   ],
+   "bpmSource": "songbpm.com, 107 BPM (standard 2:03 version; extended version assumed to share the tempo)",
+   "pulse": "clear",
+   "feels": [
+    "heavy-distortion"
+   ],
+   "note": "Only one BPM source, and it covers the 7-inch version, not the extended version. A double-time reading (~214) is possible with punk drumming, but no source states it."
+  }
+ },
+ "1095761072": {
+  "memory": {
+   "family": "electronic",
+   "sub": "IDM / melodic electronica",
+   "energy": "mid",
+   "rhythm": "programmed breakbeat-ish drums"
+  },
+  "consensus": {
+   "family": "electronic",
+   "sub": "retro synth-disco / melodic electronica (album); this track more energetic, Cabaret Voltaire / early u-Ziq style",
+   "energy": "mid",
+   "rhythm": "drum-machine groove (cheap-Roland kicks and snares on the album, motorik mid-tempo); no BPM found",
+   "line": "Electronic / analogue retro synth-disco and melodic electronica; 'Trip' is one of the peppier tracks (Code-era Cabaret Voltaire or early u-Ziq style) on drum-machine beats; no tempo source"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Flipside Reviews blog (2016)",
+    "says": "Track-level: 'Trip' 'peps things up a bit in the style of Code-era Cabaret Voltaire or early Mu-ziq'. Album: motorik mid-tempo bouncers, cheap-Roland drums.",
+    "url": "https://flipsideflipsidereviews.blogspot.com/2016/03/the-gasman-aeriform-album-review.html"
+   },
+   {
+    "site": "Bleep release blurb (as quoted in search results)",
+    "says": "Album-level: 'gauzy bass-pumped disco, emotive synth pop'.",
+    "url": "https://bleep.com/release/71997-the-gasman-aeriform?lang=en_US"
+   },
+   {
+    "site": "Bandcamp track page",
+    "says": "Tags: electronic, progressive, rave, computer, neoclassical, techno. Label blurb: disco, synth pop, funky electronic boogie, rave energy, hazy ambient.",
+    "url": "https://thegasman.bandcamp.com/track/trip"
+   },
+   {
+    "site": "Vinyl Exchange listing (as quoted in search results)",
+    "says": "Album-level: 'analogue, off kilter Eurodisco'.",
+    "url": "https://www.vinylexchange.co.uk/collections/dance-artists/products/the-gasman-aeriform"
+   }
+  ],
+  "disagreement": "My memory said IDM. The sources lean toward retro synth-disco and synth-pop for the album, though the track-level comparison (Cabaret Voltaire, u-Ziq) is close to IDM / industrial-dance.",
+  "known": true,
+  "audio": {
+   "character": "mid",
+   "pulse": "clear",
+   "note": "Rated 'single' because only one source (Flipside) describes this track. Several album-level sources agree on electronic / synth-disco, but the album is varied (ambient-house detours), so they do not count for the track. No BPM found."
+  }
+ },
+ "325037297": {
+  "consensus": {
+   "family": "electronic",
+   "sub": "instrumental ambient / downtempo keyboard music",
+   "energy": "calm",
+   "rhythm": "almost-ambient backing; a drummer supplied some beats on the album; no BPM found",
+   "line": "Instrumental electronic: ambient / downtempo keyboard melodies over an almost-ambient backing, peaceful (album-level only, compared to Eno's Music for Airports); no tempo source"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "The Line of Best Fit review (2009)",
+    "says": "Album-level: 'peaceful, pleasant keyboard melodies drifting over an almost ambient backing'; likened to Eno's Music for Airports; 'unclassifiable'.",
+    "url": "https://thelineofbestfit.com/reviews/albums/rec-tangle-heavy-maple-18294"
+   },
+   {
+    "site": "Forced Exposure catalogue (as quoted in search results)",
+    "says": "Debut LP by Rec.tangle (Adrien Rodes, Brighton), Melodic MELO 061; moved from sample-based work to instrumental music; drummer Alex Eberhard supplied beats. CD tracklist ends with Airborne Heliotropic Medusae.",
+    "url": "https://forcedexposure.com/Catalog/MELO.061LP.html"
+   },
+   {
+    "site": "iTunes lookup API",
+    "says": "Confirms track: artist 'Rectangle', album Heavy Maple, Electronic, 2009, 4:46.",
+    "url": "https://itunes.apple.com/lookup?id=325037297"
+   }
+  ],
+  "disagreement": "The store spells the artist 'Rectangle'; the reviews spell it 'Rec.tangle'. Same act: same album, year and label, and this track title is on the Rec.tangle CD tracklist.",
+  "known": true,
+  "audio": {
+   "character": "calm",
+   "feels": [
+    "beatless"
+   ],
+   "pulse": "weak",
+   "note": "Album-level only. The 'beatless' and 'weak' readings follow the 'almost ambient backing' review, but the album does have some live drums, so this track may carry a gentle beat. No BPM found."
+  }
+ },
+ "1785261246": {
+  "memory": {
+   "family": "rock",
+   "sub": "skate punk / melodic punk",
+   "energy": "driving",
+   "rhythm": "fast punk 4/4"
+  },
+  "consensus": {
+   "family": "rock",
+   "sub": "melodic pop-punk / skate punk",
+   "energy": "driving",
+   "rhythm": "fast, driving punk rock beat (album-level); no BPM found",
+   "line": "Melodic pop-punk / skate punk, energetic and driving (album-level only: Reactionary 'speeds and swerves through a dozen rockers'); no tempo source"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Exclaim! review",
+    "says": "Album-level: the band 'returns to its pop-punk roots'; 'speeds and swerves through a dozen rockers' with 'reckless abandon'.",
+    "url": "https://exclaim.ca/music/article/face_to_face-reactionary"
+   },
+   {
+    "site": "Wikipedia (Reactionary)",
+    "says": "Infobox genre: hardcore punk (pop punk in some versions). Lists 'Nullification' as a Japanese bonus track, with no description.",
+    "url": "https://en.wikipedia.org/wiki/Reactionary_(album)"
+   },
+   {
+    "site": "Trouser Press (as quoted in search results)",
+    "says": "Album-level: called Reactionary ferocious fun, close to the band's best.",
+    "url": "https://trouserpress.com/?p=484"
+   }
+  ],
+  "disagreement": "songbpm's 'Face To Face' page is a different act (the dance group behind '10-9-8'), so it was not used.",
+  "known": true,
+  "audio": {
+   "character": "driving",
+   "pulse": "clear",
+   "feels": [
+    "heavy-distortion"
+   ],
+   "note": "Album-level only: no source describes this Japanese bonus track. Several album reviews agree on fast pop-punk / skate punk. No BPM found."
+  }
+ },
+ "1436707549": {
+  "consensus": {
+   "family": "metal",
+   "sub": "metalcore / post-hardcore",
+   "energy": "driving",
+   "rhythm": "songbpm 108 BPM (4:38 version)",
+   "line": "Metalcore / post-hardcore (artist-level only, Dallas TX band); songbpm gives 108 BPM for the 4:38 'Persevere'"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Metal Music Archives artist page (as quoted in search results)",
+    "says": "Artist-level: Dallas, Texas metalcore / post-hardcore band formed 2012; discography lists Persevere (2018) under metalcore.",
+    "url": "https://www.metalmusicarchives.com/artist/saints-can-lie"
+   },
+   {
+    "site": "songbpm.com",
+    "says": "Saints Can Lie, Persevere, 4:38: 108 BPM, C#/Db. A second 'Persevere' (4:35) is listed at 150 BPM.",
+    "url": "https://songbpm.com/@saints-can-lie"
+   },
+   {
+    "site": "iTunes lookup API",
+    "says": "Confirms track: Persevere - Single, Metal, 2018-10-04, 4:38.",
+    "url": "https://itunes.apple.com/lookup?id=1436707549"
+   }
+  ],
+  "disagreement": "Other 2018 releases named Persevere (Sink The Ship on SharpTone, Sick Shit) are different artists and were not used.",
+  "known": true,
+  "audio": {
+   "character": "driving",
+   "danceBpm": [
+    106,
+    110
+   ],
+   "bpmSource": "songbpm.com (108 BPM for the 4:38 version, which matches the 278 s length)",
+   "note": "Artist-level description only. 'Driving' rests on the metalcore label. The 108 reading could be a half-time feel (double ~216), but no source states it. A second 4:35 'Persevere' on songbpm reads 150 BPM, so the tempo is uncertain."
+  }
+ },
+ "1697227806": {
+  "consensus": {
+   "family": "rock",
+   "sub": "post-punk / alternative rock with shoegaze and darkwave shades",
+   "energy": "mid",
+   "rhythm": "no rhythm or BPM info found",
+   "line": "Alternative rock / post-punk with shoegaze-darkwave shades (track tags plus artist-level blog descriptions); no tempo source"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Bandcamp track page",
+    "says": "Interplanetary Guest (June 2023), tags: alternative, rock, alternative rock, post-punk, Mexico. No description.",
+    "url": "https://nacromatic.bandcamp.com/track/interplanetary-guest"
+   },
+   {
+    "site": "Destroy//Exist blog (as quoted in search results)",
+    "says": "Artist-level: Javi Maldonado's project since 2019, blending post-punk and shoegaze with psychedelia and indie rock.",
+    "url": "https://destroyexist.com/2022/08/nacromatic-ozymandias.html"
+   },
+   {
+    "site": "WL//WH Track of the Day (as quoted in search results)",
+    "says": "Artist-level, about the earlier single Ozymandias: a dreary blend of post-punk and darkwave.",
+    "url": "https://www.whitelight-whiteheat.com/wl-wh-track-of-the-day-nacromatic-ozymandias/"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "note": "Only the track's own Bandcamp tags plus artist-level descriptions of other songs. Energy 'mid' is a weak inference from the post-punk label. No BPM found."
+  }
+ },
+ "1673252247": {
+  "memory": {
+   "family": "hip-hop",
+   "sub": "turntablist / breaks",
+   "energy": "mid",
+   "rhythm": "breakbeats"
+  },
+  "consensus": {
+   "family": "electronic",
+   "sub": "techno / electro with turntablist, DIY edge (Detroit/Chicago-influenced)",
+   "energy": "driving",
+   "rhythm": "heavy, slicing beats; no BPM found for this track",
+   "line": "Electronic techno / electro, uptempo and Detroit/Chicago-influenced, turntablist energy; Bleep calls 'Dipped' heavy electrical slams and slicing beats; no tempo source"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Bleep release blurb (as quoted in search results)",
+    "says": "Track-level: 'Dipped' has heavy, electrical slams and slicing beats, leading into the harsher 'Kill Switch'.",
+    "url": "https://bleep.com/release/373745-dj-prime-cuts-chartist-ep?lang=en_US"
+   },
+   {
+    "site": "Rolling Stone UK interview",
+    "says": "EP-level: Chartist EP on The Trilogy Tapes is 'uptempo' and 'Detroit and Chicago-influenced'.",
+    "url": "https://www.rollingstone.co.uk/music/on-the-record-scratch-perverts-dj-prime-cuts-looks-back-at-his-career-27597/"
+   },
+   {
+    "site": "Honest Jon's / Rubadub shop blurb",
+    "says": "EP-level: 'fidgety, DIY, turntablist energy'; cites Detroit techno, electro funk, dub, eighties jazz-funk, an ambient closer.",
+    "url": "https://honestjons.com/shop/artist/DJ_Prime_Cuts/release/Chartist_EP"
+   }
+  ],
+  "disagreement": "My memory, from his Scratch Perverts background, guessed hip-hop / turntablist breaks. The sources place this EP in techno and electro territory, with store genre 'Techno'.",
+  "known": true,
+  "audio": {
+   "character": "driving",
+   "pulse": "clear",
+   "note": "Only one track-level source (Bleep). The EP is varied (an ambient closer, dub touches), so EP-level blurbs do not count toward 'several'. songbpm lists other EP tracks (Kunta Kinte 147, Rave 133) but not Dipped. No BPM for this track."
+  }
+ },
+ "1630402054": {
+  "consensus": {
+   "family": "",
+   "sub": "",
+   "energy": "",
+   "rhythm": "",
+   "line": ""
+  },
+  "evidence": "none",
+  "sources": [
+   {
+    "site": "iTunes lookup API",
+    "says": "Confirms track: Spiteful Oil, Bewhig, album Powerful Rub (8 tracks of about 1:40-2:00, all tagged Electronic), 2022-05-20, (p) 2022 Spiteful Oil. Store genre tag only.",
+    "url": "https://itunes.apple.com/lookup?id=1630402046&entity=song"
+   }
+  ],
+  "disagreement": "No web presence at all beyond the store listing. The random dictionary-word artist, album and track names and the uniform short tracks suggest a mass-uploaded catalogue, but that is an inference, not evidence.",
+  "known": false,
+  "audio": {
+   "note": "Nothing found describing the music; only the store's 'Electronic' genre tag."
+  }
+ },
+ "1125081912": {
+  "consensus": {
+   "family": "soundtrack / production music",
+   "sub": "horror / dark-drama underscore (library cue)",
+   "rhythm": "library metadata gives a 92 BPM grid; no description of the beat",
+   "line": "Library horror/dark-drama underscore (Killer Tracks 'Disturbia' series: 'deranged, haunting, horrifying, apocalyptic', album-level); energy not described; label lists 92 BPM"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Universal Music for Creators (Killer Tracks) album page, Disturbia - Volume A (KT314)",
+    "says": "Album: 'A collection of the darkest drama: deranged, haunting, horrifying and at times apocalyptic.' Tags Horror, Drama. Track 1 Enslavement, 2:55, 92 BPM, composer Donn Wilkerson.",
+    "url": "https://www.universalmusicforcreators.com/discover/albums/12595/disturbia-volume-a"
+   },
+   {
+    "site": "IMDb (artist)",
+    "says": "Donn Wilkerson: TV music-department composer, 'additional music' credits; context only, not about this track.",
+    "url": "https://m.imdb.com/es/name/nm0929111"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "danceBpm": [
+    92,
+    92
+   ],
+   "bpmSource": "Killer Tracks / Universal Music for Creators library metadata (92 BPM)",
+   "note": "Identity confirmed: same title, composer, 2:55 (=175 s), 2016 Killer Tracks 'Disturbia' series (Apple calls it Vol. 1, UMC calls it Volume A). Only album-level mood tags; no track-level description of instrumentation or energy, so character and pulse are left out. A library BPM is a tempo grid, not proof of an audible steady beat."
+  }
+ },
+ "496584649": {
+  "consensus": {
+   "family": "Christian (Latin)",
+   "sub": "Christian pop / pop rock (artist-level only)",
+   "line": "Puerto Rican Christian pop / pop-rock singer (artist-level only; nothing describes this song or the album A Propósito); energy and tempo unknown"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "BuenaMusica biography",
+    "says": "Describes Nimsy López as a singer-songwriter of 'pop rock cristiano'; lists A Propósito among her studio albums. Artist-level only.",
+    "url": "https://buenamusica.com/nimsy-lopez/biografia"
+   },
+   {
+    "site": "AllMusic bio (Thom Jurek), as quoted in search results",
+    "says": "Charting Puerto Rican Christian pop singer; A Propósito appeared in early 2012. Artist-level only.",
+    "url": "https://www.allmusic.com/artist/mn0001733915"
+   },
+   {
+    "site": "YouTube top comments (yt-dlp, anonymous, on the picked video)",
+    "says": "devotional responses only ('Hermosa canción', 'Gran mensaje'); nothing on the sound"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "note": "Artist-level only. Song identity confirmed on Apple Music (Siempre Creeré, A Propósito, 14 Jan 2012). The 5:13 length fits a worship ballad, but no source says so, so character is left out."
+  }
+ },
+ "1742261988": {
+  "consensus": {
+   "family": "R&B/soul",
+   "sub": "soul / R&B singer-songwriter (neo-soul per store tag; artist-level only)",
+   "line": "New York R&B/soul singer-songwriter (Amy Winehouse comparisons, Lauryn Hill/Khalid/Sia influences), artist-level only; nothing describes 'You Lie'; energy and tempo unknown"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Visit St. Augustine musician page",
+    "says": "New York-based rhythm and blues artist blending soul; genres Blues, R&B, Singer-songwriter; debut EP Unsettled. Artist-level only.",
+    "url": "https://www.visitstaugustine.com/musician/lola-jane"
+   },
+   {
+    "site": "Sing Out Loud Festival artist page",
+    "says": "Artist-songwriter billed as 'the bilingual Amy Winehouse'; themes of self-love, sadness, love. Promotional bio, artist-level.",
+    "url": "https://www.singoutloudfestival.com/artists/detail/lola-jane"
+   },
+   {
+    "site": "Shazam (another track on Unsettled, 'Dear...')",
+    "says": "Released 26 Jul 2019 by Kinnetic Artistry on Unsettled, tagged neo-soul; confirms the right artist/EP.",
+    "url": "https://www.shazam.com/song/1742262230/dear"
+   }
+  ],
+  "disagreement": "Search hits for 'You Lie' are The Band Perry's country song, a different song; not used.",
+  "known": true,
+  "audio": {
+   "note": "Artist-level only; no track description, so no character, pulse or BPM."
+  }
+ },
+ "1720365564": {
+  "consensus": {
+   "family": "folk",
+   "sub": "indie folk / acoustic singer-songwriter (vintage-leaning)",
+   "energy": "calm",
+   "rhythm": "acoustic guitar-led; the album has drummers, so it probably has a steady beat, but nothing says so for this track",
+   "line": "Indie folk / acoustic singer-songwriter, gentle (artist-level 'gentle acoustic melodies'; album Bandcamp tags acoustic, folk, indie, pop); nothing about this track or its tempo"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Desirae Garcia Bandcamp, Lengthy Sunny Spells",
+    "says": "Tags: acoustic, folk, indie, pop, songwriter. Released 20 Feb 2022; recorded in Lahaina; drums, lead guitar, violin, trumpet cameo.",
+    "url": "https://desiraegarcia.bandcamp.com/album/lengthy-sunny-spells-vinyl-pre-order"
+   },
+   {
+    "site": "Sonoma Index-Tribune / Sonoma News (2026)",
+    "says": "'an indie folk songwriter from Colorado who is known for her gentle acoustic melodies'; Lengthy Sunny Spells is her debut solo album. Artist-level.",
+    "url": "https://www.sonomanews.com/2026/08/31/musician-desirae-garcia-returns-to-sonoma-for-intimate-concert/"
+   },
+   {
+    "site": "Mana'o Radio profile (2023)",
+    "says": "'bold and sweet Indie Folk singer-songwriter'; songs 'hand-tailored with simplicity'; brings The Haunted Windchimes' 'vintage vibes'. Artist-level.",
+    "url": "https://manaoradio.com/2023/03/18/manaohome-season-4-episode-3-desirae-garcia/"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "soft",
+   "feels": [
+    "acoustic"
+   ],
+   "note": "Artist-level and album-tag level only. Apple lists 'The Biggest Ache' on Lengthy Sunny Spells (Apple dates the album 2023, its tracks 2022; Bandcamp says 20 Feb 2022). 'soft' rests on 'gentle acoustic' plus drummers on the album; it is not confirmed for this track."
+  }
+ },
+ "6813090992": {
+  "consensus": {
+   "family": "electronic",
+   "sub": "melancholic electronic ('electric depression', self-described), made by ex-metal musicians starting from acoustic instruments",
+   "line": "Melancholic electronic music (Hungarian trio, album-level: 'electronic melancholy with anime/replicant moods'); nothing about this track's beat or tempo"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Lángoló (Hungarian track-by-track feature on Stolidity), seen only through search snippets; the page returned HTTP 500",
+    "says": "Title: 'Electronic melancholy with anime-replicant moods'. Debut album of a trio of ex-metal musicians (Superbutt, Dethroners...) who call it 'electric depression'. Impersonator was sketched on a phone on a Budapest-Vienna train.",
+    "url": "https://langolo.hu/elektronikus-melankolia-anime-replikans-hangulatokkal-dalrol-dalra-az-etovics-stolidity-cimu-debutalbuma/"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "note": "One source, album-level for sound (its track-level text on Impersonator, as far as the snippets show, is about how the song was written, not how it sounds). Apple confirms Impersonator / Stolidity / 1 Oct 2026. The 'melancholy' wording suggests a darker, slower mood, but no source gives the energy or beat, so character, pulse and BPM are left out."
+  }
+ },
+ "1585125946": {
+  "consensus": {
+   "family": "Mandopop",
+   "sub": "C-pop audio-drama theme song (sweet romantic pop)",
+   "line": "Mandopop theme song for the audio drama 偷偷藏不住 (Douban genre: pop); listeners call it sweet, crush-like; tempo and arrangement not described"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Douban Music (偷偷, 未必, single, 2021-02-20)",
+    "says": "Genre 流行 (pop). Listeners: listening made them feel like they had a crush too, 'so sweet'; youthful voice.",
+    "url": "https://music.douban.com/subject/35374986/comments/"
+   },
+   {
+    "site": "Qidian Q&A / NetEase Cloud Music credits",
+    "says": "Theme song of the 偷偷藏不住 radio drama; singer 未必 (Wei Bi), lyrics 景她, music 蝉悠, arrangement and guitar 安念Lanny; produced by 猫耳FM.",
+    "url": "https://music.163.com/song?id=1821602319"
+   }
+  ],
+  "disagreement": "Not the TV-drama theme 只想把你偷偷藏好 (Silence Wang & Zhao Lusi, Tunebat 104 BPM), a different song; that BPM is not used.",
+  "known": true,
+  "audio": {
+   "note": "Only listener impressions ('sweet') and a genre tag; no BPM source found for this recording. An arranger credited on guitar suggests a guitar-led arrangement, but nothing else is known. 'Wei Bi' is the pinyin of the singer's name 未必."
+  }
+ },
+ "1880898365": {
+  "memory": {
+   "family": "jazz",
+   "sub": "cool jazz / Tristano-school bebop line",
+   "energy": "driving",
+   "rhythm": "up-tempo swing"
+  },
+  "consensus": {
+   "family": "jazz",
+   "sub": "cool jazz / post-bop: alto sax and piano duo, no bass or drums, on George Russell's Tristano-style line over 'Love for Sale' changes",
+   "rhythm": "drumless duo; Konitz states the theme and solos over Danko's piano accompaniment, then Danko solos unaccompanied",
+   "line": "Jazz duo (Lee Konitz alto, Harold Danko piano, 1984), cool / post-bop reading of Russell's 'Ezz-thetic' (a line over 'Love for Sale' changes); no drums; tempo of this version not stated"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Jazz in the '80s blog review of Wild as Springtime",
+    "says": "Konitz states themes and solos over Danko's accompaniment, Danko solos unaccompanied; Konitz's 'customary dry tone'; Danko 'more exploratory'. Album-level; the format is the same throughout.",
+    "url": "https://jazzinthe80s.blogspot.com/2022/04/lee-konitz-harold-danko-wild-as.html"
+   },
+   {
+    "site": "Jazz Music Archives (album listing)",
+    "says": "Lee Konitz alto sax, Harold Danko piano; 'Ezz-Thetic' track A3, about 5 minutes; G.F.M. Records, Glasgow, March 1984.",
+    "url": "https://jazzmusicarchives.com/album/lee-konitz/wild-as-springtime"
+   },
+   {
+    "site": "Wikipedia, Ezz-thetics (George Russell) / Jazz Profiles",
+    "says": "'Ezz-thetic' is Russell's Tristano-style line over the chord changes of 'Love for Sale'; Konitz first recorded it with Miles Davis in 1951.",
+    "url": "https://en.wikipedia.org/wiki/Ezz-thetics"
+   }
+  ],
+  "disagreement": "Memory says up-tempo and driving; no source gives the tempo or energy of this duo version, so energy is left out of the consensus.",
+  "known": true,
+  "audio": {
+   "feels": [
+    "acoustic",
+    "swing"
+   ],
+   "note": "'acoustic' is sourced (alto sax and piano only). 'swing' is the convention for a bop line on standard changes, not a statement in a source. No drums or bass, so the pulse may be carried only by the players; pulse and BPM are not sourced. 5:05 matches the about-5-minute listing."
+  }
+ },
+ "202007692": {
+  "consensus": {
+   "family": "metal",
+   "sub": "crossover thrash (thrash metal with a hardcore-punk bent), Filipino",
+   "energy": "driving",
+   "rhythm": "thrash / hardcore drive; growled, gruff vocals",
+   "line": "Filipino crossover thrash / hard-edged metal with a hardcore bent (Pantera and early Metallica comparisons), driving and heavy; album-level, nothing specific to 'Adamant'; BPM unknown"
+  },
+  "evidence": "several",
+  "sources": [
+   {
+    "site": "Tower of Doom (Sky Church page)",
+    "says": "Unaware/Unwarned (2000) is 'a fine example of Filipino crossover thrash with a hardcore bent'; 'Adamant' is track 5 of 14.",
+    "url": "https://towerofdoom.net/sky-church/"
+   },
+   {
+    "site": "Philippine Bands Podcast blog",
+    "says": "Philippine hard rock/metal trio of the Dela Cruz brothers; 'menacing, hard-edged, and raw', compared to Pantera and early Metallica; gruff, growling vocals.",
+    "url": "http://philippinebandspodcast.blogspot.com/2012/04/skychurch.html"
+   },
+   {
+    "site": "AllMusic album page (review by David Gonzales, as summarized in search results; the page returned 403)",
+    "says": "Reportedly compares the band to Pantera and early Metallica and says the record has no ballads. Not checked directly.",
+    "url": "https://www.allmusic.com/album/unaware-unwarned-mw0001195289"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "driving",
+   "pulse": "clear",
+   "feels": [
+    "heavy-distortion"
+   ],
+   "note": "Album-level evidence (two independent sources, both describing a uniformly heavy record); no track-level text. The blog's Pantera/early Metallica wording may come from the AllMusic bio, so treat the two as only partly independent. Thrash tempos vary a lot; no BPM source."
+  }
+ },
+ "1874648358": {
+  "consensus": {
+   "family": "J-rock",
+   "sub": "Vocaloid-scene producer's guitar rock with jazz and electro elements (artist-level only)",
+   "line": "Japanese guitar rock with jazz/electro touches from producer 不眠症 (Fuminsho), artist-level only; nothing describes 'Pedant'; tempo unknown"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Butai Entertainment artist profile (label)",
+    "says": "Vocaloid producer active since 2020, writes words and music with guest vocalists; style 'based on guitar rock, with elements of jazz and electro'. Artist-level only.",
+    "url": "https://butaient.com/fuminsho/profile/"
+   },
+   {
+    "site": "TuneCore Japan artist page",
+    "says": "Genre: Rock; lists 'Pedant (feat. suisoh)' as a 2024 single.",
+    "url": "https://www.tunecore.co.jp/artists/fuminsho?lang=en"
+   },
+   {
+    "site": "Apple Music / Deezer",
+    "says": "Pedant on DEMOS1 (14 Jul 2025, track 4, about 3:23); originally the 2024 single 'Pedant (feat. 水槽/suisoh)'.",
+    "url": "https://music.apple.com/us/song/1874648358"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "note": "Artist-level only. The DEMOS1 version (3:24) may differ from the 2024 single (3:16, featuring 水槽). An OTOTOY blurb calling a Fuminsho song a 'dance-like rock number full of speed' is about a different song (feat. ピコ), so it is not used."
+  }
+ },
+ "1573187425": {
+  "memory": {
+   "family": "rock",
+   "sub": "Australian indie / shoegaze-electronic alt rock",
+   "energy": "mid",
+   "rhythm": "steady motorik / drum-machine pulse"
+  },
+  "consensus": {
+   "family": "rock",
+   "sub": "shoegaze / dream-pop alternative (Philippa Nihill vocals), on a psych / krautrock-leaning electronic-guitar album",
+   "energy": "mid",
+   "rhythm": "track: shimmering, gently shuddering texture; album: tight drum-machine loops under distorted guitars, krautrock influence (album-level)",
+   "line": "Shoegaze / dream-pop alt rock (likened to My Bloody Valentine and Cocteau Twins; 'shimmers, glows and gently shudders'), gentle-mid energy; album built on drum-machine loops and krautrock feel; no BPM source"
+  },
+  "evidence": "single",
+  "sources": [
+   {
+    "site": "Doubtful Sounds review (Chris Familton; similar text in his review for The Music)",
+    "says": "On 'Dunes' and 'Lusher' Philippa Nihill sounds like a 'dream sister to My Bloody Valentine and Cocteau Twins. The music shimmers, glows and gently shudders behind her.'",
+    "url": "https://doubtfulsounds.net/2019/11/08/album-review-underground-lovers-a-left-turn"
+   },
+   {
+    "site": "X-Press Magazine review (8/10)",
+    "says": "Album-level: 'Several songs here are constructed around tight drum machine loops with layers of distorted guitar and otherworldly vocals'; a turn back toward electronics.",
+    "url": "https://xpressmag.com.au/underground-lovers-a-left-turn/"
+   },
+   {
+    "site": "Beat review",
+    "says": "Album-level: 'a smooth journey that plays to their krautrock influences'.",
+    "url": "https://beat.com.au/underground-lovers-a-left-turn-review/"
+   }
+  ],
+  "known": true,
+  "audio": {
+   "character": "soft",
+   "note": "One track-level source (same reviewer in two outlets), plus album-level reviews. 'soft' rests on 'shimmers, glows and gently shudders'. Drum-machine loops and krautrock are album-level, not confirmed for Lusher, so pulse and feels are left out. Duration (285 s) not checked against a tracklist."
+  }
+ }
+}

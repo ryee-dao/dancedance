@@ -119,8 +119,19 @@ export interface LevelSummary {
   jumpShare: number;
   highShare: number;
   distinctMoves: number;
+  /** Share of genre-move beats from sets the style does not open (borrowed from a neighbour). */
+  borrowShare?: number;
+  /** Danced beats per borrowed (lender) set. */
+  borrowBeats?: Record<string, number>;
+  /** The routine's tempo feel (0.5 / 2 when danced at half / twice the count) and free time. */
+  feel?: number;
+  freeTime?: boolean;
+  /** Tempo the routine is danced on (the felt grid's, or the free-time pace). */
+  bpmDanced?: number;
   /** Ten most-used moves by danced beats: "Name (genre|global) beats". */
-  top: { name: string; tier: string; beats: number }[];
+  top: { name: string; id?: string; tier: string; beats: number }[];
+  /** The genre moves danced most, by base move id. */
+  topGenre?: { id: string; name: string; genre: string; beats: number }[];
 }
 
 export interface VideoPick {
@@ -135,8 +146,16 @@ export interface VideoPick {
   views?: number | null;
   /** Whether the cloud job's own ranking (pick.ts rankCandidates) chose it. */
   strictPick?: boolean;
+  /** The two searches ranked nothing, so the plain "Artist Title" search (pick.ts fallbackQuery) ran too. */
+  fallbackSearch?: boolean;
+  /** Chosen by hand by the judge after the picker found nothing (strict or relaxed); judged apart from the app-reachable songs. */
+  manual?: boolean;
+  /** What the picker said before the manual pick. */
+  pickerMessage?: string;
   /** A few top listener comments (text only, trimmed). */
   comments?: string[];
+  /** How many comments were read (the text itself is kept out of the repository from run-20261115 on). */
+  commentCount?: number;
 }
 
 export interface StyleSummary {
@@ -154,6 +173,10 @@ export interface StyleSummary {
 /** Pass B: the same song with the looked-up genre list (SongInfo.genres). */
 export interface PassB {
   genres: string[];
+  /** Level of each `genres` entry ('song' / 'album'), as the lookup gave it. */
+  genreLevels?: string[];
+  /** The artist's usual genres (weak evidence), as the lookup gave them. */
+  artistGenres?: string[];
   /** What each source said ("found: [...]", "none: reason", "failed: reason"). */
   said: Record<string, string>;
   style?: StyleSummary;
