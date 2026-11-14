@@ -24,7 +24,8 @@ export const spinKeys = (start: number, hips = 0): (readonly [number, PoseSpec])
 ];
 
 const HUG: ArmAngles = hand(-0.07, -0.05, 0.13, [0.9, -0.6, -0.3]);
-const chestA: PoseSpec = { chestX: 0.05, lean: -3, head: 3 };
+// The rib cage slides as far as it goes (0.05 was too small to see at TV size), head following.
+const chestA: PoseSpec = { chestX: 0.07, lean: -5, head: 6 };
 const leanA: PoseSpec = { lean: 8, head: -5 };
 const lookA: PoseSpec = { turn: 22, head: 4 };
 

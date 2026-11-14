@@ -295,8 +295,9 @@ const buttKickA: PoseSpec = { y: 0.03, x: -0.01, rf: [0.08, 0.22, -0.14], lf: [-
 const buttKickDn: PoseSpec = { y: -0.035, rf: [0.08, 0, 0], lf: [-0.08, 0, 0] };
 const curtsyDn: PoseSpec = { y: -0.15, x: -0.03, hips: -0.02, bend: 4, nod: 3, rf: [-0.13, 0, -0.15], lf: [-0.1, 0, 0], kneeL: 0.1, r: [74, 0, 78, 0], l: [74, 0, 78, 0], ...OPEN };
 const curtsyUp: PoseSpec = { y: -0.01, x: 0, rf: [0.1, 0, 0], lf: [-0.1, 0, 0], r: at(1, 0.03, 0.76, 0.18, [1, -0.6, -0.3]), l: at(-1, -0.03, 0.76, 0.18, [1, -0.6, -0.3]), ...OPEN };
-const revLunge: PoseSpec = { y: -0.17, bend: 6, nod: 3, rf: [0.11, 0, -0.24], lf: [-0.09, 0, 0.04], ...aeRun(-1) };
-const revKnee: PoseSpec = { y: 0.0, x: -0.02, nod: -2, rf: [0.08, 0.26, 0.2], lf: [-0.09, 0, 0], ...aeRun(1) };
+// Turned 25 deg toward the working leg: the step back and the knee drive go at the viewer.
+const revLunge: PoseSpec = { spin: 25, y: -0.17, bend: 6, nod: 3, rf: [0.11, 0, -0.24], lf: [-0.09, 0, 0.04], ...aeRun(-1) };
+const revKnee: PoseSpec = { spin: 25, y: 0.0, x: -0.02, nod: -2, rf: [0.08, 0.26, 0.2], lf: [-0.09, 0, 0], ...aeRun(1) };
 const inOut = (rx: number, lx: number, k: number): PoseSpec => ({
   y: k % 2 ? -0.07 : -0.09, bend: 7, nod: 4, rf: [rx, 0, 0], lf: [lx, 0, 0],
   r: at(1, 0.12, k % 2 ? 0.66 : 0.6, 0.2, [0.4, -1, -0.2]), l: at(-1, -0.12, k % 2 ? 0.6 : 0.66, 0.2, [0.4, -1, -0.2]), ...FIST,

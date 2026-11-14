@@ -65,10 +65,12 @@ export const patterns: PatternSet = {
       beats: 2, parts: ['legs'],
       keys: [
         // Both toes swivel to one side (knees with them, hips the other way), then to the other side.
-        [0, { y: -0.06, x: 0.01, kneeR: 0.7, kneeL: -0.7, rf: [0.085, 0, 0], lf: [-0.065, 0, 0], slideR: true, slideL: true, hips: -0.03, tilt: -4, pitchR: 12, pitchL: 12 }],
-        [0.5, { y: -0.03, x: 0, kneeR: 0, kneeL: 0, rf: [0.075, 0, 0], lf: [-0.075, 0, 0], slideR: true, slideL: true, hips: 0, tilt: 0, pitchR: 6, pitchL: 6 }],
-        [1, { y: -0.06, x: -0.01, kneeR: -0.7, kneeL: 0.7, rf: [0.065, 0, 0], lf: [-0.085, 0, 0], slideR: true, slideL: true, hips: 0.03, tilt: 4, pitchR: 12, pitchL: 12 }],
-        [1.5, { y: -0.03, x: 0, kneeR: 0, kneeL: 0, rf: [0.075, 0, 0], lf: [-0.075, 0, 0], slideR: true, slideL: true, hips: 0, tilt: 0, pitchR: 6, pitchL: 6 }],
+        // Restaged deeper: bent further, the turned knees show as two shins slanting the same way,
+        // and the feet edge a little toward the swivel each time (as a real heel swivel creeps).
+        [0, { y: -0.1, x: 0.025, kneeR: 0.85, kneeL: -0.85, rf: [0.105, 0, 0], lf: [-0.045, 0, 0], slideR: true, slideL: true, hips: -0.04, tilt: -6, lean: 3, pitchR: 18, pitchL: 18 }],
+        [0.5, { y: -0.04, x: 0, kneeR: 0, kneeL: 0, rf: [0.075, 0, 0], lf: [-0.075, 0, 0], slideR: true, slideL: true, hips: 0, tilt: 0, lean: 0, pitchR: 8, pitchL: 8 }],
+        [1, { y: -0.1, x: -0.025, kneeR: -0.85, kneeL: 0.85, rf: [0.045, 0, 0], lf: [-0.105, 0, 0], slideR: true, slideL: true, hips: 0.04, tilt: 6, lean: -3, pitchR: 18, pitchL: 18 }],
+        [1.5, { y: -0.04, x: 0, kneeR: 0, kneeL: 0, rf: [0.075, 0, 0], lf: [-0.075, 0, 0], slideR: true, slideL: true, hips: 0, tilt: 0, lean: 0, pitchR: 8, pitchL: 8 }],
       ],
     },
     kneePop: {
@@ -273,8 +275,14 @@ const snakeKey: PoseSpec = {
   r: H(1, 0.36, 0.78, 0.06, ELB_DOWN), l: H(-1, 0.16, 0.55, 0.1, ELB_DOWN), handR: 1, handL: 1,
 };
 
-const jbSlideA: PoseSpec = { x: 0.06, y: -0.08, rf: [0.15, 0, 0], lf: [-0.13, 0.15, 0.03], lean: 7, kneeR: 0.25, r: H(1, 0.36, 0.72, 0.04, ELB_DOWN), l: H(-1, 0.3, 0.7, 0.04, ELB_DOWN), handR: 1, handL: 1 };
-const jbSlideB: PoseSpec = { x: 0.18, y: -0.06, rf: [0.27, 0, 0], lf: [0.06, 0.12, 0.05], lean: 7, kneeR: 0.25, r: H(1, 0.34, 0.68, 0.06, ELB_DOWN), l: H(-1, 0.3, 0.66, 0.06, ELB_DOWN), handR: 1, handL: 1 };
+// James Brown slide: glide sideways on the outside foot while the other foot hangs lifted beside
+// it, its knee fluttering in and out, then set it down. The lifted foot and its flutter are what
+// show from the front; flat and low it read as a shuffle.
+const jbArms = (d: number): PoseSpec => ({ r: H(1, 0.36, 0.72 - d, 0.04, ELB_DOWN), l: H(-1, 0.3, 0.7 + d, 0.04, ELB_DOWN), handR: 1, handL: 1 });
+const jbSlideA: PoseSpec = { x: 0.05, y: -0.06, rf: [0.14, 0, 0], lf: [-0.05, 0.17, 0.03], lean: 8, tilt: -5, kneeR: 0.2, kneeL: 0.45, pitchR: 10, ...jbArms(0) };
+const jbSlideM: PoseSpec = { x: 0.11, y: -0.09, rf: [0.21, 0, 0], slideR: true, lf: [0.01, 0.16, 0.03], lean: 9, tilt: -5, kneeR: -0.1, kneeL: -0.25, pitchR: 18, ...jbArms(0.04) };
+const jbSlideB: PoseSpec = { x: 0.17, y: -0.06, rf: [0.27, 0, 0], slideR: true, lf: [0.07, 0.17, 0.04], lean: 8, tilt: -5, kneeR: 0.2, kneeL: 0.45, pitchR: 10, ...jbArms(0) };
+const jbSlideD: PoseSpec = { x: 0.18, y: -0.09, rf: [0.27, 0, 0], lf: [0.09, 0, 0.02], lean: 2, tilt: 0, kneeR: 0.1, kneeL: 0.1, pitchR: 0, ...jbArms(-0.03) };
 
 // ---------------------------------------------------------------------------
 // Popping ticks and the locking Funky Guitar
@@ -486,8 +494,8 @@ export const moves: MoveDef[] = [
   }),
   full({
     id: 'jb-slide', name: 'James Brown Slide', tags: 'funk | legs | walk', beats: 2, level: 'mid', d: 3, parts: ['legs'], mirror: true, travel: 0.18,
-    desc: 'Glide sideways on one foot with the other foot lifted and fluttering beside it, arms out loose for balance.',
-    keys: [[0, jbSlideA], [1, jbSlideB]],
+    desc: 'Glide sideways on the outside foot with the other foot lifted beside it, its knee fluttering in and out, then set it down; arms out loose for balance.',
+    keys: [[0, jbSlideA], [0.5, jbSlideM], [1, jbSlideB], [1.5, jbSlideD]],
   }),
   // Popping ticks and the locking Funky Guitar
   full({

@@ -12,14 +12,27 @@ import { spinKeys } from './shared';
 // ---------------------------------------------------------------------------
 // Original point moves: gallop, lasso, point step.
 
-const gallopA: PoseSpec = { y: -0.07, x: 0.02, hips: 0.02, rf: [0.15, 0, 0], lf: [-0.15, 0.05, 0.02], bend: 5 };
-const gallopB: PoseSpec = { y: -0.03, x: 0.02, hips: 0.02, rf: [0.15, 0.02, 0], lf: [-0.15, 0.0, 0.0], bend: 3 };
+// Gallop (the horse-riding dance): a skip on each beat, wide. Up on the left foot as the right
+// knee lifts high and out to the side, then land wide and low on both; then the other side. The
+// lifted knee pointing out is what shows from the front (a hop in place barely moved the feet).
+const gallopA: PoseSpec = { y: -0.03, x: -0.012, hips: -0.03, tilt: -5, lean: -3, rf: [0.16, 0.13, 0.04], lf: [-0.13, 0, 0], kneeR: 0.35, pitchL: 14, bend: 4 };
+const gallopB: PoseSpec = { y: -0.095, x: 0.0, hips: 0.01, tilt: 2, lean: 1, rf: [0.15, 0, 0.02], lf: [-0.14, 0, 0], kneeR: 0.2, kneeL: 0.15, bend: 7 };
 const reinsAt = (y: number): PoseSpec => ({
   r: at(1, -0.025, y, 0.21, [0.7, -1, -0.2]),
   l: at(-1, 0.025, y - 0.015, 0.23, [0.7, -1, -0.2]),
   handR: 0, handL: 0,
 });
-const lasso = (k: number): PoseSpec => ({ r: [162, 0, 150, k * 90], l: ARM.hip, handR: 0, handL: 0, nod: -4 });
+// Lasso: the hand swings a rope overhead. A flat horizontal circle collapses to a line from the front,
+// so the circle is tilted 40 deg toward the viewer (radius 0.13), the hand always above the head. One circle per two beats; the other hand holds the reins at the chest.
+const LASSO_TILT = (40 * Math.PI) / 180;
+const lasso = (k: number): PoseSpec => {
+  const a = (k * Math.PI) / 2;
+  return {
+    r: at(1, 0.15 + 0.13 * Math.cos(a), 1.0 + 0.13 * Math.sin(a) * Math.sin(LASSO_TILT), 0.03 - 0.13 * Math.sin(a) * Math.cos(LASSO_TILT), [1, 1, 0]),
+    l: at(-1, 0.0, 0.62, 0.22, [0.7, -1, -0.2]),
+    handR: 0, handL: 0, nod: -4, head: -3,
+  };
+};
 const pointFwdA: PoseSpec = { turn: 10, nod: -4, r: [122, 58, 122, 58], l: ARM.guard, handR: 0, handL: 0, formR: 'point' };
 
 // ---------------------------------------------------------------------------
@@ -173,7 +186,7 @@ export const patterns: PatternSet = {
     },
   },
   arms: {
-    reins: { beats: 1, parts: ['arms'], keys: [[0, reinsAt(0.6)], [0.5, reinsAt(0.65)]] },
+    reins: { beats: 1, parts: ['arms'], keys: [[0, reinsAt(0.65)], [0.5, reinsAt(0.57)]] },
     lasso: { beats: 2, parts: ['arms'], mirror: true, keys: [[0, lasso(0)], [0.5, lasso(1)], [1, lasso(2)], [1.5, lasso(3)]] },
     pointFwd: { beats: 2, parts: ['arms'], mirror: true, torso: true, keys: [[0, pointFwdA], [1, { r: ARM.guard, l: ARM.guard, handR: 0, handL: 0 }]] },
     // Hearts and aegyo

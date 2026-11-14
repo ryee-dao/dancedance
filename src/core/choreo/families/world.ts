@@ -444,8 +444,10 @@ export const moves: MoveDef[] = [
     id: 'ginga', name: 'Capoeira Ginga', tags: 'latin hiphop | full | walk capoeira', beats: 2, level: 'mid', d: 2, parts: ['legs', 'arms', 'torso'], mirror: true,
     desc: 'From a wide low base, rock one foot back on the diagonal with that arm guarding across the face and the other arm low, then back to base; alternate sides.',
     keys: [
-      [0, { y: -0.13, x: 0.02, bend: 9, twist: -12, turn: -4, rf: [0.17, 0, -0.17], lf: [-0.14, 0, 0.03], kneeL: 0.08, r: guardFace, l: at(-1, -0.3, 0.55, 0.06, DOWN), handR: 1, handL: 1 }],
-      [1, wide(-0.1, { x: 0, bend: 4, twist: 0, turn: 0, rf: [0.15, 0, 0], lf: [-0.15, 0, 0], r: at(1, 0.22, 0.72, 0.18, DOWN), l: at(-1, -0.22, 0.7, 0.18, DOWN), handR: 1, handL: 1 })],
+      // The body opens 25 deg away from the foot stepping back, as the ginga is danced: the back
+      // step shows as a step out instead of disappearing behind the leg.
+      [0, { spin: -25, y: -0.13, x: 0.02, bend: 9, twist: -12, turn: -4, rf: [0.17, 0, -0.17], lf: [-0.14, 0, 0.03], kneeL: 0.08, r: guardFace, l: at(-1, -0.3, 0.55, 0.06, DOWN), handR: 1, handL: 1 }],
+      [1, wide(-0.1, { spin: 0, x: 0, bend: 4, twist: 0, turn: 0, rf: [0.15, 0, 0], lf: [-0.15, 0, 0], r: at(1, 0.22, 0.72, 0.18, DOWN), l: at(-1, -0.22, 0.7, 0.18, DOWN), handR: 1, handL: 1 })],
     ],
   }),
   full({
