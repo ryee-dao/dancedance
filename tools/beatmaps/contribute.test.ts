@@ -108,6 +108,16 @@ describe('contributed beat maps (map_json)', () => {
     expect(checkSharedMap(asTab({ bars: BARS })).ok).toBe(true);
   });
 
+  it('accepts maps with song traits (written as sent) and refuses malformed ones', async () => {
+    const traits = { calm: 0.3, drive: 0.8, fourFloor: 0.9, halfFeel: 0, bass: 0.6, hats: 0.7, swing: 0, syncop: 0.2, heavy: 0.1, minor: 0.4 };
+    const out = await runBeatmaps(paths, opts(asTab({ bars: BARS, traits })), deps);
+    expect(out.report.contribution?.outcome).toBe('accepted');
+    const written = parse(await readFile(join(paths.beatmapsDir, `${ADDED_ID}.json`), 'utf8'));
+    expect(written.traits).toEqual(traits);
+    expect(checkSharedMap({ ...asTab(), traits: { ...traits, extra: 1 } })).toEqual({ ok: false, rule: 'extra-field' });
+    expect(checkSharedMap({ ...asTab(), traits: { ...traits, calm: 3 } })).toEqual({ ok: false, rule: 'invalid' });
+  });
+
   it('accepts maps for starter and playlist songs too, but never for unknown videos', async () => {
     expect((await runBeatmaps(paths, opts(asTab({ videoId: 'playlist001' })), deps)).report.contribution?.outcome).toBe('accepted');
     expect((await runBeatmaps(paths, opts(asTab({ videoId: 'starter0001' })), deps)).report.contribution?.outcome).toBe('accepted');

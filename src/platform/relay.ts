@@ -226,12 +226,17 @@ export async function relayHealth(
   }
 }
 
-/** The map JSON without its optional per-bar readings, or null when it has none. */
-function withoutBars(mapJson: string): string | null {
+/**
+ * The map JSON without its newest optional field (song traits, else per-bar
+ * readings), or null when it has neither.
+ */
+function withoutNewest(mapJson: string): string | null {
   try {
     const m = JSON.parse(mapJson) as Record<string, unknown>;
-    if (!m || typeof m !== 'object' || !('bars' in m)) return null;
-    delete m.bars;
+    if (!m || typeof m !== 'object') return null;
+    const key = 'traits' in m ? 'traits' : 'bars' in m ? 'bars' : null;
+    if (!key) return null;
+    delete m[key];
     return JSON.stringify(m);
   } catch {
     return null;
@@ -266,10 +271,11 @@ export async function relayShareMap(
   }
   if (res.ok && body && body.ok === true) return { ok: true };
   const code = body && typeof body.error === 'string' ? body.error.slice(0, 40) : `http-${res.status}`;
-  // A relay deployed before maps carried per-bar readings refuses the field:
-  // share the map without them (the app falls back to section energy).
+  // A relay deployed before maps carried song traits (or per-bar readings)
+  // refuses the field: share the map without it, newest first (the app falls
+  // back to section energy, and fills traits in where it has the audio).
   if (code === 'bad-map' && body.detail === 'extra-field') {
-    const plain = withoutBars(mapJson);
+    const plain = withoutNewest(mapJson);
     if (plain) return relayShareMap(relay, plain, passphrase, fetchFn);
   }
   // bad-map / bad-request / bad-origin / not-configured / 404 (an older relay without /map): this map won't get in.

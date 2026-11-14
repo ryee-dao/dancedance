@@ -241,7 +241,7 @@ Your playlist and settings are kept. The app asks GitHub at most once each time 
 
 ### At a glance: things only the owner can do
 
-- [ ] **Redeploy the relay** (`npx wrangler deploy` in `cloudflare/add-song-worker`). On 2026-11-11 the live relay's `/health` did not yet report `mapDailyLimit`, which the current code does, so it looks older than the code and may not accept shared beat maps (`POST /map`). The current code also accepts the per-bar readings shared maps now carry (an older relay refuses them; the app then shares the map without them). After deploying, check `https://dancedance-add-song.ryee.workers.dev/health?probe=1`.
+- [ ] **Redeploy the relay** (`npx wrangler deploy` in `cloudflare/add-song-worker`). On 2026-11-11 the live relay's `/health` did not yet report `mapDailyLimit`, which the current code does, so it looks older than the code and may not accept shared beat maps (`POST /map`). The current code also accepts the per-bar readings and song traits shared maps now carry (an older relay refuses them; the app then shares the map without them, traits first). After deploying, check `https://dancedance-add-song.ryee.workers.dev/health?probe=1`.
 - [ ] **Publish the first helper release** (tag `helper-v0.1.0`). Until then the helper download links don't work.
 - [ ] **Keep the repository settings and variables below in place**, especially `ADD_SONG_URL`.
 - [ ] **Run `npm run beatmaps:local -- --push`** on your Mac now and then, to turn pending songs into proper beat maps while GitHub's runners are blocked.
@@ -545,6 +545,8 @@ Beat maps made since analyser 1.2.0 also say, for every bar, how loud it is, how
 - **Recurring moves.** Sections are built from the song's kit (see "Choreography" above): a verse that gets much louder than usual takes the build moves, one that drops right down the break moves.
 
 Older maps without these readings, and songs still being learned by listening, use the sections' energy instead.
+
+Beat maps made since analyser 1.3.0 also carry **song traits**: ten numbers from 0 to 1 that describe the whole song the same way for every song (unlike the per-bar readings, which are relative within the song), so a quiet piano ballad and a hard-rock song with the same iTunes genre come out different. They are `calm`, `drive` (drums), `fourFloor` (a kick on every beat), `halfFeel` (trap-style half-time backbeat), `bass`, `hats` (hi-hat / 16th density), `swing`, `syncop`, `heavy` (distortion, wall of sound) and `minor` (a weak guess). They don't change with how loud a song is mastered or which codec and bitrate it came in. On the TV and for dropped files, a map from before 1.3.0 gets its traits worked out from the song's audio while the song loads (a few seconds at most, once per song; then they are kept with the map). On the website, YouTube songs stream without the app seeing the audio, so their older maps stay as they are until the cloud job remakes them.
 
 ### Song styles
 

@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { ANALYZER_VERSION, analyzeOffline, parse, serialize } from '../../src/core/analysis';
+import { ANALYZER_VERSION, analyzeOffline, parse, serialize, TRAIT_KEYS } from '../../src/core/analysis';
 import { synthClickTrack } from '../../src/core/analysis/synth.testutil';
 import { runBeatmaps, sanitizeMessage, type Deps, type Paths, type RunOptions } from './pipeline';
 import { ToolFailure, f32leToFloat32, type DownloadResult } from './youtube';
@@ -137,6 +137,10 @@ describe('runBeatmaps end to end (stubbed YouTube, real analyser)', () => {
       expect(map.analyzerVersion).toBe(ANALYZER_VERSION);
       expect(Math.abs(map.bpm - BPM)).toBeLessThan(1.5);
       expect(map.beats.length).toBeGreaterThan(50);
+      // Song traits (analyser 1.3.0): every key, 0..1, written into the published map.
+      expect(map.traits).toBeDefined();
+      for (const k of TRAIT_KEYS) expect(map.traits![k]).toBeGreaterThanOrEqual(0);
+      for (const k of TRAIT_KEYS) expect(map.traits![k]).toBeLessThanOrEqual(1);
     }
     // No audio anywhere: every temp dir is gone and no audio landed in the output.
     expect(audioDirs.length).toBe(4);

@@ -29,6 +29,60 @@ const MID_MAX_HZ = 2000;
 /** Weights of the low / mid / high band flux in the onset envelope. */
 export const ONSET_WEIGHTS = { low: 0.6, mid: 0.27, high: 0.13 } as const;
 
+/**
+ * Level-relative descriptors for the song traits (traits.ts), one row of
+ * TRAIT_DIMS values per frame. Every level is measured against the signal's
+ * own running level L (a ~4 s average of the total power), so scaling the
+ * input by any gain leaves them unchanged; content far below L (where lossy
+ * codecs drop or noise-fill bins differently at every bitrate) sits on a
+ * floor and does not count.
+ *
+ *  TR_KICK       rise of the 43-150 Hz band power since the previous frame
+ *                (dB, clipped to 0..20, / 20), floored at -30 dB re L: kick
+ *                drums, bass entries.
+ *  TR_MID        the same for 800 Hz - 5 kHz (floor -30 dB): snare / clap
+ *                crack, but also any loud midrange onset.
+ *  TR_MID_RISE   fraction of the 800 Hz - 5 kHz bins that rose by more than
+ *                6 dB: high for a broadband crack, low for a tonal onset
+ *                (piano, voice) that raises only its partials.
+ *  TR_HIGH       band rise for 5 - 10 kHz (floor -35 dB): hi-hats, shakers, cymbals.
+ *  TR_HIGH_RISE  fraction of rising 5 - 10 kHz bins.
+ *  TR_FLAT       spectral flatness (geometric / arithmetic mean power, bins
+ *                floored at -40 dB re the mean bin power) over 1 - 5 kHz.
+ *  TR_FILL       fraction of the 1 - 5 kHz bins above -30 dB re the mean bin
+ *                power: a dense, distorted midrange fills nearly all of them.
+ *  TR_CHROMA     12 values: chroma of log(1 + power / bin floor) (190 Hz - 4.2 kHz).
+ */
+export const TR_KICK = 0;
+export const TR_MID = 1;
+export const TR_MID_RISE = 2;
+export const TR_HIGH = 3;
+export const TR_HIGH_RISE = 4;
+export const TR_FLAT = 5;
+export const TR_FILL = 6;
+export const TR_CHROMA = 7;
+export const TRAIT_DIMS = TR_CHROMA + NUM_CHROMA;
+/** Per-bin floor of the level-relative log power, re the running mean bin power (-40 dB). */
+const BIN_FLOOR = 1e-4;
+/** A bin counts as filled above this, re the running mean bin power (-30 dB). */
+const FILL_LEVEL = 1e-3;
+/** Running level: exponential average over ~4 s of frames. */
+const LEVEL_ALPHA = 1 / (4 * (SAMPLE_RATE / HOP));
+/** Rise (natural log of a power ratio) that counts a bin as rising: 6 dB. */
+const RISE_LN = Math.log(4);
+const JUMP_CLIP = Math.log(100); // 20 dB
+interface TraitBand {
+  hz: [number, number];
+  /** Band floor re the running total power. */
+  floor: number;
+}
+const TR_KICK_BAND: TraitBand = { hz: [43, 150], floor: 1e-3 };
+const TR_MID_BAND: TraitBand = { hz: [800, 5000], floor: 1e-3 };
+const TR_HIGH_BAND: TraitBand = { hz: [5000, 10000], floor: 3e-4 };
+const TR_BANDS = [TR_KICK_BAND, TR_MID_BAND, TR_HIGH_BAND];
+const TR_BAND_SLOTS = [TR_KICK, TR_MID, TR_HIGH];
+const TR_FLAT_HZ: [number, number] = [1000, 5000];
+
 /** Frame index -> time (s) of the frame centre. */
 export function frameTime(frame: number): number {
   return (frame * HOP) / SAMPLE_RATE;
@@ -56,6 +110,8 @@ export interface Features {
    * similarity between bars.
    */
   readonly chroma: Float32Array;
+  /** Level-relative trait descriptors, row-major [frame * TRAIT_DIMS + k] (see TR_KICK etc.). */
+  readonly trait: Float32Array;
 }
 
 /** Growable store of per-frame features. */
@@ -69,6 +125,7 @@ export class FeatureStore {
   private lo: Float32Array;
   private bd: Float32Array;
   private ch: Float32Array;
+  private tr: Float32Array;
 
   constructor(initialCapacity = 2048) {
     this.cap = Math.max(16, initialCapacity);
@@ -79,13 +136,18 @@ export class FeatureStore {
     this.lo = new Float32Array(this.cap);
     this.bd = new Float32Array(this.cap * NUM_BANDS);
     this.ch = new Float32Array(this.cap * NUM_CHROMA);
+    this.tr = new Float32Array(this.cap * TRAIT_DIMS);
   }
 
   get frames(): number {
     return this.n;
   }
 
-  /** Appends one frame; `bands` must hold NUM_BANDS values, `chroma` (optional, default zeros) NUM_CHROMA. */
+  /**
+   * Appends one frame; `bands` must hold NUM_BANDS values, `chroma`
+   * (optional, default zeros) NUM_CHROMA, `trait` (optional, default zeros)
+   * TRAIT_DIMS.
+   */
   push(
     fluxLow: number,
     fluxMid: number,
@@ -94,6 +156,7 @@ export class FeatureStore {
     lowDb: number,
     bands: ArrayLike<number>,
     chroma?: ArrayLike<number>,
+    trait?: ArrayLike<number>,
   ): void {
     if (this.n === this.cap) this.grow();
     const i = this.n++;
@@ -107,6 +170,10 @@ export class FeatureStore {
     if (chroma) {
       const c = i * NUM_CHROMA;
       for (let k = 0; k < NUM_CHROMA; k++) this.ch[c + k] = chroma[k];
+    }
+    if (trait) {
+      const t = i * TRAIT_DIMS;
+      for (let k = 0; k < TRAIT_DIMS; k++) this.tr[t + k] = trait[k];
     }
   }
 
@@ -123,6 +190,7 @@ export class FeatureStore {
       lowDb: this.lo.subarray(s, e),
       bands: this.bd.subarray(s * NUM_BANDS, e * NUM_BANDS),
       chroma: this.ch.subarray(s * NUM_CHROMA, e * NUM_CHROMA),
+      trait: this.tr.subarray(s * TRAIT_DIMS, e * TRAIT_DIMS),
     };
   }
 
@@ -140,6 +208,7 @@ export class FeatureStore {
     this.lo = g(this.lo);
     this.bd = g(this.bd, NUM_BANDS);
     this.ch = g(this.ch, NUM_CHROMA);
+    this.tr = g(this.tr, TRAIT_DIMS);
     this.cap = cap;
   }
 }
@@ -168,6 +237,20 @@ export class FeatureExtractor {
   private readonly chromaLo: number;
   private readonly lowEnd: number;
   private readonly midEnd: number;
+  /** Trait descriptors: level-relative log power of the previous frame, running level, bin ranges. */
+  private relPrev = new Float64Array(N_FFT / 2 + 1);
+  private relCur = new Float64Array(N_FFT / 2 + 1);
+  private level = 0;
+  private readonly traitVals = new Float64Array(TRAIT_DIMS);
+  private readonly trLo: number;
+  private readonly trHi: number;
+  private readonly kickBins: [number, number];
+  private readonly midBins: [number, number];
+  private readonly highBins: [number, number];
+  private readonly flatBins: [number, number];
+  private readonly trBands: [number, number][];
+  /** Band powers (natural log, floored) of the previous frame: kick, mid, high. */
+  private readonly bandPrev = new Float64Array(3);
   private flushed = false;
   private frameCount = 0;
 
@@ -190,6 +273,12 @@ export class FeatureExtractor {
       prev = bin;
     }
     this.bandEdges[NUM_BANDS] = N_FFT / 2 + 1;
+    const bins = (r: [number, number]): [number, number] => [Math.round(r[0] / binHz), Math.min(N_FFT / 2, Math.round(r[1] / binHz))];
+    this.kickBins = bins(TR_KICK_BAND.hz);
+    this.midBins = bins(TR_MID_BAND.hz);
+    this.highBins = bins(TR_HIGH_BAND.hz);
+    this.flatBins = bins(TR_FLAT_HZ);
+    this.trBands = [this.kickBins, this.midBins, this.highBins];
     this.chromaLo = Math.ceil(CHROMA_MIN_HZ / binHz);
     const chromaHi = Math.floor(CHROMA_MAX_HZ / binHz);
     const nc = Math.max(0, chromaHi - this.chromaLo + 1);
@@ -202,6 +291,8 @@ export class FeatureExtractor {
       this.chromaPc[j] = ((lo % 12) + 12) % 12;
       this.chromaW[j] = midi - lo;
     }
+    this.trLo = Math.min(this.kickBins[0], this.chromaLo);
+    this.trHi = Math.max(this.highBins[1], this.chromaLo + nc);
   }
 
   /** Push 22050 Hz mono samples; complete frames are appended to the store. */
@@ -290,10 +381,68 @@ export class FeatureExtractor {
     }
     const energyDb = 10 * Math.log10(sumSq / N_FFT + 1e-10);
     const lowDb = 10 * Math.log10(lowPow + 1e-10);
-    this.store.push(fl, fm, fh, energyDb, lowDb, bv, cv);
+    this.traitFrame(pow, norm, this.frameCount <= 2);
+    this.store.push(fl, fm, fh, energyDb, lowDb, bv, cv, this.traitVals);
     // Swap log buffers.
     this.prevLog = logMag;
     this.logMag = prev;
+  }
+
+  /** Level-relative trait descriptors of the current frame into traitVals (see TR_KICK etc.). */
+  private traitFrame(pow: Float64Array, norm: number, first: boolean): void {
+    const nb = N_FFT / 2 + 1;
+    let total = 0;
+    for (let k = 1; k < nb; k++) total += pow[k];
+    total *= norm;
+    if (this.level <= 0) this.level = total;
+    else this.level += LEVEL_ALPHA * (total - this.level);
+    const L = this.level + 1e-30;
+    const binFloor = (BIN_FLOOR * L) / (nb - 1);
+    const fillLevel = (FILL_LEVEL * L) / (nb - 1);
+    const cur = this.relCur;
+    const prev = this.relPrev;
+    for (let k = this.trLo; k < this.trHi; k++) cur[k] = Math.log(pow[k] * norm + binFloor);
+    const tv = this.traitVals;
+    tv.fill(0);
+    for (let b = 0; b < 3; b++) {
+      const [k0, k1] = this.trBands[b];
+      let p = 0;
+      let rising = 0;
+      for (let k = k0; k < k1; k++) {
+        p += pow[k];
+        if (cur[k] - prev[k] > RISE_LN) rising++;
+      }
+      const lp = Math.log(p * norm + TR_BANDS[b].floor * L);
+      const jump = lp - this.bandPrev[b];
+      this.bandPrev[b] = lp;
+      if (first) continue;
+      tv[TR_BAND_SLOTS[b]] = jump <= 0 ? 0 : jump >= JUMP_CLIP ? 1 : jump / JUMP_CLIP;
+      if (b > 0) tv[TR_BAND_SLOTS[b] + 1] = rising / (k1 - k0);
+    }
+    const [f0, f1] = this.flatBins;
+    let lsum = 0;
+    let psum = 0;
+    let filled = 0;
+    for (let k = f0; k < f1; k++) {
+      const q = pow[k] * norm;
+      lsum += cur[k];
+      psum += q + binFloor;
+      if (q > fillLevel) filled++;
+    }
+    tv[TR_FLAT] = Math.exp(lsum / (f1 - f0)) / (psum / (f1 - f0));
+    tv[TR_FILL] = filled / (f1 - f0);
+    const lf = Math.log(binFloor);
+    const pcs = this.chromaPc;
+    const cw = this.chromaW;
+    for (let j = 0, k = this.chromaLo; j < pcs.length; j++, k++) {
+      const m = cur[k] - lf; // log(1 + power / bin floor)
+      const w = cw[j];
+      const pc = pcs[j];
+      tv[TR_CHROMA + pc] += (1 - w) * m;
+      tv[TR_CHROMA + (pc === 11 ? 0 : pc + 1)] += w * m;
+    }
+    this.relPrev = cur;
+    this.relCur = prev;
   }
 }
 

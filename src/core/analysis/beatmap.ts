@@ -3,10 +3,14 @@
  *
  * Pure TypeScript: no DOM, Web Audio or Node APIs.
  */
+import { TRAIT_KEYS, type SongTraits } from './traits';
 
 export const BEATMAP_VERSION = 1;
-/** Bump whenever analysis results change (cached maps from older analysers can then be refreshed). */
-export const ANALYZER_VERSION = '1.2.0';
+/**
+ * Bump whenever analysis results change (cached maps from older analysers can then be refreshed).
+ * 1.2.0: per-bar readings (`bars`). 1.3.0: song traits (`traits`).
+ */
+export const ANALYZER_VERSION = '1.3.0';
 
 export type BeatMapSource = 'cloud' | 'device' | 'file' | 'tab' | 'mic';
 export type SectionType = 'intro' | 'verse' | 'chorus' | 'drop' | 'outro';
@@ -53,6 +57,12 @@ export interface BeatMap {
   partial?: boolean;
   /** Per-bar readings (optional; see BarReadings). */
   bars?: BarReadings;
+  /**
+   * Absolute per-song descriptors (analyser 1.3.0+; see SongTraits), each
+   * 0..1 with 2 decimals. Older maps have none; the app fills them in where
+   * it has the song's audio (computeTraits).
+   */
+  traits?: SongTraits;
 }
 
 export const BEATMAP_SOURCES: readonly BeatMapSource[] = ['cloud', 'device', 'file', 'tab', 'mic'];
@@ -177,6 +187,7 @@ export function validateBeatMap(x: unknown): BeatMap {
   }
   if (sections.length === 0 && duration > 0) fail('at least one section is required');
   const bars = x.bars === undefined ? undefined : validateBars(x.bars, downbeats.length);
+  const traits = x.traits === undefined ? undefined : validateTraits(x.traits);
 
   const out: BeatMap = {
     v,
@@ -191,6 +202,19 @@ export function validateBeatMap(x: unknown): BeatMap {
   };
   if (x.partial === true) out.partial = true;
   if (bars) out.bars = bars;
+  if (traits) out.traits = traits;
+  return out;
+}
+
+/** Validate optional song traits: every key a number in 0..1, rounded to 2 decimals (unknown keys dropped). */
+function validateTraits(x: unknown): SongTraits {
+  if (!isObj(x)) fail('traits must be an object');
+  const out = {} as SongTraits;
+  for (const k of TRAIT_KEYS) {
+    const v = x[k];
+    if (typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 1) fail(`traits.${k} must be a number within 0..1`);
+    out[k] = Math.round(v * 100) / 100;
+  }
   return out;
 }
 

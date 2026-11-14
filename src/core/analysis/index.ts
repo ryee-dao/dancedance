@@ -19,7 +19,8 @@ export {
   type Section,
   type SectionType,
 } from './beatmap';
-export { analyzeOffline, analyzeFeatures, extractFeatures, toBeatMap, type OfflineOptions, type AnalysisResult } from './offline';
+export { analyzeOffline, analyzeFeatures, computeTraits, extractFeatures, toBeatMap, type OfflineOptions, type AnalysisResult } from './offline';
+export { TRAIT_KEYS, roundTrait, traitsFromFeatures, type SongTraits, type TraitGrid } from './traits';
 export { StreamingAnalyzer, type StreamingOptions, type StreamingState } from './streaming';
 export { SAMPLE_RATE, FRAME_RATE, HOP, N_FFT, type Features } from './onset';
 export {

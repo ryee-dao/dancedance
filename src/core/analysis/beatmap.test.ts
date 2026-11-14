@@ -48,6 +48,24 @@ describe('BeatMap serialisation', () => {
     expect(parse(JSON.stringify({ ...good(), bars: { ...bars, extra: '1' } })).bars).toEqual(bars);
   });
 
+  const TRAITS = { calm: 0.81, drive: 0.12, fourFloor: 0, halfFeel: 0, bass: 0.3, hats: 0.05, swing: 0, syncop: 0.1, heavy: 0, minor: 0.62 };
+
+  it('keeps optional song traits (2 decimals); maps without them stay as they were', () => {
+    const withTraits = parse(serialize({ ...good(), traits: TRAITS }));
+    expect(withTraits.traits).toEqual(TRAITS);
+    expect(parse(serialize(withTraits))).toEqual(withTraits);
+    const plain = parse(serialize(good()));
+    expect('traits' in plain).toBe(false);
+    expect(parse(serialize(plain))).toEqual(plain);
+    // A map from an older analyser (no traits, older version string) still parses unchanged.
+    const old = parse(JSON.stringify({ ...good(), analyzerVersion: '1.2.0' }));
+    expect(old.analyzerVersion).toBe('1.2.0');
+    expect(old.traits).toBeUndefined();
+    // Rounded to 2 decimals; unknown keys inside traits are dropped.
+    const fine = parse(JSON.stringify({ ...good(), traits: { ...TRAITS, calm: 0.80649, extra: 1 } }));
+    expect(fine.traits).toEqual({ ...TRAITS, calm: 0.81 });
+  });
+
   it('drops unknown fields', () => {
     const json = JSON.stringify({ ...good(), extra: 'x' });
     expect('extra' in parse(json)).toBe(false);
@@ -87,6 +105,11 @@ describe('BeatMap serialisation', () => {
     ['a drop past the last bar', (m) => ({ ...m, bars: { energy: '29', bass: '18', change: '05', drops: [2] } })],
     ['drops out of order', (m) => ({ ...m, bars: { energy: '29', bass: '18', change: '05', drops: [1, 0] } })],
     ['a fractional drop', (m) => ({ ...m, bars: { energy: '29', bass: '18', change: '05', drops: [0.5] } })],
+    ['traits not an object', (m) => ({ ...m, traits: [0.5] })],
+    ['a missing trait', (m) => ({ ...m, traits: { ...TRAITS, minor: undefined } })],
+    ['a trait above 1', (m) => ({ ...m, traits: { ...TRAITS, drive: 1.2 } })],
+    ['a negative trait', (m) => ({ ...m, traits: { ...TRAITS, swing: -0.1 } })],
+    ['a trait as a string', (m) => ({ ...m, traits: { ...TRAITS, calm: '0.5' } })],
   ];
   for (const [name, mutate] of bad) {
     it(`rejects ${name} with a clear error`, () => {
