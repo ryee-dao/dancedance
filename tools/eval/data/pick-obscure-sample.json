@@ -1,0 +1,608 @@
+{
+  "seed": 20261114,
+  "createdAt": "2026-11-14T05:18:20.919Z",
+  "songs": [
+    {
+      "key": "1494232591",
+      "half": "obscure",
+      "artist": "Cardioid",
+      "title": "Old Records",
+      "collection": "Old Records - Single",
+      "genre": "Pop",
+      "durationSec": 272,
+      "releaseYear": 2020,
+      "source": "word 'cardioid'"
+    },
+    {
+      "key": "1572723901",
+      "half": "obscure",
+      "artist": "Home Is Where",
+      "title": "Sewn Together from the Membrane of the Great Sea Cucumber",
+      "collection": "I Became Birds - EP",
+      "genre": "Rock",
+      "durationSec": 286,
+      "releaseYear": 2021,
+      "source": "word 'cumberer'"
+    },
+    {
+      "key": "1624132841",
+      "half": "obscure",
+      "artist": "SickBreed",
+      "title": "Seaflower Penillion",
+      "collection": "Depraving the Righteous",
+      "genre": "Alternative",
+      "durationSec": 510,
+      "releaseYear": 2022,
+      "source": "word 'seaflower'"
+    },
+    {
+      "key": "1768774700",
+      "half": "obscure",
+      "artist": "Shaddock Rock",
+      "title": "Adrift",
+      "collection": "Traverse",
+      "genre": "Rock",
+      "durationSec": 262,
+      "releaseYear": 2024,
+      "source": "word 'shaddock'"
+    },
+    {
+      "key": "1325747982",
+      "half": "obscure",
+      "artist": "Whethan",
+      "title": "Aftertaste (feat. Opia)",
+      "collection": "Aftertaste (feat. Opia) - Single",
+      "genre": "Electronic",
+      "durationSec": 160,
+      "releaseYear": 2017,
+      "source": "word 'aftertask'"
+    },
+    {
+      "key": "1894283385",
+      "half": "obscure",
+      "artist": "Suma Camerata",
+      "title": "Arterias / Animales de poder",
+      "collection": "Suma Camerata",
+      "genre": "Pop Latino",
+      "durationSec": 242,
+      "releaseYear": 2026,
+      "source": "word 'arteriasis'"
+    },
+    {
+      "key": "1709954750",
+      "half": "obscure",
+      "artist": "IIRA",
+      "title": "Paralipomena III",
+      "collection": "Demo - EP",
+      "genre": "Metal",
+      "durationSec": 398,
+      "releaseYear": 2022,
+      "source": "word 'paralipomena'"
+    },
+    {
+      "key": "716602825",
+      "half": "obscure",
+      "artist": "Texas Hippie Coalition",
+      "title": "Peacemaker",
+      "collection": "Peacemaker",
+      "genre": "Rock",
+      "durationSec": 263,
+      "releaseYear": 2012,
+      "source": "word 'placemaker'"
+    },
+    {
+      "key": "393415009",
+      "half": "obscure",
+      "artist": "Jeff Dahl & Poison Idea",
+      "title": "Desecration",
+      "collection": "Dead Boy",
+      "genre": "Alternative",
+      "durationSec": 126,
+      "releaseYear": 1992,
+      "source": "word 'desecration'"
+    },
+    {
+      "key": "1617158158",
+      "half": "obscure",
+      "artist": "Restless Road",
+      "title": "Growing Old With You (First Dance Version)",
+      "collection": "Growing Old With You (First Dance Version) - Single",
+      "genre": "Country",
+      "durationSec": 193,
+      "releaseYear": 2022,
+      "source": "word 'rustless'"
+    },
+    {
+      "key": "441473188",
+      "half": "obscure",
+      "artist": "Crowdpleaser",
+      "title": "Polygenic Trait",
+      "collection": "Polygenic Trait / Treehouse - Single",
+      "genre": "Electronic",
+      "durationSec": 455,
+      "releaseYear": 2008,
+      "source": "word 'polygynic'"
+    },
+    {
+      "key": "1455289660",
+      "half": "obscure",
+      "artist": "Enertia-sound",
+      "title": "Geometric",
+      "collection": "Geometric",
+      "genre": "House",
+      "durationSec": 455,
+      "releaseYear": 2019,
+      "source": "word 'geometric'"
+    },
+    {
+      "key": "1496711334",
+      "half": "obscure",
+      "artist": "PRXZM",
+      "title": "Carsick",
+      "collection": "Let Me Fall EP",
+      "genre": "Pop",
+      "durationSec": 219,
+      "releaseYear": 2020,
+      "source": "word 'carsick'"
+    },
+    {
+      "key": "1822764468",
+      "half": "obscure",
+      "artist": "Zack Knight",
+      "title": "General",
+      "collection": "General - Single",
+      "genre": "Indian Pop",
+      "durationSec": 194,
+      "releaseYear": 2021,
+      "source": "word 'generable'"
+    },
+    {
+      "key": "1440901397",
+      "half": "obscure",
+      "artist": "Jamestown Revival",
+      "title": "Journeyman",
+      "collection": "The Education of a Wandering Man",
+      "genre": "Singer/Songwriter",
+      "durationSec": 250,
+      "releaseYear": 2016,
+      "source": "word 'eructation'"
+    },
+    {
+      "key": "1892671697",
+      "half": "obscure",
+      "artist": "Free Mind",
+      "title": "Dubful (feat. Iddi Singer)",
+      "collection": "Grateful (feat. Iddi Singer) - Single",
+      "genre": "Reggae",
+      "durationSec": 245,
+      "releaseYear": 2026,
+      "source": "word 'tubful'"
+    },
+    {
+      "key": "1163378966",
+      "half": "obscure",
+      "artist": "Max Frost",
+      "title": "Adderall",
+      "collection": "Adderall - Single",
+      "genre": "Alternative",
+      "durationSec": 218,
+      "releaseYear": 2016,
+      "source": "word 'adneural'"
+    },
+    {
+      "key": "1739126229",
+      "half": "obscure",
+      "artist": "Secular Bonnily",
+      "title": "A Study On Distortion: all I want",
+      "collection": "A Study On Distortion: all I want - Single",
+      "genre": "Jungle/Drum'n'bass",
+      "durationSec": 221,
+      "releaseYear": 2024,
+      "source": "word 'bonnily'"
+    },
+    {
+      "key": "1692221886",
+      "half": "obscure",
+      "artist": "Kxng Lxcx",
+      "title": "This Your Party",
+      "collection": "Neuroglia",
+      "genre": "Downtempo",
+      "durationSec": 167,
+      "releaseYear": 2023,
+      "source": "word 'neurogliosis'"
+    },
+    {
+      "key": "1780774177",
+      "half": "obscure",
+      "artist": "Pleco",
+      "title": "Fashion (feat. HATSUNE MIKU, Chis-A & VOICEVOX:Nurse robot_typeT)",
+      "collection": "Fxvx_shion",
+      "genre": "J-Pop",
+      "durationSec": 179,
+      "releaseYear": 2024,
+      "source": "word 'pleck'"
+    },
+    {
+      "key": "1775425324",
+      "half": "obscure",
+      "artist": "Undogmatic",
+      "title": "Better Days",
+      "collection": "In Retrospect",
+      "genre": "Electronica",
+      "durationSec": 104,
+      "releaseYear": 2021,
+      "source": "word 'undogmatical'"
+    },
+    {
+      "key": "486478435",
+      "half": "obscure",
+      "artist": "Ripp Donn",
+      "title": "Idiotology",
+      "collection": "Organic",
+      "genre": "Hip-Hop/Rap",
+      "durationSec": 191,
+      "releaseYear": 2011,
+      "source": "word 'idiobiology'"
+    },
+    {
+      "key": "1219328633",
+      "half": "obscure",
+      "artist": "Acid Hammer",
+      "title": "Lixiviation",
+      "collection": "Acid Hammer",
+      "genre": "Electronic",
+      "durationSec": 187,
+      "releaseYear": 2017,
+      "source": "word 'lixiviation'"
+    },
+    {
+      "key": "1743491042",
+      "half": "obscure",
+      "artist": "Ian Forkey",
+      "title": "Liverwort",
+      "collection": "Portrait of a Weird Man",
+      "genre": "Breakbeat",
+      "durationSec": 90,
+      "releaseYear": 2024,
+      "source": "word 'liverwort'"
+    },
+    {
+      "key": "343404596",
+      "half": "obscure",
+      "artist": "Big Head Todd & The Monsters",
+      "title": "Sister Sweetly",
+      "collection": "Sister Sweetly",
+      "genre": "Pop",
+      "durationSec": 273,
+      "releaseYear": 1993,
+      "source": "word 'sweetly'"
+    },
+    {
+      "key": "1525858164",
+      "half": "obscure",
+      "artist": "Sharq",
+      "title": "Jufti Halolim",
+      "collection": "Jufti Halolim - Single",
+      "genre": "Pop",
+      "durationSec": 194,
+      "releaseYear": 2020,
+      "source": "word 'jufti'"
+    },
+    {
+      "key": "1339955620",
+      "half": "obscure",
+      "artist": "Parallels and Lies",
+      "title": "Actuality (feat. Ashley Brundage)",
+      "collection": "Hibernation",
+      "genre": "Alternative",
+      "durationSec": 235,
+      "releaseYear": 2013,
+      "source": "word 'actuality'"
+    },
+    {
+      "key": "1862504866",
+      "half": "obscure",
+      "artist": "Angry Biracial",
+      "title": "Marry Me",
+      "collection": "Marry Me - Single",
+      "genre": "R&B/Soul",
+      "durationSec": 194,
+      "releaseYear": 2025,
+      "source": "word 'biradial'"
+    },
+    {
+      "key": "1809408764",
+      "half": "obscure",
+      "artist": "Putrid Aura",
+      "title": "Never Growing Old",
+      "collection": "Dimensions Ungathered - EP",
+      "genre": "Metal",
+      "durationSec": 126,
+      "releaseYear": 2025,
+      "source": "word 'ungarnered'"
+    },
+    {
+      "key": "1547047337",
+      "half": "obscure",
+      "artist": "M-zine",
+      "title": "Purloin",
+      "collection": "Eristic - EP",
+      "genre": "Electronic",
+      "durationSec": 313,
+      "releaseYear": 2021,
+      "source": "word 'veristic'"
+    },
+    {
+      "key": "958817343",
+      "half": "obscure",
+      "artist": "Crucify the Flesh",
+      "title": "Halal",
+      "collection": "Bear Fruit",
+      "genre": "Metal",
+      "durationSec": 269,
+      "releaseYear": 2015,
+      "source": "word 'halal'"
+    },
+    {
+      "key": "1637715947",
+      "half": "obscure",
+      "artist": "Primitive Baptist Church",
+      "title": "I Love My Savior God",
+      "collection": "Old Baptist Congregational Hymns, Vol. 1",
+      "genre": "Christian",
+      "durationSec": 219,
+      "releaseYear": 2022,
+      "source": "word 'pedobaptist'"
+    },
+    {
+      "key": "1501621010",
+      "half": "obscure",
+      "artist": "Owen Smith",
+      "title": "Cleek",
+      "collection": "Instructions",
+      "genre": "Electronic",
+      "durationSec": 178,
+      "releaseYear": 2020,
+      "source": "word 'cleek'"
+    },
+    {
+      "key": "1536106794",
+      "half": "obscure",
+      "artist": "AKB48",
+      "title": "Classmate(TeamK Version)",
+      "collection": "Team K 1st Stage \"Party Ga Hajimaruyo\" (Studio Recordings)",
+      "genre": "J-Pop",
+      "durationSec": 283,
+      "releaseYear": 2007,
+      "source": "word 'classmate'"
+    },
+    {
+      "key": "331454217",
+      "half": "obscure",
+      "artist": "Defacing",
+      "title": "Phobophile (Cryptopsy)",
+      "collection": "Spitting Savagery",
+      "genre": "Rock",
+      "durationSec": 257,
+      "releaseYear": 2009,
+      "source": "word 'phonophile'"
+    },
+    {
+      "key": "1813204296",
+      "half": "obscure",
+      "artist": "Superheroes",
+      "title": "Pediculosis",
+      "collection": "Game Over",
+      "genre": "Punk",
+      "durationSec": 155,
+      "releaseYear": 2000,
+      "source": "word 'pediculoid'"
+    },
+    {
+      "key": "1355894258",
+      "half": "obscure",
+      "artist": "Analogik",
+      "title": "Gypsie Doodle",
+      "collection": "Gypsie Doodle - EP",
+      "genre": "Worldbeat",
+      "durationSec": 191,
+      "releaseYear": 2009,
+      "source": "word 'soodly'"
+    },
+    {
+      "key": "1718702591",
+      "half": "obscure",
+      "artist": "Vasilis Ntalapas",
+      "title": "Undated Trip",
+      "collection": "Simulacrum",
+      "genre": "Instrumental",
+      "durationSec": 138,
+      "releaseYear": 2023,
+      "source": "word 'undared'"
+    },
+    {
+      "key": "251294441",
+      "half": "obscure",
+      "artist": "Joshua Bell, Michael Stern & Orchestra of St. Luke's",
+      "title": "Werther: Pourquoi me réveiller",
+      "collection": "Joshua Bell: Voice of the Violin",
+      "genre": "Classical",
+      "durationSec": 154,
+      "releaseYear": 2006,
+      "source": "word 'fermery'"
+    },
+    {
+      "key": "1179194158",
+      "half": "obscure",
+      "artist": "Caitlin Caporale",
+      "title": "Contest",
+      "collection": "Canvas - EP",
+      "genre": "Pop",
+      "durationSec": 204,
+      "releaseYear": 2016,
+      "source": "word 'contest'"
+    }
+  ],
+  "skipped": [
+    {
+      "source": "word 'sibbens'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'cumberer'",
+      "artist": "Bee Gees",
+      "title": "If I Only Had My Mind on Something Else",
+      "genre": "Rock",
+      "why": "artist too well known for the obscure half"
+    },
+    {
+      "source": "word 'supertreason'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'generable'",
+      "artist": "John Williams & London Symphony Orchestra",
+      "title": "Anakin's Betrayal",
+      "genre": "Soundtrack",
+      "why": "artist too well known for the obscure half"
+    },
+    {
+      "source": "word 'generable'",
+      "artist": "John Williams & London Symphony Orchestra",
+      "title": "General Grievous",
+      "genre": "Soundtrack",
+      "why": "artist too well known for the obscure half"
+    },
+    {
+      "source": "word 'beadledom'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'veldschoen'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'adneural'",
+      "artist": "Slipknot",
+      "title": "Adderall (Rough Demo)",
+      "genre": "Metal",
+      "why": "artist too well known for the obscure half"
+    },
+    {
+      "source": "word 'entrainment'",
+      "artist": "Dr. Mick",
+      "title": "Entrainment",
+      "genre": "New Age",
+      "why": "length 703 s"
+    },
+    {
+      "source": "word 'entrainment'",
+      "artist": "Binaural Beats, Binaural Beats Brain Waves Isochronic Tones Brain Wave Entrainment & Binaural Beats Library",
+      "title": "Deep Sleep Aid",
+      "genre": "New Age",
+      "why": "\"Binaural\" in title / album / artist"
+    },
+    {
+      "source": "word 'entrainment'",
+      "artist": "Entrainment, Solfeggio Sound Bath & Source Vibrations",
+      "title": "396 Hz Dissolve Negativity",
+      "genre": "New Age",
+      "why": "\"396 Hz\" in title / album / artist"
+    },
+    {
+      "source": "word 'lixiviation'",
+      "artist": "Suzanne Ciani",
+      "title": "'Liberator' Atari TV Spot",
+      "genre": "Electronica",
+      "why": "length 31 s"
+    },
+    {
+      "source": "word 'lixiviation'",
+      "artist": "Suzanne Ciani",
+      "title": "Live Buchla Concert 1975",
+      "genre": "Electronica",
+      "why": "\"Live\" in title / album / artist"
+    },
+    {
+      "source": "word 'lanameter'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'veristic'",
+      "artist": "National Intercollegiate Band & Richard Clary",
+      "title": "Miniature Suite: III. Eristic Zeal (Live)",
+      "genre": "Classical",
+      "why": "\"Live\" in title / album / artist"
+    },
+    {
+      "source": "word 'opsonoid'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'odontolcous'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'transeptally'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'anocarpous'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'truantry'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'classmate'",
+      "artist": "Giuseppe Ottaviani",
+      "title": "Classmate (FSOE 694) [Dex Machina Extended Remix] {MIXED}",
+      "genre": "Trance",
+      "why": "\"Remix\" in title / album / artist"
+    },
+    {
+      "source": "word 'soodly'",
+      "artist": "James Brown",
+      "title": "Doodle Bug (Instrumental)",
+      "genre": "Pop",
+      "why": "\"Instrumental\" in title / album / artist"
+    },
+    {
+      "source": "word 'ebracteolate'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'preapprise'",
+      "artist": "Take 6",
+      "title": "Grace (Pre-Prise)",
+      "genre": "R&B/Soul",
+      "why": "length 37 s"
+    },
+    {
+      "source": "word 'preapprise'",
+      "artist": "Mahto and The Loose Balloons",
+      "title": "Hemoglobin (Preprise)",
+      "genre": "Alternative",
+      "why": "length 58 s"
+    },
+    {
+      "source": "word 'preapprise'",
+      "artist": "Alice Fearn & Joaquin Pedro Valdes",
+      "title": "What If (Preprise)",
+      "genre": "Soundtrack",
+      "why": "length 79 s"
+    },
+    {
+      "source": "word 'euktolite'",
+      "why": "no iTunes results"
+    },
+    {
+      "source": "word 'contest'",
+      "artist": "High Noon",
+      "title": "Contest (United Tribes 2017) [Live]",
+      "genre": "Worldwide",
+      "why": "\"Live\" in title / album / artist"
+    }
+  ]
+}

@@ -163,6 +163,24 @@ describe('add a song by search', () => {
     expect(out.report.adds?.[0]).toMatchObject({ kind: 'added', tier: 'music-video' });
   });
 
+  it('searches plain "Artist Title" when the two searches rank nothing, and asks again after a degraded answer', async () => {
+    const stripped = results({ id: 'strippedv01', title: 'Dua Lipa - Levitating (Lyrics)', duration: 204 }); // no channel, no views
+    let audioAsked = 0;
+    const search = async (q: string) => {
+      if (q.endsWith('lyrics')) return results(REMIX);
+      if (q.endsWith('official audio')) return audioAsked++ ? results(REMIX) : stripped;
+      return results(LYRIC);
+    };
+    const out = await runBeatmaps(paths, opts(), deps({ search }));
+    expect(searches).toEqual([
+      'Dua Lipa Levitating lyrics',
+      'Dua Lipa Levitating official audio',
+      'Dua Lipa Levitating official audio',
+      'Dua Lipa Levitating',
+    ]);
+    expect(out.report.adds?.[0]).toMatchObject({ kind: 'added', videoId: 'lyricvid001' });
+  });
+
   it('records "not found" for the app when nothing matches, and does not retry it by itself', async () => {
     const out = await runBeatmaps(paths, opts(), deps({ search: async () => results(REMIX) }));
     expect(out.exitCode).toBe(0);
