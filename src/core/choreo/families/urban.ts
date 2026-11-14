@@ -10,8 +10,11 @@
  * there; a few small actions (Rap Hands, Shoulder Rock, Drill Arm Swing) stay
  * on the counted beat. R&B (60-110) and reggaeton (88-100) moves run at full time.
  *
- * Gestures stay neutral: open hands, loose fists, no pointed "fingers", no
- * signs. Reggaeton hip work stays upright and family-friendly.
+ * Themes are not a reason to leave a move out (owner's decision, Nov 2026):
+ * the drill set has the finger-gun hand accents and the rifle spray that are
+ * part of the style's real vocabulary. Dances usually named after a song or an
+ * artist go in under a plain descriptive name (the common name is in a
+ * comment). Reggaeton hip work stays upright.
  */
 import { FIST, OPEN, at, mir, wide, type PoseSpec } from '../poseKit';
 import { full, type MoveDef, type PatternSet } from '../catalog';
@@ -251,6 +254,123 @@ const rollDown = (hips: number, tilt: number, bend: number, y: number): PoseSpec
     r: at(1, 0.24, 0.58, 0.04, [1, 0, -0.3]), l: at(-1, -0.24, 0.58, 0.04, [1, 0, -0.3]), handR: 1, handL: 1,
   });
 
+// --- Added Nov 2026 ---------------------------------------------------------------
+// Trap. Low rolling sway (the trap-era dance commonly called "the Quan"): knees bent and hunched,
+// both loose arms swinging together from side to side, the body sinking and rolling with them.
+const quanA: PoseSpec = {
+  x: 0.03, y: -0.09, hips: 0.03, tilt: 4, lean: 5, bend: 11, nod: 7, head: 4, turn: 10, twist: 8, shR: 0.7, shL: 0.2,
+  rf: [0.12, 0, 0], lf: [-0.12, 0, 0], kneeR: 0.12, kneeL: 0.12,
+  r: at(1, 0.3, 0.6, 0.17, E_OUT), l: at(-1, 0.0, 0.62, 0.21, E_ACROSS), handR: 0.6, handL: 0.6,
+};
+const quanMid: PoseSpec = {
+  x: 0, y: -0.06, hips: 0, tilt: 0, lean: 0, bend: 4, nod: 1, head: 0, turn: 0, twist: 0, shR: 0.4, shL: 0.4,
+  rf: [0.12, 0, 0], lf: [-0.12, 0, 0], kneeR: 0.06, kneeL: 0.06,
+  r: at(1, 0.15, 0.67, 0.22, E_OUT), l: at(-1, -0.15, 0.67, 0.22, E_OUT), handR: 0.6, handL: 0.6,
+};
+
+// Stir the pot: one hand stirring circles in front of the waist, the other holding the rim, bouncing on every beat.
+const stir = (k: number, y: number, nod: number): PoseSpec => {
+  const a = (k * Math.PI) / 2;
+  return {
+    y, bend: 8, nod, lean: 3, head: -3, turn: -5, rf: [0.11, 0, 0], lf: [-0.11, 0, 0], kneeR: 0.06, kneeL: 0.06,
+    r: at(1, 0.07 + 0.065 * Math.cos(a), 0.56 + 0.02 * Math.sin(a), 0.25 + 0.05 * Math.sin(a), E_DOWN),
+    l: at(-1, -0.08, 0.58, 0.25, E_OUT), handR: 0.3, handL: 0.2,
+  };
+};
+
+// Drill. Finger guns: the index finger pointed, the hand otherwise closed.
+const GUN_R = { handR: 0, formR: 'point' } as const;
+const GUN_L = { handL: 0, formL: 'point' } as const;
+// Finger-gun point: one hand pointed out at the camera on the drill bounce, kicking up a little on the "and".
+const fgPoint: PoseSpec = {
+  y: -0.08, bend: 7, nod: 8, turn: 6, lean: 2, shR: 0.6, shL: 0.2,
+  rf: [0.11, 0, 0.01], lf: [-0.11, 0, 0], kneeR: 0.13, kneeL: 0.08, pitchL: 12,
+  r: at(1, 0.2, 0.72, 0.27, [1, -0.3, -0.2]), l: at(-1, -0.1, 0.6, 0.16, E_OUT), ...GUN_R, handL: 0.1,
+};
+const fgUp: PoseSpec = { ...fgPoint, y: -0.05, nod: 1, shR: 0.3, pitchL: 0, kneeR: 0.05, kneeL: 0.05, r: at(1, 0.22, 0.83, 0.22, [1, -0.3, -0.2]) };
+
+// Finger-gun hits: both hands snapped out together to one diagonal, recoiling up on the hats, then released.
+const fgHit: PoseSpec = {
+  y: -0.11, x: -0.01, lean: -4, twist: 12, turn: 18, nod: 4, shR: 0.5, shL: 0.5,
+  rf: [0.13, 0, 0], lf: [-0.13, 0, 0], kneeR: 0.12, kneeL: 0.12,
+  r: at(1, 0.3, 0.78, 0.19, [1, -0.2, -0.2]), l: at(-1, 0.05, 0.78, 0.22, [0.5, -1, 0]), ...GUN_R, ...GUN_L,
+};
+const fgRecoil: PoseSpec = {
+  ...fgHit, y: -0.08, nod: -5, shR: 0.9, shL: 0.9,
+  r: at(1, 0.28, 0.88, 0.14, [1, -0.2, -0.2]), l: at(-1, 0.04, 0.88, 0.17, [0.5, -1, 0]),
+};
+const fgDown: PoseSpec = {
+  y: -0.05, x: 0, lean: 0, twist: 0, turn: 4, nod: 2, shR: 0.3, shL: 0.3,
+  rf: [0.13, 0, 0], lf: [-0.13, 0, 0], kneeR: 0.05, kneeL: 0.05,
+  r: at(1, 0.18, 0.6, 0.16, E_OUT), l: at(-1, -0.16, 0.6, 0.16, E_OUT), ...GUN_R, ...GUN_L,
+};
+
+// Rifle spray: low and wide, an imaginary rifle held at the hip (rear hand) and out in front (front hand),
+// swept across from one side to the other with a judder of recoil on every half beat.
+const spray = (t: number, kick: number): PoseSpec => ({
+  y: -0.1 + kick * 0.5, x: 0.01 * t, twist: 18 * t, turn: 10 * t, lean: -2 * t, bend: 6, nod: 6 - kick * 120, shR: 0.3 + kick * 12, shL: 0.3 + kick * 12,
+  rf: [0.15, 0, 0], lf: [-0.15, 0, 0], kneeR: 0.12, kneeL: 0.12,
+  r: at(1, 0.16 + 0.03 * t, 0.56 + kick, 0.12, E_BACK), l: at(-1, -0.08 + 0.1 * t, 0.64 + kick, 0.25, [0.5, -1, 0]), ...FIST,
+});
+
+// R&B. The smooth two-step: step out to the side, then close, the body easing with it.
+const ts2 = (out: boolean): PoseSpec => out
+  ? { x: 0.045, y: -0.055, hips: 0.02, tilt: 2, rf: [0.22, 0, 0], lf: [-0.09, 0, 0], kneeR: 0.06 }
+  : { x: 0, y: -0.03, hips: 0, tilt: 0, rf: [0.09, 0, 0], lf: [-0.09, 0, 0], kneeR: 0 };
+const ARMS_SOFT: PoseSpec = { r: at(1, 0.2, 0.55, 0.1, E_OUT), l: at(-1, -0.2, 0.55, 0.1, E_OUT), handR: 0.6, handL: 0.6 };
+
+// Slow drag: a long step out, the weight easing over, the other foot dragged in along the floor.
+const dragArms = (lift: number): PoseSpec => ({
+  r: at(1, 0.03, 0.74, 0.17, E_DOWN), l: at(-1, -0.27, 0.52 + lift, 0.1, E_OUT), handR: 1, handL: 0.8,
+});
+
+// Chest circle: the rib cage slides to one side, lifts, slides to the other side and drops, over still hips.
+const chestCircle = (k: number): PoseSpec => {
+  const a = (k * Math.PI) / 2;
+  return {
+    y: -0.05, chestX: 0.055 * Math.cos(a), bend: -8 * Math.sin(a), lean: 3 * Math.cos(a), nod: -4 * Math.sin(a), head: -3 * Math.cos(a),
+    shR: 0.3 + 0.3 * Math.max(0, Math.sin(a)), shL: 0.3 + 0.3 * Math.max(0, Math.sin(a)),
+    rf: [0.11, 0, 0], lf: [-0.11, 0, 0], kneeR: 0.06, kneeL: 0.06,
+    r: at(1, 0.21, 0.6, 0.13, E_OUT), l: at(-1, -0.21, 0.6, 0.13, E_OUT), handR: 0.7, handL: 0.7,
+  };
+};
+
+// Reggaeton. Chest pop on the dembow: the chest pops up and out with the elbows pulling back, then folds in.
+const rgPop: PoseSpec = {
+  y: -0.05, bend: -9, nod: -6, shR: 0.6, shL: 0.6, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], kneeR: 0.04, kneeL: 0.04,
+  r: at(1, 0.21, 0.6, -0.03, E_BACK), l: at(-1, -0.21, 0.6, -0.03, E_BACK), ...FIST,
+};
+const rgFold: PoseSpec = {
+  y: -0.09, bend: 8, nod: 7, shR: 0.2, shL: 0.2, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], kneeR: 0.1, kneeL: 0.1,
+  r: at(1, 0.15, 0.62, 0.17, E_OUT), l: at(-1, -0.15, 0.62, 0.17, E_OUT), ...FIST,
+};
+
+// Dembow cross step: cross one foot in front on the beat, bounce on the "and", step it out with a hip pop, bounce again.
+const rgCross: PoseSpec = {
+  y: -0.09, x: -0.01, twist: -10, hips: -0.02, tilt: -2, nod: 4,
+  rf: [-0.04, 0, 0.08], lf: [-0.1, 0, -0.01], kneeR: 0.12, kneeL: 0.1, pitchR: 10,
+  r: at(1, -0.02, 0.66, 0.22, E_ACROSS), l: at(-1, -0.3, 0.62, 0.06, E_OUT), handR: 0.4, handL: 0.4,
+};
+const rgOut: PoseSpec = {
+  y: -0.08, x: 0.04, twist: 6, hips: 0.045, tilt: 6, nod: 2, head: 4,
+  rf: [0.21, 0, 0], lf: [-0.1, 0, 0], kneeR: 0.06, kneeL: 0.12,
+  r: at(1, 0.31, 0.66, 0.08, E_OUT), l: at(-1, -0.08, 0.66, 0.2, E_ACROSS), handR: 0.4, handL: 0.4,
+};
+
+// Dembow heel tap: the heel dug out on the diagonal as the hips pop the other way, fists pumping low.
+const rgHeel = (tap: boolean, y: number): PoseSpec => ({
+  y, hips: tap ? -0.035 : -0.01, tilt: tap ? -5 : -1, lean: tap ? 2 : 0, nod: tap ? 5 : 1,
+  rf: tap ? [0.15, 0, 0.12] : [0.1, 0, 0.01], lf: [-0.1, 0, 0], pitchR: tap ? -22 : 0, kneeL: 0.08,
+  r: at(1, 0.17, tap ? 0.58 : 0.66, 0.17, E_DOWN), l: at(-1, -0.17, tap ? 0.66 : 0.58, 0.17, E_DOWN), ...FIST,
+});
+
+// Dembow turn: bouncing on the dembow while turning slowly round on the spot.
+const rgTurn = (spin: number, hit: boolean): PoseSpec => ({
+  spin, y: hit ? -0.09 : -0.05, hips: hit ? 0.03 : -0.02, tilt: hit ? 4 : -2,
+  rf: [0.07, 0, 0], lf: [-0.07, 0, 0], pitchR: 12, pitchL: 12, kneeR: hit ? 0.1 : 0.04, kneeL: hit ? 0.1 : 0.04,
+  r: at(1, 0.17, hit ? 0.66 : 0.72, 0.18, E_DOWN), l: at(-1, -0.17, hit ? 0.72 : 0.66, 0.18, E_DOWN), ...FIST,
+});
+
 export const patterns: PatternSet = {};
 
 export const moves: MoveDef[] = [
@@ -280,6 +400,17 @@ export const moves: MoveDef[] = [
     id: 'turn-up-jump', name: 'Turn-Up Jump', tags: 'hiphop | full | jump', beats: 2, level: 'high', d: 2, parts: ['jump', 'arms', 'legs'], jump: true, impact: true,
     desc: 'Crouch with the fists low in front, jump on the drop flinging both arms open and up, then land low and wide with the fists dropping.',
     keys: [[0, tuLand], [0.5, tuCrouch], [1, tuAir], [1.5, { ...tuLand, y: -0.14 }]],
+  }),
+  // The trap-era dance commonly called "the Quan" (named after an artist): descriptive name.
+  full({
+    id: 'low-rolling-sway', name: 'Low Rolling Sway', tags: 'hiphop | full | wave', beats: 4, level: 'low', d: 1, parts: ['arms', 'torso', 'legs'],
+    desc: 'Knees bent and a little hunched, swing both loose arms together out to one side as the body sinks and rolls over that way, rise through the middle, then swing and sink to the other side.',
+    keys: [[0, quanA], [1, quanMid], [2, mir(quanA)], [3, quanMid]],
+  }),
+  full({
+    id: 'stir-the-pot', name: 'Stir the Pot', tags: 'hiphop | arms | hands', beats: 2, level: 'low', d: 1, parts: ['arms'], mirror: true,
+    desc: 'Bouncing on the knees and looking down into it, one hand stirs a big pot in front of the waist, round once every two beats, while the other hand holds the rim; switch hands.',
+    keys: [[0, stir(0, -0.08, 10)], [0.5, stir(1, -0.05, 6)], [1, stir(2, -0.08, 10)], [1.5, stir(3, -0.05, 6)]],
   }),
 
   // --- Drill ----------------------------------------------------------------------
@@ -323,6 +454,21 @@ export const moves: MoveDef[] = [
     desc: 'Bouncy two-step: drop out onto a bent knee with the hand on that side flicking down and out, palm open, then bounce the foot back in.',
     keys: [[0, d2Out], [0.75, d2Hold], [1, d2In], [1.75, { ...d2In, y: -0.06 }]],
   }),
+  full({
+    id: 'finger-gun-point', name: 'Finger-Gun Point', tags: 'hiphop | arms | point', beats: 2, level: 'low', d: 1, parts: ['arms', 'legs'], mirror: true,
+    desc: 'On the drill bounce, point one finger gun out at the camera, dropping into the knees on every beat and letting the hand kick up a little on the "and", the other fist at the waist; switch hands.',
+    keys: [[0, fgPoint], [0.5, fgUp], [1, fgPoint], [1.5, fgUp]],
+  }),
+  full({
+    id: 'finger-gun-hits', name: 'Finger-Gun Hits', tags: 'hiphop | arms full | point', beats: 4, level: 'mid', d: 2, parts: ['arms', 'torso'], mirror: true,
+    desc: 'Snap both finger guns out together to one diagonal as the knees drop and the body turns after them, kick them up on the "and", snap them out again and kick again, then drop them and reset for the other side.',
+    keys: [[0, fgHit], [0.5, fgRecoil], [1, fgHit], [1.5, fgRecoil], [2, { ...fgRecoil, y: -0.07, nod: -2 }], [3, fgDown]],
+  }),
+  full({
+    id: 'rifle-spray', name: 'Rifle Spray', tags: 'hiphop | arms full |', beats: 4, level: 'mid', d: 2, parts: ['arms', 'torso'], mirror: true,
+    desc: 'Low and wide, hold an imaginary rifle with the back hand at the hip and the front hand out in front, and sweep it across from one side to the other with a judder of recoil on every half beat; switch shoulders and sweep back.',
+    keys: [[0, spray(1, 0)], [0.5, spray(0.65, 0.03)], [1, spray(0.3, 0)], [1.5, spray(-0.05, 0.03)], [2, spray(-0.4, 0)], [2.5, spray(-0.75, 0.03)], [3, spray(-1, 0)]],
+  }),
 
   // --- R&B ------------------------------------------------------------------------
   full({
@@ -358,6 +504,61 @@ export const moves: MoveDef[] = [
     desc: 'Roll the weight slowly from foot to foot over two beats each, leaning and tipping the head with it, one hand resting on the chest and the other arm hanging soft.',
     keys: [[0, jamA], [1, { ...jamA, y: -0.05, lean: 4 }], [2, mir(jamA)], [3, mir({ ...jamA, y: -0.05, lean: 4 })]],
   }),
+  full({
+    id: 'shoulder-roll-two-step', name: 'Shoulder-Roll Two-Step', tags: 'hiphop funk | legs full | walk', beats: 2, level: 'low', d: 1, parts: ['legs', 'torso'], mirror: true,
+    desc: 'Smooth two-step: step out to the side and roll that shoulder up and back as you step, arms hanging soft, then close the feet and let the shoulder settle; then the other side.',
+    keys: [
+      [0, { ...ts2(true), lean: -3, turn: 10, head: 4, twist: -7, shR: 1.1, shL: 0.1, ...ARMS_SOFT }],
+      [0.5, { ...ts2(true), y: -0.045, lean: -2, turn: 8, head: 3, twist: 7, shR: 0.8, shL: 0.1, ...ARMS_SOFT, r: at(1, 0.22, 0.54, 0.03, E_BACK) }],
+      [1, { ...ts2(false), lean: 0, turn: 0, head: 0, twist: 0, shR: 0.15, shL: 0.15, ...ARMS_SOFT }],
+      [1.5, { ...ts2(false), y: -0.05, lean: 0, turn: 0, head: 0, twist: 0, shR: 0.2, shL: 0.2, ...ARMS_SOFT }],
+    ],
+  }),
+  full({
+    id: 'knee-pop-two-step', name: 'Knee-Pop Two-Step', tags: 'hiphop funk | legs | walk', beats: 2, level: 'mid', d: 2, parts: ['legs', 'hips'], mirror: true,
+    desc: 'Step out to the side, then bring that foot back in onto its toes with the knee popping in and the hip pushing out over the standing leg, the shoulder dipping with it; release the knee and step out the other way.',
+    keys: [
+      [0, { ...ts2(true), lean: -2, turn: 8, ...ARMS_SOFT }],
+      [0.5, { ...ts2(true), y: -0.045, lean: -1, turn: 6, ...ARMS_SOFT }],
+      [1, { x: -0.015, y: -0.07, hips: -0.045, tilt: -6, lean: 4, head: -5, turn: -4, shR: 0.9, shL: 0, rf: [0.07, 0, 0.02], lf: [-0.09, 0, 0], kneeR: -0.55, pitchR: 28, kneeL: 0.06, ...ARMS_SOFT, r: at(1, 0.18, 0.5, 0.1, E_OUT) }],
+      [1.5, { x: -0.01, y: -0.04, hips: -0.02, tilt: -2, lean: 1, head: -2, turn: -2, shR: 0.3, shL: 0.1, rf: [0.08, 0, 0.01], lf: [-0.09, 0, 0], kneeR: -0.1, pitchR: 10, ...ARMS_SOFT }],
+    ],
+  }),
+  full({
+    id: 'hand-slide-sway', name: 'Hand-Slide Sway', tags: 'hiphop pop | hips arms | hips', beats: 4, level: 'low', d: 1, parts: ['hips', 'arms'],
+    desc: 'Push the hip out to one side over two beats as that hand slides slowly down from the chest along the side to the hip, the head tipping away; then the other hip and the other hand.',
+    keys: [
+      [0, { y: -0.05, x: 0.01, hips: 0.01, tilt: 1, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], r: at(1, 0.05, 0.76, 0.16, E_DOWN), l: at(-1, -0.2, 0.55, 0.08, E_OUT), handR: 1, handL: 0.7 }],
+      [1, { y: -0.07, x: 0.035, hips: 0.06, tilt: 8, lean: -4, head: -7, rf: [0.12, 0, 0], lf: [-0.12, 0.015, 0.01], kneeL: 0.1, r: at(1, 0.17, 0.56, 0.1, E_DOWN), l: at(-1, -0.2, 0.55, 0.08, E_OUT), handR: 1, handL: 0.7 }],
+      [2, { y: -0.05, x: -0.01, hips: -0.01, tilt: -1, rf: [0.12, 0, 0], lf: [-0.12, 0, 0], l: at(-1, -0.05, 0.76, 0.16, E_DOWN), r: at(1, 0.2, 0.55, 0.08, E_OUT), handL: 1, handR: 0.7 }],
+      [3, { y: -0.07, x: -0.035, hips: -0.06, tilt: -8, lean: 4, head: 7, lf: [-0.12, 0, 0], rf: [0.12, 0.015, 0.01], kneeR: 0.1, l: at(-1, -0.17, 0.56, 0.1, E_DOWN), r: at(1, 0.2, 0.55, 0.08, E_OUT), handL: 1, handR: 0.7 }],
+    ],
+  }),
+  full({
+    id: 'hand-glide-two-step', name: 'Hand-Glide Two-Step', tags: 'hiphop funk | legs arms | walk hands', beats: 2, level: 'low', d: 1, parts: ['legs', 'arms'], mirror: true,
+    desc: 'Two-step side to side while one flat palm glides out at chest height toward the step and back across in front of you, as if smoothing a tabletop, the other hand resting on the belly; the eyes follow the hand.',
+    keys: [
+      [0, { ...ts2(true), turn: 12, head: 3, r: at(1, 0.31, 0.7, 0.17, E_OUT), l: at(-1, -0.02, 0.6, 0.17, E_DOWN), handR: 1, handL: 1 }],
+      [0.5, { ...ts2(true), y: -0.045, turn: 16, head: 4, r: at(1, 0.37, 0.71, 0.13, E_OUT), l: at(-1, -0.02, 0.6, 0.17, E_DOWN), handR: 1, handL: 1 }],
+      [1, { ...ts2(false), turn: -2, head: 0, r: at(1, 0.06, 0.71, 0.24, E_ACROSS), l: at(-1, -0.02, 0.6, 0.17, E_DOWN), handR: 1, handL: 1 }],
+      [1.5, { ...ts2(false), y: -0.05, turn: 2, head: 0, r: at(1, 0.15, 0.7, 0.24, E_OUT), l: at(-1, -0.02, 0.6, 0.17, E_DOWN), handR: 1, handL: 1 }],
+    ],
+  }),
+  full({
+    id: 'slow-drag', name: 'Slow Drag', tags: 'hiphop funk | legs hips | walk hips', beats: 4, level: 'low', d: 1, parts: ['legs', 'hips'], mirror: true, travel: 0.13,
+    desc: 'Take a long step out to the side and ease the weight and hips over onto it, then drag the other foot in slowly along the floor to meet it over two beats, one hand on the chest and the head tipping with the sway; then the other way.',
+    keys: [
+      [0, { x: 0.055, y: -0.07, hips: 0.03, tilt: 4, lean: -4, head: 6, rf: [0.22, 0, 0], lf: [-0.09, 0, 0], kneeR: 0.08, ...dragArms(0) }],
+      [1, { x: 0.09, y: -0.075, hips: 0.045, tilt: 6, lean: -5, head: 8, rf: [0.22, 0, 0], lf: [-0.05, 0, 0], slideL: true, kneeR: 0.1, pitchL: 10, ...dragArms(0.02) }],
+      [2, { x: 0.115, y: -0.06, hips: 0.03, tilt: 4, lean: -3, head: 5, rf: [0.22, 0, 0], lf: [0.0, 0, 0], slideL: true, kneeR: 0.07, pitchL: 18, ...dragArms(0.03) }],
+      [3, { x: 0.13, y: -0.04, hips: 0.01, tilt: 1, lean: 0, head: 1, rf: [0.22, 0, 0], lf: [0.04, 0, 0], kneeR: 0.03, pitchL: 20, ...dragArms(0.01) }],
+    ],
+  }),
+  full({
+    id: 'chest-circle', name: 'Chest Circle', tags: 'hiphop funk | full |', beats: 2, level: 'mid', d: 2, parts: ['torso'],
+    desc: 'Hips still and knees soft, circle the rib cage: slide it to one side, lift it up and out, slide it to the other side, and drop it, one smooth circle every two beats.',
+    keys: [[0, chestCircle(0)], [0.5, chestCircle(1)], [1, chestCircle(2)], [1.5, chestCircle(3)]],
+  }),
 
   // --- Reggaeton ------------------------------------------------------------------
   full({
@@ -386,8 +587,31 @@ export const moves: MoveDef[] = [
     keys: [[0, sandLand], [0.5, sandAir], [1, mir(sandLand)], [1.5, sandAir]],
   }),
   full({
-    id: 'dembow-shimmy', name: 'Dembow Shimmy', tags: 'latin hiphop | full | shake', beats: 2, level: 'low', d: 2, parts: ['torso', 'arms'],
+    id: 'dembow-shimmy', name: 'Dembow Shimmy', tags: 'latin hiphop | full | shake', beats: 2, level: 'low', d: 1, parts: ['torso', 'arms'],
     desc: 'Arms bent up in front of the chest, shimmy the shoulders forward one at a time on the dembow rhythm with a small knee bounce.',
     keys: [[0, shim(1, -0.07)], [0.75, shim(-1, -0.05)], [1, shim(1, -0.07)], [1.5, shim(-1, -0.05)]],
+  }),
+  full({
+    id: 'dembow-chest-pop', name: 'Dembow Chest Pop', tags: 'latin hiphop | full |', beats: 2, level: 'mid', d: 2, parts: ['torso', 'arms'],
+    desc: 'Feet apart, pop the chest up and out with the elbows pulling back on the beat, fold it in on the "a", pop again on the next beat and fold on the "and": the dembow rhythm in the chest.',
+    keys: [[0, rgPop], [0.75, rgFold], [1, { ...rgPop, y: -0.06 }], [1.5, rgFold]],
+  }),
+  full({
+    id: 'dembow-cross-step', name: 'Dembow Cross Step', tags: 'latin hiphop | legs hips | walk hips', beats: 2, level: 'mid', d: 2, parts: ['legs', 'hips', 'arms'], mirror: true,
+    desc: 'Cross one foot in front of the other on the beat with the arms swinging across, bounce on the "and", step it out to the side on the next beat with a hip pop and the arms opening, bounce again; then cross the other foot.',
+    keys: [
+      [0, rgCross], [0.5, { ...rgCross, y: -0.06 }], [1, rgOut],
+      [1.5, { ...rgOut, y: -0.05, x: 0.02, hips: 0.02, tilt: 2, twist: 0, rf: [0.15, 0, 0], r: at(1, 0.2, 0.64, 0.14, E_OUT), l: at(-1, -0.18, 0.64, 0.14, E_OUT) }],
+    ],
+  }),
+  full({
+    id: 'dembow-heel-tap', name: 'Dembow Heel Tap', tags: 'latin hiphop | legs hips | hips', beats: 2, level: 'low', d: 1, parts: ['legs', 'hips'], mirror: true,
+    desc: 'Dig one heel out on the diagonal on the beat as the hips pop the other way, bring it in on the "a", dig it again on the next beat and bring it in on the "and", fists pumping low; then the other heel.',
+    keys: [[0, rgHeel(true, -0.07)], [0.75, rgHeel(false, -0.05)], [1, rgHeel(true, -0.07)], [1.5, rgHeel(false, -0.05)]],
+  }),
+  full({
+    id: 'dembow-turn', name: 'Dembow Turn', tags: 'latin hiphop | turn hips | spin hips', beats: 4, level: 'mid', d: 2, parts: ['turn', 'hips', 'legs'], mirror: true,
+    desc: 'Keep the dembow bounce going, a hip pop on every beat and a lift on the "and", fists pumping low, while turning slowly all the way round on the balls of the feet over four beats.',
+    keys: [0, 1, 2, 3].flatMap((b) => [[b, rgTurn(b * 90, true)], [b + 0.5, rgTurn(b * 90 + 45, false)]] as const),
   }),
 ];

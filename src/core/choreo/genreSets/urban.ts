@@ -20,9 +20,13 @@
 
 export const moves: Partial<Record<string, string>> = {
   // families/urban.ts (genres.ts RAW already lists the-whip the-shoot the-woah griddy jet-griddy nae-nae)
-  trap: `shoulder-lean lean-two-step hit-and-hold rap-hands turn-up-jump`,
+  trap: `shoulder-lean lean-two-step hit-and-hold rap-hands turn-up-jump
+    low-rolling-sway stir-the-pot`,
   // (RAW already lists shmoney)
-  drill: `drill-bounce shoulder-rock drill-arm-swing drill-strut sturdy-hop drill-glide drill-two-step`,
-  rnb: `body-roll slow-hip-roll hip-roll-down snap-sway slow-jam-sway`,
-  reggaeton: `dembow-step perreo-bounce dembow-knee-pop sandungueo-bounce dembow-shimmy`,
+  drill: `drill-bounce shoulder-rock drill-arm-swing drill-strut sturdy-hop drill-glide drill-two-step
+    finger-gun-point finger-gun-hits rifle-spray`,
+  rnb: `body-roll slow-hip-roll hip-roll-down snap-sway slow-jam-sway
+    shoulder-roll-two-step knee-pop-two-step hand-glide-two-step slow-drag chest-circle hand-slide-sway`,
+  reggaeton: `dembow-step perreo-bounce dembow-knee-pop sandungueo-bounce dembow-shimmy
+    dembow-chest-pop dembow-cross-step dembow-heel-tap dembow-turn`,
 };

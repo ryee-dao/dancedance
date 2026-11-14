@@ -12,6 +12,7 @@ import type { Intensity, MoveInstance } from '../choreo/generator';
 import { duoFromRoutine, mirrorInstance, type DuoKind, type DuoRoutine } from '../choreo/duo';
 import { partnerOf, type PartnerMove } from '../choreo/duoMoves';
 import type { Move } from '../choreo/moves';
+import type { SongStyle } from '../choreo/songStyle';
 import type { PlanView } from './animator';
 import type { Plan } from './conductor';
 
@@ -48,8 +49,12 @@ export class DuoTracks {
   private mapped = 0;
   private full = false;
 
-  /** Follow the conductor's active plan. Returns true when the plan changed. */
-  sync(plan: Plan | null, intensity: Intensity, seedKey: string): boolean {
+  /**
+   * Follow the conductor's active plan. Returns true when the plan changed.
+   * `style`: the song style the plan was generated with (partner moves follow
+   * its genre sets and calm, as the single routine does).
+   */
+  sync(plan: Plan | null, intensity: Intensity, seedKey: string, style?: SongStyle): boolean {
     if (!plan) return false;
     let changed = false;
     if (plan !== this.plan) {
@@ -63,7 +68,12 @@ export class DuoTracks {
       this.full = plan.kind === 'map' && plan.liveFrom === Infinity && plan.instances.length > 0;
       if (this.full) {
         const end = plan.instances[plan.instances.length - 1];
-        this.routine = duoFromRoutine({ instances: plan.instances, signature: plan.signature, half: plan.half, beats: end.start + end.span, times: plan.grid }, { seedKey: `${seedKey}|${plan.key}`, intensity });
+        // The plan's period is the routine's tempo (Plan.fromMap): each partner move's own half time follows it.
+        const bpm = 60 / plan.period;
+        this.routine = duoFromRoutine(
+          { instances: plan.instances, signature: plan.signature, half: plan.half, bpm, beats: end.start + end.span, times: plan.grid },
+          { seedKey: `${seedKey}|${plan.key}`, intensity, ...(style ? { style } : {}) },
+        );
         this.v1.instances = this.routine.p1;
         this.v2.instances = this.routine.p2;
         this.cues = buildCues(this.routine);

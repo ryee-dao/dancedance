@@ -1,0 +1,267 @@
+{
+  "304149133": {
+    "verdict": "unjudged",
+    "reason": "Same result as A (the list added nothing new): Not fetched: the cloud job's YouTube matcher found no upload within -1..+6 s of the iTunes length (16 results).",
+    "causes": [
+      "fetch"
+    ]
+  },
+  "1464292596": {
+    "verdict": "right",
+    "reason": "Same result as A (the list added nothing new): Country label, country set opened (Heel Strut, Sailor Step, Vine Hitch Clap, Clogging), mid calm 0.35 fits an acoustic Americana song; a few filler moves (Strike a Pose, Penguin Waddle).",
+    "causes": []
+  },
+  "550970575": {
+    "verdict": "right",
+    "reason": "List (pop, pop rock, rap rock) gives 'Pop · Rock' and opens rock: Air Drums, Swaying Drummer, Strum & Kick, Pogo Arena Wave fit a stadium pop-rock anthem; cardio's 32% jumps at 85 BPM is the one stretch.",
+    "causes": []
+  },
+  "1469575893": {
+    "verdict": "right",
+    "reason": "Same result as A (the list added nothing new): Reggae label and Caribbean set (Reggae Skank, Bogle, Pon di River, Willie Bounce) on a 103 BPM reggae groove; dancehall-era steps on a 1980 roots song and a 'Dinosaur Stomp' are the only oddities.",
+    "causes": []
+  },
+  "6795661996": {
+    "verdict": "wrong",
+    "reason": "Same result as A (the list added nothing new): iTunes 'Blues' maps to rock + funk + swing, so a soul-blues groove gets Headbang Arms Up, Foot on the Monitor and Hitch Kick; tempo counted at 170 (likely double) with 59% half-time on Hard.",
+    "causes": [
+      "lexicon-gap",
+      "tempo-double"
+    ]
+  },
+  "6827717041": {
+    "verdict": "unjudged",
+    "reason": "Same result as A (the list added nothing new): Nothing found about the song. Internally: 194 BPM counted (likely a ~97 BPM groove doubled) and syncop 0.00 on a Rauw Alejandro feature; the Latin set pulls cumbia, merengue, salsa, cha-cha, samba and tango steps into one song.",
+    "causes": []
+  },
+  "1570324269": {
+    "verdict": "right",
+    "reason": "Nu metal first in the list: 'Rock · Metal', metal set opens (Circle Pit Call, Horns to the Crowd, Low Headbang), and Hard drops to 0% jumps.",
+    "causes": []
+  },
+  "1800785982": {
+    "verdict": "right",
+    "reason": "Same result as A (the list added nothing new): Latin groove with real cumbia steps (Cumbia Step, Cumbia Sau, Cumbia Machete) and merengue on a cumbia; some samba / flamenco pieces mixed in.",
+    "causes": []
+  },
+  "6820114211": {
+    "verdict": "acceptable",
+    "reason": "Same result as A (the list added nothing new): Hip-hop from the iTunes tag is defensible for a rapper, but a melancholic club track gets Krump Arm Swing and Krump Chest Pop and calm 0.00; mood is lost.",
+    "causes": [
+      "genre-too-broad"
+    ]
+  },
+  "1604871429": {
+    "verdict": "acceptable",
+    "reason": "TheAudioDB's 'R&B' (the artist's usual genre, not this song's) ranks first: label 'R&B', Slow-Jam Sway and Hip Roll Down join the rock accents; the sources say this track is her move away from R&B.",
+    "causes": [
+      "list-wrong"
+    ]
+  },
+  "749752394": {
+    "verdict": "right",
+    "reason": "Swing / big band / jazz from MusicBrainz and TheAudioDB open the swing set: Charleston, Charleston Kick, Truckin', Shorty arms. The label 'Pop · Funk' is silly for Sinatra (jazz maps to the funk family).",
+    "causes": [
+      "label"
+    ]
+  },
+  "302980624": {
+    "verdict": "acceptable",
+    "reason": "Eurodance / house from four sources: 'Electronic · House', House Stomp and EDM moves; but the iTunes 'R&B' still scores rnb 0.70, so Slow-Jam Sway fills most of Easy (140 beats).",
+    "causes": [
+      "itunes-tiebreak"
+    ]
+  },
+  "353859978": {
+    "verdict": "acceptable",
+    "reason": "Same result as A (the list added nothing new): Hip-hop set is right (Jerkin', Smurf, Dougie arms, Humpty Hop) but the beat is counted at 150 (double of ~75), so Hard is 63% jumps and Jersey Club Kick at jersey-club speed on a slow anthem.",
+    "causes": [
+      "tempo-double",
+      "level-handling"
+    ]
+  },
+  "1223063406": {
+    "verdict": "acceptable",
+    "reason": "Still 'Pop', but MusicBrainz junk tags (hip hop, electronic, 'todd in the shadows') lower calm to 0.12 and Hard rises to 25% jumps / 55% high (Running Man + Cheer Kick): slightly further from a dreamy love song.",
+    "causes": [
+      "list-junk",
+      "trait-misread"
+    ]
+  },
+  "1868481905": {
+    "verdict": "wrong",
+    "reason": "Wikipedia 'hip-hop, pop rap' plus MusicBrainz 'boom bap' rank above 'K-pop' (5th): 'Pop · Hip-hop' with Tootsie Roll, Cat Daddy, Harlem Shake, Krump; the K-pop set still never opens on a BTS track.",
+    "causes": [
+      "list-order",
+      "list-junk"
+    ]
+  },
+  "1422648513": {
+    "verdict": "right",
+    "reason": "Same result as A (the list added nothing new): Curated starter style: Disco with Philly Dog, The Freddie, Fresno, The Bump at 100 BPM; a fair dance for Dancing Queen.",
+    "causes": []
+  },
+  "1442209191": {
+    "verdict": "unjudged",
+    "reason": "Same result as A (the list added nothing new): Not fetched: no upload matched the iTunes length (album version 5:30).",
+    "causes": [
+      "fetch"
+    ]
+  },
+  "841018314": {
+    "verdict": "acceptable",
+    "reason": "Same result as A (the list added nothing new): Latin groove is right but no bachata step appears: cumbia, side salsa, merengue fan, samba bota fogo and maracas on a bachata; calm 0.00 for a heartbreak bachata.",
+    "causes": [
+      "lexicon-gap"
+    ]
+  },
+  "6807077438": {
+    "verdict": "acceptable",
+    "reason": "Same result as A (the list added nothing new): 'Pop' for 90s-style pop rock, no sets; heavy reads 0.86 and the count is 170 BPM with 51% half-time on Hard. Harmless but generic.",
+    "causes": [
+      "genre-too-broad",
+      "trait-misread"
+    ]
+  },
+  "1408996053": {
+    "verdict": "wrong",
+    "reason": "Same as A: 'Hip-hop · Ballad' (cloud rap added) but 0 beats, empty routine.",
+    "causes": [
+      "tempo-none"
+    ]
+  },
+  "1561134392": {
+    "verdict": "wrong",
+    "reason": "Same result as A (the list added nothing new): Thin evidence (a game-music arrangement); iTunes 'Alternative' opens rock, so a soft piece (hats 0.04, calm 0.54) gets Headbang Arms and Pogo Beat Clap on Hard.",
+    "causes": [
+      "genre-too-broad"
+    ]
+  },
+  "1267525486": {
+    "verdict": "wrong",
+    "reason": "Same result as A (the list added nothing new): Intense post-punk / grunge reads calm 0.66 (drive 0.28), the rock set closes, and the moves are Dab, Peekaboo, Floss and Ta-Da!",
+    "causes": [
+      "trait-misread"
+    ]
+  },
+  "1597915671": {
+    "verdict": "acceptable",
+    "reason": "Same result as A (the list added nothing new): Rock is fine for 70s pop-rock, but a whimsical Beatles pastiche gets Side-to-Side Headbang and Pogo Punch; Mic Grab and Air Drums fit.",
+    "causes": [
+      "genre-too-broad"
+    ]
+  },
+  "1843605915": {
+    "verdict": "unjudged",
+    "reason": "Same result as A (the list added nothing new): Not fetched: no matching upload found, and nothing found about the song.",
+    "causes": [
+      "fetch"
+    ]
+  },
+  "1649131355": {
+    "verdict": "unjudged",
+    "reason": "Same result as A (the list added nothing new): Nothing found. Internally consistent (four-on-the-floor 1.00 at 115 BPM, house 0.43 just under the opening threshold), but the label 'Aerobics · Pop' is an odd name for an electronic track.",
+    "causes": []
+  },
+  "1777704569": {
+    "verdict": "wrong",
+    "reason": "Same result as A (the list added nothing new): Breakcore / jungle counted at 93 BPM (half), calm 0.31, label 'Aerobics · Pop', no bass-music set: arm-swing aerobics to a frantic track.",
+    "causes": [
+      "tempo-half",
+      "lexicon-gap",
+      "trait-misread"
+    ]
+  },
+  "1548161468": {
+    "verdict": "acceptable",
+    "reason": "Same result as A (the list added nothing new): Rock · Punk is right and the punk set opens, but drive reads 0.23 / calm 0.52 on fast punk, so gentle moves (Lift the Sky, Reach & Pull to Heart, Chair Squat) dilute it.",
+    "causes": [
+      "trait-misread"
+    ]
+  },
+  "1502348947": {
+    "verdict": "wrong",
+    "reason": "Same result as A (the list added nothing new): Metal is labelled right, but the analyser found no beat in a 7-minute metalcore track (0 BPM; gridless traits say calm 0.60, drive 0.10): empty routine.",
+    "causes": [
+      "tempo-none",
+      "trait-misread"
+    ]
+  },
+  "1458115406": {
+    "verdict": "acceptable",
+    "reason": "Same result as A (the list added nothing new): Calm 0.79 and lyrical fit dark ambient, but 'Pop · Ballad' and Cheer Kick, Floss · double time and Dab on Medium / Hard look silly on it.",
+    "causes": [
+      "level-handling"
+    ]
+  },
+  "1877197218": {
+    "verdict": "wrong",
+    "reason": "Same result as A (the list added nothing new): Upbeat, sunny alt rock at 132 BPM reads calm 0.72 (drive 0.25): 'Rock · Ballad' with Grand Plié, Développé and Port de Bras.",
+    "causes": [
+      "trait-misread"
+    ]
+  },
+  "1694793045": {
+    "verdict": "wrong",
+    "reason": "Same result as A (the list added nothing new): Hard-hitting dark trap reads calm 0.74 (drive 0.18, halfFeel 0.00): 'Pop · Ballad' with Développé and Slow Spiral Turn.",
+    "causes": [
+      "trait-misread"
+    ]
+  },
+  "1454357665": {
+    "verdict": "acceptable",
+    "reason": "Same result as A (the list added nothing new): Artist-level evidence only; generic 'Pop' with mid calm contradicts nothing known, but says nothing either.",
+    "causes": [
+      "genre-too-broad"
+    ]
+  },
+  "1515380130": {
+    "verdict": "acceptable",
+    "reason": "Same result as A (the list added nothing new): Electronic · EDM with the EDM set (Hakken, Crouch & Drop, Pound & Pump) is right, but 85 BPM is implausible for 2007 hard trance and swing reads 1.00: the count is probably off.",
+    "causes": [
+      "tempo-suspect",
+      "trait-misread"
+    ]
+  },
+  "1837074343": {
+    "verdict": "acceptable",
+    "reason": "Same result as A (the list added nothing new): Calm 1.00, ballad and lyrical moves suit calm instrumental ambient folk; the 'Rock' head comes from the iTunes tag, and Raise the Roof on Hard is out of place.",
+    "causes": [
+      "genre-too-broad"
+    ]
+  },
+  "6763077853": {
+    "verdict": "unjudged",
+    "reason": "Same result as A (the list added nothing new): Nothing found. Internally: Pop at mid calm 0.26, generic moves; consistent with the tag and traits.",
+    "causes": []
+  },
+  "1886134248": {
+    "verdict": "unjudged",
+    "reason": "Same result as A (the list added nothing new): Nothing found. Internally: iTunes Rock with calm 0.69 (drive 0.24) gives Rock + lyrical, no rock set; consistent with what was measured.",
+    "causes": []
+  },
+  "1778224465": {
+    "verdict": "unjudged",
+    "reason": "Same result as A (the list added nothing new): Nothing found. Internally odd: a Hip-Hop/Rap 'beat' reads hats 0.00, calm 1.00 and becomes 'Pop · Ballad' with ballet moves; the Hip-hop tag lost the label.",
+    "causes": []
+  },
+  "6780472953": {
+    "verdict": "unjudged",
+    "reason": "Same result as A (the list added nothing new): Nothing found. Internally consistent: Hip-hop tag, calm 0.00 at 78 BPM, hip-hop set (Steve Martin, Stanky Leg, Running Man).",
+    "causes": []
+  },
+  "1519359697": {
+    "verdict": "unjudged",
+    "reason": "Same result as A (the list added nothing new): Excluded (sing-along cover medley); also not fetched.",
+    "causes": [
+      "fetch"
+    ]
+  },
+  "1387817894": {
+    "verdict": "acceptable",
+    "reason": "Same result as A (the list added nothing new): No pulse in a free recitative, so an empty routine (idle groove) is defensible; the label 'Pop · Ballad' is silly for Handel.",
+    "causes": [
+      "tempo-none"
+    ]
+  }
+}

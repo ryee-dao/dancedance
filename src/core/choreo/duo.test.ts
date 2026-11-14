@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import type { BeatMap } from '../analysis/beatmap';
-import { generateDuoRoutine, mirrorInstance, type DuoRoutine } from './duo';
+import { CALM_GENTLE, PARTNER_RICH, generateDuoRoutine, mirrorInstance, songPartnerMoves, type DuoRoutine } from './duo';
 import { contactReport, jointWorld, partnerFrame, validatePartner } from './duoCheck';
-import { findPartnerMove, PARTNER_ERRORS, PARTNER_MOVES, partnerDepth, partnerOf } from './duoMoves';
+import { findPartnerMove, PARTNER_ERRORS, PARTNER_MOVES, PERCUSSIVE_THEMES, partnerDepth, partnerOf, partnerSpeed, partnerTempoMode } from './duoMoves';
 import { J } from '../coach/skeleton';
-import { type Intensity, type MoveInstance } from './generator';
+import { GENRE_MAX, generateRoutine, mapTempo, styleGenres, type Intensity, type MoveInstance } from './generator';
+import type { Genre } from './genres';
 import { MOVES } from './moves';
+import { publishedSongs } from './published.testutil';
 import { resolveSongStyle } from './songStyle';
+import { LEVEL_SPEED } from './speed';
 import { songMap } from './testutil';
 import { buildCues } from '../coach/duoTracks';
 
@@ -258,6 +261,260 @@ describe('duo routine', () => {
     expect(j.mirror).toBe(true);
     expect(j.origin).toBeCloseTo(-0.2);
     expect(j.start).toBe(4);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Partner moves fit the song: style, calm, tempo
+
+/** Songs of each style, resolved the way the app does (genre names + audio traits). */
+const styled = (genres: string[], bpm: number, traits: Record<string, number>) => ({ bpm, style: resolveSongStyle({ title: 'X', genres }, { bpm, traits }) });
+const STYLED = {
+  ballad: styled(['pop ballad'], 72, { calm: 0.9, drive: 0.1 }),
+  rockBallad: styled(['soft rock'], 78, { calm: 0.85, drive: 0.15 }),
+  pop: styled(['pop', 'dance-pop'], 118, { calm: 0.35, drive: 0.6 }),
+  metal: styled(['heavy metal'], 120, { calm: 0.15, heavy: 0.9, drive: 0.9 }),
+  punk: styled(['punk rock'], 172, { calm: 0.15, drive: 0.9 }),
+  trap: styled(['trap'], 140, { calm: 0.25, halfFeel: 0.85, hats: 0.8, bass: 0.8 }),
+  drill: styled(['UK drill'], 142, { calm: 0.3, halfFeel: 0.8, syncop: 0.7 }),
+  rnb: styled(['R&B', 'neo soul'], 92, { calm: 0.5, swing: 0.6 }),
+  house: styled(['deep house'], 122, { calm: 0.3, fourFloor: 0.9 }),
+  edm: styled(['EDM', 'big room'], 128, { calm: 0.2, fourFloor: 0.9, drive: 0.9 }),
+  dnb: styled(['drum and bass'], 174, { calm: 0.2, hats: 0.9 }),
+  reggaeton: styled(['reggaeton'], 95, { calm: 0.3, syncop: 0.7 }),
+  brazil: styled(['samba', 'axé'], 108, { calm: 0.3 }),
+  amapiano: styled(['amapiano'], 112, { calm: 0.35 }),
+  disco: styled(['disco'], 118, { calm: 0.3 }),
+};
+
+/** Every partner move danced in a routine (one per phrase). */
+const partnersOf = (r: DuoRoutine) => r.phrases.filter((p) => p.partner).map((p) => findPartnerMove(p.partner!)!);
+
+const genreTime = (ins: readonly MoveInstance[]) => {
+  let g = 0, t = 0;
+  for (const i of ins) {
+    if (i.move.idle || i.move.cooldown) continue;
+    t += i.span;
+    const own = partnerOf(i.move);
+    if (own ? own.pm.styles.length > 0 : !!i.move.genre) g += i.span;
+  }
+  return { g, t };
+};
+
+describe('partner moves by style', () => {
+  const GROUPS: Record<string, readonly Genre[]> = {
+    lyrical: ['lyrical'],
+    'hip-hop': ['hiphop', 'trap', 'drill'],
+    electronic: ['house', 'edm', 'bass'],
+    'R&B and Latin': ['rnb', 'latin', 'reggaeton', 'brazil', 'caribbean'],
+    rock: ['rock', 'metal', 'punk'],
+  };
+
+  it('every style group has partner moves for Easy, Medium and Hard', () => {
+    for (const [name, gs] of Object.entries(GROUPS)) {
+      const own = PARTNER_MOVES.filter((m) => m.styles.some((g) => gs.includes(g)));
+      // Easy: difficulty 1, no jumps, no crossing.
+      expect(own.filter((m) => m.difficulty === 1 && !m.jump && !m.trade).length, name).toBeGreaterThanOrEqual(1);
+      expect(own.filter((m) => m.difficulty <= 2).length, name).toBeGreaterThanOrEqual(2);
+      expect(own.filter((m) => m.level === 'high' || m.difficulty >= 2).length, name).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('gentle partner moves have no jumps, impact or hits; crossings have a depth track', () => {
+    for (const pm of PARTNER_MOVES) {
+      if (pm.gentle) {
+        expect(pm.jump || pm.impact, pm.id).toBe(false);
+        expect(pm.themes.some((t) => PERCUSSIVE_THEMES.has(t)), pm.id).toBe(false);
+      }
+      if (pm.trade) expect(pm.depth.length, pm.id).toBeGreaterThan(0);
+      if (pm.styles.includes('lyrical')) expect(pm.gentle, pm.id).toBe(true);
+    }
+  });
+
+  it('a calm ballad gets only gentle partner moves (no jumps, no hits) at every level', () => {
+    let lyrical = 0;
+    for (const { bpm, style } of [STYLED.ballad, STYLED.rockBallad]) {
+      expect(style.calm!).toBeGreaterThanOrEqual(CALM_GENTLE);
+      for (const level of LEVELS) {
+        for (let k = 0; k < 8; k++) {
+          const r = generateDuoRoutine(songMap(bpm, `ballad-${k}`), level, { style });
+          for (const pm of partnersOf(r)) {
+            expect(pm.gentle, `${level} ${pm.id}`).toBe(true);
+            expect(pm.jump || pm.impact, `${level} ${pm.id}`).toBe(false);
+            expect(pm.themes.some((t) => PERCUSSIVE_THEMES.has(t)), `${level} ${pm.id}`).toBe(false);
+            if (pm.styles.includes('lyrical')) lyrical++;
+          }
+          // P2's own moves (complement) never jump on a ballad either.
+          for (const p of r.phrases.filter((x) => x.kind === 'complement')) {
+            for (const i of r.p2) if (i.start >= p.start && i.start < p.end) expect(i.move.jump, i.move.id).toBe(false);
+          }
+        }
+      }
+    }
+    // Ballads dance the lyrical partner moves (they had nothing of their own before).
+    expect(lyrical).toBeGreaterThan(20);
+  });
+
+  it('style-tagged partner moves appear only on songs that open their style, and do appear there', () => {
+    const seen = new Map<string, number>();
+    for (const [name, { bpm, style }] of Object.entries(STYLED)) {
+      const open = styleGenres(style);
+      for (const level of LEVELS) {
+        for (let k = 0; k < 6; k++) {
+          for (const pm of partnersOf(generateDuoRoutine(songMap(bpm, `${name}-${k}`), level, { style }))) {
+            if (!pm.styles.length) continue;
+            expect(pm.styles.some((g) => open.has(g)), `${name} ${level} ${pm.id}`).toBe(true);
+            seen.set(name, (seen.get(name) ?? 0) + 1);
+          }
+        }
+      }
+    }
+    for (const name of ['ballad', 'metal', 'punk', 'trap', 'drill', 'rnb', 'house', 'edm', 'reggaeton', 'brazil', 'amapiano']) expect(seen.get(name) ?? 0, name).toBeGreaterThan(0);
+    // Pop and disco open no style set with partner moves: general ones only.
+    expect(seen.get('pop') ?? 0).toBe(0);
+    expect(seen.get('disco') ?? 0).toBe(0);
+    // Published songs too (their styles as the app resolves them).
+    for (const s of publishedSongs()) {
+      const open = styleGenres(s.style);
+      for (const pm of partnersOf(generateDuoRoutine(s.map, 'cardio', { style: s.style }))) {
+        if (pm.styles.length) expect(pm.styles.some((g) => open.has(g)), `${s.title} ${pm.id}`).toBe(true);
+      }
+    }
+  });
+
+  it('keeps the genre time of each track within the single-player share', () => {
+    for (const [name, { bpm, style }] of Object.entries(STYLED)) {
+      for (const level of LEVELS) {
+        for (let k = 0; k < 4; k++) {
+          const map = songMap(bpm, `${name}-g${k}`);
+          const single = genreTime(generateRoutine(map, level, { style }).instances);
+          const cap = Math.max(GENRE_MAX * single.t, single.g) + 1e-9;
+          const r = generateDuoRoutine(map, level, { style });
+          for (const ins of [r.p1, r.p2]) expect(genreTime(ins).g, `${name} ${level} ${k}`).toBeLessThanOrEqual(cap);
+        }
+      }
+    }
+  });
+
+  it('complement: P2 dances a move of the open sets, at P1\'s tempo mode', () => {
+    let n = 0, same = 0;
+    for (const [name, { bpm, style }] of Object.entries(STYLED)) {
+      const open = styleGenres(style);
+      for (const level of LEVELS) {
+        for (let k = 0; k < 4; k++) {
+          const r = generateDuoRoutine(songMap(bpm, `${name}-c${k}`), level, { style });
+          for (const p of r.phrases.filter((x) => x.kind === 'complement')) {
+            const a = r.p1.find((i) => i.start === p.start)!;
+            const b = r.p2.find((i) => i.start === p.start)!;
+            if (b.move.genre) expect(open.has(b.move.genre), `${name} ${b.move.id}`).toBe(true);
+            n++;
+            if (a.half === b.half) same++;
+          }
+        }
+      }
+    }
+    expect(n).toBeGreaterThan(50);
+    expect(same / n).toBeGreaterThan(0.95);
+  });
+
+  it('a thin partner pool leans on the solo kinds instead', () => {
+    // Calm but not yet lyrical: the four gentle general partner moves only on Easy.
+    const thin = resolveSongStyle({ title: 'X', genres: ['pop'] }, { bpm: 90, traits: { calm: 0.64, drive: 0.3 } });
+    const rich = resolveSongStyle({ title: 'X', genres: ['pop'] }, { bpm: 90, traits: { calm: 0.4, drive: 0.4 } });
+    expect(songPartnerMoves(thin, 90, 'chill').length).toBeLessThan(PARTNER_RICH);
+    expect(songPartnerMoves(rich, 90, 'chill').length).toBeGreaterThanOrEqual(PARTNER_RICH);
+    const share = (style: typeof thin) => {
+      let p = 0, t = 0;
+      for (let k = 0; k < 16; k++) {
+        for (const ph of generateDuoRoutine(songMap(90, `thin-${k}`), 'chill', { style }).phrases) {
+          t += ph.end - ph.start;
+          if (ph.kind === 'partner') p += ph.end - ph.start;
+        }
+      }
+      return p / t;
+    };
+    expect(share(thin)).toBeLessThan(share(rich));
+  });
+});
+
+describe('partner moves at tempo', () => {
+  // Every published song at every level, built once for the tests below.
+  let cache: { s: ReturnType<typeof publishedSongs>[number]; level: Intensity; r: DuoRoutine }[] | null = null;
+  const published = () => (cache ??= publishedSongs().flatMap((s) => LEVELS.map((level) => ({ s, level, r: generateDuoRoutine(s.map, level, { style: s.style }) }))));
+
+  it('every partner move has a speed limit from both tracks; the mode follows it', () => {
+    for (const pm of PARTNER_MOVES) {
+      const { limit } = partnerSpeed(pm);
+      expect(limit, pm.id).toBeGreaterThanOrEqual(90);
+      expect(partnerTempoMode(pm, limit - 1, 'cardio'), pm.id).toBe('full');
+      expect(partnerTempoMode(pm, limit + 1, 'cardio'), pm.id).not.toBe('full');
+    }
+  });
+
+  it('no partner move is danced over its speed limit on any published map', () => {
+    for (const { s, level, r } of published()) {
+      const bpm = mapTempo(s.map);
+      for (const i of r.p1) {
+        const own = partnerOf(i.move);
+        if (!own) continue;
+        const eff = i.half ? bpm / 2 : bpm;
+        expect(eff, `${s.title} ${level} ${own.pm.id}`).toBeLessThanOrEqual(partnerSpeed(own.pm).limit * LEVEL_SPEED[level] + 1e-9);
+      }
+    }
+  });
+
+  it('both players cover the same beats; partner and complement tiles land on bar lines, with mixed tempo modes', () => {
+    let mixed = 0, partnerHalf = 0, partnerFull = 0;
+    const fast = [STYLED.punk, STYLED.dnb, STYLED.trap].flatMap(({ bpm, style }) =>
+      LEVELS.flatMap((level) => [0, 1, 2].map((k) => ({ map: songMap(bpm, `fast-${bpm}-${k}`), level, r: generateDuoRoutine(songMap(bpm, `fast-${bpm}-${k}`), level, { style }) }))),
+    );
+    for (const { map, level, r } of [...published().map((x) => ({ map: x.s.map, level: x.level, r: x.r })), ...fast]) {
+      covers(r.p1, r.beats);
+      covers(r.p2, r.beats);
+      const down = new Set(map.downbeats);
+      const modes = new Set<boolean>();
+      for (const i of r.p1) {
+        const own = partnerOf(i.move);
+        if (!own) {
+          if (!i.move.idle && !i.move.cooldown) modes.add(i.half);
+          continue;
+        }
+        modes.add(i.half);
+        if (i.half) partnerHalf++;
+        else partnerFull++;
+        // The two halves of a partner move: same beats, same speed, same move.
+        const j = r.p2.find((x) => x.start === i.start)!;
+        expect(j, `${level} ${own.pm.id}@${i.start}`).toBeTruthy();
+        expect(partnerOf(j.move)?.pm).toBe(own.pm);
+        expect([j.span, j.half]).toEqual([i.span, i.half]);
+        expect(down.has(i.start), `${map.videoId} ${level} ${own.pm.id}@${i.start}`).toBe(true);
+      }
+      for (const p of r.phrases.filter((x) => x.kind === 'complement')) {
+        for (const i of r.p2) {
+          if (i.start < p.start || i.start >= p.end || i.span < 4) continue;
+          expect(down.has(i.start), `${map.videoId} ${level} complement ${i.move.id}@${i.start}`).toBe(true);
+        }
+      }
+      if (modes.size > 1) mixed++;
+    }
+    expect(mixed).toBeGreaterThan(10);
+    expect(partnerHalf).toBeGreaterThan(0);
+    expect(partnerFull).toBeGreaterThan(partnerHalf);
+  });
+
+  it('level rules hold for both tracks on every style', () => {
+    for (const [name, { bpm, style }] of Object.entries(STYLED)) {
+      for (let k = 0; k < 3; k++) {
+        const r = generateDuoRoutine(songMap(bpm, `${name}-lv${k}`), 'chill', { style });
+        for (const i of [...r.p1, ...r.p2]) {
+          expect(i.move.jump, `${name} ${i.move.id}`).toBe(false);
+          expect(i.move.fastTurn, `${name} ${i.move.id}`).toBe(false);
+        }
+        for (const pm of partnersOf(r)) expect([pm.difficulty, pm.trade], `${name} ${pm.id}`).toEqual([1, false]);
+        const cardio = generateDuoRoutine(songMap(bpm, `${name}-lv${k}`), 'cardio', { style });
+        for (const pm of partnersOf(cardio)) expect(pm.difficulty, `${name} ${pm.id}`).toBeLessThanOrEqual(2);
+      }
+    }
   });
 });
 

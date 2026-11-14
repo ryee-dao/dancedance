@@ -1,10 +1,10 @@
 {
- "catalogueHash": "42c14665",
+ "catalogueHash": "97a3143d",
  "threshold": 0.085,
  "stats": {
-  "baseMoves": 1208,
+  "baseMoves": 1229,
   "candidates": 9081,
-  "counted": 1312,
+  "counted": 1311,
   "ornaments": 2476,
   "byType": {
    "alt": {
@@ -34,8 +34,8 @@
    "combo": {
     "candidates": 5299,
     "invalid": 40,
-    "notUnique": 4448,
-    "accepted": 811
+    "notUnique": 4449,
+    "accepted": 810
    },
    "hips": {
     "candidates": 410,
@@ -2422,6 +2422,7 @@
   ["power-lunge~diag", "power-lunge", "diag"],
   ["power-lunge~hips", "power-lunge", "hips"],
   ["power-lunge~spin", "power-lunge", "spin"],
+  ["pump-pump-open~alt", "pump-pump-open", "alt"],
   ["pump-pump-open~clap4", "pump-pump-open", "clap4"],
   ["pump-pump-open~diag", "pump-pump-open", "diag"],
   ["pump-pump-open~hips", "pump-pump-open", "hips"],
@@ -3096,7 +3097,6 @@
   ["snap-kick~diag", "snap-kick", "diag"],
   ["snap-kick~hips", "snap-kick", "hips"],
   ["snap-kick~spin", "snap-kick", "spin"],
-  ["spirit-fingers~alt", "spirit-fingers", "alt"],
   ["spirit-fingers~clap4", "spirit-fingers", "clap4"],
   ["spirit-fingers~diag", "spirit-fingers", "diag"],
   ["spirit-fingers~hips", "spirit-fingers", "hips"],
@@ -3615,7 +3615,6 @@
   ["triple-shorty-arms~hit4", "triple-shorty-arms", "hit4"],
   ["triple-shorty-arms~spin", "triple-shorty-arms", "spin"],
   ["triple-step~clap4", "triple-step", "clap4"],
-  ["triple-step~combo~triple+airplane", "triple-step", "combo", "triple", "airplane"],
   ["triple-step~combo~triple+cuteClasp", "triple-step", "combo", "triple", "cuteClasp"],
   ["triple-step~combo~triple+fkKneePush", "triple-step", "combo", "triple", "fkKneePush"],
   ["triple-step~combo~triple+latinLowPump", "triple-step", "combo", "triple", "latinLowPump"],

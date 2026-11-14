@@ -1,0 +1,1120 @@
+{
+  "304149133": {
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "Wikipedia / Billboard Tropical Albums (artist/album-level only)",
+        "says": "Tito Rojas is a Puerto Rican salsa singer; A Mi Estilo charted on Billboard Tropical Albums (peak 9, 1994). No song-level description or review found; track's album membership not confirmed (Shazam lists it near Rompiendo Noches).",
+        "url": "https://en.wikipedia.com/wiki/Tito_Rojas"
+      }
+    ],
+    "memory": {
+      "family": "Latin",
+      "sub": "salsa",
+      "energy": "driving",
+      "rhythm": "clave, piano montuno, horns; Tito Rojas is a salsa singer, this song itself I don't know"
+    },
+    "consensus": {
+      "family": "Latin",
+      "sub": "salsa (romántica)",
+      "energy": "mid",
+      "rhythm": "salsa clave; no tempo found (artist-level inference)",
+      "line": "Puerto Rican salsa, probably mid-tempo romantic salsa; artist-level evidence only"
+    },
+    "known": true
+  },
+  "1464292596": {
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "Floating World Records (album listing)",
+        "says": "Great American Radio Vol.1 is a live Guy Clark set recorded at Great American Music Hall, San Francisco, 15 Oct 1988; listing's tracks did not include Heavy Metal. No song-level description found.",
+        "url": "https://floatingworldrecords.co.uk/products/great-american-radio-volume-1"
+      },
+      {
+        "site": "American Songwriter / Rolling Stone (artist-level)",
+        "says": "Guy Clark is a Texas singer-songwriter in the acoustic country/Americana tradition.",
+        "url": "https://www.rollingstone.com/music/music-lists/guy-clark-12-essential-songs-67139/"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "one comment on the lyric (demolition work); nothing on the feel."
+      }
+    ],
+    "memory": {
+      "family": "Country",
+      "sub": "Texas singer-songwriter / folk country",
+      "energy": "mid",
+      "rhythm": "acoustic, storytelling ('Heavy Metal (Don't Mean Rock and Roll to Me)' is about bulldozers); a radio recording"
+    },
+    "consensus": {
+      "family": "Country",
+      "sub": "Americana / singer-songwriter",
+      "energy": "mid",
+      "rhythm": "acoustic, live, guitar-driven (artist-level inference)",
+      "line": "Acoustic Texas country/Americana singer-songwriter track; despite the title it is not metal. Artist-level evidence only"
+    },
+    "known": true
+  },
+  "550970575": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Wikipedia",
+        "says": "Genres: rap rock / pop rock; 3:22; from album #3",
+        "url": "https://en.wikipedia.org/wiki/Hall_of_Fame_(song)"
+      },
+      {
+        "site": "Billboard (quoted via search)",
+        "says": "Swelling, piano-driven number with an uplifting, soaring chorus",
+        "url": "https://en.wikipedia.org/wiki/Hall_of_Fame_(song)"
+      },
+      {
+        "site": "Radio-prep BPM database (cs.ubc.ca)",
+        "says": "Published BPM 86 (Mixmeister 85); AcousticBrainz shows 172 (double-time reading)",
+        "url": "https://www.cs.ubc.ca/~davet/music/track/CHRRADIO_269/CHRRADIO_269-05.html"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "motivational ('adrenaline power house', 'more inspirational than school'). Supports an uplifting anthem, mid to driving."
+      }
+    ],
+    "memory": {
+      "family": "Pop",
+      "sub": "pop rock anthem",
+      "energy": "driving",
+      "rhythm": "stomp-clap anthem around 85 BPM, piano, will.i.am rap verse"
+    },
+    "consensus": {
+      "family": "Pop",
+      "sub": "pop rock / anthemic with rap verse",
+      "energy": "mid",
+      "rhythm": "piano-driven, steady backbeat, ~86 BPM (172 double-time)",
+      "line": "Anthemic pop-rock with a will.i.am rap verse, piano-led, uplifting, ~86 BPM"
+    },
+    "disagreement": "memory said driving stomp-clap anthem; research says mid-tempo piano-led anthem (~86 BPM). Same family.",
+    "known": true
+  },
+  "1469575893": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Songfacts",
+        "says": "Spare, distinctive guitar riff repeating under a relentless beat; first single from Uprising (1980)",
+        "url": "https://www.songfacts.com/facts/bob-marley-the-wailers/could-you-be-loved"
+      },
+      {
+        "site": "Catalog/track descriptions (search result summaries)",
+        "says": "Reggae with funk and dance-music elements; tagged Reggae",
+        "url": "https://www.cs.ubc.ca/~davet/music/track/BOBMARLY_G1A/BOBMARLY_G1A-03.html"
+      },
+      {
+        "site": "DJ BPM databases / karaoke-version",
+        "says": "About 103 BPM (Mixmeister 103.3, 102.9)",
+        "url": "https://www.karaoke-version.com/mp3-backingtrack/bob-marley/could-you-be-loved.html"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "'the only thing that soothes her', joy of life. Mid, warm."
+      }
+    ],
+    "memory": {
+      "family": "Reggae",
+      "sub": "reggae with a disco / funk lean",
+      "energy": "mid",
+      "rhythm": "offbeat skank, about 103 BPM, very danceable"
+    },
+    "consensus": {
+      "family": "Reggae",
+      "sub": "reggae with funk/dance feel",
+      "energy": "mid",
+      "rhythm": "offbeat skank with steady driving beat, repeating guitar riff, ~103 BPM",
+      "line": "Upbeat dance-friendly reggae with funk/disco leanings, ~103 BPM"
+    },
+    "known": true
+  },
+  "6795661996": {
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "WebSearch (multiple queries)",
+        "says": "Nothing found for Jaxson Blue or Take a Little; only unrelated artists surfaced",
+        "url": ""
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "'Oh I love this groove', 'gives encouragement during hard times', praise for the voice; one says 'This is all made with AI folks'."
+      }
+    ],
+    "consensus": {
+      "family": "Blues",
+      "sub": "soul-blues groove (possibly AI-generated)",
+      "energy": "mid",
+      "rhythm": "groove-based; iTunes Blues; no tempo found",
+      "line": "Mid-tempo soul / blues groove with an encouraging tone; comments only, possibly an AI-made track"
+    },
+    "known": true
+  },
+  "6827717041": {
+    "evidence": "none",
+    "sources": [
+      {
+        "site": "WebSearch (multiple queries)",
+        "says": "No source found pairing Kany García and Rauw Alejandro on Suave (only an unrelated Jey Blessing Suave remix with Rauw)",
+        "url": ""
+      }
+    ],
+    "memory": {
+      "family": "Latin",
+      "sub": "Latin pop, maybe reggaeton-tinged (Rauw Alejandro)",
+      "energy": "mid",
+      "rhythm": "weak guess: song unknown to me"
+    },
+    "known": false
+  },
+  "1570324269": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Louder",
+        "says": "Calls it one of nu metal's most enduring anthems, the band's biggest hit; inspired by school shootings; children's choir near the end",
+        "url": "https://www.loudersound.com/features/the-story-behind-the-song-pods-youth-of-the-nation"
+      },
+      {
+        "site": "Wikipedia-derived pages",
+        "says": "Genre: nu metal / alternative rock / rap rock",
+        "url": "https://wiki.krisyotam.com/content/wikipedia_en_all_nopic_2026-03/Satellite_(P.O.D._album)"
+      },
+      {
+        "site": "DJ BPM database (cs.ubc.ca)",
+        "says": "Published BPM 98 (Mixmeister/Traktor 97.9)",
+        "url": "https://www.cs.ubc.ca/%7Edavet/music/track/RADIO202_04A/RADIO202_04A-09.html"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "'powerful', serious (school shootings, Columbine). Mid and heavy, not party."
+      }
+    ],
+    "memory": {
+      "family": "Rock",
+      "sub": "nu metal / alt metal",
+      "energy": "driving",
+      "rhythm": "heavy guitars, mid tempo, rap-sung verses, kids' choir chorus"
+    },
+    "consensus": {
+      "family": "Rock",
+      "sub": "nu metal / alt rock",
+      "energy": "mid",
+      "rhythm": "heavy guitars with rap-rock verses, tense groove, ~98 BPM, choir at end",
+      "line": "Nu metal / rap-rock anthem, serious tone, mid-tempo ~98 BPM with heavy guitars"
+    },
+    "disagreement": "memory said driving; research says mid-tempo (~98 BPM) nu metal with heavy guitars. Same family and sub-style.",
+    "known": true
+  },
+  "1800785982": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Wikipedia",
+        "says": "Cumbia version (Apr 2018) of Natalia Lafourcade's 2015 pop song, single from Esto Sí Es Cumbia; over 1 billion YouTube views",
+        "url": "https://en.wikipedia.org/wiki/Nunca_Es_Suficiente"
+      },
+      {
+        "site": "ADN40",
+        "says": "Natalia's pop fused with Los Ángeles Azules' cumbia",
+        "url": "https://www.adn40.mx/entretenimiento/2018-04-20/el-pop-de-natalia-lafourcade-y-la-cumbia-de-los-angeles-azules-se-fusionan/"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "the Saturday house-cleaning song in Latino homes, 'this song is fire'. Upbeat, everyday dance staple."
+      }
+    ],
+    "memory": {
+      "family": "Latin",
+      "sub": "cumbia (sonidera)",
+      "energy": "mid",
+      "rhythm": "cumbia shuffle around 95 BPM, romantic but a dance-floor staple"
+    },
+    "consensus": {
+      "family": "Latin",
+      "sub": "cumbia (Mexican sonidera/romantic)",
+      "energy": "mid",
+      "rhythm": "cumbia rhythm, accordion/keys, romantic pop melody; no tempo found",
+      "line": "Mexican cumbia re-working of a romantic pop song, mid-tempo, very danceable"
+    },
+    "known": true
+  },
+  "6820114211": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "ms-aktuell.de",
+        "says": "Collab with Ericson blends electronic club music with more melancholic moods; on album Ski Aggu Musik (Oct 2026)",
+        "url": "https://ms-aktuell.de/welt/ski-aggu-album-16-10-2026/"
+      },
+      {
+        "site": "martincid.com",
+        "says": "Ericson returns on the melancholy club track Verschwommen",
+        "url": "https://www.martincid.com/people/ski-aggu/"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "lyric quoted: longing for 'our summers', old pictures seen blurred. Supports melancholic."
+      }
+    ],
+    "memory": {
+      "family": "Hip-hop",
+      "sub": "German party rap, possibly techno-rap",
+      "energy": "driving",
+      "rhythm": "weak guess: song unknown to me"
+    },
+    "consensus": {
+      "family": "Electronic",
+      "sub": "club / German rap-pop with hardtekk-era leanings",
+      "energy": "mid",
+      "rhythm": "club beat, melancholic mood; no tempo found",
+      "line": "Melancholic German club track, electronic beat with rap/sung vocals"
+    },
+    "disagreement": "memory guessed German party rap (driving); research says melancholic electronic club track (mid). Family differs.",
+    "known": true
+  },
+  "1604871429": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Rolling Stone",
+        "says": "Stewing alt-rock track; Girl Ultra moves from her usual R&B to alternative rock with Little Jesus",
+        "url": "https://www.rollingstone.com/music/music-latin/girl-ultra-goes-punk-on-stewing-alt-rock-track-announces-u-s-tour-dates-1296719/"
+      },
+      {
+        "site": "Cultartes",
+        "says": "Indie-sleaze track featuring Little Jesus; preview of EP El sur",
+        "url": "https://cultartes.com/?p=29016"
+      },
+      {
+        "site": "Time Out México",
+        "says": "Continuation of Fuera de lugar, a bit more energetic",
+        "url": "https://www.timeoutmexico.mx/ciudad-de-mexico/musica/girl-ultra-nos-cuenta-como-el-sur-de-la-cdmx-la-inspiro-en-su-ultimo-ep"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "several listeners say it sounds like Gwen Stefani's 'Bubble Pop Electric' (an electro-pop dance track); night-walk headphone listening. Suggests a synth / electro-pop groove under the alt-rock framing: mixed."
+      }
+    ],
+    "memory": {
+      "family": "R&B / alternative pop",
+      "sub": "alt R&B (Girl Ultra) despite the title",
+      "energy": "mid",
+      "rhythm": "weak guess: song unknown to me"
+    },
+    "consensus": {
+      "family": "Rock",
+      "sub": "alternative / indie sleaze",
+      "energy": "mid",
+      "rhythm": "guitar-driven alt-rock groove; no tempo found",
+      "line": "Mexican indie/alt-rock with 2000s indie-sleaze feel, moody but somewhat energetic"
+    },
+    "disagreement": "memory guessed alt R&B; research says alternative / indie-sleaze rock. Family differs. Listener comments liken it to Gwen Stefani's electro-pop 'Bubble Pop Electric', so the consensus is held loosely: alt rock with an electro-pop groove; a pop or rock reading are both defensible, a hip-hop or ballad reading is not.",
+    "known": true
+  },
+  "749752394": {
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "Wikipedia",
+        "says": "Recorded 30 Apr 1953 with Nelson Riddle conducting, among first Capitol sides; #14 on Billboard most-played. Article gives no stylistic description.",
+        "url": "https://en.wikipedia.org/wiki/I%27ve_Got_the_World_on_a_String"
+      },
+      {
+        "site": "Search summary of Qobuz/Billboard-review snippets",
+        "says": "Billboard praised the arrangement and a forceful reading; song is a 1932 Arlen/Koehler standard. Jazz writers' 'swinging' description may refer to the 1957 remake, so swing label for the 1953 single is inferred, not confirmed.",
+        "url": "https://www.qobuz.com/us-en/interpreter/nelson-riddle/38699"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "'always makes me happy', a teacher played it 'to make them hurry up', one danced to it as a child. Supports an upbeat swinging standard."
+      }
+    ],
+    "memory": {
+      "family": "Jazz",
+      "sub": "swing / big band (Nelson Riddle era)",
+      "energy": "mid",
+      "rhythm": "swung 8ths, walking bass, brass"
+    },
+    "consensus": {
+      "family": "Jazz",
+      "sub": "traditional pop / big-band swing standard",
+      "energy": "mid",
+      "rhythm": "orchestral arrangement by Nelson Riddle, swing-style; no tempo found",
+      "line": "1950s Capitol vocal-jazz/traditional-pop standard with a Nelson Riddle orchestra; swing feel is plausible but thinly sourced"
+    },
+    "known": true
+  },
+  "302980624": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Wikipedia",
+        "says": "German Eurodance project; Billboard's Larry Flick: 'bouncy hi-NRG rhythms, topped with throaty male rapping and female chirping at the chorus'; #3 Billboard Dance Club Play.",
+        "url": "https://en.wikipedia.org/wiki/Run_Away_(Real_McCoy_song)"
+      },
+      {
+        "site": "Idolator (via Wikipedia)",
+        "says": "'energetic', 'strobelight-friendly'; Smash Hits: 'sounds like 2 Unlimited in a blender'; EW: 'space-invader-disco synths'.",
+        "url": "https://en.wikipedia.org/wiki/Run_Away_(Real_McCoy_song)"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "listeners remember dancing to it; read the lyrics as an anti-surveillance warning ('a sad song about the world'). Supports driving eurodance."
+      }
+    ],
+    "memory": {
+      "family": "Electronic",
+      "sub": "eurodance",
+      "energy": "driving",
+      "rhythm": "four-on-the-floor around 130 BPM, rap verses, female sung chorus; iTunes 'R&B/Soul' tag is wrong"
+    },
+    "consensus": {
+      "family": "Electronic",
+      "sub": "eurodance",
+      "energy": "driving",
+      "rhythm": "hi-NRG bouncy dance beat, synth hooks, rap verse plus sung chorus; no BPM found",
+      "line": "1994 German eurodance, bouncy hi-NRG, rap verses and sung hook, club-friendly"
+    },
+    "known": true
+  },
+  "353859978": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Wikipedia",
+        "says": "Infobox genre hip-hop; 2010 single, produced by DJ Khaled, DJ Nasty, LVM; reached #24 Hot 100, triple platinum.",
+        "url": "https://en.wikipedia.org/wiki/All_I_Do_Is_Win"
+      },
+      {
+        "site": "DJBooth",
+        "says": "Review notes a big DJ Nasty beat with a guest-heavy posse-cut format.",
+        "url": "https://djbooth.net/songs/dj-khaled-all-i-do/"
+      },
+      {
+        "site": "UCSD Guardian",
+        "says": "Track review of the single flags the long guest list (T-Pain, Ludacris, Snoop, Ross).",
+        "url": "https://ucsdguardian.org/2010/03/11/track-reviews-5"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "played at pep rallies, Warriors games, NBA2K: a hype anthem. Supports driving."
+      }
+    ],
+    "memory": {
+      "family": "Hip-hop",
+      "sub": "southern hip-hop anthem / trap-adjacent",
+      "energy": "driving",
+      "rhythm": "hype, slow counted tempo (about 75 BPM) with a big half-time feel"
+    },
+    "consensus": {
+      "family": "Hip-hop",
+      "sub": "club/anthem posse cut",
+      "energy": "driving",
+      "rhythm": "big synth/drum beat, T-Pain autotune hook; no BPM found",
+      "line": "2010 hype hip-hop posse-cut anthem with a big beat and autotuned hook"
+    },
+    "known": true
+  },
+  "1223063406": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Wikipedia",
+        "says": "Genre pop (older version dream pop); 104 BPM, common time, C major; singer declares endless love.",
+        "url": "https://en.wikipedia.org/wiki/I_Love_You_Always_Forever"
+      },
+      {
+        "site": "AcousticBrainz",
+        "says": "Automated analysis independently measures 104 BPM.",
+        "url": "https://acousticbrainz.org/66634123-d9cc-4851-8e3c-ef9f2f072389?n=5"
+      },
+      {
+        "site": "UBC music classification page / MusicBrainz",
+        "says": "Tagged Pop (one page labels it 'Fast Dance').",
+        "url": "https://www.cs.ubc.ca/~davet/music/track/HOTTRACK_022/HOTTRACK_022-06.html"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "nostalgic, sung to babies, sentimental. Supports soft pop (calm to mid)."
+      }
+    ],
+    "memory": {
+      "family": "Pop",
+      "sub": "soft 90s pop",
+      "energy": "calm",
+      "rhythm": "gentle, airy, mid-tempo (about 98 BPM); not a ballad crawl but soft"
+    },
+    "consensus": {
+      "family": "Pop",
+      "sub": "dream pop / soft pop",
+      "energy": "mid",
+      "rhythm": "about 104 BPM, 4/4 steady groove",
+      "line": "1996 soft pop love song, around 104 BPM, light and dreamy, steady 4/4"
+    },
+    "disagreement": "memory said calm; research says mid (soft pop, ~104 BPM, steady 4/4).",
+    "known": true
+  },
+  "1868481905": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Rolling Stone",
+        "says": "Opener interpolating the Korean folk song Arirang, chanting 'I need the whole stadium to jump!'.",
+        "url": "https://au.rollingstone.com/music/music-album-reviews/bts-album-review-arirang-92771"
+      },
+      {
+        "site": "Riff Magazine",
+        "says": "Fierce, energetic track produced by Diplo.",
+        "url": "https://riffmagazine.com/?p=126648"
+      },
+      {
+        "site": "Stayfree Radio",
+        "says": "EDM blended with contemporary pop; synth-driven, crisp percussion, 'designed for movement', between club banger and slow burn; no BPM given.",
+        "url": "https://www.stayfreeradioip.com/post/bts-body-to-body-meaning-and-review"
+      },
+      {
+        "site": "Vman",
+        "says": "'sleek rhythmic anthem pulsing with live energy'.",
+        "url": "https://vman-sea.com/?p=54913"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "'crazy modern upbeat song' with an Arirang folk section and traditional Korean instruments. Supports driving."
+      }
+    ],
+    "memory": {
+      "family": "K-pop",
+      "energy": "mid",
+      "rhythm": "song unknown to me (2026)"
+    },
+    "consensus": {
+      "family": "K-pop",
+      "sub": "dance-pop / EDM-pop with pop-rap",
+      "energy": "driving",
+      "rhythm": "synth-driven, heavy drums, stadium-chant hook, Arirang folk interpolation",
+      "line": "BTS 2026 opener: electro-pop/pop-rap stadium anthem with Diplo production and Arirang folk sample"
+    },
+    "disagreement": "memory had only 'K-pop, mid' (song unknown); research says driving EDM-pop stadium anthem.",
+    "known": true
+  },
+  "1422648513": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "SongBPM",
+        "says": "About 101 BPM.",
+        "url": "https://songbpm.com/@abba/dancing-queen"
+      },
+      {
+        "site": "Multiple BPM tools (mixgraph, AcousticBrainz)",
+        "says": "Measured around 100 BPM; described as pop/dance, one catalog tags disco.",
+        "url": "https://www.mixgraph.io/tracks/abba-dancing-queen"
+      },
+      {
+        "site": "Power Trakks catalogue page",
+        "says": "Genre listed as disco.",
+        "url": "https://cs.uwaterloo.ca/~dtompkin/music/track/POWERTRK_029/POWERTRK_029-02.html"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "'still my jam', 'pure serotonin', dancing. Supports the dance-floor classic."
+      }
+    ],
+    "memory": {
+      "family": "Disco",
+      "sub": "disco-pop",
+      "energy": "mid",
+      "rhythm": "about 100 BPM, steady disco kick, piano glissandos"
+    },
+    "consensus": {
+      "family": "Pop",
+      "sub": "disco",
+      "energy": "mid",
+      "rhythm": "about 100 BPM, steady disco beat with piano glissando",
+      "line": "1976 Swedish disco-pop classic, about 100 BPM, steady groove, universally danceable"
+    },
+    "disagreement": "memory said family Disco; research leads with Pop and sub-style disco. Equivalent for dancing.",
+    "known": true
+  },
+  "1442209191": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Wikipedia (The Recession / My President)",
+        "says": "Fourth single from The Recession, Nas feature, produced by Tha Bizness, political commentary on Barack Obama.",
+        "url": "https://en.wikipedia.org/wiki/The_Recession"
+      },
+      {
+        "site": "Ink19",
+        "says": "The track's maturity best shows Jeezy has more than one hustle.",
+        "url": "https://ink19.com/2008/12/magazine/music-reviews/l5xv95-young-jeezy"
+      },
+      {
+        "site": "Rap-Up review roundup",
+        "says": "Listed among favorite tracks on the album.",
+        "url": "https://rap-up.com/article/2008/09/02/review-roundup-young-jeezy-the-recession"
+      },
+      {
+        "site": "Metacritic roundup",
+        "says": "Critics called it a highlight of the album; one praised the production.",
+        "url": "https://legacy.prod.metacritic.com/music/the-recession/young-jeezy/critic-reviews"
+      }
+    ],
+    "memory": {
+      "family": "Hip-hop",
+      "sub": "southern trap",
+      "energy": "mid",
+      "rhythm": "slow, triumphant, half-time feel; Jeezy is a trap pioneer"
+    },
+    "consensus": {
+      "family": "Hip-hop",
+      "sub": "southern/political rap",
+      "energy": "mid",
+      "rhythm": "soulful, triumphant beat; no BPM found",
+      "line": "2008 southern rap, soulful and celebratory-political Obama tribute with Nas, mid-tempo and serious"
+    },
+    "disagreement": "memory said southern trap; research says southern / political rap, soulful beat. Same family.",
+    "known": true
+  },
+  "841018314": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Wikipedia",
+        "says": "Third single from Prince Royce's 2010 debut; Lo Nuestro Tropical Song of the Year; Hot Latin #16, Tropical Airplay #17; produced by Andres Hidalgo and Sergio George.",
+        "url": "https://en.wikipedia.org/wiki/El_Amor_Que_Perdimos"
+      },
+      {
+        "site": "LyricFluent",
+        "says": "'heartbreak anthem wrapped in the smooth sway of bachata'.",
+        "url": "https://lyricfluent.com/lessons/prince_royce_el_amor_que_perdimos_english"
+      },
+      {
+        "site": "BootStepper",
+        "says": "Lists a bachata dance choreography for the song.",
+        "url": "https://bootstepper.com/dances/D36J58FQF5N33R6"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "heartbreak and healing stories, 'todos andamos rotos'. Sad lyric mood; still bachata."
+      }
+    ],
+    "memory": {
+      "family": "Latin",
+      "sub": "bachata",
+      "energy": "mid",
+      "rhythm": "bachata guitar, about 125-130 BPM counted, romantic"
+    },
+    "consensus": {
+      "family": "Latin",
+      "sub": "bachata",
+      "energy": "mid",
+      "rhythm": "bachata guitar and bongo pattern, swaying 4-beat step; no BPM found",
+      "line": "2010 urban/romantic bachata about heartbreak, mid-tempo, danceable"
+    },
+    "known": true
+  },
+  "6807077438": {
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "WebSearch (several queries)",
+        "says": "No page found for a ClockClock song 'skeletons' or EP 'eiskalte engel'. ClockClock results showed only unrelated EP 'Out Of The Dark'; the metadata may belong to a different artist.",
+        "url": "https://readdork.com/artists/clockclock/tracks"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "'Pop rock is back!', 'reminds me totally of the 90s', 'Bitter sweet symphony', live shows full of 'power, energy'."
+      }
+    ],
+    "consensus": {
+      "family": "Pop",
+      "sub": "pop rock, 90s-reminiscent",
+      "energy": "mid",
+      "rhythm": "band pop rock; no tempo found",
+      "line": "German-act English-language pop rock with a 90s, bittersweet feel; comments only"
+    },
+    "known": true
+  },
+  "1408996053": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "NME",
+        "says": "'lilting' opener sending the album into a bold new sonic space.",
+        "url": "https://www.nme.com/reviews/album/mac-miller-swimming-review"
+      },
+      {
+        "site": "Northern Transmissions",
+        "says": "Calmer, glossier opener where synths and bass 'run with wonder'.",
+        "url": "https://northerntransmissions.com/mac-miller-swimming"
+      },
+      {
+        "site": "Wikipedia",
+        "says": "Orchestral arrangements, produced by Jon Brion and Miller; Observer called it 'delicate'.",
+        "url": "https://en.wikipedia.org/wiki/Come_Back_to_Earth"
+      },
+      {
+        "site": "Legends Will Never Die",
+        "says": "Vents about mental struggles over a luscious synthesizer line.",
+        "url": "https://legendswillneverdie.com/tag/swimming"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "depression, overdose, funerals, 'settling into sadness'. Strongly sad and calm."
+      }
+    ],
+    "memory": {
+      "family": "Hip-hop",
+      "sub": "mellow / introspective",
+      "energy": "calm",
+      "rhythm": "sparse, sad, sung-rapped opener of 'Swimming'; no hard drums"
+    },
+    "consensus": {
+      "family": "Hip-hop",
+      "sub": "alt/jazzy chill, sung ballad-leaning",
+      "energy": "calm",
+      "rhythm": "slow, orchestral/synth-led, mellow, sparse drums",
+      "line": "2018 mellow orchestral-synth opener, introspective about regret and mental struggle, slow and delicate"
+    },
+    "known": true
+  },
+  "1561134392": {
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "Shazam (via search)",
+        "says": "Moonsetter (Complete Edition) tagged Alternative; composer credited Toby Fox; artist Qsie genre Soundtrack (suggests a video-game-music arrangement; not confirmed)",
+        "url": "https://www.shazam.com/song/1561134392/moonsetter-complete-edition"
+      },
+      {
+        "site": "Last.fm",
+        "says": "Demos - EP, 5 tracks, Moonsetter 2:18; no tags or description",
+        "url": "https://www.last.fm/music/Qsie/Demos+-+EP"
+      }
+    ],
+    "consensus": {
+      "family": "Soundtrack / video-game music",
+      "sub": "game-music arrangement (unconfirmed)",
+      "energy": "mid",
+      "rhythm": "short 2:18 track; no rhythm detail found",
+      "line": "Likely a game-soundtrack-style arrangement (Toby Fox credit), short, character unverified; very thin evidence"
+    },
+    "known": true
+  },
+  "1267525486": {
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "May The Rock Be With You (album single premiere)",
+        "says": "Newcastle (AU) post-punk band; single Overhang blends early-90s grunge with 50s beat music; Pixies/Smiths/Thursday/Alt-J comparisons; dynamic, emotionally intense (album-level, not this track)",
+        "url": "https://maytherockbewithyou.com/mtrbwy/2017/05/premiere-newcastle-post-punk-outfit-suburban-haze-take-trip-new-single-forthcoming-album/"
+      },
+      {
+        "site": "Search summary of Newcastle Herald",
+        "says": "Wilt (2017) keeps conventional song structures with experimental touches; recorded by Jay Maas",
+        "url": "https://www.newcastleherald.com.au/story/4758844/suburban-haze-on-tour/"
+      }
+    ],
+    "consensus": {
+      "family": "Rock",
+      "sub": "post-punk / alternative / grunge-tinged",
+      "energy": "driving",
+      "rhythm": "guitar-driven, dynamic shifts, baritone vocals; no BPM found",
+      "line": "Australian post-punk/alt-rock with grunge edge, emotionally intense, album-level description"
+    },
+    "known": true
+  },
+  "1597915671": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Wikipedia",
+        "says": "Love Is All is a 1974 pop song sung by Ronnie James Dio, based on 'Love's all you need', inspired by the Beatles' All You Need Is Love; gold single",
+        "url": "https://en.wikipedia.org/wiki/Love_Is_All_(Roger_Glover_song)"
+      },
+      {
+        "site": "Louder (via search summary)",
+        "says": "First song Glover composed was an ingratiating Beatles pastiche, Love Is All",
+        "url": "https://www.loudersound.com/features/roger-glover-butterfly-ball"
+      }
+    ],
+    "memory": {
+      "family": "Rock",
+      "sub": "70s pop rock / soul-rock singalong",
+      "energy": "mid",
+      "rhythm": "cheerful, horns and piano, steady mid-tempo groove (the frog cartoon video)"
+    },
+    "consensus": {
+      "family": "Rock",
+      "sub": "pop-rock / Beatles-style pastiche, whimsical children's-story rock opera",
+      "energy": "mid",
+      "rhythm": "light, bouncy, melodic pop; no tempo found",
+      "line": "1974 whimsical Beatles-style pop-rock single from a concept rock opera, upbeat and light"
+    },
+    "known": true
+  },
+  "1843605915": {
+    "evidence": "none",
+    "sources": [],
+    "known": false
+  },
+  "1649131355": {
+    "evidence": "none",
+    "sources": [
+      {
+        "site": "Amazon Music (via search)",
+        "says": "Piotr Motak artist page lists a 2022 album Wonderful Life with 11 tracks; no genre or description given",
+        "url": "https://music.amazon.com.br/artists/B0BGFY9QBG/piotr-motak"
+      }
+    ],
+    "known": false
+  },
+  "1777704569": {
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "Bandcamp (Kalibration - Paradise)",
+        "says": "Album tags: electronic, breakcore, dnb, emo, footwork, hyperpop, jungle, trance, Chicago; track 8 is 2:47 (album-level tags, no prose)",
+        "url": "https://kalibration.bandcamp.com/album/paradise"
+      }
+    ],
+    "consensus": {
+      "family": "Electronic",
+      "sub": "breakcore / jungle / drum and bass / footwork",
+      "energy": "driving",
+      "rhythm": "fast breakbeat-based (breakcore/jungle/footwork); no BPM found",
+      "line": "Chicago breakcore/jungle/hyperpop-leaning electronic, fast and frantic, 2:47"
+    },
+    "known": true
+  },
+  "1548161468": {
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "hudebniskupiny.cz",
+        "says": "Prípad Ewi Burdovej: Slovak melodic punk rock band formed 1993; Zvýšená pozornosť is the 1994 debut cassette (artist-level genre, no album description)",
+        "url": "https://www.hudebniskupiny.cz/pripad-ewi-burdovej"
+      },
+      {
+        "site": "Discogs / Last.fm / punk.cz (listings only, via search)",
+        "says": "Band listed as punk; album release is a 12-track cassette on Hirax Records",
+        "url": "https://www.discogs.com/release/6674469-Pr%C3%ADpad-Ewi-Burdovej-Zv%C3%BD%C5%A1en%C3%A1-Pozornos%C5%A5"
+      }
+    ],
+    "consensus": {
+      "family": "Punk",
+      "sub": "melodic punk rock (Slovak)",
+      "energy": "driving",
+      "rhythm": "fast punk drums, distorted guitars; no tempo found",
+      "line": "1994 Slovak melodic punk rock, fast and upbeat (artist-level description)"
+    },
+    "known": true
+  },
+  "1502348947": {
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "Bandcamp (Gloria Victis)",
+        "says": "Sherbrooke, Quebec band; 'aggressivity through progressive Metal/Hardcore using a dark and melancholic approach'; tags metal, metalcore, post-hardcore, post-metal, progressive, melodic, heavy; Taenia is 7:08, longest track on the EP",
+        "url": "https://gloriavictis.bandcamp.com/"
+      }
+    ],
+    "consensus": {
+      "family": "Metal",
+      "sub": "progressive metalcore / post-hardcore",
+      "energy": "driving",
+      "rhythm": "heavy distorted guitars, aggressive but melodic and dark; long 7:08 track",
+      "line": "Dark, melancholic progressive metalcore/post-hardcore, heavy and aggressive with melodic passages"
+    },
+    "known": true
+  },
+  "1458115406": {
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "Sombre Soniks Bandcamp (label)",
+        "says": "Eristic Dialectics: 'dark ambient with influences from downtempo electronics, industrial and noise'; tags ambient, dark ambient, ritual ambient, downtempo, experimental; Conceal Your Game is 5:54, no track-level description",
+        "url": "https://sombresoniks.bandcamp.com/album/eristic-dialectics"
+      }
+    ],
+    "consensus": {
+      "family": "Ambient",
+      "sub": "dark ambient",
+      "energy": "calm",
+      "rhythm": "mostly beatless/soundscape with downtempo and industrial touches; no tempo given",
+      "line": "Dark ambient soundscape with downtempo/industrial/noise influences, slow and brooding (album-level)"
+    },
+    "known": true
+  },
+  "1877197218": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "The Honey POP",
+        "says": "Sanitarium is one of the catchiest tracks; 'very upbeat and happy sounding' per the singer",
+        "url": "https://thehoneypop.com/2022/11/02/exclusive-interview-fencer-gives-us-a-breath-of-optimism-with-sanitarium"
+      },
+      {
+        "site": "Charm Music review",
+        "says": "Heartfelt; vibe 'the embodiment of a crystal clear day without a cloud in the sky'; road-trip playlist song",
+        "url": "http://charmmusic.net/home/fencer-sanitarium-review"
+      },
+      {
+        "site": "Concert Crap / Metal Coalition (via search)",
+        "says": "LA rock trio Fencer, single released Oct 2022, later on self-titled debut",
+        "url": "https://concertcrap.com/fencer-release-new-single/"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "praise only ('great tunes', 'so underrated'); nothing on the feel."
+      }
+    ],
+    "consensus": {
+      "family": "Rock",
+      "sub": "catchy alternative / indie rock",
+      "energy": "mid",
+      "rhythm": "guitar-based rock trio, upbeat and bright; no tempo found",
+      "line": "Catchy, upbeat, sunny-sounding alternative rock from an LA trio, mid-to-upbeat tempo"
+    },
+    "known": true
+  },
+  "1694793045": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Spectrum Culture (NOVA review)",
+        "says": "calls it the token trap track on an otherwise pop-leaning album; Auto-Tune verses",
+        "url": "https://spectrumculture.com/2018/08/14/rl-grime-nova-review/"
+      },
+      {
+        "site": "Last.fm",
+        "says": "track tags: electronic, hip hop, edm, future bass; artist tag trap",
+        "url": "https://www.last.fm/music/RL+Grime/Nova/Take+It+Away"
+      },
+      {
+        "site": "Billboard (RL Grime breakdown)",
+        "says": "built from a lead synth, aiming for a dark, brooding feel",
+        "url": "https://www.billboard.com/?p=8467598"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "hype ('pure gold', fire), credits the beat maker; no feel words beyond hype."
+      }
+    ],
+    "memory": {
+      "family": "Electronic",
+      "sub": "trap / future bass with R&B vocals",
+      "energy": "mid",
+      "rhythm": "half-time trap drums, 808s"
+    },
+    "consensus": {
+      "family": "Electronic",
+      "sub": "trap",
+      "energy": "driving",
+      "rhythm": "half-time trap feel, dark synth lead, Auto-Tuned rap/sung vocals",
+      "line": "Dark vocal trap (EDM-trap) with rap features, hard-hitting, club-oriented"
+    },
+    "disagreement": "memory said mid; research says driving, hard-hitting dark trap.",
+    "known": true
+  },
+  "1454357665": {
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "Mr. Z Bandcamp (artist page)",
+        "says": "Artist-level only: Greek DJ/record digger known for deep, eclectic sets; releases hint at bossa nova, tango, cosmic/space themes; lists an album 'επανάληψη' (Epanalipsi) with no description; no genre tags",
+        "url": "https://zoismrz.bandcamp.com/audio"
+      }
+    ],
+    "consensus": {
+      "family": "Electronic",
+      "sub": "eclectic DJ edit / deep",
+      "energy": "mid",
+      "rhythm": "unknown for this track; artist-level only, no tempo",
+      "line": "Greek DJ/digger's eclectic deep-leaning electronic/edit material; track itself undescribed (artist-level evidence only)"
+    },
+    "known": true
+  },
+  "1515380130": {
+    "evidence": "single",
+    "sources": [
+      {
+        "site": "Qobuz / Wikipedia (artist and release)",
+        "says": "Inflator / Aural Border is a 2007 trance single on Tracid Traxxx; Inflator runs 8:03; artist name = trance + acid; no description of the sound found",
+        "url": "https://www.qobuz.com/gb-en/interpreter/kai-tracid/104046/page/2"
+      }
+    ],
+    "memory": {
+      "family": "Electronic",
+      "sub": "trance (hard trance)",
+      "energy": "driving",
+      "rhythm": "four-on-the-floor around 140 BPM"
+    },
+    "consensus": {
+      "family": "Electronic",
+      "sub": "trance",
+      "energy": "driving",
+      "rhythm": "four-on-the-floor trance (inferred from genre label and artist; no track review found)",
+      "line": "German club trance single, long-form, four-on-the-floor; genre label only, no sound description"
+    },
+    "known": true
+  },
+  "1837074343": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Bandcamp (Golden Brown, Patterner)",
+        "says": "instrumental album of acoustic/electric guitars, lap steel, keyboards, cello; tags ambient folk, ambient country, new age, pastoral, fantasy; inspired by Earthsea (album-level)",
+        "url": "https://goldenbrown.bandcamp.com/album/patterner"
+      },
+      {
+        "site": "Third Eye Psych Rock blog",
+        "says": "review of Patterner (album-level; 'cosmic Americana' per Bandcamp-quoted critic)",
+        "url": "https://thirdeyepsychrock.blog/2025/10/25/patterner-by-golden-brown"
+      },
+      {
+        "site": "Albumblitz",
+        "says": "album review/listing; Mender is track 13, 3:02",
+        "url": "https://albumblitz.com/golden-brown-patterner"
+      }
+    ],
+    "consensus": {
+      "family": "Folk",
+      "sub": "ambient folk / ambient country",
+      "energy": "calm",
+      "rhythm": "instrumental, acoustic, mostly beatless/ambient, dreamy and spacious; ~3 min",
+      "line": "Calm instrumental ambient-folk/cosmic Americana, not dance music (album-level description)"
+    },
+    "known": true
+  },
+  "6763077853": {
+    "evidence": "none",
+    "sources": [
+      {
+        "site": "Web search",
+        "says": "no results for Desand, the EP, or the song title",
+        "url": "https://www.telkomsel.com/en/jelajah/jelajah-lifestyleini-5-lagu-jogja-terpopuler-yang-bikin-nostalgia"
+      }
+    ],
+    "known": false
+  },
+  "1886134248": {
+    "evidence": "none",
+    "sources": [
+      {
+        "site": "Web search",
+        "says": "no results for Dogcatcher, the album, or the song",
+        "url": "https://atwoodmagazine.com/wr-roundup-2026-09-04/"
+      }
+    ],
+    "known": false
+  },
+  "1778224465": {
+    "evidence": "none",
+    "sources": [
+      {
+        "site": "Audiomack (search hit)",
+        "says": "only found a Screwly G x BloodHound Q50 track 'Make Me Mad pt.1'; no match for this track or CHIRAQ DUBO",
+        "url": "https://audiomack.com/bjstafford2010/playlist/screwly"
+      }
+    ],
+    "memory": {
+      "family": "Hip-hop",
+      "sub": "Chicago drill (from the name)",
+      "energy": "driving",
+      "rhythm": "guess from the artist name only"
+    },
+    "known": false
+  },
+  "6780472953": {
+    "evidence": "none",
+    "sources": [
+      {
+        "site": "Web search",
+        "says": "no results for Boutique Selection #4 or the artists",
+        "url": "https://nuage2020.bandcamp.com/track/side-b"
+      }
+    ],
+    "known": false
+  },
+  "1519359697": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Wiwibloggs / Aussievision / Elite Daily",
+        "says": "party medley of Believe, Ray of Light, Waterloo, Ne Partez pas Sans Moi, I Gotta Feeling with Eurovision cameo alumni; fan-favourite highlight of the film",
+        "url": "https://wiwibloggs.com/2020/06/21/eurovision-movie-official-soundtrack-available-preorder/255472/"
+      },
+      {
+        "site": "Yahoo Lifestyle",
+        "says": "soundtrack described as catchy pop paradise",
+        "url": "https://www.yahoo.com/lifestyle/soundtrack-netflix-eurovision-catchy-pop-155300413.html"
+      },
+      {
+        "site": "CopperKnob",
+        "says": "stepsheet exists for the medley, i.e. used for line dancing/party",
+        "url": "https://copperknob.co.uk/music/57828/song-a-long-believe-ray-of-light-waterloo-ne-partez-pas-sans-moi-i-gotta-feeling"
+      }
+    ],
+    "memory": {
+      "family": "Pop",
+      "sub": "party medley of pop hits",
+      "energy": "driving",
+      "rhythm": "cover medley; a sing-along, excluded from scoring"
+    },
+    "consensus": {
+      "family": "Pop",
+      "sub": "eurovision pop medley",
+      "energy": "driving",
+      "rhythm": "upbeat dance-pop/disco-pop mashup, sing-along party feel, four-on-the-floor in parts (Waterloo, I Gotta Feeling)",
+      "line": "Upbeat Eurovision pop party medley of dance-pop hits, high energy, singalong"
+    },
+    "known": true,
+    "excluded": "sing-along cover medley: outside the sampling rules, not scored"
+  },
+  "1387817894": {
+    "evidence": "several",
+    "sources": [
+      {
+        "site": "Gramophone",
+        "says": "nimble Messiah from Davis, smaller forces than his earlier recordings (album-level)",
+        "url": "https://gramophone.co.uk/review/handel-messiah-3"
+      },
+      {
+        "site": "Apple Music Classical essay",
+        "says": "Padmore's unaccompanied opening aria is sung without decorative ornamentation, restrained",
+        "url": "https://classical.music.apple.com/us/album/1387816964"
+      },
+      {
+        "site": "Classical Source / Prospect",
+        "says": "live Barbican performance Dec 2006 praised as spellbinding, gripping",
+        "url": "https://www.classicalsource.com/concert/messiah-2/"
+      },
+      {
+        "site": "YouTube top comments (yt-dlp, anonymous)",
+        "says": "'So beautiful!'; nothing else."
+      }
+    ],
+    "memory": {
+      "family": "Classical",
+      "sub": "baroque oratorio, tenor accompagnato",
+      "energy": "calm",
+      "rhythm": "slow strings, no percussion"
+    },
+    "consensus": {
+      "family": "Classical",
+      "sub": "baroque oratorio, tenor accompanied recitative",
+      "energy": "calm",
+      "rhythm": "no steady dance beat, free recitative with sparse orchestral accompaniment, unornamented",
+      "line": "Calm baroque oratorio tenor recitative, lyrical and restrained, not rhythmic"
+    },
+    "known": true
+  }
+}
