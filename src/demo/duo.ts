@@ -7,7 +7,8 @@
  *                t=<sec>, freeze=1, sig=gallop,lasso to force a signature)
  *   ?mode=sheet  contact sheet of the partner moves: rows of moves x frames,
  *                both figures per cell (&moves=id1,id2, &page, &per, &frames,
- *                &beats=0,1.5,3 for chosen beats, &cw / &ch cell size)
+ *                &beats=0,1.5,3 for chosen beats, &cw / &ch cell size,
+ *                &styles=classic,human,sticker for one row per look)
  *   ?mode=bench  times single vs duo stage frames (results in __demo.result)
  *
  * Debug API: window.__demo.
@@ -85,7 +86,9 @@ function runSheet(): void {
   // &beats=0,1.5,3 picks the beats shown (default: `frames` evenly over the move).
   const beatList = q.get('beats')?.split(',').map(Number).filter((b) => Number.isFinite(b));
   const frames = beatList?.length ?? Number(q.get('frames') ?? 8);
-  const rows = list.slice(page * per, page * per + per);
+  // &styles=classic,human,sticker: one row per look for each move (default: ?style).
+  const styles = q.get('styles')?.split(',').map((x) => parseCoachStyle(x)).filter((x): x is CoachStyle => !!x) ?? [style];
+  const rows = list.slice(page * per, page * per + per).flatMap((pm) => styles.map((st) => ({ pm, st })));
   const cw = Number(q.get('cw') ?? 230), ch = Number(q.get('ch') ?? 210);
   const labelW = 210;
   const c = document.createElement('canvas');
@@ -98,7 +101,8 @@ function runSheet(): void {
   const f1 = new DuoFigure(1), f2 = new DuoFigure(2);
   f1.style = f2.style = style;
   [f1.build, f2.build] = duoBuilds(build);
-  rows.forEach((pm: PartnerMove, r) => {
+  rows.forEach(({ pm, st }: { pm: PartnerMove; st: CoachStyle }, r) => {
+    f1.style = f2.style = st;
     const y0 = r * ch;
     ctx.fillStyle = r % 2 ? '#191329' : '#1d1730';
     ctx.fillRect(0, y0, c.width, ch);
@@ -111,6 +115,7 @@ function runSheet(): void {
     ctx.fillText(`${pm.beats} beats · ${pm.level} · d${pm.difficulty}${pm.jump ? ' · jump' : ''}`, 10, y0 + 66);
     const cr = contactReport(pm);
     ctx.fillText(cr.length ? `contact ${cr.map((x) => x.dist.toFixed(2)).join(' ')}` : 'no contact', 10, y0 + 84);
+    if (styles.length > 1) ctx.fillText(`look: ${st}  ${bpm} bpm`, 10, y0 + 140);
     if (pm.roles) {
       ctx.fillStyle = PLAYER_COLORS[1].main;
       ctx.fillText(`P1: ${pm.p1.map((m) => m.name).join(' → ')}`, 10, y0 + 104);
@@ -152,7 +157,7 @@ function runSheet(): void {
       if (pm.prop === 'rope') drawRope(ctx, f1, f2, scale);
     }
   });
-  expose({ ready: true, total: list.length });
+  expose({ ready: true, total: list.length, width: c.width, height: c.height });
 }
 
 function runBench(): void {

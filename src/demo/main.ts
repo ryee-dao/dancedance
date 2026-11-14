@@ -21,7 +21,7 @@
  *
  * Other params: bpm, level=chill|cardio|sweaty, sim=map|live|partial|none,
  * t=<sec> (start time), freeze=1 (stop the clock), ui=0 (hide controls),
- * click=1. A debug API is exposed as window.__demo.
+ * click=1, beat=<b> (gallery: hold the move at that beat of its loop). A debug API is exposed as window.__demo.
  */
 
 import type { Intensity } from '../core/choreo/generator';
@@ -34,7 +34,7 @@ import { PoseEvaluator } from '../core/coach/animator';
 import { loopPlan } from '../core/coach/loop';
 import { LOOKS } from '../core/coach/humanPainter';
 import { COLORS, FigurePainter, drawCoachPreview, StageRenderer2D, type StripInfo } from '../core/coach/renderer';
-import { createPose, createSkeleton, solveSkeleton, type Skeleton } from '../core/coach/skeleton';
+import { CH, J, createPose, createSkeleton, solveSkeleton, type Skeleton } from '../core/coach/skeleton';
 import { COACH_STYLE_IDS, DEFAULT_COACH_BUILD, coachStyleInfo, parseCoachBuild, parseCoachStyle, type CoachStyle } from '../core/coach/styles';
 import { createCoachStage } from '../ui/coachStage';
 import type { FrameInfo } from '../ui/play';
@@ -89,6 +89,8 @@ const clock = {
 // --- click track ------------------------------------------------------------
 let audio: AudioContext | null = null;
 let clickOn = q.get('click') === '1';
+/** ?beat=<b> (gallery): hold the move at this beat of its loop (headless capture); __demo.at(b) changes it. */
+let fixedBeat: number | null = q.has('beat') ? Number(q.get('beat')) : null;
 function click(accent: boolean): void {
   if (!clickOn) return;
   audio ??= new AudioContext();
@@ -343,7 +345,7 @@ function runGallery(): void {
     const t = clock.now() - started;
     const loopSec = plan.loopBeats * plan.period;
     if (auto && t > loopSec * 2) setMove(LIST[(idx + 1) % LIST.length].id);
-    const lt = ((t % loopSec) + loopSec) % loopSec;
+    const lt = fixedBeat !== null ? fixedBeat * plan.period : ((t % loopSec) + loopSec) % loopSec;
     ev.evaluate(plan, lt, pose);
     solveSkeleton(pose, sk);
     const bi = Math.floor(lt / plan.period);
@@ -356,7 +358,7 @@ function runGallery(): void {
     if (showUi) info.textContent = `${label(move)}\n${move.id}  ${move.beats} beats  ${move.level}  difficulty ${move.difficulty}  ${move.layered ? `layered: ${move.foot} + ${move.arms}${move.accent ? ' + ' + move.accent : ''}` : 'hand-authored'}${move.mirror ? '  (mirrors)' : ''}`;
   }
   requestAnimationFrame(frame);
-  window.__demo = { setMove, seek: (t: number) => clock.seek(t), pause: () => clock.pause(), setStyle: (s: CoachStyle) => setStyle(s) };
+  window.__demo = { setMove, seek: (t: number) => clock.seek(t), pause: () => clock.pause(), setStyle: (s: CoachStyle) => setStyle(s), at: (b: number | null) => (fixedBeat = b), ready: true };
 }
 
 // ---------------------------------------------------------------------------
@@ -381,6 +383,16 @@ function sheetMoves(set: string): Move[] {
   return MOVES.slice();
 }
 
+/**
+ * Sheet extras (for headless capture, tools/moves/sheet.ts):
+ *   &styles=classic,human,sticker  one row per look for each move (default: ?style)
+ *   &views=0,90                    one row per camera yaw (deg; 90 = seen from the
+ *                                  figure's left side, shows motion toward the viewer)
+ *   &span=<beats>&start=<beat>     the beats the frames cover (default: two loops of
+ *                                  the move, at most the whole loop plan)
+ *   &trail=1                       an extra cell with the paths of hands, feet and head
+ *                                  over the frames' span (how much visibly moves)
+ */
 function runSheet(): void {
   const set = q.get('set') ?? 'catalogue';
   const all = sheetMoves(set);
@@ -390,10 +402,19 @@ function runSheet(): void {
   const frames = Number(q.get('frames') ?? 10);
   const cellW = Number(q.get('cw') ?? 150);
   const cellH = Number(q.get('ch') ?? 190);
+  const styles = (q.get('styles')?.split(',').map((s) => parseCoachStyle(s)).filter((s): s is CoachStyle => !!s) ?? []);
+  if (!styles.length) styles.push(style);
+  const views = q.get('views')?.split(',').map(Number).filter(Number.isFinite) ?? [Number(q.get('view') ?? 0)];
+  const spanQ = q.get('span') !== null ? Number(q.get('span')) : NaN;
+  const start = Number(q.get('start') ?? 0);
+  const trail = q.get('trail') === '1';
   const labelW = 220;
+  const cols = frames + (trail ? 1 : 0);
+  const rows: { m: Move; st: CoachStyle; view: number }[] = [];
+  for (const m of moves) for (const st of styles) for (const view of views) rows.push({ m, st, view });
   const canvas = el('canvas');
-  canvas.width = labelW + frames * cellW;
-  canvas.height = Math.max(1, moves.length) * cellH;
+  canvas.width = labelW + cols * cellW;
+  canvas.height = Math.max(1, rows.length) * cellH;
   canvas.style.cssText = 'display:block;';
   document.body.style.overflow = 'auto';
   document.body.prepend(canvas);
@@ -404,15 +425,23 @@ function runSheet(): void {
   const pose = createPose();
   const sk = createSkeleton();
   const period = 60 / bpm;
-  moves.forEach((m, row) => {
+  const TRAIL_JOINTS: readonly [number, string][] = [
+    [J.HA_R, '#ff6b6b'], [J.HA_L, '#4dabf7'], [J.TOE_R, '#ffa94d'], [J.TOE_L, '#69db7c'], [J.HEAD, '#e599f7'],
+  ];
+  rows.forEach(({ m, st, view }, row) => {
     const painter = new FigurePainter();
-    painter.style = style;
+    painter.style = st;
     painter.build = build;
     const plan = loopPlan(m, period);
-    const span = Math.min(plan.loopBeats, Math.max(4, m.beats * 2));
+    const span = Number.isFinite(spanQ) && spanQ > 0 ? spanQ : Math.min(plan.loopBeats, Math.max(4, m.beats * 2));
     const y0 = row * cellH;
-    ctx.fillStyle = row % 2 ? '#15112a' : '#1b1633';
+    const firstOfMove = row === 0 || rows[row - 1].m !== m;
+    ctx.fillStyle = moves.indexOf(m) % 2 ? '#15112a' : '#1b1633';
     ctx.fillRect(0, y0, canvas.width, cellH);
+    if (firstOfMove && row > 0) {
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.fillRect(0, y0, canvas.width, 2);
+    }
     ctx.fillStyle = COLORS.ink;
     ctx.font = '700 17px system-ui';
     ctx.fillText(m.name, 10, y0 + 28);
@@ -423,13 +452,21 @@ function runSheet(): void {
     ctx.fillText(m.layered ? `${m.foot}+${m.arms}${m.accent ? '+' + m.accent : ''}` : 'hand-authored', 10, y0 + 84);
     ctx.fillText(`${m.file}: ${m.families.join(' ')}`, 10, y0 + 102);
     ctx.fillText(`${m.focus.join(' ')}${m.themes.length ? ' / ' + m.themes.join(' ') : ''}`, 10, y0 + 120);
-    for (let f = 0; f < frames; f++) {
-      const b = (f / frames) * span;
+    if (styles.length > 1 || views.length > 1 || view) {
+      ctx.fillStyle = COLORS.band;
+      ctx.fillText(`${coachStyleInfo(st).name}${view ? `  view ${view}°` : ''}  ${bpm} bpm`, 10, y0 + 138);
+    }
+    const floor = y0 + cellH - 14;
+    const scale = cellH * 0.66;
+    const solve = (b: number) => {
       ev.evaluate(plan, b * period, pose);
+      if (view) pose[CH.SPIN] += view;
       solveSkeleton(pose, sk);
+    };
+    for (let f = 0; f < frames; f++) {
+      const b = start + (f / frames) * span;
+      solve(b);
       const cx = labelW + f * cellW + cellW / 2;
-      const floor = y0 + cellH - 14;
-      const scale = cellH * 0.66;
       ctx.strokeStyle = 'rgba(255,255,255,0.12)';
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -446,9 +483,39 @@ function runSheet(): void {
       ctx.font = '11px ui-monospace, monospace';
       ctx.fillText(b.toFixed(2), labelW + f * cellW + 4, y0 + 14);
     }
+    if (trail) {
+      // Paths of the hands, toes and head over the span (projected as drawn).
+      const cx = labelW + frames * cellW + cellW / 2;
+      solve(start);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(cx - cellW / 2, y0, cellW, cellH);
+      ctx.clip();
+      ctx.globalAlpha = 0.25;
+      painter.draw(ctx, sk, cx, floor, scale, 0, { shadow: false });
+      ctx.globalAlpha = 1;
+      const N = 96;
+      const pts = TRAIL_JOINTS.map(() => [] as number[]);
+      for (let i = 0; i <= N; i++) {
+        solve(start + (i / N) * span);
+        painter.project(sk, cx, floor, scale);
+        TRAIL_JOINTS.forEach(([j], k) => pts[k].push(painter.jx(j), painter.jy(j)));
+      }
+      ctx.lineWidth = 2;
+      TRAIL_JOINTS.forEach(([, col], k) => {
+        ctx.strokeStyle = col;
+        ctx.beginPath();
+        for (let i = 0; i < pts[k].length; i += 2) (i ? ctx.lineTo : ctx.moveTo).call(ctx, pts[k][i], pts[k][i + 1]);
+        ctx.stroke();
+      });
+      ctx.restore();
+      ctx.fillStyle = COLORS.muted;
+      ctx.font = '11px ui-monospace, monospace';
+      ctx.fillText('paths', labelW + frames * cellW + 4, y0 + 14);
+    }
   });
-  document.title = `sheet ${style} ${set} ${page} (${all.length})`;
-  window.__demo = { total: all.length, ready: true };
+  document.title = `sheet ${styles.join('+')} ${set} ${page} (${all.length})`;
+  window.__demo = { total: all.length, ready: true, width: canvas.width, height: canvas.height };
 }
 
 // ---------------------------------------------------------------------------
@@ -581,7 +648,7 @@ function runCompareMove(): void {
     const t = clock.now() - started;
     const loopSec = plan.loopBeats * plan.period;
     if (auto && t > loopSec * 2) setMove(MOVES[(idx + 1) % MOVES.length].id);
-    const lt = ((t % loopSec) + loopSec) % loopSec;
+    const lt = fixedBeat !== null ? fixedBeat * plan.period : ((t % loopSec) + loopSec) % loopSec;
     ev.evaluate(plan, lt, pose);
     solveSkeleton(pose, sk);
     const bi = Math.floor(lt / plan.period);
@@ -592,7 +659,7 @@ function runCompareMove(): void {
     for (const r of renderers) r.render(sk, { t: clock.now(), beat: lt / plan.period, half: false, energy: 0.5, strip });
   }
   requestAnimationFrame(frame);
-  window.__demo = { setMove, seek: (t: number) => clock.seek(t), pause: () => clock.pause() };
+  window.__demo = { setMove, seek: (t: number) => clock.seek(t), pause: () => clock.pause(), at: (b: number | null) => (fixedBeat = b), ready: true };
 }
 
 // ---------------------------------------------------------------------------
