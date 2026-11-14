@@ -301,9 +301,15 @@ const SECTION_KEYS = new Set(['start', 'end', 'type', 'energy']);
 /** Optional per-bar readings (analyser 1.2.0+): one digit per downbeat, plus drop bar indices. */
 const BAR_KEYS = new Set(['energy', 'bass', 'change', 'drops']);
 const BAR_DIGIT_KEYS = ['energy', 'bass', 'change'] as const;
-/** Optional song traits (analyser 1.3.0+): every key a number in 0..1 (src/core/analysis/traits.ts TRAIT_KEYS). */
-const TRAIT_KEYS = ['calm', 'drive', 'fourFloor', 'halfFeel', 'bass', 'hats', 'swing', 'syncop', 'heavy', 'minor'] as const;
-const TRAIT_KEY_SET = new Set<string>(TRAIT_KEYS);
+/**
+ * Optional song traits (analyser 1.3.0+): every TRAIT_KEYS key a number in 0..1, and the
+ * OPTIONAL_TRAIT_KEYS (analyser 1.4.0+) too where present. Copies of src/core/analysis/traits.ts
+ * TRAIT_KEYS / OPTIONAL_TRAIT_KEYS (map.test.ts checks they are equal, so a new trait there fails
+ * the relay's tests until it is listed here).
+ */
+export const TRAIT_KEYS = ['calm', 'drive', 'fourFloor', 'halfFeel', 'bass', 'hats', 'swing', 'syncop', 'heavy', 'minor'] as const;
+export const OPTIONAL_TRAIT_KEYS = ['intensity', 'halfTempo', 'doubleTempo'] as const;
+const TRAIT_KEY_SET = new Set<string>([...TRAIT_KEYS, ...OPTIONAL_TRAIT_KEYS]);
 const MAX_DROPS = 64;
 const SECTION_TYPES = ['intro', 'verse', 'chorus', 'drop', 'outro'];
 const MAP_SOURCES = ['tab', 'device'];
@@ -328,8 +334,10 @@ export interface SharedMap {
   sections: SharedSection[];
   source: 'tab' | 'device';
   bars?: SharedBars;
-  traits?: Record<(typeof TRAIT_KEYS)[number], number>;
+  traits?: SharedTraits;
 }
+
+export type SharedTraits = Record<(typeof TRAIT_KEYS)[number], number> & Partial<Record<(typeof OPTIONAL_TRAIT_KEYS)[number], number>>;
 
 export interface SharedBars {
   energy: string;
@@ -407,9 +415,10 @@ export function validateSharedMap(x: unknown): { ok: true; map: SharedMap } | { 
   let traits: SharedMap['traits'];
   if (x.traits !== undefined) {
     if (!obj(x.traits)) return no('invalid');
-    const t = {} as NonNullable<SharedMap['traits']>;
-    for (const k of TRAIT_KEYS) {
+    const t = {} as SharedTraits;
+    for (const k of [...TRAIT_KEYS, ...OPTIONAL_TRAIT_KEYS]) {
       const v = x.traits[k];
+      if (v === undefined && (OPTIONAL_TRAIT_KEYS as readonly string[]).includes(k)) continue;
       if (!fin(v) || v < 0 || v > 1) return no('invalid');
       t[k] = Math.round(v * 100) / 100;
     }

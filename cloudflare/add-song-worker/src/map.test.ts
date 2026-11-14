@@ -2,8 +2,8 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { checkSharedMap } from '../../../src/core/analysis';
-import { handle, MAP_MAX_BYTES, MAP_RUN_TITLE, validateSharedMap, type Env } from './index';
+import { checkSharedMap, OPTIONAL_TRAIT_KEYS as APP_OPTIONAL_TRAIT_KEYS, TRAIT_KEYS as APP_TRAIT_KEYS } from '../../../src/core/analysis';
+import { handle, MAP_MAX_BYTES, MAP_RUN_TITLE, OPTIONAL_TRAIT_KEYS, TRAIT_KEYS, validateSharedMap, type Env } from './index';
 
 const TOKEN = 'github_pat_SECRET_TOKEN_never_in_responses_0123456789';
 const ORIGIN = 'https://jo.github.io';
@@ -19,6 +19,9 @@ const TAB_BARS = { ...TAB, bars: BARS };
 /** Song traits (analyser 1.3.0+). */
 const TRAITS = { calm: 0.2, drive: 0.9, fourFloor: 1, halfFeel: 0, bass: 0.7, hats: 0.6, swing: 0, syncop: 0.1, heavy: 0, minor: 0.55 };
 const TAB_TRAITS = { ...TAB_BARS, traits: TRAITS };
+/** The optional traits of analyser 1.4.0+. */
+const TRAITS_14 = { ...TRAITS, intensity: 0.35, halfTempo: 0.1, doubleTempo: 0.6 };
+const TAB_TRAITS_14 = { ...TAB_BARS, analyzerVersion: '1.4.0', traits: TRAITS_14 };
 
 interface Call {
   url: string;
@@ -83,6 +86,22 @@ describe('relay POST /map', () => {
     expect((await read(await handle(post(TAB_TRAITS), env, f, NOW))).status).toBe(200);
     expect(JSON.parse(JSON.parse(f.calls[1].init!.body as string).inputs.map_json)).toEqual(TAB_TRAITS);
     expect(JSON.stringify(TAB_TRAITS).length - JSON.stringify(TAB_BARS).length).toBeLessThan(200);
+  });
+
+  it('accepts the optional 1.4.0 traits (intensity, halfTempo, doubleTempo), each alone or together', async () => {
+    const f = github();
+    expect((await read(await handle(post(TAB_TRAITS_14), env, f, NOW))).status).toBe(200);
+    expect(JSON.parse(JSON.parse(f.calls[1].init!.body as string).inputs.map_json)).toEqual(TAB_TRAITS_14);
+    for (const k of OPTIONAL_TRAIT_KEYS) {
+      const r = validateSharedMap({ ...TAB, traits: { ...TRAITS, [k]: 0.5 } });
+      expect(r.ok && r.map.traits, k).toEqual({ ...TRAITS, [k]: 0.5 });
+    }
+    expect(JSON.stringify(TAB_TRAITS_14).length - JSON.stringify(TAB_BARS).length).toBeLessThan(250);
+  });
+
+  it('lists the same trait keys as the app (src/core/analysis/traits.ts)', () => {
+    expect([...TRAIT_KEYS]).toEqual([...APP_TRAIT_KEYS]);
+    expect([...OPTIONAL_TRAIT_KEYS]).toEqual([...APP_OPTIONAL_TRAIT_KEYS]);
   });
 
   it('accepts device maps too', async () => {
@@ -158,6 +177,11 @@ describe('relay POST /map', () => {
     ['a missing trait', { ...TAB, traits: { ...TRAITS, minor: undefined } }, 'invalid'],
     ['a trait above 1', { ...TAB, traits: { ...TRAITS, calm: 1.5 } }, 'invalid'],
     ['a trait as text', { ...TAB, traits: { ...TRAITS, calm: '0.5' } }, 'invalid'],
+    ['an optional trait above 1', { ...TAB, traits: { ...TRAITS, intensity: 1.2 } }, 'invalid'],
+    ['an optional trait below 0', { ...TAB, traits: { ...TRAITS, halfTempo: -0.1 } }, 'invalid'],
+    ['an optional trait as text', { ...TAB, traits: { ...TRAITS, doubleTempo: '0.5' } }, 'invalid'],
+    ['an optional trait that is null', { ...TAB, traits: { ...TRAITS, intensity: null } }, 'invalid'],
+    ['only the optional traits', { ...TAB, traits: { intensity: 0.5, halfTempo: 0.2, doubleTempo: 0.1 } }, 'invalid'],
   ])('rejects %s (bad-map), dispatching nothing', async (_, map, rule) => {
     const f = github();
     expect(await read(await handle(post(map), env, f, NOW))).toEqual({ status: 400, body: { ok: false, error: 'bad-map', detail: rule } });
@@ -179,6 +203,15 @@ describe('relay POST /map', () => {
         { ...m, source: 'device', traits: { ...TRAITS, drive: 2 } },
         { ...m, source: 'device', traits: { ...TRAITS, x: 1 } },
         { ...m, source: 'device', traits: 'calm' },
+        { ...m, source: 'device', bars, traits: TRAITS_14 },
+        { ...m, source: 'device', traits: { ...TRAITS, intensity: 0.456789 } },
+        { ...m, source: 'device', traits: { ...TRAITS, halfTempo: 1 } },
+        { ...m, source: 'device', traits: { ...TRAITS, doubleTempo: 0 } },
+        { ...m, source: 'device', traits: { ...TRAITS_14, intensity: 1.01 } },
+        { ...m, source: 'device', traits: { ...TRAITS_14, halfTempo: '0.2' } },
+        { ...m, source: 'device', traits: { ...TRAITS_14, doubleTempo: null } },
+        { ...m, source: 'device', traits: { ...TRAITS_14, minor: undefined } },
+        { ...m, source: 'device', traits: { ...TRAITS_14, tempo: 0.5 } },
       );
     }
     for (const c of cases) {
