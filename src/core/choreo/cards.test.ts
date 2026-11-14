@@ -150,7 +150,8 @@ describe('sources of short moves', () => {
 
   it('a phrase-end flourish keeps the move\'s name (same card)', () => {
     let seen = 0;
-    for (const id of ['f1', 'f2', 'f3', 'f4', 'f5', 'f6']) {
+    // Enough songs that some have a flourish (about 6 in 10 Hard routines do).
+    for (const id of Array.from({ length: 16 }, (_, k) => `f${k + 1}`)) {
       const r = generateRoutine(songMap(118, id), 'sweaty');
       r.instances.forEach((i, k) => {
         if (!/~(spin|hit4|clap4)$/.test(i.move.id)) return;
