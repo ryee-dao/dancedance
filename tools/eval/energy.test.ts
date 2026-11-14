@@ -67,9 +67,14 @@ describe.skipIf(!have)('real music: the song\'s energy over the saved samples (r
     expect(song('Don\'t Let Go').sweaty.high).toBeLessThan(0.15);
     expect(song('Don\'t Let Go').sweaty.top.filter((t) => /V Step Jab|The Fly/.test(t))).toEqual([]);
     // A brassy banger (intensity 0.99): Hard 12 % high, no jumps, Slow-Jam Sway and Slow Drag before.
-    expect(song('HUSBAND').sweaty.high).toBeGreaterThan(0.3);
-    expect(song('HUSBAND').sweaty.jump).toBeGreaterThan(0.05);
-    expect(song('HUSBAND').cardio.high).toBeGreaterThan(0.15);
+    // Its shares averaged over the first 8 plays (RoutineOpts.fresh): one play's cardio high share swings
+    // 0.05-0.27 with which moves get cast (a catalogue change that only reshuffles the picks moved the
+    // first play from 0.21 to 0.09); the 8-play means were 0.15 / 0.36 / 0.17 before the Nov 2026
+    // older-moves readability restage and 0.18 / 0.34 / 0.19 after it.
+    const plays = Array.from({ length: 8 }, (_, f) => appSet(join(DATA, 'run-20261116'), 'r16', { only: 'HUSBAND', ...(f ? { fresh: f } : {}) })[0].levels);
+    expect(mean(plays.map((p) => p.sweaty.high))).toBeGreaterThan(0.3);
+    expect(mean(plays.map((p) => p.sweaty.jump))).toBeGreaterThan(0.05);
+    expect(mean(plays.map((p) => p.cardio.high))).toBeGreaterThan(0.15);
     for (const lv of ['cardio', 'sweaty'] as const) expect(song('HUSBAND')[lv].top.filter((t) => /Slow-Jam Sway|Slow Drag/.test(t)), lv).toEqual([]);
   });
 

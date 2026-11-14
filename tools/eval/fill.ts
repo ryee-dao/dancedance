@@ -96,7 +96,7 @@ export interface SongRow {
 
 const ONLY = arg('only');
 
-function summarise(set: string, key: string, name: string, info: SongInfo, map: BeatMap): SongRow | null {
+function summarise(set: string, key: string, name: string, info: SongInfo, map: BeatMap, fresh?: number): SongRow | null {
   if (ONLY && !name.includes(ONLY)) return null;
   if (ONLY) console.error(`${set} ${name}`);
   const secs = map.sections ?? [];
@@ -109,7 +109,7 @@ function summarise(set: string, key: string, name: string, info: SongInfo, map: 
   let bpmDanced: number | undefined;
   for (const lv of LEVELS) {
     if (ONLY) console.error(` ${lv}`);
-    const r = generateRoutine(map, lv, { style });
+    const r = generateRoutine(map, lv, { style, ...(fresh !== undefined ? { fresh } : {}) });
     const danced = r.instances.filter((i) => !i.move.idle && !i.move.cooldown);
     const beats = danced.reduce((a, i) => a + i.span, 0) || 1;
     const sh = (f: (i: (typeof danced)[number]) => boolean) => r3(danced.filter(f).reduce((a, i) => a + i.span, 0) / beats);
@@ -167,8 +167,12 @@ function summarise(set: string, key: string, name: string, info: SongInfo, map: 
 
 interface Sampled { key: string; artist: string; title: string; genre?: string; durationSec: number }
 
-/** run.ts score, pass B (what the app passes): saved maps, the lookup's list with its levels and the artist's genres. */
-export function appSet(dir: string, set: string): SongRow[] {
+/**
+ * run.ts score, pass B (what the app passes): saved maps, the lookup's list with its levels and the artist's genres.
+ * `only` keeps the songs whose "artist - title" includes it; `fresh` generates the app's later plays
+ * (RoutineOpts.fresh) instead of the first, to average a named song over several routines.
+ */
+export function appSet(dir: string, set: string, o: { only?: string; fresh?: number } = {}): SongRow[] {
   const sample = readJson<{ songs: Sampled[] }>(join(dir, 'sample.json'), { songs: [] });
   const lookups = readJson<Record<string, GenreLookup>>(join(dir, 'genre-lookups.json'), {});
   const genres = readJson<Record<string, string[]>>(join(dir, 'genres.json'), {});
@@ -176,6 +180,7 @@ export function appSet(dir: string, set: string): SongRow[] {
   for (const s of sample.songs) {
     const p = join(dir, 'maps', `${s.key}.json`);
     if (!existsSync(p)) continue;
+    if (o.only && !`${s.artist} - ${s.title}`.includes(o.only)) continue;
     const map = JSON.parse(readFileSync(p, 'utf8')) as BeatMap;
     const lk = lookups[s.key];
     const list = genres[s.key] ?? [];
@@ -187,7 +192,7 @@ export function appSet(dir: string, set: string): SongRow[] {
       ...(levels && levels.every((l) => l === 'song' || l === 'album') ? { genreLevels: levels } : {}),
       ...(artistGenres ? { artistGenres } : {}),
     };
-    push(out, summarise(set, s.key, `${s.artist} - ${s.title}`, info, map));
+    push(out, summarise(set, s.key, `${s.artist} - ${s.title}`, info, map, o.fresh));
   }
   return out;
 }
