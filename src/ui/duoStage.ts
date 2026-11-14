@@ -339,7 +339,7 @@ class DuoStageImpl implements CoachStage {
     const ri = this.routineFor(item, videoId, tl?.map ?? null);
     this.conductor.update(tl, videoId, intensity, t, { style: ri.style, fresh: ri.fresh }, ri.key);
     const plan = this.conductor.plan;
-    if (this.tracks.sync(plan, intensity, videoId) && this.drawn) {
+    if (this.tracks.sync(plan, intensity, videoId, ri.style) && this.drawn) {
       // Plan switch: crossfade from the last drawn poses.
       this.from1.set(this.pose1);
       this.from2.set(this.pose2);
