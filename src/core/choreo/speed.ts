@@ -30,11 +30,11 @@
  *
  * COORDINATION: each level also has a most coordination load (COORD_LOAD;
  * coordination.ts: how busy the legs and the arms / torso are AT ONCE, per
- * second at the tempo danced). It is checked on the move picked
- * (dancedTempoMode), never on the candidate pools: a pick over it at full
- * time is danced at half time when that is within it (and still moves:
- * MIN_HALF_BPM), else the generator replaces that one pick
- * (Choreographer.recoord).
+ * second at the tempo danced). It is checked where a move is danced
+ * (dancedTempoMode), never on the candidate pools: a move over it at full
+ * time is danced as a simpler form of itself at full time when there is one
+ * (Choreographer.danceAs), else at half time when that is within it (and
+ * still moves: MIN_HALF_BPM), else replaced.
  */
 
 import { CH, createPose, createSkeleton, J, solveSkeleton, type Pose } from '../coach/skeleton';
