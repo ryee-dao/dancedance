@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-15T17:15:05.803Z",
+  "updatedAt": "2026-11-15T17:28:07.801Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -4702,8 +4702,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T17:15:05.795Z"
+          "at": "2026-11-15T17:15:05.795Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -4971,8 +4971,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T17:15:05.802Z"
+          "at": "2026-11-15T17:15:05.802Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -8744,7 +8744,7 @@
         "poignant"
       ],
       "complete": true,
-      "at": "2026-11-14T08:19:33.254Z",
+      "at": "2026-11-15T17:28:07.792Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -8807,6 +8807,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T17:28:07.792Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -9003,7 +9008,7 @@
         "poignant"
       ],
       "complete": true,
-      "at": "2026-11-14T08:19:33.254Z",
+      "at": "2026-11-15T17:28:07.796Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -9069,6 +9074,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T17:28:07.796Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -14758,8 +14768,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T17:15:05.800Z"
+          "at": "2026-11-15T17:15:05.800Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -16605,8 +16615,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T17:15:05.801Z"
+          "at": "2026-11-15T17:15:05.801Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -17245,18 +17255,18 @@
       "genres": [
         "pop rock",
         "pop",
-        "electropop",
         "alternative rock",
         "rock",
-        "alternative"
+        "alternative",
+        "electropop"
       ],
       "genreLevels": [
         "song",
         "song",
-        "album",
         "song",
         "song",
-        "song"
+        "song",
+        "album"
       ],
       "artistGenres": [
         "pop rock",
@@ -17268,7 +17278,7 @@
         "fun"
       ],
       "complete": true,
-      "at": "2026-11-14T08:19:08.769Z",
+      "at": "2026-11-15T17:28:07.789Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -17327,6 +17337,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T17:28:07.789Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -17977,7 +17992,7 @@
         "indie pop",
         "alternative",
         "pop rock",
-        "indie rock"
+        "funk"
       ],
       "genreLevels": [
         "song",
@@ -17985,7 +18000,7 @@
         "song",
         "song",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "indie rock",
@@ -17994,7 +18009,7 @@
         "neo-psychedelia"
       ],
       "complete": true,
-      "at": "2026-11-14T08:19:00.589Z",
+      "at": "2026-11-15T17:28:07.780Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -18064,6 +18079,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T17:28:07.780Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -18242,7 +18262,7 @@
         "weird"
       ],
       "complete": true,
-      "at": "2026-11-14T08:20:30.687Z",
+      "at": "2026-11-15T17:28:07.799Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -18316,6 +18336,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T17:28:07.799Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -20497,8 +20522,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T17:15:05.799Z"
+          "at": "2026-11-15T17:15:05.799Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
