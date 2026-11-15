@@ -847,6 +847,8 @@ interface Slot {
   odd?: Genre;
   /** Planned beats and target vigour x beats of its odd runs' slot, set apart before its own were shared (spreadGlobal). */
   oddPlan?: readonly [number, number];
+  /** Planned beats of its holds in odd runs of its section (what its '~b' slot really dances; exactGroupBeats). */
+  oddBeats?: number;
   move: Move | null;
   /** Planned beats and target vigour x beats (map routines). */
   beats: number;
@@ -990,6 +992,8 @@ export class Choreographer {
   /** The coordination limit (danceAs) is on, and the random stream of its re-picks only (the main stream draws as without it). */
   private coordOn = true;
   private coordRng: () => number;
+  /** The random stream of the Easy hard-move cap's re-picks in the cool-down (choose). */
+  private capRng: () => number;
   /** How each picked move is danced with the coordination limit (speed.ts dancedTempoMode), cached. */
   private dmodes = new Map<Move, TempoMode>();
   /** What each move over the limit is danced as (danceAs), the same every time it comes back. */
@@ -1051,6 +1055,8 @@ export class Choreographer {
   private highBeats = 0;
   /** Easy's planned / cast beats of moves above difficulty 1 (EASY_HARD_CAP). */
   private hardBeats = 0;
+  /** ... and the same with odd runs' slots at their exact beats (exactGroupBeats): what the cap is held to. */
+  private hardExact = 0;
   /** The genre beats the plan chose (assignGenres), and the beats of borrowed moves cast so far. */
   private genrePlanned = 0;
   private lentBeats = 0;
@@ -1069,6 +1075,7 @@ export class Choreographer {
     this.planRng = mulberry32(hashString(`${seedKey}|plan|${intensity}|${sk}${fresh}`));
     this.toneRng = mulberry32(hashString(`${seedKey}|tone|${intensity}|${sk}${fresh}`));
     this.coordRng = mulberry32(hashString(`${seedKey}|coord|${intensity}|${sk}${fresh}`));
+    this.capRng = mulberry32(hashString(`${seedKey}|cap|${intensity}|${sk}${fresh}`));
     this.coordOn = opts.coordination !== false;
     this.halfFirst = !!opts.coordinationHalfFirst;
     this.coordLog = opts.coordinationLog;
@@ -1341,6 +1348,7 @@ export class Choreographer {
       this.jumpBeats += sb * this.sigShare((m) => m.jump);
       this.highBeats += sb * this.sigShare((m) => m.level === 'high');
       this.hardBeats += sb * this.sigShare((m) => m.difficulty > 1);
+      this.hardExact += sb * this.sigShare((m) => m.difficulty > 1);
       from = take;
     }
     if (from >= bars.length) return items;
@@ -1363,6 +1371,7 @@ export class Choreographer {
         const s = this.slot(slot, o);
         s.beats += holdBeats;
         s.tSum += t * holdBeats;
+        if ((o.occ ?? 0) % 2 === 1) s.oddBeats = (s.oddBeats ?? 0) + holdBeats;
       }
       items.push({ kind: 'hold', bars: hb, feels: hf, o, phraseNo, phraseEnd: h.a + h.len === bars.length && !calm, slot, target: t });
     }
@@ -1677,7 +1686,7 @@ export class Choreographer {
       for (const ub of this.units(it.bars, this.sigUnitBars())) this.fillSig(out, ub[0].start, barsEnd(ub), it.section, it.phraseNo);
       return;
     }
-    const move = it.slot ? this.moveFor(it) : this.choose(it.o, null, it.target);
+    const move = it.slot ? this.moveFor(it) : this.choose(it.o, null, it.target, barsEnd(it.bars) - it.bars[0].start);
     this.emitHold(out, it.bars, move, it.o, it.phraseNo, it.phraseEnd);
   }
 
@@ -1769,6 +1778,7 @@ export class Choreographer {
         from.tSum -= it.target * hb;
         members[j].beats += hb;
         members[j].tSum += it.target * hb;
+        if ((it.o.occ ?? 0) % 2 === 1) from.oddBeats = (from.oddBeats ?? 0) - hb;
         it.slot = members[j].key;
       }
     }
@@ -1877,7 +1887,7 @@ export class Choreographer {
     const toneK = calm ? WARM_TONE + (WARM_TONE_CALM - WARM_TONE) * this.tone : this.tone;
     const dance = this.dance;
     // A genre's own moves, or (`lent`) the moves its slot borrows, weighted by their fit.
-    const pick = (genre: Genre | null, lent?: Float64Array, budget = true): Move | null => {
+    const pick = (genre: Genre | null, lent?: Float64Array, budget = true, rng = this.rng, simple = false): Move | null => {
       const w = new Float64Array(pool.length);
       let max = 0;
       for (let i = 0; i < pool.length; i++) {
@@ -1888,7 +1898,7 @@ export class Choreographer {
         if (this.kit.has(m)) continue;
         if (m.jump && !jumpsOk) continue;
         if (budget && m.level === 'high' && !highOk) continue;
-        if (m.difficulty > 1 && !(genre ? hardGenre || (this.borrows.has(genre) && hardThin) : hardFree)) continue;
+        if (m.difficulty > 1 && (simple || !(genre ? hardGenre || (this.borrows.has(genre) && hardThin) : hardFree))) continue;
         x *= lw[m.level] * this.levelF[i];
         if (x <= 0) continue;
         if (dance && namedSets(m).includes(dance)) x *= NAMED_DANCE;
@@ -1950,7 +1960,7 @@ export class Choreographer {
         }
       }
       // The tone gate (retone): a pick too loud for the song (or, in the main sections, below its floor) is re-picked.
-      return this.retone(pickWeighted(this.rng, pool, w), pool, w, !calm);
+      return this.retone(pickWeighted(rng, pool, w), pool, w, !calm);
     };
     const lent = s.genre && s.borrow ? this.borrows.get(s.genre)?.w : undefined;
     let m = lent ? pick(s.genre, lent) : null;
@@ -1966,6 +1976,19 @@ export class Choreographer {
       m = pick(null) ?? pick(null, undefined, false);
     }
     if (!m) m = this.choose(o, prev, target);
+    // Easy's hard-move cap on the beats the slot will really dance: an odd runs' slot ('~b') dances its section's odd
+    // runs, which its planned estimate can fall short of. A move above difficulty 1 that would take the cast hard time
+    // over the slot's cap that way is re-picked among the simple ones, from the cap's own random stream (capRng): a
+    // routine whose casts stay within the cap is as before.
+    const exact = this.intensity === 'chill' ? this.exactGroupBeats(s, groupBeats) : groupBeats;
+    if (this.intensity === 'chill' && m.difficulty > 1) {
+      const cap = s.genre ? (this.borrows.has(s.genre) ? EASY_HARD_CAP_THIN : EASY_HARD_CAP_GENRE) : EASY_HARD_CAP;
+      if (this.hardExact + exact > cap * this.plannedBeats + 1e-9) {
+        const r = (s.genre ? pick(s.genre, lent, false, this.capRng, true) ?? pick(s.genre, undefined, false, this.capRng, true) : null) ?? pick(null, undefined, false, this.capRng, true);
+        if (r) m = r;
+      }
+    }
+    if (m.difficulty > 1) this.hardExact += exact;
     this.kit.add(m);
     this.kitBases.add(m.base);
     if (m.foot) this.kitFeet.add(m.foot);
@@ -1974,6 +1997,16 @@ export class Choreographer {
     if (m.difficulty > 1) this.hardBeats += groupBeats;
     if (m.genre && !this.genres.has(m.genre)) this.lentBeats += groupBeats;
     return m;
+  }
+
+  /** groupBeats, with an odd runs' slot ('~b') at the beats its section's odd runs really hold (Slot.oddBeats) when more. */
+  private exactGroupBeats(s: Slot, group: number): number {
+    if (!s.key.endsWith('~b')) return group;
+    const base = this.slots.get(s.key.slice(0, -2));
+    if (!base) return group;
+    let odd = 0;
+    for (const x of this.slots.values()) if ((x === base || x.of === base.key) && x.odd) odd += x.oddBeats ?? 0;
+    return Math.max(group, odd);
   }
 
   /** Planned beats of a base slot and the slots that are its variations ('hook.0+', alternates; not the moves it is spread over). */
@@ -2170,7 +2203,7 @@ export class Choreographer {
   }
 
   /** A per-hold pick (the cool-down flows, and the last resort). */
-  private choose(o: PhraseOpts, avoid: Move | null, target = o.energy): Move {
+  private choose(o: PhraseOpts, avoid: Move | null, target = o.energy, holdBeats = 0): Move {
     const pool = o.cooldown ? COOLDOWN_MOVES : this.pool;
     const lw0 = levelWeights(o.warmup ? 'warmup' : o.section, this.intensity, target);
     const lw = o.cooldown ? lw0 : energyLean(lw0, this.energy);
@@ -2194,8 +2227,16 @@ export class Choreographer {
     });
     const main = mainOf(o);
     const drawn = pickWeighted(this.rng, pool, weights);
-    const picked = drawn ? this.retone(drawn, pool, weights, main) : null;
+    let picked = drawn ? this.retone(drawn, pool, weights, main) : null;
     if (picked) {
+      // Easy's hard-move cap holds over the cool-down too (EASY_HARD_CAP_THIN of the danced time at most): a move above
+      // difficulty 1 that would take it over is re-picked among the simple ones, from the cap's own random stream.
+      if (this.intensity === 'chill' && holdBeats > 0) {
+        if (picked.difficulty > 1 && this.hardExact + holdBeats > EASY_HARD_CAP_THIN * this.plannedBeats + 1e-9) {
+          picked = pickWeighted(this.capRng, pool, pool.map((m, i) => (m.difficulty === 1 && this.fitsTone(m, main) ? weights[i] : 0))) ?? picked;
+        }
+        if (picked.difficulty > 1) this.hardExact += holdBeats;
+      }
       if (o.cooldown) this.kit.add(picked);
       return picked;
     }

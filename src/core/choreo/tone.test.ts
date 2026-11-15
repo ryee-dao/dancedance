@@ -116,6 +116,12 @@ describe('high-intensity fill follows the song', () => {
         expect(share(d, (i) => i.move.level === 'high'), `${s.title} ${lv}`).toBeLessThanOrEqual(highCap(s.style, lv, r.bpm) + 0.1);
         if (lv === 'chill') expect(share(d, (i) => i.move.difficulty > 1), s.title).toBeLessThanOrEqual(2 * EASY_HARD_CAP);
       }
+      // Easy's hard-move cap holds by construction (EASY_HARD_CAP_THIN at most, odd-run slots and the cool-down
+      // included), in every play of a song, not only its first.
+      for (const fresh of [1, 2]) {
+        const d = danced(generateRoutine(s.map, 'chill', { style: s.style, fresh }));
+        expect(share(d, (i) => i.move.difficulty > 1), `${s.title} play ${fresh}`).toBeLessThanOrEqual(2 * EASY_HARD_CAP);
+      }
     }
   });
 });

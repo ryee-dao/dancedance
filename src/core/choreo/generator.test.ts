@@ -225,9 +225,12 @@ describe('generateRoutine', () => {
 
   it('performs each move at half time on its own, when the song is over its speed limit', () => {
     let full = 0, half = 0;
-    for (const lv of LEVELS) {
+    // Two dozen songs: one song's full / half split is 0.4-12x from seed to seed (Nov 2026, 96 songs); per 24-song
+    // window it is 1.7-2.5x with the current pool and 1.8-2.6x with the one before the feet / anatomy re-roll.
+    const ids = ['fast', ...Array.from({ length: 23 }, (_, k) => `fast-${k}`)];
+    for (const lv of LEVELS) for (const id of ids) {
       // Above 150 BPM the routine counts in half time (phrases / units doubled) ...
-      const r = generateRoutine(songMap(170, 'fast'), lv);
+      const r = generateRoutine(songMap(170, id), lv);
       expect(r.half).toBe(true);
       expect(r.bpm).toBeCloseTo(170, 0);
       for (const i of r.instances) {
@@ -239,6 +242,7 @@ describe('generateRoutine', () => {
         if (i.half) half += i.span;
         else full += i.span;
       }
+      if (id !== 'fast') continue;
       const slow = generateRoutine(songMap(128, 'fast'), lv);
       expect(slow.half).toBe(false);
       for (const i of slow.instances) if (!i.move.idle && !i.move.part && !i.sig) expect(i.half, i.move.id).toBe(dancedTempoMode(i.move, 128, lv) === 'half');
