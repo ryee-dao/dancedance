@@ -1,15 +1,4 @@
 {
-  "updatedAt": "2026-11-15T17:58:34.477Z",
-  "requests": {
-    "tears for fears - head over heels": {
-      "state": "map-pending",
-      "artist": "Tears for Fears",
-      "title": "Head Over Heels",
-      "durationSec": 257,
-      "videoId": "eRogF6vbqsA",
-      "message": "Listed. YouTube refused the cloud download, so there is no beat map yet: the app finds the beat by listening, and the job keeps trying.",
-      "attempts": 1,
-      "lastTried": "2026-11-15T17:58:34.470Z"
-    }
-  }
+  "updatedAt": "2026-11-15T21:53:16.373Z",
+  "requests": {}
 }

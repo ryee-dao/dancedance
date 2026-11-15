@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-15T17:58:34.477Z",
+  "updatedAt": "2026-11-15T21:53:16.373Z",
   "videos": {
     "-7XnDlYY9qw": {
       "state": "ok",
@@ -423,11 +423,9 @@
       "lastTried": "2026-11-11T03:37:16.439Z"
     },
     "eRogF6vbqsA": {
-      "state": "error",
-      "reason": "outdated",
-      "message": "yt-dlp could not read YouTube; it is probably out of date: [youtube] eRogF6vbqsA: Requested format is not available. Use --list-formats for a list of available formats",
-      "attempts": 1,
-      "lastTried": "2026-11-15T17:58:19.912Z"
+      "state": "ok",
+      "attempts": 2,
+      "lastTried": "2026-11-15T21:53:16.359Z"
     },
     "egpE0ysQ21Q": {
       "state": "ok",
