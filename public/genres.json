@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-15T09:32:07.461Z",
+  "updatedAt": "2026-11-15T09:59:06.831Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -996,16 +996,16 @@
         "house",
         "folktronica",
         "electro house",
-        "big room house",
-        "euro house"
+        "EDM",
+        "electronic"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
         "album",
-        "album",
-        "album"
+        "song",
+        "song"
       ],
       "artistGenres": [
         "house",
@@ -1017,7 +1017,7 @@
         "gentle"
       ],
       "complete": true,
-      "at": "2026-11-14T08:15:39.890Z",
+      "at": "2026-11-15T09:59:06.827Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -1078,6 +1078,11 @@
             "House"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T09:59:06.827Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -7175,7 +7180,7 @@
         "singer-songwriter"
       ],
       "complete": true,
-      "at": "2026-11-14T08:13:25.170Z",
+      "at": "2026-11-15T09:59:06.818Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -7235,6 +7240,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T09:59:06.818Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -9225,7 +9235,7 @@
         "Latin pop",
         "techno",
         "dance",
-        "europop"
+        "latin"
       ],
       "genreLevels": [
         "song",
@@ -9233,7 +9243,7 @@
         "song",
         "song",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "electronic",
@@ -9245,7 +9255,7 @@
         "in love"
       ],
       "complete": true,
-      "at": "2026-11-14T08:14:42.552Z",
+      "at": "2026-11-15T09:59:06.825Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -9311,6 +9321,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T09:59:06.825Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -10061,8 +10076,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T09:32:07.451Z"
+          "at": "2026-11-15T09:32:07.451Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -14467,8 +14482,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T09:32:07.457Z"
+          "at": "2026-11-15T09:32:07.457Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -15238,8 +15253,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T09:32:07.460Z"
+          "at": "2026-11-15T09:32:07.460Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -15517,8 +15532,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T09:32:07.459Z"
+          "at": "2026-11-15T09:32:07.459Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -17706,7 +17721,7 @@
         "dance-pop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:14:25.171Z",
+      "at": "2026-11-15T09:59:06.822Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -17770,6 +17785,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T09:59:06.822Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -21440,7 +21460,7 @@
         "intense"
       ],
       "complete": true,
-      "at": "2026-11-14T08:13:17.016Z",
+      "at": "2026-11-15T09:59:06.812Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -21515,6 +21535,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T09:59:06.812Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -22039,8 +22064,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T09:32:07.456Z"
+          "at": "2026-11-15T09:32:07.456Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",

@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-15T09:32:07.461Z",
+  "generatedAt": "2026-11-15T09:59:06.831Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -412,16 +412,16 @@
         "house",
         "folktronica",
         "electro house",
-        "big room house",
-        "euro house"
+        "EDM",
+        "electronic"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
         "album",
-        "album",
-        "album"
+        "song",
+        "song"
       ],
       "artistGenres": [
         "house",
@@ -575,7 +575,7 @@
         "Latin pop",
         "techno",
         "dance",
-        "europop"
+        "latin"
       ],
       "genreLevels": [
         "song",
@@ -583,7 +583,7 @@
         "song",
         "song",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "electronic",
