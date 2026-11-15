@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-15T21:53:16.373Z",
+  "updatedAt": "2026-11-15T22:58:13.662Z",
   "songs": [
     {
       "videoId": "_Vj092UgKwQ",
@@ -278,6 +278,37 @@
         "new wave",
         "synth-pop",
         "rock"
+      ]
+    },
+    {
+      "videoId": "erSoNgCLGRE",
+      "title": "While Your Lips Are Still Red",
+      "artist": "Nightwish",
+      "addedAt": "2026-11-15T22:57:06.821Z",
+      "durationSec": 259,
+      "hasMap": false,
+      "genre": "Hard Rock",
+      "genres": [
+        "symphonic metal",
+        "hard rock",
+        "metal",
+        "symphonic rock",
+        "punk",
+        "rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "symphonic metal",
+        "power metal",
+        "metal",
+        "progressive metal"
       ]
     }
   ]

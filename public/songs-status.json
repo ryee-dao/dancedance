@@ -1,4 +1,15 @@
 {
-  "updatedAt": "2026-11-15T21:53:16.373Z",
-  "requests": {}
+  "updatedAt": "2026-11-15T22:58:13.662Z",
+  "requests": {
+    "nightwish - while your lips are still red": {
+      "state": "map-pending",
+      "artist": "Nightwish",
+      "title": "While Your Lips Are Still Red",
+      "durationSec": 259,
+      "videoId": "erSoNgCLGRE",
+      "message": "Listed. YouTube refused the cloud download, so there is no beat map yet: the app finds the beat by listening, and the job keeps trying.",
+      "attempts": 1,
+      "lastTried": "2026-11-15T22:58:13.650Z"
+    }
+  }
 }

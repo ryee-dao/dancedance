@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-15T22:08:41.240Z",
+  "generatedAt": "2026-11-15T22:58:13.662Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -1881,17 +1881,17 @@
         "alternative rock",
         "pop rock",
         "stadium rock",
-        "funk metal",
         "alternative",
-        "funk rock"
+        "funk rock",
+        "rock"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "album",
         "song",
-        "album"
+        "album",
+        "song"
       ],
       "artistGenres": [
         "alternative rock",
@@ -2739,15 +2739,15 @@
       "genres": [
         "alternative rock",
         "funk rock",
-        "funk metal",
         "stadium rock",
         "pop rock",
-        "rock"
+        "rock",
+        "alternative"
       ],
       "genreLevels": [
         "song",
         "song",
-        "album",
+        "song",
         "song",
         "song",
         "song"

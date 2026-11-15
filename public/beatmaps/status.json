@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-15T21:53:16.373Z",
+  "updatedAt": "2026-11-15T22:58:13.662Z",
   "videos": {
     "-7XnDlYY9qw": {
       "state": "ok",
@@ -431,6 +431,13 @@
       "state": "ok",
       "attempts": 4,
       "lastTried": "2026-11-11T22:29:27.751Z"
+    },
+    "erSoNgCLGRE": {
+      "state": "error",
+      "reason": "outdated",
+      "message": "yt-dlp could not read YouTube; it is probably out of date: [youtube] erSoNgCLGRE: Requested format is not available. Use --list-formats for a list of available formats",
+      "attempts": 1,
+      "lastTried": "2026-11-15T22:57:06.821Z"
     },
     "fH_OnJk6QqU": {
       "state": "ok",

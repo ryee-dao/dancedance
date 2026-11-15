@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-15T22:08:41.240Z",
+  "updatedAt": "2026-11-15T22:58:13.662Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -16238,6 +16238,248 @@
         }
       }
     },
+    "nightwish - while your lips are still red": {
+      "artist": "Nightwish",
+      "title": "While Your Lips Are Still Red",
+      "videoIds": [
+        "erSoNgCLGRE"
+      ],
+      "genres": [
+        "symphonic metal",
+        "hard rock",
+        "metal",
+        "symphonic rock",
+        "punk",
+        "rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "symphonic metal",
+        "power metal",
+        "metal",
+        "progressive metal"
+      ],
+      "complete": true,
+      "at": "2026-11-15T22:58:13.644Z",
+      "sources": {
+        "wikipedia": {
+          "status": "none",
+          "reason": "no article about this song (While Your Lips Are Still Red: by another artist)",
+          "at": "2026-11-15T22:57:08.163Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "none",
+          "reason": "no song item by this artist",
+          "at": "2026-11-15T22:57:09.183Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "metal",
+            "rock",
+            "pop",
+            "punk",
+            "singer-songwriter",
+            "symphonic metal",
+            "symphonic rock"
+          ],
+          "counts": [
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "recording/f0b9e7e1-882f-4c1b-b1a1-586ec4090535",
+          "at": "2026-11-15T22:57:08.682Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "found",
+          "genres": [
+            "Symphonic Metal"
+          ],
+          "ref": "track/33161469",
+          "at": "2026-11-15T22:57:07.050Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Hard Rock"
+          ],
+          "ref": "stored",
+          "at": "2026-11-15T22:57:06.825Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T22:57:06.825Z"
+        },
+        "musicbrainz-album": {
+          "status": "found",
+          "genres": [
+            "symphonic metal",
+            "rock",
+            "bonus disc",
+            "hard rock",
+            "heavy metal",
+            "metal",
+            "power metal",
+            "symphonic rock",
+            "finnish",
+            "goth rock",
+            "gothic rock",
+            "instrumental",
+            "scandinave",
+            "scandinavia",
+            "scandinavian",
+            "scandinavie",
+            "symphonic power metal",
+            "symphonic rock_rock_metal"
+          ],
+          "counts": [
+            7,
+            3,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "release-group/c12897a3-af7a-3466-8892-58af84765813 (Dark Passion Play; release of the matched recording)",
+          "links": {
+            "mbReleaseGroup": "c12897a3-af7a-3466-8892-58af84765813",
+            "album": "Dark Passion Play",
+            "discogsMaster": "2872",
+            "wikidata": "Q212822"
+          },
+          "at": "2026-11-15T22:57:40.523Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "found",
+          "genres": [
+            "Symphonic metal",
+            "gothic metal"
+          ],
+          "ref": "Dark Passion Play",
+          "links": {
+            "wikidata": "Q212822"
+          },
+          "at": "2026-11-15T22:57:40.655Z"
+        },
+        "wikidata-album": {
+          "status": "found",
+          "genres": [
+            "symphonic metal"
+          ],
+          "ref": "Q212822",
+          "at": "2026-11-15T22:57:41.629Z"
+        },
+        "discogs-album": {
+          "status": "none",
+          "reason": "the master (Dark Passion Play) does not list the song",
+          "ref": "master/2872",
+          "at": "2026-11-15T22:57:40.885Z"
+        },
+        "itunes-album": {
+          "status": "found",
+          "genres": [
+            "Hard Rock"
+          ],
+          "ref": "collection/288794558 (The Sound of Nightwish Reborn - Early Demos for \"Dark Passion Play\")",
+          "links": {
+            "album": "The Sound of Nightwish Reborn - Early Demos for \"Dark Passion Play\""
+          },
+          "at": "2026-11-15T22:57:10.139Z"
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "genres": [
+            "symphonic metal",
+            "power metal",
+            "finnish",
+            "metal",
+            "symphonic power metal"
+          ],
+          "counts": [
+            31,
+            11,
+            8,
+            8,
+            6
+          ],
+          "ref": "artist/00a9f935-ba93-4fc8-a33a-993abe9c936b (Nightwish; credited on the song)",
+          "links": {
+            "mbArtist": "00a9f935-ba93-4fc8-a33a-993abe9c936b",
+            "wikidata": "Q43510"
+          },
+          "at": "2026-11-15T22:58:12.476Z"
+        },
+        "wikipedia-artist": {
+          "status": "found",
+          "genres": [
+            "Symphonic metal",
+            "power metal",
+            "progressive metal",
+            "gothic metal"
+          ],
+          "ref": "Nightwish",
+          "links": {
+            "wikidata": "Q43510"
+          },
+          "at": "2026-11-15T22:58:12.667Z"
+        },
+        "wikidata-artist": {
+          "status": "found",
+          "genres": [
+            "symphonic metal",
+            "power metal"
+          ],
+          "ref": "Q43510",
+          "at": "2026-11-15T22:58:13.644Z"
+        },
+        "theaudiodb-artist": {
+          "status": "found",
+          "genres": [
+            "Symphonic Metal",
+            "Rock/Pop"
+          ],
+          "ref": "artist/111939",
+          "at": "2026-11-15T22:57:09.255Z"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "genres": [
+            "Hard Rock"
+          ],
+          "ref": "artist/2898807 (Nightwish)",
+          "at": "2026-11-15T22:57:10.139Z"
+        }
+      }
+    },
     "olivia rodrigo - good 4 u": {
       "artist": "Olivia Rodrigo",
       "title": "good 4 u",
@@ -18510,7 +18752,7 @@
         "rap rock"
       ],
       "complete": true,
-      "at": "2026-11-14T08:23:38.272Z",
+      "at": "2026-11-15T22:58:13.654Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -18580,6 +18822,11 @@
             "Rock"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T22:58:13.654Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -18764,7 +19011,7 @@
         "moody"
       ],
       "complete": true,
-      "at": "2026-11-14T08:24:28.034Z",
+      "at": "2026-11-15T22:58:13.661Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -18822,6 +19069,11 @@
             "Rock"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T22:58:13.661Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -19072,8 +19324,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T22:08:41.239Z"
+          "at": "2026-11-15T22:08:41.239Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -19237,15 +19489,15 @@
       "genres": [
         "alternative rock",
         "funk rock",
-        "funk metal",
         "stadium rock",
         "pop rock",
-        "rock"
+        "rock",
+        "alternative"
       ],
       "genreLevels": [
         "song",
         "song",
-        "album",
+        "song",
         "song",
         "song",
         "song"
@@ -19260,7 +19512,7 @@
         "moody"
       ],
       "complete": true,
-      "at": "2026-11-14T08:24:02.683Z",
+      "at": "2026-11-15T22:58:13.656Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -19326,6 +19578,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T22:58:13.656Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -19577,8 +19834,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T22:08:41.237Z"
+          "at": "2026-11-15T22:08:41.237Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -19766,7 +20023,7 @@
         "moody"
       ],
       "complete": true,
-      "at": "2026-11-14T08:24:10.664Z",
+      "at": "2026-11-15T22:58:13.658Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -19825,6 +20082,11 @@
             "Rock"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T22:58:13.658Z"
         },
         "musicbrainz-album": {
           "status": "none",
@@ -20212,17 +20474,17 @@
         "alternative rock",
         "pop rock",
         "stadium rock",
-        "funk metal",
         "alternative",
-        "funk rock"
+        "funk rock",
+        "rock"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "album",
         "song",
-        "album"
+        "album",
+        "song"
       ],
       "artistGenres": [
         "alternative rock",
@@ -20231,7 +20493,7 @@
         "rap rock"
       ],
       "complete": true,
-      "at": "2026-11-14T08:24:10.746Z",
+      "at": "2026-11-15T22:58:13.660Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -20286,6 +20548,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T22:58:13.660Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -24515,8 +24782,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T22:08:41.231Z"
+          "at": "2026-11-15T22:08:41.231Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -25057,8 +25324,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T22:08:41.225Z"
+          "at": "2026-11-15T22:08:41.225Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -25846,8 +26113,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T22:08:41.233Z"
+          "at": "2026-11-15T22:08:41.233Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
