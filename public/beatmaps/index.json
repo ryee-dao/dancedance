@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-15T17:28:07.801Z",
+  "generatedAt": "2026-11-15T17:58:34.477Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -629,7 +629,7 @@
         "dancehall pop",
         "moombahton",
         "R&B",
-        "pop soul"
+        "pop"
       ],
       "genreLevels": [
         "song",
@@ -637,7 +637,7 @@
         "song",
         "song",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "R&B",
@@ -1448,9 +1448,9 @@
         "alternative hip hop",
         "alternative rock",
         "rap rock",
-        "indie rock",
         "electropop",
-        "indie pop"
+        "indie pop",
+        "rock"
       ],
       "genreLevels": [
         "song",
@@ -1458,7 +1458,7 @@
         "song",
         "album",
         "album",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "alternative rock",
@@ -2042,7 +2042,7 @@
         "dub",
         "reggae",
         "alternative rock",
-        "reggae pop"
+        "indie pop"
       ],
       "genreLevels": [
         "song",

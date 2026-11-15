@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-15T17:28:07.801Z",
+  "updatedAt": "2026-11-15T17:58:34.477Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -8810,8 +8810,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T17:28:07.792Z"
+          "at": "2026-11-15T17:28:07.792Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -9077,8 +9077,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T17:28:07.796Z"
+          "at": "2026-11-15T17:28:07.796Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -9507,7 +9507,7 @@
         "dancehall pop",
         "moombahton",
         "R&B",
-        "pop soul"
+        "pop"
       ],
       "genreLevels": [
         "song",
@@ -9515,7 +9515,7 @@
         "song",
         "song",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "R&B",
@@ -9527,7 +9527,7 @@
         "good natured"
       ],
       "complete": true,
-      "at": "2026-11-14T08:21:01.108Z",
+      "at": "2026-11-15T17:58:34.471Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -9589,6 +9589,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T17:58:34.471Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -17082,7 +17087,7 @@
         "electropop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:21:33.687Z",
+      "at": "2026-11-15T17:58:34.472Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -17140,6 +17145,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T17:58:34.472Z"
         },
         "musicbrainz-album": {
           "status": "none",
@@ -17340,8 +17350,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T17:28:07.789Z"
+          "at": "2026-11-15T17:28:07.789Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -18082,8 +18092,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T17:28:07.780Z"
+          "at": "2026-11-15T17:28:07.780Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -18339,8 +18349,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T17:28:07.799Z"
+          "at": "2026-11-15T17:28:07.799Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -22793,6 +22803,318 @@
         }
       }
     },
+    "tears for fears - head over heels": {
+      "artist": "Tears for Fears",
+      "title": "Head Over Heels",
+      "videoIds": [
+        "eRogF6vbqsA"
+      ],
+      "genres": [
+        "new wave",
+        "pop rock",
+        "progressive pop",
+        "synth-pop",
+        "pop",
+        "new pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "new wave",
+        "synth-pop",
+        "rock"
+      ],
+      "moods": [
+        "good natured"
+      ],
+      "complete": true,
+      "at": "2026-11-15T17:58:34.466Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "genres": [
+            "New wave",
+            "progressive pop"
+          ],
+          "ref": "Head over Heels (Tears for Fears song)",
+          "links": {
+            "albumArticle": "Songs from the Big Chair",
+            "artistArticle": "Tears for Fears"
+          },
+          "at": "2026-11-15T17:58:20.038Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "found",
+          "genres": [
+            "new wave"
+          ],
+          "ref": "Q3783876",
+          "at": "2026-11-15T17:58:22.384Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "pop",
+            "new wave",
+            "pop rock",
+            "synth-pop"
+          ],
+          "counts": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "ref": "release-group/00623aeb-a9f1-400f-863b-f7631dcdc3f7",
+          "at": "2026-11-15T17:58:28.513Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "found",
+          "genres": [
+            "Pop-Rock"
+          ],
+          "moods": [
+            "Good Natured"
+          ],
+          "ref": "track/32821698",
+          "at": "2026-11-15T17:58:20.113Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored",
+          "at": "2026-11-15T17:58:19.914Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T17:58:19.914Z"
+        },
+        "musicbrainz-album": {
+          "status": "found",
+          "genres": [
+            "new wave",
+            "pop rock",
+            "synth-pop",
+            "synthpop",
+            "new pop",
+            "pop",
+            "progressive pop",
+            "adult alternative pop/rock",
+            "anthemic",
+            "atmospheric",
+            "bittersweet",
+            "bouncy",
+            "bright",
+            "cold",
+            "conscious",
+            "epic",
+            "ethereal",
+            "introspective",
+            "longing",
+            "love",
+            "lush",
+            "male vocalist",
+            "maximalist",
+            "melancholic",
+            "melodic",
+            "nocturnal",
+            "passionate",
+            "philosophical",
+            "political",
+            "pop-rock",
+            "progressive",
+            "punchy",
+            "punk/new wave",
+            "rhythmic",
+            "rock",
+            "rollingstone.de",
+            "sentimental",
+            "smooth"
+          ],
+          "counts": [
+            11,
+            9,
+            7,
+            3,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "release-group/475946e9-4b00-3f7c-9bd7-c11f55740262 (Songs From the Big Chair; release of the matched recording)",
+          "links": {
+            "mbReleaseGroup": "475946e9-4b00-3f7c-9bd7-c11f55740262",
+            "album": "Songs From the Big Chair",
+            "discogsMaster": "43063",
+            "wikidata": "Q549774"
+          },
+          "at": "2026-11-15T17:58:29.670Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "found",
+          "genres": [
+            "New wave",
+            "pop rock",
+            "progressive pop",
+            "synth-pop"
+          ],
+          "ref": "Songs from the Big Chair",
+          "links": {
+            "wikidata": "Q549774"
+          },
+          "at": "2026-11-15T17:58:29.874Z"
+        },
+        "wikidata-album": {
+          "status": "found",
+          "genres": [
+            "pop rock"
+          ],
+          "ref": "Q549774",
+          "at": "2026-11-15T17:58:30.855Z"
+        },
+        "discogs-album": {
+          "status": "found",
+          "genres": [
+            "New Wave",
+            "Pop Rock",
+            "Synth-pop",
+            "Electronic",
+            "Rock",
+            "Pop"
+          ],
+          "ref": "master/43063 (Songs From The Big Chair)",
+          "at": "2026-11-15T17:58:29.924Z"
+        },
+        "itunes-album": {
+          "status": "found",
+          "genres": [
+            "Rock"
+          ],
+          "ref": "collection/1440825207 (Songs From the Big Chair (Super Deluxe Version))",
+          "links": {
+            "album": "Songs From the Big Chair (Super Deluxe Version)"
+          },
+          "at": "2026-11-15T17:58:23.230Z"
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "genres": [
+            "new wave",
+            "pop rock",
+            "art pop",
+            "synth-pop",
+            "pop",
+            "psychedelic pop",
+            "sophisti-pop",
+            "big music",
+            "electronic",
+            "new pop",
+            "rock"
+          ],
+          "counts": [
+            10,
+            7,
+            6,
+            4,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "artist/7c7f9c94-dee8-4903-892b-6cf44652e2de (Tears for Fears; credited on the song)",
+          "links": {
+            "mbArtist": "7c7f9c94-dee8-4903-892b-6cf44652e2de",
+            "wikidata": "Q269091"
+          },
+          "at": "2026-11-15T17:58:33.343Z"
+        },
+        "wikipedia-artist": {
+          "status": "found",
+          "genres": [
+            "New wave",
+            "pop rock",
+            "synth-pop"
+          ],
+          "ref": "Tears for Fears",
+          "links": {
+            "wikidata": "Q269091"
+          },
+          "at": "2026-11-15T17:58:33.472Z"
+        },
+        "wikidata-artist": {
+          "status": "found",
+          "genres": [
+            "new wave"
+          ],
+          "ref": "Q269091",
+          "at": "2026-11-15T17:58:34.466Z"
+        },
+        "theaudiodb-artist": {
+          "status": "found",
+          "genres": [
+            "Pop-Rock",
+            "Rock/Pop"
+          ],
+          "ref": "artist/112268",
+          "at": "2026-11-15T17:58:22.385Z"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "artist/45218 (Tears for Fears)",
+          "at": "2026-11-15T17:58:23.230Z"
+        }
+      }
+    },
     "the kid laroi justin bieber - stay": {
       "artist": "The Kid LAROI & Justin Bieber",
       "title": "STAY",
@@ -24421,7 +24743,7 @@
         "indie pop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:21:55.208Z",
+      "at": "2026-11-15T17:58:34.475Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -24474,6 +24796,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T17:58:34.475Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -25725,7 +26052,7 @@
         "dub",
         "reggae",
         "alternative rock",
-        "reggae pop"
+        "indie pop"
       ],
       "genreLevels": [
         "song",
@@ -25742,7 +26069,7 @@
         "indie pop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:21:49.966Z",
+      "at": "2026-11-15T17:58:34.474Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -25804,6 +26131,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T17:58:34.474Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -26259,9 +26591,9 @@
         "alternative hip hop",
         "alternative rock",
         "rap rock",
-        "indie rock",
         "electropop",
-        "indie pop"
+        "indie pop",
+        "rock"
       ],
       "genreLevels": [
         "song",
@@ -26269,7 +26601,7 @@
         "song",
         "album",
         "album",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "alternative rock",
@@ -26278,7 +26610,7 @@
         "indie pop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:21:49.966Z",
+      "at": "2026-11-15T17:58:34.473Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -26347,6 +26679,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T17:58:34.473Z"
         },
         "musicbrainz-album": {
           "status": "found",
