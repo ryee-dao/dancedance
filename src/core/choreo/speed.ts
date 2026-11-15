@@ -27,10 +27,19 @@
  * time in the air would stretch past MAX_AIR_SEC floats, so it is left out
  * rather than slowed. Simple on-the-beat moves (bounces, pumps, step-touches)
  * have high limits, so fast songs keep them at full time.
+ *
+ * COORDINATION: each level also has a most coordination load (COORD_LOAD;
+ * coordination.ts: how busy the legs and the arms / torso are AT ONCE, per
+ * second at the tempo danced). It is checked where a move is danced
+ * (dancedTempoMode), never on the candidate pools: a move over it at full
+ * time is danced as a simpler form of itself at full time when there is one
+ * (Choreographer.danceAs), else at half time when that is within it (and
+ * still moves: MIN_HALF_BPM), else replaced.
  */
 
 import { CH, createPose, createSkeleton, J, solveSkeleton, type Pose } from '../coach/skeleton';
 import type { Move, MoveKey } from './catalog';
+import { REF_BPM, coordinationLoad } from './coordination';
 
 /** Joint speed limits (figure units per second; 1 unit = standing height). */
 const JOINT_V: readonly (readonly [number, number])[] = [
@@ -203,15 +212,60 @@ export function readsAtHalf(m: Move, bpm: number): boolean {
 }
 
 /**
+ * Most coordination load (coordination.ts) a level dances, at any tempo. The
+ * load grows with the tempo a move is danced at, so the coordination a move
+ * may have per beat falls as the tempo rises (coordinationLimit). Set from
+ * the measured loads (Nov 2026, published songs; coordination per beat x
+ * tempo / 120): Easy one thing at a time (a march with its arms swinging,
+ * 0.41, at any tempo; a march with side punches, 1.52, at full time up to ~100
+ * BPM; one with arms pumping overhead, 2.1, only at half time); Medium
+ * moderate (a jumping jack, 2.24, at full time up to ~95 BPM, with alternating
+ * punches, 2.32, up to ~90); Hard demanding but doable (jumping jacks up to
+ * ~145 BPM, nothing like a jump with hammer fists, 3.2, at full time above
+ * ~100).
+ */
+export const COORD_LOAD: Readonly<Record<SpeedLevel, number>> = { chill: 1.25, cardio: 1.75, sweaty: 2.75 };
+/** Slowest tempo (move beats per minute) a move is slowed to for its coordination: below it, it is left out instead. */
+export const MIN_HALF_BPM = 50;
+
+/** Most coordination per move beat (coordination.ts perBeat) a level dances at `bpm` move beats per minute: it falls as the tempo rises. */
+export function coordinationLimit(level: SpeedLevel, bpm: number): number {
+  return (COORD_LOAD[level] * REF_BPM) / bpm;
+}
+
+/** Whether a move danced at `bpm` move beats per minute is within the level's coordination load. */
+export function coordinationOk(m: Move, bpm: number, level: SpeedLevel): boolean {
+  return coordinationLoad(m, bpm) <= COORD_LOAD[level] + 1e-9;
+}
+
+/**
  * How a move is performed on a song of `bpm` (beats of the beat grid per
- * minute): full time when the tempo is within its limit (times the level's
- * share), half time when half the tempo is and the move reads at half time,
- * else 'out' (not used on this song at this level).
+ * minute) by its speed limit: full time when the tempo is within its limit
+ * (times the level's share), half time when half the tempo is and the move
+ * reads at half time, else 'out' (not used on this song at this level). The
+ * candidate pools and weights use this; the coordination load is checked on
+ * the move picked (dancedTempoMode).
  */
 export function moveTempoMode(m: Move, bpm: number | undefined, level: SpeedLevel = 'cardio'): TempoMode {
   if (!bpm || !Number.isFinite(bpm) || bpm <= 0) return 'full';
   const lim = moveSpeed(m).limit * LEVEL_SPEED[level];
   if (bpm <= lim + 1e-9) return 'full';
   if (bpm / 2 <= lim + 1e-9 && readsAtHalf(m, bpm)) return 'half';
+  return 'out';
+}
+
+/**
+ * How a picked move is danced with the level's coordination load (COORD_LOAD)
+ * on top of its speed limit: as moveTempoMode while that is within the load;
+ * a full-time move over it at half time when its half-time form is within it,
+ * reads at half time and still moves (MIN_HALF_BPM); else 'out' (the pick is
+ * replaced: a simpler form of it, or another move).
+ */
+export function dancedTempoMode(m: Move, bpm: number | undefined, level: SpeedLevel = 'cardio'): TempoMode {
+  const mode = moveTempoMode(m, bpm, level);
+  if (mode === 'out' || !bpm || !Number.isFinite(bpm) || bpm <= 0) return mode;
+  if (coordinationOk(m, mode === 'half' ? bpm / 2 : bpm, level)) return mode;
+  const lim = moveSpeed(m).limit * LEVEL_SPEED[level];
+  if (mode === 'full' && bpm / 2 <= lim + 1e-9 && readsAtHalf(m, bpm) && bpm / 2 >= MIN_HALF_BPM - 1e-9 && coordinationOk(m, bpm / 2, level)) return 'half';
   return 'out';
 }

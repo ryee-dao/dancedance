@@ -53,10 +53,10 @@ import { genreOpenness, type Genre } from './genres';
 import { GENRE_MAX, comboName, feelMap, generateRoutine, genreFits, hashString, mulberry32, styleGenres, toneFits, toneGate, type Intensity, type MoveInstance, type Routine, type SigStep, type ToneGate } from './generator';
 import type { SongStyle } from './songStyle';
 import { IDLE_MOVE, MOVES, type Move } from './moves';
-import { PARTNER_MOVES, partnerCard, partnerOf, partnerTempoMode, type PartnerMove } from './duoMoves';
+import { PARTNER_MOVES, partnerCard, partnerDancedMode, partnerOf, partnerTempoMode, type PartnerMove } from './duoMoves';
 import { partOf, renamed, rootOffset, tileMove as cardTile } from './cards';
 import { CH } from '../coach/skeleton';
-import { moveTempoMode, type TempoMode } from './speed';
+import { dancedTempoMode, moveTempoMode, type TempoMode } from './speed';
 import { calmFactor } from './weights';
 import { WALK_SPEED, smoothSteps } from './flow';
 
@@ -96,6 +96,8 @@ export interface DuoOpts {
   downbeats?: readonly number[];
   /** The tone gate (generator.ts toneGate; default on). */
   toneGate?: boolean;
+  /** The coordination limit (speed.ts COORD_LOAD; default on). */
+  coordination?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -289,6 +291,33 @@ export class DuoChoreographer {
   constructor(private o: DuoOpts) {
     this.rng = mulberry32(hashString(`${o.seedKey}|duo|${o.intensity}`));
     this.toneRng = mulberry32(hashString(`${o.seedKey}|duo-tone|${o.intensity}`));
+    this.coordRng = mulberry32(hashString(`${o.seedKey}|duo-coord|${o.intensity}`));
+  }
+
+  /** The coordination limit's own random stream (its re-picks only: the main stream draws as without it). */
+  private coordRng: () => number;
+
+  /** How a picked partner move is danced (partnerDancedMode; its tempo mode alone with the limit off). */
+  private dancedOf(pm: PartnerMove): TempoMode {
+    return this.o.coordination === false ? this.modeOf(pm) : partnerDancedMode(pm, this.bpm, this.o.intensity);
+  }
+
+  /** A picked P2 move as danced (speed.ts dancedTempoMode; its tempo mode alone with the limit off). */
+  private dancedMove(c: Move): TempoMode {
+    return this.o.coordination === false ? moveTempoMode(c, this.bpm, this.o.intensity) : dancedTempoMode(c, this.bpm, this.o.intensity);
+  }
+
+  /**
+   * Whether a partner move as danced (dancedOf: maybe at half time for the coordination limit) still fills the unit
+   * exactly on bar lines: half time (true), full time (false), or null when it can't be danced here.
+   */
+  private dancedHalf(pm: PartnerMove, u: Unit, half: boolean): boolean | null {
+    if (!this.bpm) return half;
+    const mode = this.dancedOf(pm);
+    if (mode === 'out') return null;
+    const h = mode === 'half';
+    const len = u.end - u.start, span = pm.beats * (h ? 2 : 1);
+    return span <= len && len % span === 0 && this.onBars(u, 4 * (span / pm.beats)) ? h : null;
   }
 
   /** The gate's own random stream (its re-picks only: the main stream draws as without the gate). */
@@ -420,13 +449,18 @@ export class DuoChoreographer {
         // P2's own move may add genre time only while the track stays within the genre share.
         const room = this.genreCap - this.genre2 + genreBeats(u.ins) + 1e-9;
         const b = this.complementOf(main, mainHalf, room >= u.end - u.start);
+        // Whether P2's move fits the phrase is decided as without the coordination limit (its tempo mode) ...
         const bMode = b && this.bpm ? moveTempoMode(b, this.bpm, this.o.intensity) : null;
         if (!b || bMode === 'out') return this.make(u, 'mirror', undefined, half, prev1, prev2);
         const bHalf = bMode ? bMode === 'half' : mainHalf;
         if (!this.onBars(u, b.beats * (bHalf ? 2 : 1))) return this.make(u, 'mirror', undefined, half, prev1, prev2);
         const p2 = tileOne(b, u.start, u.end, bHalf, u.section, u.phrase, true);
         if (genreBeats(p2) > room) return this.make(u, 'mirror', undefined, half, prev1, prev2);
-        return { p1: u.ins.map((i) => copy(i)), p2, kind };
+        // ... then it is danced as the limit lets it (at half time), or the pair mirror when that doesn't fit the phrase.
+        const dMode = this.bpm ? this.dancedMove(b) : bMode;
+        if (dMode === bMode) return { p1: u.ins.map((i) => copy(i)), p2, kind };
+        if (dMode === 'out' || !this.onBars(u, b.beats * 2)) return this.make(u, 'mirror', undefined, half, prev1, prev2);
+        return { p1: u.ins.map((i) => copy(i)), p2: tileOne(b, u.start, u.end, true, u.section, u.phrase, true), kind };
       }
       case 'call': {
         if (!main) return unison();
@@ -465,7 +499,17 @@ export class DuoChoreographer {
         if (!pm) return kind === 'trade' ? this.make(u, 'partner', undefined, half, prev1, prev2) : this.make(u, 'mirror', undefined, half, prev1, prev2);
         const tiles = tilePartner(pm, u.start, u.end, this.partnerHalf(pm, half), u.section, u.phrase);
         if (!tiles) return this.make(u, 'mirror', undefined, half, prev1, prev2);
-        return { ...tiles, kind: pm.trade ? 'trade' : 'partner', partner: pm };
+        // The coordination limit on the move the pair would dance: at half time when only that is within it, else
+        // another partner move within it (its own random stream), else they mirror.
+        const dh = this.dancedHalf(pm, u, half);
+        if (dh === this.partnerHalf(pm, half)) return { ...tiles, kind: pm.trade ? 'trade' : 'partner', partner: pm };
+        const t2 = dh === null ? null : tilePartner(pm, u.start, u.end, dh, u.section, u.phrase);
+        if (t2) return { ...t2, kind: pm.trade ? 'trade' : 'partner', partner: pm };
+        const alt = this.pickPartner(u, kind === 'trade', half, prev1, prev2, true);
+        const ah = alt ? this.dancedHalf(alt, u, half) : null;
+        const t3 = alt && ah !== null ? tilePartner(alt, u.start, u.end, ah, u.section, u.phrase) : null;
+        if (alt && t3) return { ...t3, kind: alt.trade ? 'trade' : 'partner', partner: alt };
+        return this.make(u, 'mirror', undefined, half, prev1, prev2);
       }
     }
   }
@@ -521,7 +565,7 @@ export class DuoChoreographer {
     return k;
   }
 
-  private pickPartner(u: Unit, trade: boolean, half: boolean, prev1?: MoveInstance, prev2?: MoveInstance): PartnerMove | undefined {
+  private pickPartner(u: Unit, trade: boolean, half: boolean, prev1?: MoveInstance, prev2?: MoveInstance, coord = false): PartnerMove | undefined {
     const it = this.o.intensity;
     const sectionHigh = u.section === 'chorus' || u.section === 'drop';
     // Partner moves that suit the song, fill the phrase exactly (no half-done move at its end), and can follow
@@ -544,6 +588,24 @@ export class DuoChoreographer {
       if (this.recentPartners.includes(pm)) w *= 0.08;
       return w;
     });
+    const fits = (pm: PartnerMove) => [...pm.p1, ...pm.p2].every((m) => this.toneOk(m, false));
+    if (coord) {
+      // The coordination limit's re-pick (make): one that fits the tone and is danced within the limit, from its own stream.
+      const w = weights.map((x, i) => (fits(pool[i]) && this.dancedHalf(pool[i], u, half) !== null ? x : 0));
+      const tot = w.reduce((a, b) => a + b, 0);
+      if (tot <= 0) return undefined;
+      let r3 = this.coordRng() * tot;
+      let alt: PartnerMove | undefined;
+      for (let i = 0; i < pool.length && !alt; i++) {
+        if (w[i] > 0 && r3 < w[i]) alt = pool[i];
+        r3 -= w[i];
+      }
+      for (let i = pool.length - 1; i >= 0 && !alt; i--) if (w[i] > 0) alt = pool[i];
+      if (!alt) return undefined;
+      this.recentPartners.push(alt);
+      if (this.recentPartners.length > 4) this.recentPartners.shift();
+      return alt;
+    }
     let sum = 0;
     for (const w of weights) sum += w;
     if (sum <= 0) return undefined;
@@ -557,7 +619,6 @@ export class DuoChoreographer {
       r -= weights[i];
     }
     // The tone gate: a partner move with a half too loud for the song is re-picked from the gate's own stream.
-    const fits = (pm: PartnerMove) => [...pm.p1, ...pm.p2].every((m) => this.toneOk(m, false));
     if (!fits(pick)) {
       const w = weights.map((x, i) => (fits(pool[i]) ? x : 0));
       const tot = w.reduce((a, b) => a + b, 0);
@@ -831,7 +892,7 @@ export function generateDuoRoutine(map: BeatMap, intensity: Intensity, opts: Par
   // The downbeats of the grid the routine is danced on: the map's, a tempo feel's own (half / twice the counted
   // tempo: other beat indices), none on a free-time grid (regular bars).
   const downbeats = r.times === undefined || r.times === map.beats ? map.downbeats : r.feel && r.feel !== 1 ? feelMap(map, r.feel).downbeats : undefined;
-  return duoFromRoutine(r, { seedKey: `${map.videoId}${salt ? `|${salt}` : ''}`, intensity, style: opts.style, ...(downbeats ? { downbeats } : {}), ...(opts.toneGate === false ? { toneGate: false } : {}) });
+  return duoFromRoutine(r, { seedKey: `${map.videoId}${salt ? `|${salt}` : ''}`, intensity, style: opts.style, ...(downbeats ? { downbeats } : {}), ...(opts.toneGate === false ? { toneGate: false } : {}), ...(opts.coordination === false ? { coordination: false } : {}) });
 }
 
 /** P2's mirror-unison instance for a P1 instance (live / idle plans). */

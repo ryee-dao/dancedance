@@ -7,7 +7,7 @@ import onTheFloorMap from '../../../public/beatmaps/9lybsz-7TFM.json';
 import { generateDuoRoutine } from './duo';
 import { LivePlanner, MAX_NAME, generateRoutine, mapTempo, shortName, type Intensity, type MoveInstance, type Routine } from './generator';
 import { publishedSongs } from './published.testutil';
-import { LEVEL_SPEED, moveTempoMode, speedLimit } from './speed';
+import { LEVEL_SPEED, dancedTempoMode, speedLimit } from './speed';
 import { MIN_CARD_BEATS, cardsOf } from './cards';
 import { findMove } from './moves';
 import { getPool } from './pool';
@@ -232,16 +232,16 @@ describe('generateRoutine', () => {
       expect(r.bpm).toBeCloseTo(170, 0);
       for (const i of r.instances) {
         if (i.move.idle || i.move.part || i.sig) continue;
-        // ... but each move runs at its own speed: half time only when 170 is over its limit.
-        expect(moveTempoMode(i.move, 170, lv), i.move.id).not.toBe('out');
-        expect(i.half, i.move.id).toBe(moveTempoMode(i.move, 170, lv) === 'half');
+        // ... but each move runs at its own speed: half time only when 170 is over its limit (or its coordination load: dancedTempoMode).
+        expect(dancedTempoMode(i.move, 170, lv), i.move.id).not.toBe('out');
+        expect(i.half, i.move.id).toBe(dancedTempoMode(i.move, 170, lv) === 'half');
         expect(i.span).toBe(i.move.beats * (i.half ? 2 : 1));
         if (i.half) half += i.span;
         else full += i.span;
       }
       const slow = generateRoutine(songMap(128, 'fast'), lv);
       expect(slow.half).toBe(false);
-      for (const i of slow.instances) if (!i.move.idle && !i.move.part && !i.sig) expect(i.half, i.move.id).toBe(moveTempoMode(i.move, 128, lv) === 'half');
+      for (const i of slow.instances) if (!i.move.idle && !i.move.part && !i.sig) expect(i.half, i.move.id).toBe(dancedTempoMode(i.move, 128, lv) === 'half');
     }
     // Simple on-the-beat moves keep fast songs fast: most of a 170 BPM routine is full time.
     expect(full).toBeGreaterThan(1.5 * half);
