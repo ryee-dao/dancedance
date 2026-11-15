@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-15T09:59:06.831Z",
+  "generatedAt": "2026-11-15T17:15:05.803Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -2308,17 +2308,17 @@
         "pop rock",
         "folk rock",
         "folk pop",
-        "soft rock",
         "pop",
-        "alternative rock"
+        "alternative rock",
+        "soft rock"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "album",
         "song",
-        "song"
+        "song",
+        "album"
       ],
       "artistGenres": [
         "pop rock",
@@ -2844,16 +2844,16 @@
         "West Coast hip hop",
         "alternative hip hop",
         "hip hop",
-        "conscious hip hop",
-        "experimental pop"
+        "experimental pop",
+        "conscious hip hop"
       ],
       "genreLevels": [
         "song",
         "album",
         "album",
         "song",
-        "album",
-        "song"
+        "song",
+        "album"
       ],
       "artistGenres": [
         "pop rap",
