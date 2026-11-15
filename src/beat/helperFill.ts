@@ -1,9 +1,18 @@
 /**
- * Background fill: while the app is open and the helper app is running,
- * quietly find the beat of songs that still have no cloud map (playlist,
- * then added songs, then the starter pack), one at a time: get the audio
- * from the helper, analyse it in a Worker, cache the map and hand it to the
- * shared uploader.
+ * Background fill: while the app is open, quietly find the beat of songs that
+ * still have no cloud map (playlist, then added songs, then the starter
+ * pack), one at a time: get the audio (web: from the helper app; the TV: its
+ * own download, platform backgroundAudio), analyse it in a Worker, cache the
+ * map and hand it to the shared uploader. A full map with its audio traits is
+ * one of a song's essentials (the routine's tone comes from it): prepared
+ * here, a song's first play needs no analysis on its loading screen.
+ *
+ * A background job, it always yields: it runs only while its audio source is
+ * available (the TV: nothing of the user's is loading, no app update is
+ * downloading), and the moment a song is opened (BeatSession holds it) the
+ * current song is abandoned (its download cancelled, unless it is the song
+ * opened, and its analysis stopped) and it waits until the play screen is
+ * closed.
  *
  * Polite by design: one song at most every INTERVAL_MS, at most MAX_PER_OPEN
  * per app open, paused (and the current song abandoned) while a song is
@@ -33,8 +42,11 @@ export interface FillState {
   paused: boolean;
 }
 
+/** Where the background fill gets a song's audio (the helper app, or the TV's own downloads). */
+export type FillAudio = Pick<LocalHelper, 'fetchAudio'> & { available(): Promise<unknown> };
+
 export interface FillDeps {
-  helper: LocalHelper;
+  helper: FillAudio;
   /** Candidate video IDs in priority order. */
   candidates(): string[];
   /** Video IDs that have a cloud map (null while unknown: then nothing runs). */
@@ -148,7 +160,8 @@ export class HelperFill extends EventTarget {
         console.info('[dd:fill] mapped', id, `(${this.st.done} this time)`);
       } catch (err) {
         const code = (err as { code?: HelperCode | 'abandoned' }).code;
-        if (code === 'abandoned' || code === 'aborted') {
+        // Abandoned (a song was opened): whatever the cancelled download answered, it is not a failure.
+        if (code === 'abandoned' || code === 'aborted' || this.job !== job) {
           this.tried.delete(id); // a song started playing; try it again later
           return;
         }
@@ -194,13 +207,24 @@ export function backgroundFill(): HelperFill | null {
   return shared;
 }
 
+/** The song a play screen is opening or playing (its download, if the fill had started it, is the user's now). */
+let opening: string | null = null;
+export function openingSong(): string | null {
+  return opening;
+}
+
 /** BeatSession calls this while a song is on screen. */
-export function holdBackgroundFill(): () => void {
-  return shared ? shared.hold() : () => {};
+export function holdBackgroundFill(videoId: string | null = null): () => void {
+  opening = videoId;
+  const release = shared ? shared.hold() : () => {};
+  return () => {
+    if (opening === videoId) opening = null;
+    release();
+  };
 }
 
 /** The real dependencies: cloud index, local cache, Worker analysis, shared uploader. */
-export function createBackgroundFill(beatmapBase: string, helper: LocalHelper, candidates: () => string[]): HelperFill {
+export function createBackgroundFill(beatmapBase: string, helper: FillAudio, candidates: () => string[]): HelperFill {
   let idsP: Promise<Set<string> | null> | null = null;
   return new HelperFill({
     helper,

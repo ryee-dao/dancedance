@@ -324,4 +324,34 @@ describe('GenreRunner (songs added on the TV)', () => {
     expect(timers).toEqual([RETRY_SOON_MS, RECHECK_MS]);
     expect(RETRY_MAX_MS).toBeGreaterThan(RETRY_MIN_MS);
   });
+
+  it('while a song plays (pace), keeps to one request every so often; while the user\'s song loads (busy), to none', async () => {
+    let t = T0;
+    let loading = true;
+    const requests: number[] = [];
+    const songs = [song('AAAAAAAAAAA')];
+    const runner = new GenreRunner({
+      songs: () => songs,
+      save: (_id, l) => ((songs[0].genreLookup = l), true),
+      busy: () => {
+        // The user's song loads for the first 10 s.
+        if (t >= T0 + 10_000) loading = false;
+        return loading;
+      },
+      pace: () => 2000,
+      fetch: async (url) => {
+        requests.push(t);
+        const body = url.includes('wikipedia') ? { query: { pages: [], search: [] } } : url.includes('wbsearch') ? { search: [] } : {};
+        return { ok: true, status: 200, headers: new Headers(), json: async () => body };
+      },
+      now: () => t,
+      sleep: async (ms) => void (t += ms),
+    });
+    await runner.run();
+    expect(Math.min(...requests)).toBeGreaterThanOrEqual(T0 + 10_000);
+    const sorted = [...requests].sort((a, b) => a - b);
+    for (let k = 1; k < sorted.length; k++) expect(sorted[k] - sorted[k - 1]).toBeGreaterThanOrEqual(0);
+    // Paced: the lookup's requests took at least 2 s each, one after the other (not a burst).
+    expect(sorted[sorted.length - 1] - sorted[0]).toBeGreaterThanOrEqual(2000 * (sorted.length - 1) * 0.5);
+  });
 });
