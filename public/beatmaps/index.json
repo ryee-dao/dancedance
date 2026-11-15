@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-15T01:58:24.244Z",
+  "generatedAt": "2026-11-15T02:12:56.398Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -1961,16 +1961,16 @@
         "funk",
         "disco",
         "pop",
-        "synth-pop",
         "electro",
-        "French house"
+        "French house",
+        "house"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "album",
         "song",
+        "album",
         "album"
       ],
       "artistGenres": [
@@ -2335,15 +2335,15 @@
         "power pop",
         "dance-pop",
         "pop",
+        "rock",
         "europop",
-        "synth-pop",
-        "electropop"
+        "synth-pop"
       ],
       "genreLevels": [
         "song",
         "album",
         "song",
-        "album",
+        "song",
         "album",
         "album"
       ],

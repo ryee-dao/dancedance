@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-15T01:58:24.244Z",
+  "updatedAt": "2026-11-15T02:12:56.398Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -2557,8 +2557,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T01:58:24.238Z"
+          "at": "2026-11-15T01:58:24.238Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -2840,8 +2840,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T01:58:24.242Z"
+          "at": "2026-11-15T01:58:24.242Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -3130,8 +3130,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T01:58:24.240Z"
+          "at": "2026-11-15T01:58:24.240Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -3788,7 +3788,7 @@
         "excitable"
       ],
       "complete": true,
-      "at": "2026-11-14T08:09:45.090Z",
+      "at": "2026-11-15T02:12:56.396Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -3855,6 +3855,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T02:12:56.396Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -4289,16 +4294,16 @@
         "funk",
         "disco",
         "pop",
-        "synth-pop",
         "electro",
-        "French house"
+        "French house",
+        "house"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "album",
         "song",
+        "album",
         "album"
       ],
       "artistGenres": [
@@ -4311,7 +4316,7 @@
         "happy"
       ],
       "complete": true,
-      "at": "2026-11-14T08:08:48.010Z",
+      "at": "2026-11-15T02:12:56.392Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -4379,6 +4384,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T02:12:56.392Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -9807,8 +9817,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T01:58:24.227Z"
+          "at": "2026-11-15T01:58:24.227Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -10230,15 +10240,15 @@
         "power pop",
         "dance-pop",
         "pop",
+        "rock",
         "europop",
-        "synth-pop",
-        "electropop"
+        "synth-pop"
       ],
       "genreLevels": [
         "song",
         "album",
         "song",
-        "album",
+        "song",
         "album",
         "album"
       ],
@@ -10252,7 +10262,7 @@
         "cheerful"
       ],
       "complete": true,
-      "at": "2026-11-14T08:10:25.859Z",
+      "at": "2026-11-15T02:12:56.397Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -10308,6 +10318,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T02:12:56.397Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -14940,8 +14955,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T01:58:24.235Z"
+          "at": "2026-11-15T01:58:24.235Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -17445,7 +17460,7 @@
         "happy"
       ],
       "complete": true,
-      "at": "2026-11-14T08:08:31.711Z",
+      "at": "2026-11-15T02:12:56.389Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -17507,6 +17522,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T02:12:56.389Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -26728,7 +26748,7 @@
         "alternative rock"
       ],
       "complete": true,
-      "at": "2026-11-14T08:09:28.781Z",
+      "at": "2026-11-15T02:12:56.395Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -26812,6 +26832,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T02:12:56.395Z"
         },
         "musicbrainz-album": {
           "status": "found",
