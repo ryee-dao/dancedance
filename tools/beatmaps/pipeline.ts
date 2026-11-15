@@ -619,9 +619,12 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     }
 
     // --- Genres of catalog songs still missing them (or due again) -------------
+    // The playlist's songs too (after songs.json and the starter pack): without them a playlist song is danced with
+    // no genre at all ("Mixed styles" when its map has no audio traits either).
     const prevIndexText = await readText(indexPath);
+    const listed = [...starter, ...playlistSongs(playlist?.videos, await readText(paths.playlistFile))];
     if (deps.lookupGenres && paths.genresFile) {
-      const catalog = catalogSongs(songs, starter, songGenres(songs, prevIndexText));
+      const catalog = catalogSongs(songs, listed, songGenres(songs, prevIndexText));
       // failedRetryMs 0: a source that failed is asked again on the next run.
       for (const c of dueSongs(catalog, genreRecords, deps.now(), opts.genreRetries ?? 5, 0)) await lookupSongGenres(c);
     }
@@ -631,7 +634,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     const now = nowIso();
     await mkdir(paths.beatmapsDir, { recursive: true });
     // Rebuilt from the map files on disk every run, so it cannot drift from them.
-    const idx = renderIndex(prevIndexText, ANALYZER_VERSION, await scanMaps(paths.beatmapsDir), now, songGenres(songs, prevIndexText), songGenreLists(songs, starter, genreRecords, prevIndexText), songGenreMeta(songs, starter, genreRecords, prevIndexText));
+    const idx = renderIndex(prevIndexText, ANALYZER_VERSION, await scanMaps(paths.beatmapsDir), now, songGenres(songs, prevIndexText), songGenreLists(songs, listed, genreRecords, prevIndexText), songGenreMeta(songs, listed, genreRecords, prevIndexText));
     if (await writeIfChanged(indexPath, idx)) written.push(indexPath);
     await writeGenresFile(paths, prevGenresText, genreRecords, now, written);
     const st = renderStatus(prevStatusText, status, now);
@@ -787,6 +790,28 @@ async function writeGenresFile(paths: Paths, prevText: string | undefined, recor
   if (await writeIfChanged(paths.genresFile, renderGenresFile(prevText, records, now))) written.push(paths.genresFile);
 }
 
+/**
+ * The playlist's songs with an artist and a title (from this run's read, else the published playlist.json), as
+ * genre-lookup candidates beside the starter pack's.
+ */
+export function playlistSongs(videos: readonly { videoId: string; title?: string; artist?: string }[] | undefined, playlistText: string | undefined): Candidate[] {
+  let list = videos;
+  if (!list) {
+    try {
+      const v = (JSON.parse(playlistText ?? '{}') as { videos?: unknown }).videos;
+      list = Array.isArray(v) ? (v as { videoId: string; title?: string; artist?: string }[]) : [];
+    } catch {
+      list = []; // no playlist.json
+    }
+  }
+  const out: Candidate[] = [];
+  for (const v of list) {
+    if (!v || typeof v.videoId !== 'string' || typeof v.artist !== 'string' || typeof v.title !== 'string' || !v.artist.trim() || !v.title.trim()) continue;
+    out.push({ videoId: v.videoId, title: v.title, artist: v.artist, origin: 'playlist' });
+  }
+  return out;
+}
+
 /** Songs a contributed map may belong to: starter pack, songs.json and the published playlist. */
 export function knownSongs(starter: Candidate[], songs: AddedSong[], playlistText: string | undefined): KnownSongs {
   const ids = new Set<string>([...starter.map((c) => c.videoId), ...songs.map((s) => s.videoId)]);
@@ -832,7 +857,8 @@ async function runContribution(
     const maps = await scanMaps(paths.beatmapsDir);
     const prevIndexText = await readText(st.indexPath);
     applyGenreLists(st.songs, st.genreRecords);
-    const idx = renderIndex(prevIndexText, ANALYZER_VERSION, maps, now, songGenres(st.songs, prevIndexText), songGenreLists(st.songs, st.starter, st.genreRecords, prevIndexText), songGenreMeta(st.songs, st.starter, st.genreRecords, prevIndexText));
+    const listed = [...st.starter, ...playlistSongs(undefined, await readText(paths.playlistFile))];
+    const idx = renderIndex(prevIndexText, ANALYZER_VERSION, maps, now, songGenres(st.songs, prevIndexText), songGenreLists(st.songs, listed, st.genreRecords, prevIndexText), songGenreMeta(st.songs, listed, st.genreRecords, prevIndexText));
     if (await writeIfChanged(st.indexPath, idx)) written.push(st.indexPath);
     await writeSongFiles(paths, { ...st, mapIds: new Set(maps.keys()), now, written });
   }

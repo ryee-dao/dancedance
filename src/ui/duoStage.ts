@@ -23,7 +23,7 @@ import { DuoTracks, KIND_LABEL, type DuoCue } from '../core/coach/duoTracks';
 import { blendPose } from '../core/coach/poses';
 import { CH, createPose, createSkeleton, solveSkeleton, type Skeleton } from '../core/coach/skeleton';
 import { DEFAULT_COACH_STYLE, parseCoachStyle, type CoachBuild, type CoachStyle } from '../core/coach/styles';
-import { WAIT_SPRITE_BUDGET, WARM_STEP_WAITING, coachBuildOf, planEnd, planStart, routineInfo, spritesFor, type CoachStage, type CoachStageDeps, type FrameStats, type RoutineInfo } from './coachStage';
+import { WAIT_SPRITE_BUDGET, WARM_STEP_WAITING, coachBuildOf, genreSignature, planEnd, planStart, routineInfo, spritesFor, type CoachStage, type CoachStageDeps, type FrameStats, type RoutineInfo } from './coachStage';
 import { SPRITE_BUDGET } from '../core/coach/renderer';
 import type { SpriteStats } from '../core/coach/sprites';
 import type { FrameInfo } from './play';
@@ -150,6 +150,8 @@ class DuoStageImpl implements CoachStage {
   private playStartWall = 0;
   private frozenDrawn = false;
   private songKey = '';
+  /** The song's genres the routine was resolved with (genreSignature), re-read only while the song loads. */
+  private genreSig = '';
   private routine: RoutineInfo | null = null;
   private depth: [number, number] = [0, 0];
   private th1 = new Thumb();
@@ -287,9 +289,11 @@ class DuoStageImpl implements CoachStage {
     this.frozenDrawn = false;
   }
 
-  private routineFor(item: FrameInfo['item'], videoId: string, map: { bpm: number; sections: readonly { energy: number }[] } | null): RoutineInfo {
+  private routineFor(item: FrameInfo['item'], videoId: string, map: { bpm: number; sections: readonly { energy: number }[] } | null, waiting = true): RoutineInfo {
     const ov = this.deps.getStyleOverride?.();
-    const k = `${videoId}|${item.title}|${map ? 'map' : 'nomap'}${ov ? `|${JSON.stringify(ov)}` : ''}`;
+    // The song's genres as they stand while it loads (a lookup may land then); once it plays, the routine keeps them.
+    if (waiting || !this.genreSig.startsWith(`${videoId}|`)) this.genreSig = genreSignature(videoId, this.deps);
+    const k = `${videoId}|${item.title}|${map ? 'map' : 'nomap'}${ov ? `|${JSON.stringify(ov)}` : ''}|${this.genreSig}`;
     if (this.routine && k === this.songKey) return this.routine;
     const sameSong = this.songKey.split('|')[0] === videoId && this.routine;
     const r = routineInfo(item, map, this.deps);
@@ -336,7 +340,7 @@ class DuoStageImpl implements CoachStage {
     if (phase === 'playing' && this.lastPhase !== 'playing' && this.lastPhase !== 'paused') this.playStartWall = wall;
     this.lastPhase = phase;
 
-    const ri = this.routineFor(item, videoId, tl?.map ?? null);
+    const ri = this.routineFor(item, videoId, tl?.map ?? null, phase === 'loading' || phase === 'countdown');
     this.conductor.update(tl, videoId, intensity, t, { style: ri.style, fresh: ri.fresh }, ri.key);
     const plan = this.conductor.plan;
     if (this.tracks.sync(plan, intensity, videoId, ri.style) && this.drawn) {

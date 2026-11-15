@@ -58,8 +58,17 @@ export function parseIndexSongs(text: string): Record<string, IndexSong> {
   return out;
 }
 
-/** Fetch the cloud index once per app open. Never rejects. */
-export function loadCloudIndex(base: string, fetchFn: FetchLike = (u, i) => fetch(u, i)): Promise<void> {
+/** Retries of a cloud index that could not be read at app open: after INDEX_RETRY_MS, doubling, at most INDEX_RETRIES times. */
+export const INDEX_RETRY_MS = 30_000;
+export const INDEX_RETRIES = 6;
+let indexRetries = 0;
+
+/**
+ * Fetch the cloud index once per app open. Never rejects. When it can't be read (offline at start-up, a hosting
+ * hiccup), it is asked again in the background (INDEX_RETRY_MS, doubling): the index carries every published song's
+ * tempo and genres, and without it they would be danced without genres for the whole session.
+ */
+export function loadCloudIndex(base: string, fetchFn: FetchLike = (u, i) => fetch(u, i), retry = typeof window !== 'undefined'): Promise<void> {
   if (!indexP) {
     const url = new URL('beatmaps/index.json', absoluteBase(base)).href;
     indexP = fetchFn(url, { cache: 'no-cache' })
@@ -69,9 +78,20 @@ export function loadCloudIndex(base: string, fetchFn: FetchLike = (u, i) => fetc
         if (Object.keys(songs).length) {
           cloudSongs = songs;
           bpmEvents.dispatchEvent(new Event('change'));
+          return true;
         }
+        return false;
       })
-      .catch(() => {});
+      .catch(() => false)
+      .then((ok) => {
+        if (ok || !retry || indexRetries >= INDEX_RETRIES || Object.keys(cloudSongs).length) return;
+        const wait = INDEX_RETRY_MS * 2 ** indexRetries++;
+        setTimeout(() => {
+          if (Object.keys(cloudSongs).length) return;
+          indexP = null;
+          void loadCloudIndex(base, fetchFn, retry);
+        }, wait);
+      });
   }
   return indexP;
 }

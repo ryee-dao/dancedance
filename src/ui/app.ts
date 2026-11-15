@@ -11,11 +11,13 @@ import type { Nav, Screen } from './dom';
 import { initFocusNav, setScreenScope } from './focusNav';
 import { createHome } from './home';
 import { library, songArtistGenres, songGenre, songGenreLevels, songGenres } from './library';
+import { songHealth } from './songHealth';
 import { createLinkPlaylist } from './linkPlaylist';
 import { createAddSong } from './addSong';
 import { store } from '../store';
 import { runSliced, runWhenQuiet, trackInput, whenQuiet } from './idle';
 import { createTvLink } from './tvLink';
+import { installPlayedGenreLookups } from './genreLookups';
 import { toast } from './toast';
 
 type PlayChunk = typeof import('./playChunk');
@@ -168,11 +170,16 @@ export function startApp(root: HTMLElement): void {
   if (getPlatform().canPlayFiles) setupDrop(playFile);
 
   void library.refresh();
+  // Follows songs on their way (progress, a failed job, a site that didn't update); see songHealth.ts.
+  songHealth.start();
   void loadCloudIndex(getPlatform().beatmapBase);
-  // Web + helper app: find beats of map-less songs in the background (see helperFill.ts).
-  const localHelper = getPlatform().localHelper;
-  if (localHelper) {
-    const fill = createBackgroundFill(getPlatform().beatmapBase, localHelper, () => library.playable().map((s) => s.videoId));
+  // Played songs no published source has genres for: looked up in the background (genreLookups.ts).
+  installPlayedGenreLookups();
+  // Find beats of map-less songs in the background (see helperFill.ts): web with the helper app, and the TV from its
+  // own downloads (a background job: it yields to every song the user opens and to app updates).
+  const fillAudio = getPlatform().localHelper ?? getPlatform().backgroundAudio;
+  if (fillAudio) {
+    const fill = createBackgroundFill(getPlatform().beatmapBase, fillAudio, () => library.playable().map((s) => s.videoId));
     setBackgroundFill(fill);
     fill.start();
   }

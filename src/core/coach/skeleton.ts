@@ -25,6 +25,8 @@
  * planted foot keeps its target, so it stays put while the hips move.
  */
 
+import { ANKLE_HEIGHT, FLAT_DEG, FOOT_LEN, footContact } from './foot';
+
 // ---------------------------------------------------------------------------
 // Channels
 
@@ -144,7 +146,7 @@ export const BODY = {
   handR: 0.038,
   thigh: 0.245,
   shin: 0.235,
-  ankleY: 0.035,
+  ankleY: ANKLE_HEIGHT,
   footHalfX: 0.09, // neutral foot x
 } as const;
 
@@ -285,12 +287,38 @@ function arm(sk: Skeleton, pose: Pose, side: number, sh: number, el: number, ha:
   const p = sk.p;
   swingDir(V, side, pose[cE], pose[cE + 1]);
   place(p, el, sh, RT, V[0] * BODY.upperArm, V[1] * BODY.upperArm, V[2] * BODY.upperArm);
+  const ux = V[0], uy = V[1], uz = V[2];
   swingDir(V, side, pose[cE + 2], pose[cE + 3]);
+  // An elbow can't fold flat (the forearm can't lie on the upper arm): past
+  // ELBOW_MAX the forearm is eased out toward the front of the upper arm, the
+  // more the further it folds. Soft and always toward the same side, so a
+  // forearm swinging right past its upper arm goes round in front without a
+  // jump (opening it in its own bend plane flips when it passes dead flat).
+  const c = ux * V[0] + uy * V[1] + uz * V[2];
+  if (c < ELBOW_COS) {
+    // Front of the upper arm: torso forward made square to it (up when the arm points forward).
+    let dx = -uz * ux, dy = -uz * uy, dz = 1 - uz * uz;
+    let dl = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    if (dl < 0.2) {
+      dx = -uy * ux; dy = 1 - uy * uy; dz = -uy * uz;
+      dl = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+    }
+    const k0 = (ELBOW_EASE * (ELBOW_COS - c)) / dl;
+    V[0] += dx * k0; V[1] += dy * k0; V[2] += dz * k0;
+    const vl = Math.sqrt(V[0] * V[0] + V[1] * V[1] + V[2] * V[2]) || 1;
+    V[0] /= vl; V[1] /= vl; V[2] /= vl;
+  }
   place(p, ha, el, RT, V[0] * BODY.forearm, V[1] * BODY.forearm, V[2] * BODY.forearm);
 }
 
+/** Elbow fold (deg between the upper arm's and the forearm's directions) past which the forearm is eased open. */
+export const ELBOW_MAX = 150;
+const ELBOW_COS = Math.cos(ELBOW_MAX * DEG);
+/** How hard a forearm folded past ELBOW_MAX is eased toward the front of its upper arm. */
+const ELBOW_EASE = 3;
+
 /** Two-bone IK for a leg; hip joint already placed; ankle target in V2. */
-function leg(sk: Skeleton, side: number, hip: number, knee: number, ankle: number, toe: number, turn: number, pitch = 0): void {
+function leg(sk: Skeleton, side: number, hip: number, knee: number, ankle: number, toe: number, turn: number, pitch = 0, rise = 0): void {
   const p = sk.p;
   const hx = p[hip * 3], hy = p[hip * 3 + 1], hz = p[hip * 3 + 2];
   let dx = V2[0] - hx, dy = V2[1] - hy, dz = V2[2] - hz;
@@ -310,8 +338,11 @@ function leg(sk: Skeleton, side: number, hip: number, knee: number, ankle: numbe
   const ux = dx / d, uy = dy / d, uz = dz / d;
   const cosA = (a * a + d * d - b * b) / (2 * a * d);
   const sinA = Math.sqrt(Math.max(0, 1 - cosA * cosA));
-  // Knee pole: forward and a little outward (knees track over the toes).
-  let nx = side * (0.38 + turn), ny = 0.0, nz = 1;
+  // Knee pole: forward and a little outward (knees track over the toes). A
+  // knee turned in (knee pops, heel splits) points in at most KNEE_IN, so the
+  // knees meet rather than pass through each other.
+  const kt = 0.38 + turn;
+  let nx = side * (kt < -KNEE_IN ? -KNEE_IN : kt), ny = 0.0, nz = 1;
   const dot = nx * ux + ny * uy + nz * uz;
   nx -= dot * ux; ny -= dot * uy; nz -= dot * uz;
   let nl = Math.sqrt(nx * nx + ny * ny + nz * nz);
@@ -326,34 +357,89 @@ function leg(sk: Skeleton, side: number, hip: number, knee: number, ankle: numbe
   p[ankle * 3] = hx + dx;
   p[ankle * 3 + 1] = hy + dy;
   p[ankle * 3 + 2] = hz + dz;
-  // Toe: forward and slightly out; tips with the shin when the foot is lifted.
+  // Toe. The foot's heading on the floor: forward and a little out (turn-out
+  // with the knee). On the floor (contact 1) the foot is FLAT: sole along the
+  // floor, whatever the shin does (a bent knee leans the shin forward over a
+  // flat foot). In the air (contact 0) it hangs off the shin, roughly
+  // perpendicular to it and relaxed a little toe-down. Pitch tips either:
+  // + = toes down (up on the ball / pointed), - = toes up (heel dig).
   const sx = p[ankle * 3] - p[knee * 3];
   const sy = p[ankle * 3 + 1] - p[knee * 3 + 1];
   const sz = p[ankle * 3 + 2] - p[knee * 3 + 2];
-  const sl = Math.sqrt(sx * sx + sy * sy + sz * sz) || 1;
-  // Foot direction roughly perpendicular to the shin, pointing forward/out.
-  let fx = side * (0.35 + turn * 1.3), fy = -0.15, fz = 1;
-  const fd = (fx * sx + fy * sy + fz * sz) / (sl * sl);
-  fx -= fd * sx; fy -= fd * sy; fz -= fd * sz;
-  const fl = Math.sqrt(fx * fx + fy * fy + fz * fz) || 1;
-  const L = 0.085;
-  if (pitch === 0) {
-    p[toe * 3] = p[ankle * 3] + (fx / fl) * L;
-    p[toe * 3 + 1] = Math.max(0.004, p[ankle * 3 + 1] + (fy / fl) * L - 0.012);
-    p[toe * 3 + 2] = p[ankle * 3 + 2] + (fz / fl) * L;
-  } else {
-    // Pitched foot: the horizontal heading of the foot, tipped by `pitch`
-    // (+ = toes down onto the floor with the heel raised, - = toes up).
-    let hx = fx, hz = fz;
-    const hl = Math.sqrt(hx * hx + hz * hz) || 1;
-    hx /= hl;
-    hz /= hl;
-    const a = pitch * DEG;
-    const c = Math.cos(a), s = Math.sin(a);
-    p[toe * 3] = p[ankle * 3] + hx * c * L;
-    p[toe * 3 + 1] = Math.max(0.004, p[ankle * 3 + 1] - s * L - 0.012 * c);
-    p[toe * 3 + 2] = p[ankle * 3 + 2] + hz * c * L;
+  const sl2 = sx * sx + sy * sy + sz * sz || 1;
+  let ex = side * (0.35 + turn * 1.3), ez = 1;
+  const el = Math.sqrt(ex * ex + ez * ez);
+  ex /= el;
+  ez /= el;
+  // The foot stays in the vertical plane of its heading; only its angle a
+  // (deg below the horizontal, past 90 = toes pointing back down) changes, so
+  // it turns continuously whatever the leg does.
+  //
+  // Hanging (in the air): about level (a little toe-down) as far as the ankle
+  // allows: "neutral ankle" is the standing foot tipped with the shin (the
+  // shin's lean in this plane), give or take ANKLE_UP (toes up) / ANKLE_DOWN
+  // (toes down). A low step stays nearly flat, a heel kicked back to the seat
+  // points the toes down, a kneeling back leg tucks them under, a leg kicking
+  // forward tips them up.
+  const sl = Math.sqrt(sl2);
+  const bh = (sx * ex + sz * ez) / sl, bv = sy / sl;
+  // Shin lean in the plane (deg, + = ankle ahead of the knee).
+  const lean = Math.atan2(bh, -bv) / DEG;
+  const sq = FLAT_DEG - lean;
+  const want = FLAT_DEG + HANG_RELAX;
+  // The ankle turns from neutral toward `want` (the short way round), within
+  // its range; the effort fades out as `want` gets to the far side of the
+  // circle (a foot whose neutral points the opposite way just stays neutral,
+  // with no side to flip to).
+  let dw = (((want - sq + 180) % 360) + 360) % 360 - 180;
+  const far = dw < 0 ? -dw : dw;
+  dw = dw < -ANKLE_UP ? -ANKLE_UP : dw > ANKLE_DOWN ? ANKLE_DOWN : dw;
+  let hang = sq + (far <= 90 ? dw : dw * Math.cos((far - 90) * DEG));
+  // A shin lying across the plane (a leg out to the side) says little about
+  // it: there the foot just hangs about level (blended as directions, so the
+  // lean's wrap-around at +-180 stays invisible).
+  const inPlane = Math.sqrt(bh * bh + bv * bv);
+  if (inPlane < 0.7) {
+    let w = inPlane < 0.3 ? 0 : (inPlane - 0.3) / 0.4;
+    w = w * w * (3 - 2 * w);
+    const vx = w * Math.cos(hang * DEG) + (1 - w) * Math.cos(want * DEG);
+    const vy = w * Math.sin(hang * DEG) + (1 - w) * Math.sin(want * DEG);
+    hang = Math.atan2(vy, vx) / DEG;
   }
+  // On the floor: flat. Pitch tips either (on the floor: toes stay down, heel up / heel down, toes up; in the air: points / flexes).
+  const ay = p[ankle * 3 + 1];
+  const c = footContact(ay - BODY.ankleY - rise);
+  let fa = FLAT_DEG * c + hang * (1 - c) + pitch;
+  // Never through the floor: a toe that would go under it tips up toward the front (the foot keeps its length).
+  const m = (ay - TOE_MIN_Y) / FOOT_LEN;
+  if (m < 1) {
+    const edge = Math.asin(m < -1 ? -1 : m) / DEG;
+    if (fa > edge && fa < 180 - edge) fa = edge;
+  }
+  const ca = Math.cos(fa * DEG), sa = Math.sin(fa * DEG);
+  p[toe * 3] = p[ankle * 3] + ex * ca * FOOT_LEN;
+  p[toe * 3 + 1] = ay - sa * FOOT_LEN;
+  p[toe * 3 + 2] = p[ankle * 3 + 2] + ez * ca * FOOT_LEN;
+}
+
+/** Most a knee pole points inward (x per unit forward). */
+const KNEE_IN = 0.15;
+/** A lifted foot hangs this much (deg) toe-down from level. */
+const HANG_RELAX = 8;
+/** Ankle range (deg) from square to the shin: toes up (dorsiflexion) / down (plantar flexion). */
+const ANKLE_UP = 20;
+const ANKLE_DOWN = 55;
+/** Lowest a toe joint goes (a toe on the floor). */
+const TOE_MIN_Y = 0.004;
+
+/**
+ * How much the ankle rises when the foot is pitched by `pitch` deg on the
+ * floor (+ = up on the ball: the toe stays where a flat foot's toe is).
+ */
+export function pitchRise(pitch: number): number {
+  if (pitch <= 0) return 0;
+  const a = Math.min(70, pitch) + FLAT_DEG;
+  return FOOT_LEN * (Math.sin(a * DEG) - Math.sin(FLAT_DEG * DEG));
 }
 
 /**
@@ -380,8 +466,8 @@ export function solveSkeleton(pose: Pose, sk: Skeleton): Skeleton {
 
   // Ankle targets (feet travel with the body while airborne).
   // Up on the ball of the foot (pitch > 0): the heel (ankle) rises so the toes stay on the floor.
-  const riseR = pose[CH.PITCH_R] > 0 ? Math.sin(Math.min(70, pose[CH.PITCH_R]) * DEG) * 0.073 : 0;
-  const riseL = pose[CH.PITCH_L] > 0 ? Math.sin(Math.min(70, pose[CH.PITCH_L]) * DEG) * 0.073 : 0;
+  const riseR = pitchRise(pose[CH.PITCH_R]);
+  const riseL = pitchRise(pose[CH.PITCH_L]);
   const rax = pose[CH.RFT_X], ray = BODY.ankleY + Math.max(0, pose[CH.RFT_Y]) + air + riseR, raz = pose[CH.RFT_Z];
   const lax = pose[CH.LFT_X], lay = BODY.ankleY + Math.max(0, pose[CH.LFT_Y]) + air + riseL, laz = pose[CH.LFT_Z];
 
@@ -410,7 +496,7 @@ export function solveSkeleton(pose: Pose, sk: Skeleton): Skeleton {
 
   // Torso: automatic contrapposto (shoulders counter the hip shift).
   const lean = pose[CH.LEAN] - hips * 70;
-  rotation(RT, lean, pose[CH.BEND], pose[CH.TWIST]);
+  rotation(RT, lean, pose[CH.BEND], pose[CH.HIPTWIST] + spineTwist(pose[CH.TWIST] - pose[CH.HIPTWIST]));
 
   // Rib-cage isolation: the chest slides over the pelvis, shoulders level.
   const cx = pose[CH.CHEST_X];
@@ -438,9 +524,9 @@ export function solveSkeleton(pose: Pose, sk: Skeleton): Skeleton {
   place(p, J.HIP_R, J.PELVIS, RP, BODY.hipHalf, 0, 0);
   place(p, J.HIP_L, J.PELVIS, RP, -BODY.hipHalf, 0, 0);
   V2[0] = rax; V2[1] = ray; V2[2] = raz;
-  leg(sk, 1, J.HIP_R, J.KN_R, J.AN_R, J.TOE_R, pose[CH.KNEE_R], pose[CH.PITCH_R]);
+  leg(sk, 1, J.HIP_R, J.KN_R, J.AN_R, J.TOE_R, pose[CH.KNEE_R], pose[CH.PITCH_R], riseR);
   V2[0] = lax; V2[1] = lay; V2[2] = laz;
-  leg(sk, -1, J.HIP_L, J.KN_L, J.AN_L, J.TOE_L, pose[CH.KNEE_L], pose[CH.PITCH_L]);
+  leg(sk, -1, J.HIP_L, J.KN_L, J.AN_L, J.TOE_L, pose[CH.KNEE_L], pose[CH.PITCH_L], riseL);
   sk.spin = pose[CH.SPIN];
   // Turn: the whole solved body rotates about the vertical axis through the root.
   const sp = pose[CH.SPIN];
@@ -462,6 +548,20 @@ export function solveSkeleton(pose: Pose, sk: Skeleton): Skeleton {
   }
   return sk;
 }
+
+/**
+ * Chest twist against the pelvis (deg) the spine actually makes for an
+ * authored one: as authored up to TWIST_FREE, then only TWIST_GAIN of the rest
+ * (a spine turns about 45..60 deg in all; more reads as a broken waist).
+ */
+export function spineTwist(rel: number): number {
+  const a = rel < 0 ? -rel : rel;
+  if (a <= TWIST_FREE) return rel;
+  const v = TWIST_FREE + (a - TWIST_FREE) * TWIST_GAIN;
+  return rel < 0 ? -v : v;
+}
+const TWIST_FREE = 50;
+const TWIST_GAIN = 0.35;
 
 /**
  * How far the spine at fraction u (0 = pelvis, 1 = chest joint) bends off

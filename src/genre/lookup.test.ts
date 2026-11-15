@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GenreRunner, type LocalSong } from './background';
+import { GenreRunner, RECHECK_MS, RETRY_MAX_MS, RETRY_MIN_MS, RETRY_SOON_MS, type LocalSong } from './background';
 import { HttpError, PoliteHttp, type GenreFetch } from './http';
 import { DEFAULT_SOURCES, FAILED_RETRY_MS, lookupDue, lookupGenres, NONE_TTL_MS, parseGenreLookup } from './lookup';
 import type { GenreLookup, GenreSource, SourceAnswer } from './types';
@@ -262,7 +262,96 @@ describe('GenreRunner (songs added on the TV)', () => {
     expect(songs[0].genreLookup?.complete).toBe(false);
     expect(runner.due().map((s) => s.videoId)).toEqual(['BBBBBBBBBBB']); // A waits FAILED_RETRY_MS
     t += FAILED_RETRY_MS;
-    expect(runner.due().map((s) => s.videoId)).toEqual(['AAAAAAAAAAA', 'BBBBBBBBBBB']);
+    // Never looked up first, then the retries (so songs whose sources keep failing can't starve new ones).
+    expect(runner.due().map((s) => s.videoId)).toEqual(['BBBBBBBBBBB', 'AAAAAAAAAAA']);
     expect(calls).toBeGreaterThan(0);
+  });
+
+  it('takes the song just played first, then songs never looked up, then the longest-waiting retries', () => {
+    const failedAt = (at: string) => parseGenreLookup({ genres: [], sources: Object.fromEntries(DEFAULT_SOURCES.map((x) => [x.id, { status: 'failed', at, reason: 'x' }])), complete: false, at });
+    const songs = [song('AAAAAAAAAAA', { genreLookup: failedAt('2026-11-02T00:00:00Z') }), song('BBBBBBBBBBB', { genreLookup: failedAt('2026-11-01T00:00:00Z') }), song('CCCCCCCCCCC'), song('DDDDDDDDDDD')];
+    const { runner } = setup(songs);
+    expect(runner.due().map((x) => x.videoId)).toEqual(['CCCCCCCCCCC', 'DDDDDDDDDDD', 'BBBBBBBBBBB', 'AAAAAAAAAAA']);
+    const timers: number[] = [];
+    const r2 = new GenreRunner({ songs: () => songs, save: () => true, busy: () => false, fetch: async () => ({ ok: true, status: 200, headers: new Headers(), json: async () => ({}) }), now: () => T0, setTimer: (_fn, ms) => timers.push(ms) });
+    r2.prioritize('AAAAAAAAAAA', 5000);
+    expect(r2.due()[0].videoId).toBe('AAAAAAAAAAA');
+    expect(timers).toEqual([5000]);
+  });
+
+  it('with `periodic`, comes back by itself: soon while songs are due, backing off while offline, a re-check otherwise', async () => {
+    let t = T0;
+    let online = false;
+    const songs = Array.from({ length: 15 }, (_, k) => song(`S${String(k).padStart(10, '0')}`));
+    const timers: number[] = [];
+    const runner = new GenreRunner({
+      songs: () => songs,
+      save: (id, l) => ((songs.find((x) => x.videoId === id)!.genreLookup = l), true),
+      busy: () => false,
+      fetch: async (url) => {
+        if (!online) throw new TypeError('Failed to fetch');
+        const body = url.includes('wikipedia') ? { query: { pages: [], search: [] } } : url.includes('wbsearch') ? { search: [] } : {};
+        return { ok: true, status: 200, headers: new Headers(), json: async () => body };
+      },
+      now: () => t,
+      sleep: async (ms) => void (t += ms),
+      setTimer: (fn, ms) => {
+        timers.push(ms);
+        pending = fn;
+      },
+      periodic: true,
+    });
+    let pending: (() => void) | null = null;
+    /** The scheduled run comes due (the timer fires) and finishes. */
+    const fire = async () => {
+      const f = pending!;
+      pending = null;
+      f();
+      for (let k = 0; k < 20; k++) await new Promise((r) => setTimeout(r, 0));
+    };
+    await runner.run();
+    await fire();
+    await fire();
+    // Offline: the backoff doubles from RETRY_MIN_MS.
+    expect(timers).toEqual([RETRY_MIN_MS, 2 * RETRY_MIN_MS, 4 * RETRY_MIN_MS]);
+    online = true;
+    timers.length = 0;
+    await fire();
+    // Online again: 10 songs per run (3 offline ones wait FAILED_RETRY_MS), the other 2 soon after; then nothing due: the re-check.
+    expect(timers).toEqual([RETRY_SOON_MS]);
+    await fire();
+    expect(runner.due()).toEqual([]);
+    expect(timers).toEqual([RETRY_SOON_MS, RECHECK_MS]);
+    expect(RETRY_MAX_MS).toBeGreaterThan(RETRY_MIN_MS);
+  });
+
+  it('while a song plays (pace), keeps to one request every so often; while the user\'s song loads (busy), to none', async () => {
+    let t = T0;
+    let loading = true;
+    const requests: number[] = [];
+    const songs = [song('AAAAAAAAAAA')];
+    const runner = new GenreRunner({
+      songs: () => songs,
+      save: (_id, l) => ((songs[0].genreLookup = l), true),
+      busy: () => {
+        // The user's song loads for the first 10 s.
+        if (t >= T0 + 10_000) loading = false;
+        return loading;
+      },
+      pace: () => 2000,
+      fetch: async (url) => {
+        requests.push(t);
+        const body = url.includes('wikipedia') ? { query: { pages: [], search: [] } } : url.includes('wbsearch') ? { search: [] } : {};
+        return { ok: true, status: 200, headers: new Headers(), json: async () => body };
+      },
+      now: () => t,
+      sleep: async (ms) => void (t += ms),
+    });
+    await runner.run();
+    expect(Math.min(...requests)).toBeGreaterThanOrEqual(T0 + 10_000);
+    const sorted = [...requests].sort((a, b) => a - b);
+    for (let k = 1; k < sorted.length; k++) expect(sorted[k] - sorted[k - 1]).toBeGreaterThanOrEqual(0);
+    // Paced: the lookup's requests took at least 2 s each, one after the other (not a burst).
+    expect(sorted[sorted.length - 1] - sorted[0]).toBeGreaterThanOrEqual(2000 * (sorted.length - 1) * 0.5);
   });
 });

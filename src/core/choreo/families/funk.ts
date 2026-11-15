@@ -18,6 +18,8 @@ const both = (X: number, y: number, z: number, e?: Elbow): PoseSpec => ({ r: H(1
 const ELB_OUT: Elbow = [1, 0.1, -0.2];
 const ELB_DOWN: Elbow = [0.4, -1, -0.2];
 const ELB_FLEX: Elbow = [1, -0.3, -0.3];
+/** Hand at or behind the hip: the elbow points back so the forearm bends forward (not backward through the elbow). */
+const ELB_BACK: Elbow = [0.3, -0.4, -1];
 
 // ---------------------------------------------------------------------------
 // Original basics
@@ -181,7 +183,7 @@ const glideB: PoseSpec = { x: 0.18, y: -0.02, rf: [0.26, 0, 0], lf: [0.1, 0, 0.0
 
 const camelDip: PoseSpec = {
   y: -0.14, x: -0.02, rf: [0.1, 0.02, 0.16], lf: [-0.09, 0, -0.04], kneeL: -0.5, hips: -0.06, tilt: -9, bend: 8, shR: 1, shL: 1, nod: 4,
-  r: H(1, 0.24, 0.5, 0.16, ELB_DOWN), l: H(-1, 0.22, 0.56, -0.06, ELB_DOWN), handR: 0, handL: 0,
+  r: H(1, 0.24, 0.5, 0.16, ELB_DOWN), l: H(-1, 0.22, 0.56, -0.06, ELB_BACK), handR: 0, handL: 0,
 };
 
 const goodFoot: PoseSpec = {
@@ -209,7 +211,7 @@ const cornerKey = (sx: number, fwd: number): PoseSpec => ({
 
 const rabbitKick: PoseSpec = {
   y: 0.04, spin: 25, bend: 6, rf: [0.08, 0.17, -0.16], lf: [-0.07, 0.02, 0.02],
-  r: H(1, 0.17, 0.62, -0.06, ELB_DOWN), l: H(-1, 0.15, 0.74, 0.18, ELB_DOWN), handR: 0, handL: 0,
+  r: H(1, 0.17, 0.62, -0.06, ELB_BACK), l: H(-1, 0.15, 0.74, 0.18, ELB_DOWN), handR: 0, handL: 0,
 };
 const rabbitLand: PoseSpec = { ...rabbitKick, y: -0.07, rf: [0.08, 0, -0.04], lf: [-0.07, 0, 0.02], bend: 3, ...both(0.17, 0.66, 0.08, ELB_DOWN) };
 

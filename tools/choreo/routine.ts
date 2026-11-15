@@ -13,7 +13,8 @@ import type { BeatMap } from '../../src/core/analysis/beatmap';
 import { beatSeconds, cardsOf } from '../../src/core/choreo/cards';
 import { generateDuoRoutine } from '../../src/core/choreo/duo';
 import { buildBars, generateRoutine, styleGenres, tierBeats, type Intensity } from '../../src/core/choreo/generator';
-import { resolveSongStyle, styleLabel } from '../../src/core/choreo/songStyle';
+import { publishedSources } from '../../src/core/choreo/publishedSources';
+import { songStyleOf, styleLabel } from '../../src/core/choreo/songStyle';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const args = process.argv.slice(2);
@@ -24,13 +25,10 @@ if (!id) {
   process.exit(1);
 }
 const map = JSON.parse(readFileSync(`${root}public/beatmaps/${id}.json`, 'utf8')) as BeatMap;
-type Info = { videoId: string; title: string; artist: string; genre?: string };
-const starter = JSON.parse(readFileSync(`${root}src/data/starter.json`, 'utf8')) as Info[];
-const songs = (JSON.parse(readFileSync(`${root}public/songs.json`, 'utf8')) as { songs: Info[] }).songs;
-const info = starter.find((s) => s.videoId === id) ?? songs.find((s) => s.videoId === id) ?? { videoId: id, title: id, artist: '' };
-const secs = map.sections ?? [];
-const energy = secs.length ? secs.reduce((a, s) => a + s.energy, 0) / secs.length : undefined;
-const style = resolveSongStyle({ videoId: id, title: info.title, artist: info.artist, genre: info.genre }, { bpm: map.bpm, energy });
+const readJson = (p: string) => JSON.parse(readFileSync(`${root}${p}`, 'utf8'));
+// The style as the app resolves it (genre lists, levels, artist genres, the map's audio traits).
+const info = publishedSources(id, { starter: readJson('src/data/starter.json'), songs: readJson('public/songs.json'), index: readJson('public/beatmaps/index.json') });
+const style = songStyleOf(info, map);
 const lv = level as Intensity;
 const opts = { style, fresh: play ? Number(play) : undefined };
 const r = generateRoutine(map, lv, opts);

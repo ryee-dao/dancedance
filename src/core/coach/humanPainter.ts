@@ -24,6 +24,7 @@
  * polygons, no strokes). See the "Sprite mode" section at the end.
  */
 
+import { FOOT_LEN, shoeAxis } from './foot';
 import { BODY, J, NUM_JOINTS, spineBend, type Skeleton } from './skeleton';
 import { VIEW, depthScale, screenUp, type CoachBuild } from './styles';
 import { scaleOf, spriteKey, type PieceArtist, type SpriteCache, type SpriteEntry } from './sprites';
@@ -179,6 +180,8 @@ const H_SMILE = 13;
 const PHI_STEP = 0.04;
 /** Shoe length buckets (log, 6 %). */
 const SHOE_STEP = Math.log(1.06);
+/** Shoe axis scratch (foot.ts shoeAxis). */
+const SHOE_AX = new Float64Array(3);
 
 export class HumanPainter implements PieceArtist {
   look: HumanLook;
@@ -1112,7 +1115,7 @@ export class HumanPainter implements PieceArtist {
     // Shorts leg (the torso draws it for legs behind it).
     if (front && !raised && L.shortsLen > 0) this.legLayer(ctx, p, hip, kn, an, fill ? L_SHORTS : L_SHORTS_LINE, side, t0);
     // Shoe last: its collar wraps the ankle.
-    this.shoe(ctx, p, an, kn, toe, side, pass, col, dark);
+    this.shoe(ctx, p, an, kn, toe, side, sk.spin, pass, col, dark);
   }
 
   private thighStart(raised: boolean): number {
@@ -1124,31 +1127,21 @@ export class HumanPainter implements PieceArtist {
    * box, collar at the ankle. Seen mostly from the front, the toes point
    * out and toward the viewer; a lifted foot turns with the shin.
    */
-  private shoe(ctx: CanvasRenderingContext2D, p: Float64Array, an: number, kn: number, toe: number, side: number, pass: number, col: string, dark: string): void {
-    this.shoeFrame(p, an, kn, toe, side);
+  private shoe(ctx: CanvasRenderingContext2D, p: Float64Array, an: number, kn: number, toe: number, side: number, spin: number, pass: number, col: string, dark: string): void {
+    this.shoeFrame(p, an, kn, toe, side, spin);
     this.shoeDraw(ctx, pass, col, dark);
   }
 
   /** The shoe's screen frame (heel origin, along / up axes, length, px per unit) into sh*, sL, sS. */
-  private shoeFrame(p: Float64Array, an: number, kn: number, toe: number, side: number): void {
+  private shoeFrame(p: Float64Array, an: number, kn: number, toe: number, side: number, spin: number): void {
     const ax = p[an * 3], ay = p[an * 3 + 1], az = p[an * 3 + 2];
     const FLOOR = 0.034;
     this.proj(ax, ay < FLOOR ? FLOOR : ay, az - 0.008);
     const hx = this.qx, hy = this.qy, s = this.qs;
-    let ty = ay + (p[toe * 3 + 1] - ay) * 1.25;
-    if (ty < FLOOR) ty = FLOOR;
-    this.proj(ax + (p[toe * 3] - ax) * 1.25, ty, az + (p[toe * 3 + 2] - az) * 1.25);
-    const dx = this.qx - hx, dy = this.qy - hy;
-    const d = Math.sqrt(dx * dx + dy * dy) || 1e-6;
-    // Toes pointing at the viewer project short (and down a lifted shin):
-    // blend toward a front-view sneaker turned out, keep a readable length.
-    let w = 1.25 - d / (0.09 * s);
-    w = w < 0 ? 0 : w > 1 ? 1 : w;
-    let ux = (dx / d) * (1 - w) + side * 0.97 * w, uy = (dy / d) * (1 - w) + 0.24 * w;
-    const ul = Math.sqrt(ux * ux + uy * uy) || 1;
-    ux /= ul;
-    uy /= ul;
-    const len = Math.max(d, 0.042 * s);
+    // Sole level on a flat foot in every view; tilted only by the foot's real pitch (foot.ts).
+    shoeAxis(p, an, toe, side, spin, SHOE_AX);
+    const ux = SHOE_AX[0], uy = SHOE_AX[1];
+    const len = Math.max(FOOT_LEN * 1.25 * SHOE_AX[2] * s, 0.042 * s);
     // "Up" in the shoe frame: perpendicular, toward the knee.
     let nx = uy, ny = -ux;
     if (nx * (this.pxOf(p, kn) - hx) + ny * (this.pyOf(p, kn) - hy) < 0) {
@@ -1856,7 +1849,7 @@ export class HumanPainter implements PieceArtist {
         if (sh || this.layerHits(L_SKIN, t0, b, b + 1) || this.layerHits(L_COVER, t0, b, b + 1)) this.boneS(ctx, p, hip, kn, an, 1, b, L_FILL, side, rf + (sh ? 2 : 0), t0, sh, rU);
       }
     }
-    this.shoeFrame(p, an, kn, toe, side);
+    this.shoeFrame(p, an, kn, toe, side, sk.spin);
     this.shoeS(ctx, side, pass);
   }
 

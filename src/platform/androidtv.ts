@@ -64,6 +64,9 @@ import { PlaybackWatchdog, type WatchdogAction } from '../player/watchdog';
 import { PlayerError, type MediaPlayer, type PlayItem, type StartStatus } from '../player/types';
 import { store } from '../store';
 import { toast } from '../ui/toast';
+import { PLAY_PACE_MS, setForegroundBusy } from '../ui/genreLookups';
+import { openingSong } from '../beat/helperFill';
+import { TvDownloads } from './tvDownloads';
 import type { DeviceAnalysisNote, Platform, PlaylistEntry } from './platform';
 
 // ---------------------------------------------------------------------------
@@ -447,11 +450,18 @@ export function createAndroidTvPlatform(): Platform {
       return item.kind === 'youtube' ? new TvAudioPlayer() : null;
     },
     async deviceAudio(videoId) {
-      const p = await prepareAudio(videoId);
-      const res = await fetch(p.url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const buf = await res.arrayBuffer();
-      return p.primingSec && p.primingSec > 0 ? trimPriming(buf, p.primingSec) : buf;
+      return audioBuffer(await prepareAudio(videoId));
+    },
+    backgroundAudio: {
+      available: async () => !foregroundLoading() && !updateDownloading(),
+      async fetchAudio(videoId, opts) {
+        // Abandoned (a song was opened): free the download slot and the bandwidth, unless the user opened this very
+        // song (its download is theirs now).
+        opts?.signal?.addEventListener('abort', () => void downloads.abandonBackground(videoId, openingSong()));
+        const p = await prepareAudio(videoId, true);
+        if (opts?.signal?.aborted) throw Object.assign(new Error('aborted'), { code: 'aborted' });
+        return audioBuffer(p);
+      },
     },
     noteAnalysis(info) {
       tvState.lastAnalysis = info;
@@ -556,7 +566,8 @@ function installAddedSongs(b: BridgeClient): void {
 /**
  * v7: genres for songs added on the TV, looked up in the background by the
  * page (src/genre) and stored natively with the song. Starts 20 s after app
- * open (songs still lacking genres, or due again) and 5 s after a song is added.
+ * open (songs still lacking genres, or due again) and 5 s after a song is added,
+ * then schedules itself (GenreRunner `periodic`).
  * The lookup code is imported then (a separate chunk), never at start-up.
  */
 function installGenreLookups(b: BridgeClient): void {
@@ -585,10 +596,15 @@ function installGenreLookups(b: BridgeClient): void {
               return false;
             }
           },
-          // Never while a song plays or its audio is being downloaded / prepared.
-          busy: () => preparing.size > 0 || !!root?.querySelector(':scope > .screen.play'),
+          // A background job: never while a song's audio is being loaded (or an app update downloads); while a song
+          // plays, one small request every PLAY_PACE_MS at most.
+          busy: () => foregroundLoading() || updateDownloading(),
+          pace: () => (root?.querySelector(':scope > .screen.play') ? PLAY_PACE_MS : 0),
           fetch: (url, init) => fetch(url, init),
           log: (line) => console.info(line),
+          // Comes back by itself (soon while songs are due, backoff when offline, a re-check every 30 min): a TV left
+          // on the app for days still retries failed and empty lookups.
+          periodic: true,
         }),
       (err: unknown) => {
         console.warn('[dd:tv] genre lookup failed to load', err);
@@ -599,8 +615,15 @@ function installGenreLookups(b: BridgeClient): void {
   /** Start a run after `delayMs`: the module loads once the delay is over, so start-up never waits for it. */
   const kick = (delayMs: number) => setTimeout(() => void load().then((r) => r?.kick(0)), delayMs);
   kick(20_000);
+  // A song just added is looked up at once (first in the queue).
   b.on('addedSongsChanged', ({ added }) => {
-    if (added) kick(5000);
+    if (added) void load().then((r) => r?.prioritize(added.videoId, 0));
+  });
+  setForegroundBusy(() => foregroundLoading() || updateDownloading());
+  // A song added on the TV that still lacks genres is looked up first once it has played (ui/genreLookups.ts).
+  window.addEventListener('dd:song-played', (e) => {
+    const id = (e as CustomEvent<unknown>).detail;
+    if (typeof id === 'string' && localAdded.some((s) => s.videoId === id)) void load().then((r) => r?.prioritize(id, 5000));
   });
 }
 
@@ -628,7 +651,6 @@ export function shouldOfferTvLink(): boolean {
 
 // --- audio downloads (shared by the player and on-device analysis) --------
 
-const preparing = new Map<string, Promise<PreparedAudio>>();
 
 /** 48 ms of Opus in WebM (559 bytes): the startup decode probe. */
 const OPUS_PROBE = 'GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAAAAH/EU2bdLpNu4tTq4QVSalmU6yBoU27i1OrhBZUrmtTrIHGTbuMU6uEElTDZ1OsggE8TbuMU6uEHFO7a1OsggHp7AEAAAAAAABZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVSalmoCrXsYMPQkBNgIRMYXZmV0GETGF2ZkSJiEBIAAAAAAAAFlSua/GuAQAAAAAAAGjXgQFzxYgAAAAAAAAAAZyBACK1nIN1bmSIgQCGhkFfT1BVU1aqg2MuoFa7hATEtACDgQIj44OEATEtAOGRn4EBtYhA53AAAAAAAGJkgRBV7oEAY6KTT3B1c0hlYWQBATgBgLsAAAAAABJUw2fRc3POY8CLY8WIAAAAAAAAAAFnyJlFo4dFTkNPREVSRIeMTGF2YyBsaWJvcHVzZ8ihRaOIRFVSQVRJT05Eh5MwMDowMDowMC4wNDgwMDAwMDAAH0O2ddLngQCjkYEAAIAIg22C0Bz96kn+AT/Ao5qBABWACKcaXYqYLl9vBctKGu2388jWBcFewKCeoZKBACkACAZtM5AK7H1As5EiKcSbgQd1ooQAzf5gHFO7a5G7j7OBALeK94EB8YIBkvCBAw==';
@@ -707,31 +729,56 @@ async function trimPriming(buf: ArrayBuffer, primingSec: number): Promise<ArrayB
   return out;
 }
 
-/** Download (or reuse) a song's audio. Concurrent calls share one download. */
-export function prepareAudio(videoId: string): Promise<PreparedAudio> {
-  const b = tvBridge();
-  if (!b) return Promise.reject(new BridgeError('internal', 'Not running on the TV app.'));
-  let p = preparing.get(videoId);
-  if (!p) {
-    p = configureAudioFormats(b).then(() => b.call<PreparedAudio>('prepareAudio', videoId));
-    preparing.set(videoId, p);
-    // Keep successful results briefly (the cache answers instantly anyway).
-    p.then(
-      () => setTimeout(() => preparing.delete(videoId), 60_000),
-      () => preparing.delete(videoId),
-    );
+/** A prepared song's audio, read (its M4A priming taken off). */
+async function audioBuffer(p: PreparedAudio): Promise<ArrayBuffer> {
+  const res = await fetch(p.url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const buf = await res.arrayBuffer();
+  return p.primingSec && p.primingSec > 0 ? trimPriming(buf, p.primingSec) : buf;
+}
+
+/**
+ * The downloads by who asked for them (tvDownloads.ts): the user's songs come first, the background beat-finding
+ * yields (it waits while anything of the user's loads, one song at a time, and is cancelled when a song is opened).
+ */
+const downloads = new TvDownloads<PreparedAudio>(
+  (videoId) => {
+    const b = tvBridge();
+    if (!b) return Promise.reject(new BridgeError('internal', 'Not running on the TV app.'));
+    return configureAudioFormats(b).then(() => b.call<PreparedAudio>('prepareAudio', videoId));
+  },
+  (videoId) => tvBridge()?.native.cancelAudio(videoId),
+);
+
+/** A song of the user's is downloading or was prepared in the last minute (its analysis may still run). */
+export function foregroundLoading(): boolean {
+  return downloads.foregroundLoading();
+}
+
+/** An app update is downloading or installing (the update comes first too). */
+function updateDownloading(): boolean {
+  const n = tvBridge()?.native;
+  try {
+    const st = typeof n?.getUpdateState === 'function' ? parseUpdateState(n.getUpdateState()) : null;
+    return st?.phase === 'downloading' || st?.phase === 'installing';
+  } catch {
+    return false;
   }
-  return p;
+}
+
+/** Download (or reuse) a song's audio. Concurrent calls share one download; `background`: for the beat-finding. */
+export function prepareAudio(videoId: string, background = false): Promise<PreparedAudio> {
+  if (!tvBridge()) return Promise.reject(new BridgeError('internal', 'Not running on the TV app.'));
+  return downloads.prepare(videoId, background);
 }
 
 export function cancelAudio(videoId: string): void {
-  preparing.delete(videoId);
-  tvBridge()?.native.cancelAudio(videoId);
+  downloads.cancel(videoId);
 }
 
 /** The song's cached file didn't play cleanly: have the shell (v6+) download it afresh next time. */
 export function dropCachedAudio(videoId: string): void {
-  preparing.delete(videoId);
+  downloads.drop(videoId);
   const n = tvBridge()?.native;
   try {
     if (typeof n?.dropAudio === 'function') console.warn('[dd:tv] dropped the cached audio of', videoId, n.dropAudio(videoId));

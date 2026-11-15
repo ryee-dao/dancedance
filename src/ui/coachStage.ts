@@ -23,8 +23,7 @@
 import type { BeatSource } from '../beat/beatSource';
 import type { Intensity } from '../core/choreo/generator';
 import { READY_POSE, type Move } from '../core/choreo/moves';
-import { resolveSongStyle, styleKey, styleLabel, type SongStyle, type StyleOverride } from '../core/choreo/songStyle';
-import { traitsOf } from '../core/choreo/songTraits';
+import { songStyleOf, styleKey, styleLabel, type SongStyle, type StyleOverride } from '../core/choreo/songStyle';
 import { PoseEvaluator } from '../core/coach/animator';
 import { Conductor, type Plan } from '../core/coach/conductor';
 import { timeOfBeat } from '../core/coach/animator';
@@ -172,6 +171,8 @@ class CoachStageImpl implements CoachStage {
   private readonly urlStyle: CoachStyle | null = urlCoachStyle();
   // Song style + routine personalisation, resolved once per song (again when its beat map arrives).
   private songKey = '';
+  /** The song's genres the routine was resolved with (genreSignature), re-read only while the song loads. */
+  private genreSig = '';
   private routine: RoutineInfo | null = null;
   // Sprite prewarming: upcoming poses drawn into the sprite cache (not the screen).
   private warmEv = new PoseEvaluator();
@@ -221,9 +222,11 @@ class CoachStageImpl implements CoachStage {
   }
 
   /** Routine personalisation, cached per song (and per beat-map arrival). */
-  private routineFor(item: FrameInfo["item"], videoId: string, map: { bpm: number; sections: readonly { energy: number }[]; traits?: unknown } | null): RoutineInfo {
+  private routineFor(item: FrameInfo["item"], videoId: string, map: { bpm: number; sections: readonly { energy: number }[]; traits?: unknown } | null, waiting = true): RoutineInfo {
     const ov = this.deps.getStyleOverride?.();
-    const k = `${videoId}|${item.title}|${map ? 'map' : 'nomap'}${ov ? `|${JSON.stringify(ov)}` : ''}`;
+    // The song's genres as they stand while it loads (a lookup may land then); once it plays, the routine keeps them.
+    if (waiting || !this.genreSig.startsWith(`${videoId}|`)) this.genreSig = genreSignature(videoId, this.deps);
+    const k = `${videoId}|${item.title}|${map ? 'map' : 'nomap'}${ov ? `|${JSON.stringify(ov)}` : ''}|${this.genreSig}`;
     if (this.routine && k === this.songKey) return this.routine;
     // The play count / mode are read once per song: keep the earlier read when only the map arrived.
     const sameSong = this.songKey.split('|')[0] === videoId && this.routine;
@@ -334,7 +337,7 @@ class CoachStageImpl implements CoachStage {
     if (phase === 'playing' && this.lastPhase !== 'playing' && this.lastPhase !== 'paused') this.playStartWall = wall;
     this.lastPhase = phase;
 
-    const r = this.routineFor(item, videoId, tl?.map ?? null);
+    const r = this.routineFor(item, videoId, tl?.map ?? null, phase === 'loading' || phase === 'countdown');
     this.conductor.update(tl, videoId, intensity, t, { style: r.style, fresh: r.fresh }, r.key);
     const sec = this.conductor.sectionAt(t);
     const waiting = phase === 'loading' || phase === 'countdown';
@@ -428,6 +431,21 @@ class CoachStageImpl implements CoachStage {
   }
 }
 
+/**
+ * What a song's genres are now, as a short key (its genre list and tag): the routine is resolved again when it
+ * changes while the song loads (a genre lookup that lands on the loading screen).
+ */
+export function genreSignature(videoId: string, deps: Pick<CoachStageDeps, 'getGenre' | 'getGenres'>): string {
+  let g: readonly string[] | undefined, tag: string | undefined;
+  try {
+    g = deps.getGenres?.(videoId);
+    tag = deps.getGenre?.(videoId);
+  } catch {
+    g = tag = undefined;
+  }
+  return `${videoId}|${Array.isArray(g) ? g.join(',') : ''}|${tag ?? ''}`;
+}
+
 export interface RoutineInfo {
   style: SongStyle;
   fresh?: number;
@@ -456,28 +474,17 @@ export function routineInfo(
       return undefined;
     }
   };
-  const genre = read(deps.getGenre);
-  const list = read(deps.getGenres);
-  const levelList = read(deps.getGenreLevels);
-  // Levels are kept only when they match the list entry for entry (a dropped non-string entry drops its level).
-  const pairs = Array.isArray(list) ? list.map((g, i) => [g, Array.isArray(levelList) && levelList.length === list.length ? levelList[i] : undefined] as const).filter(([g]) => typeof g === 'string') : [];
-  const genres = pairs.map(([g]) => g as string);
-  const levels = pairs.every(([, l]) => l === 'song' || l === 'album') ? pairs.map(([, l]) => l as string) : undefined;
-  const artistList = read(deps.getArtistGenres);
-  const artistGenres = Array.isArray(artistList) ? artistList.filter((g): g is string => typeof g === 'string') : [];
-  const artistGenre = artistGenres.length ? undefined : read(deps.getArtistGenre);
-  const secs = map?.sections ?? [];
-  const energy = secs.length ? secs.reduce((a, s) => a + s.energy, 0) / secs.length : undefined;
+  const artistGenres = read(deps.getArtistGenres);
   const override = deps.getStyleOverride?.();
-  const style = resolveSongStyle(
+  // The one resolution the tools and the whole-catalogue tests share (songStyleOf).
+  const style = songStyleOf(
     {
-      videoId, title: item.title, artist, genre,
-      ...(genres.length ? { genres } : {}),
-      ...(genres.length && levels ? { genreLevels: levels } : {}),
-      ...(artistGenres.length ? { artistGenres } : typeof artistGenre === 'string' ? { artistGenre } : {}),
+      videoId, title: item.title, artist, genre: read(deps.getGenre), genres: read(deps.getGenres), genreLevels: read(deps.getGenreLevels), artistGenres,
+      // The artist's single genre is read only when the list has none (as before).
+      ...(Array.isArray(artistGenres) && artistGenres.some((g) => typeof g === 'string') ? {} : { artistGenre: read(deps.getArtistGenre) }),
       ...(override ? { style: override } : {}),
     },
-    map ? { bpm: map.bpm, energy, traits: traitsOf(map) } : undefined,
+    map,
   );
   let fresh: number | undefined;
   if ((deps.getRoutineMode?.() ?? 'same') === 'fresh') {

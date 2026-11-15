@@ -21,65 +21,128 @@ import {
   type AddedSong,
   type SongRequestStatus,
 } from '../beat/cloud';
+import { SITE_GRACE_MS, type RunSummary } from '../platform/pipelineHealth';
 import { getPlatform, type Platform } from '../platform/platform';
+import { matchRun, songProgress, type Progress } from '../platform/songProgress';
 import { store, type PendingAdd } from '../store';
 
-export type PendingState = 'waiting' | 'slow' | 'retrying' | 'failed';
+/**
+ * 'site-failed': the beat map was made and committed, but the site didn't
+ * publish it (sending again wouldn't help: the fix is on GitHub).
+ */
+export type PendingState = 'waiting' | 'slow' | 'retrying' | 'failed' | 'site-failed';
 
 export interface PendingView extends PendingAdd {
   state: PendingState;
   /** User-facing sentence. */
   message: string;
+  /** Stage, percentage and time left, when the job's progress is known (see songProgress). */
+  progress?: Progress;
+}
+
+/**
+ * What the cloud says beyond the live site's files (src/ui/songHealth.ts
+ * gathers it): the latest runs, and the repository's own songs.json, which
+ * has a new song as soon as its beat map is committed, before the site is rebuilt.
+ */
+export interface CloudFacts {
+  /** null: GitHub couldn't be asked (rate-limited, offline). */
+  runs: RunSummary[] | null;
+  /** null: the repository's songs.json couldn't be read. */
+  repoSongs: AddedSong[] | null;
+  /** When each pending song (by key) was first seen in the repository. */
+  inRepoSince: Readonly<Record<string, number>>;
+  /** The highest percentage shown so far per pending song. */
+  floors?: Readonly<Record<string, number>>;
 }
 
 /** After this long without the song appearing, say so and offer to send again. */
 export const SLOW_AFTER_MS = 15 * 60_000;
 /** A cloud status older than the send (minus clock skew) belongs to an earlier attempt. */
 const SKEW_MS = 2 * 60_000;
+/** A run that finished well this long ago without the song in the repository didn't add it (raw files are cached up to 5 min). */
+const FINISHED_WITHOUT_MS = 6 * 60_000;
+
+/** The song a pending request became, in a songs.json list (by key, or by the video its map-pending note names). */
+export function findAdded(list: readonly AddedSong[], p: PendingAdd, st: SongRequestStatus | undefined): AddedSong | undefined {
+  return (
+    list.find((s) => songKey(s.artist, s.title) === p.key) ??
+    (st?.state === 'map-pending' && st.videoId ? list.find((s) => s.videoId === st.videoId) : undefined)
+  );
+}
 
 /**
  * Pure: which pending songs have appeared, and how to describe the rest.
+ * With `facts` it also follows the job itself: progress, a job that failed,
+ * or a song that was made but didn't reach the site.
  */
 export function reconcile(
   pending: PendingAdd[],
   published: AddedSong[],
   status: Readonly<Record<string, SongRequestStatus>>,
   now: number,
+  facts?: CloudFacts,
 ): { appeared: { pending: PendingAdd; song: AddedSong }[]; views: PendingView[] } {
-  const byKey = new Map(published.map((s) => [songKey(s.artist, s.title), s]));
   const appeared: { pending: PendingAdd; song: AddedSong }[] = [];
   const views: PendingView[] = [];
   for (const p of pending) {
-    const st0 = status[p.key];
+    const st = status[p.key];
     // Listed under slightly different names than requested: the 'map-pending' note says which video.
-    const song = byKey.get(p.key) ?? (st0?.state === 'map-pending' && st0.videoId ? published.find((s) => s.videoId === st0.videoId) : undefined);
+    const song = findAdded(published, p, st);
     if (song) {
       appeared.push({ pending: p, song });
       continue;
     }
-    const st = status[p.key];
     const fresh = st && Date.parse(st.lastTried) >= p.sentAt - SKEW_MS;
+    const inRepo = facts?.repoSongs ? !!findAdded(facts.repoSongs, p, st) : false;
+    const inRepoSince = inRepo ? (facts!.inRepoSince[p.key] ?? now) : null;
+    const run = facts ? matchRun(facts.runs, p.sentAt, inRepo) : null;
+    const progress = facts
+      ? songProgress({ now, sentAt: p.sentAt, run, runsKnown: !!facts.runs, otherRunning: otherRunning(facts.runs, run), inRepoSince, live: false, floor: facts.floors?.[p.key] })
+      : undefined;
+    const withProgress = progress ? { progress } : {};
     if (fresh && st.state === 'not-found') {
       views.push({
         ...p,
         state: 'failed',
         message: st.message || 'The cloud couldn’t find a YouTube video of this song that it can use.',
       });
+    } else if (progress?.failure === 'site' || (inRepoSince !== null && now - inRepoSince > SITE_GRACE_MS)) {
+      views.push({
+        ...p,
+        state: 'site-failed',
+        message:
+          progress?.failure === 'site'
+            ? 'Its beat map is ready, but the site didn’t update, so it isn’t here yet. Options → Songs says what to do.'
+            : 'Its beat map is ready, but the site hasn’t updated for a while. Options → Songs says what to do.',
+        ...withProgress,
+      });
     } else if (fresh && st.state === 'blocked') {
       views.push({ ...p, state: 'retrying', message: 'YouTube is blocking the cloud job for now. It tries again by itself within a few hours.' });
     } else if (fresh && st.state === 'error') {
       views.push({ ...p, state: 'retrying', message: 'Something went wrong in the cloud job. It tries again by itself within a few hours.' });
-    } else if (now - p.sentAt > SLOW_AFTER_MS) {
+    } else if (progress?.failure === 'job') {
+      views.push({ ...p, state: 'failed', message: 'The song job failed before it could add this song. Options → Songs says why.', ...withProgress });
+    } else if (run && run.status === 'completed' && run.conclusion === 'success' && facts?.repoSongs && !inRepo && now - Date.parse(run.updatedAt) > FINISHED_WITHOUT_MS) {
+      views.push({ ...p, state: 'slow', message: 'The song job finished, but this song wasn’t added. Send it again to retry.' });
+    } else if (now - p.sentAt > SLOW_AFTER_MS && !inRepo && !(run && run.status !== 'completed')) {
       views.push({
         ...p,
         state: 'slow',
         message: 'This is taking longer than usual. GitHub may have dropped the request if several were sent at once.',
       });
+    } else if (progress) {
+      views.push({ ...p, state: 'waiting', message: `${progress.label}: ${progress.percent}%${progress.eta ? `, ${progress.eta}` : ''}`, progress });
     } else {
       views.push({ ...p, state: 'waiting', message: 'Being added… usually 3–5 minutes' });
     }
   }
   return { appeared, views };
+}
+
+/** Whether a Beat maps run other than `mine` is going (a queued run waits for it). */
+function otherRunning(runs: RunSummary[] | null, mine: RunSummary | null): boolean {
+  return !!runs?.some((r) => r.workflow === 'beatmaps' && r.status === 'in_progress' && r.id !== mine?.id);
 }
 
 /** Poll interval for the oldest pending request's age. */
@@ -140,6 +203,11 @@ export class AddedSongs extends EventTarget {
   private localSynced = false;
   private status: Record<string, SongRequestStatus> = {};
   private views: PendingView[] = [];
+  /** From songHealth: runs and the repository's files (undefined until it has looked). */
+  private facts: { runs: RunSummary[] | null; repoSongs: AddedSong[] | null; repoRequests: Record<string, SongRequestStatus> | null } | undefined;
+  private seenInRepo: Record<string, number> = {};
+  private floors: Record<string, number> = {};
+  private ticker: ReturnType<typeof setInterval> | null = null;
   private hidden = store.hiddenAdded();
   private timer: ReturnType<typeof setTimeout> | null = null;
   private loading: Promise<void> | null = null;
@@ -199,6 +267,21 @@ export class AddedSongs extends EventTarget {
 
   find(videoId: string): AddedSong | null {
     return this.published.find((s) => s.videoId === videoId && !this.hidden.has(s.videoId)) ?? null;
+  }
+
+  /**
+   * The added-song entry whose genres a song is danced by: the shown entry when it has genres, else any copy of the
+   * same song that does (hidden on this device, or the TV's own copy that mergeLocal folded into a cloud entry the
+   * cloud's lookup found nothing for: same video, or same artist + title). Null when no copy has genres.
+   */
+  genreEntry(videoId: string): AddedSong | null {
+    const has = (s: AddedSong | undefined | null): boolean => !!s?.genres?.length;
+    const shown = this.find(videoId);
+    if (shown && has(shown)) return shown;
+    const any = this.published.find((s) => s.videoId === videoId);
+    if (any && has(any)) return any;
+    const key = any ? songKey(any.artist, any.title) : null;
+    return this.local.find((s) => has(s) && (s.videoId === videoId || (key !== null && songKey(s.artist, s.title) === key))) ?? null;
   }
 
   /** Whether this song is already published or on its way (by request key). */
@@ -319,14 +402,46 @@ export class AddedSongs extends EventTarget {
     this.recompute(now);
   }
 
+  /**
+   * songHealth's latest look at the cloud: runs (null when GitHub couldn't be
+   * asked) and the repository's songs.json / songs-status.json (null when unread).
+   */
+  setCloudFacts(f: { runs: RunSummary[] | null; repoSongs: AddedSong[] | null; repoRequests: Record<string, SongRequestStatus> | null }): void {
+    const now = Date.now();
+    if (f.repoSongs) {
+      for (const p of store.pendingAdds()) {
+        if (!(p.key in this.seenInRepo) && findAdded(f.repoSongs, p, (f.repoRequests ?? this.status)[p.key])) this.seenInRepo[p.key] = now;
+      }
+    }
+    this.facts = f;
+    this.recompute(now);
+    this.schedule();
+  }
+
+  /** Whether any song is still on its way (songHealth polls the cloud only then). */
+  hasPending(): boolean {
+    return store.pendingAdds().length > 0;
+  }
+
   private recompute(now: number): void {
     const pending = store.pendingAdds();
-    const { appeared, views } = reconcile(pending, this.published, this.status, now);
+    // The repository's songs-status.json is newer than the site's when the site is behind.
+    const status = this.facts?.repoRequests ? { ...this.status, ...this.facts.repoRequests } : this.status;
+    const facts: CloudFacts | undefined = this.facts && { runs: this.facts.runs, repoSongs: this.facts.repoSongs, inRepoSince: this.seenInRepo, floors: this.floors };
+    const { appeared, views } = reconcile(pending, this.published, status, now, facts);
     if (appeared.length) {
       const gone = new Set(appeared.map((a) => a.pending.key));
       store.setPendingAdds(pending.filter((p) => !gone.has(p.key)));
     }
+    const keys = new Set(views.map((v) => v.key));
+    for (const k of Object.keys(this.floors)) if (!keys.has(k)) delete this.floors[k];
+    for (const k of Object.keys(this.seenInRepo)) if (!keys.has(k)) delete this.seenInRepo[k];
+    for (const v of views) if (v.progress && v.progress.stage !== 'failed') this.floors[v.key] = Math.max(this.floors[v.key] ?? 0, v.progress.percent);
     this.views = views;
+    if (!views.length && this.ticker !== null) {
+      clearInterval(this.ticker);
+      this.ticker = null;
+    }
     this.emit();
     for (const a of appeared) this.dispatchEvent(new CustomEvent('appeared', { detail: a.song }));
   }
@@ -335,6 +450,16 @@ export class AddedSongs extends EventTarget {
     if (this.timer !== null) clearTimeout(this.timer);
     this.timer = null;
     const active = this.views.filter((v) => v.state !== 'failed');
+    // The bar and time left move between polls: redraw from what is known every 15 s (no network).
+    const ticking = active.some((v) => v.progress && v.state === 'waiting');
+    if (ticking && this.ticker === null) {
+      this.ticker = setInterval(() => {
+        if (typeof document === 'undefined' || document.visibilityState !== 'hidden') this.recompute(Date.now());
+      }, 15_000);
+    } else if (!ticking && this.ticker !== null) {
+      clearInterval(this.ticker);
+      this.ticker = null;
+    }
     if (!active.length) return;
     const oldest = Math.min(...active.map((v) => v.sentAt));
     this.timer = setTimeout(() => {

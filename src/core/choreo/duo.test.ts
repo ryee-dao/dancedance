@@ -4,7 +4,7 @@ import { CALM_GENTLE, PARTNER_RICH, generateDuoRoutine, mirrorInstance, songPart
 import { contactReport, jointWorld, partnerFrame, validatePartner } from './duoCheck';
 import { findPartnerMove, PARTNER_ERRORS, PARTNER_MOVES, PERCUSSIVE_THEMES, partnerDepth, partnerOf, partnerSpeed, partnerTempoMode } from './duoMoves';
 import { J } from '../coach/skeleton';
-import { GENRE_MAX, generateRoutine, mapTempo, styleGenres, type Intensity, type MoveInstance } from './generator';
+import { GENRE_MAX, feelMap, generateRoutine, mapTempo, styleGenres, type Intensity, type MoveInstance } from './generator';
 import type { Genre } from './genres';
 import { MOVES } from './moves';
 import { publishedSongs } from './published.testutil';
@@ -444,8 +444,15 @@ describe('partner moves by style', () => {
 
 describe('partner moves at tempo', () => {
   // Every published song at every level, built once for the tests below.
-  let cache: { s: ReturnType<typeof publishedSongs>[number]; level: Intensity; r: DuoRoutine }[] | null = null;
-  const published = () => (cache ??= publishedSongs().flatMap((s) => LEVELS.map((level) => ({ s, level, r: generateDuoRoutine(s.map, level, { style: s.style }) }))));
+  // With the grid each routine is danced on (`map`: the song's, or its tempo feel's at half / twice the counted tempo).
+  let cache: { s: ReturnType<typeof publishedSongs>[number]; level: Intensity; r: DuoRoutine; map: BeatMap }[] | null = null;
+  const published = () =>
+    (cache ??= publishedSongs().flatMap((s) =>
+      LEVELS.map((level) => {
+        const feel = generateRoutine(s.map, level, { style: s.style }).feel ?? 1;
+        return { s, level, r: generateDuoRoutine(s.map, level, { style: s.style }), map: feel !== 1 ? feelMap(s.map, feel) : s.map };
+      }),
+    ));
 
   it('every partner move has a speed limit from both tracks; the mode follows it', () => {
     for (const pm of PARTNER_MOVES) {
@@ -457,8 +464,9 @@ describe('partner moves at tempo', () => {
   });
 
   it('no partner move is danced over its speed limit on any published map', () => {
-    for (const { s, level, r } of published()) {
-      const bpm = mapTempo(s.map);
+    for (const { s, level, r, map } of published()) {
+      // The tempo the routine is danced at (tempo feel: Can't Stop the Feeling is counted at 183 and danced at 92).
+      const bpm = mapTempo(map);
       for (const i of r.p1) {
         const own = partnerOf(i.move);
         if (!own) continue;
@@ -473,7 +481,7 @@ describe('partner moves at tempo', () => {
     const fast = [STYLED.punk, STYLED.dnb, STYLED.trap].flatMap(({ bpm, style }) =>
       LEVELS.flatMap((level) => [0, 1, 2].map((k) => ({ map: songMap(bpm, `fast-${bpm}-${k}`), level, r: generateDuoRoutine(songMap(bpm, `fast-${bpm}-${k}`), level, { style }) }))),
     );
-    for (const { map, level, r } of [...published().map((x) => ({ map: x.s.map, level: x.level, r: x.r })), ...fast]) {
+    for (const { map, level, r } of [...published().map((x) => ({ map: x.map, level: x.level, r: x.r })), ...fast]) {
       covers(r.p1, r.beats);
       covers(r.p2, r.beats);
       const down = new Set(map.downbeats);

@@ -17,9 +17,10 @@ const IDS = Array.from({ length: 12 }, (_, k) => `ch${k}`);
 /**
  * Shares of novelty moves are a handful of kit slots per routine (16-32 beats each), so they need many
  * songs: over 12 songs a single slot moves a share by ~0.5 %, and the loud song's own novelty share
- * (the comparison) swung from 5 % to 19 % between 12-song and 48-song windows (Nov 2026).
+ * (the comparison) swung from 5 % to 19 % between 12-song and 48-song windows, and the soft song's from 2.3 to
+ * 4.4 % between 48-song windows (Nov 2026): 96 songs.
  */
-const MANY = Array.from({ length: 48 }, (_, k) => `ch${k}`);
+const MANY96 = Array.from({ length: 96 }, (_, k) => `ch${k}`);
 
 function shares(style: SongStyle, bpm: number, lv: Intensity, map = (id: string) => songMap(bpm, id), ids: readonly string[] = IDS) {
   let t = 0, jump = 0, nov = 0, lyrical = 0;
@@ -68,16 +69,18 @@ describe('the song\'s character', () => {
   it('a soft song on a steady beat: no lyrical ballet, no jumps, hardly any novelty or cheer moves, at any level', () => {
     expect(soft.soft).toBeGreaterThan(0.8);
     expect(styleGenres(soft).has('lyrical')).toBe(false);
-    // Measured over 48 songs, three seed sets (ids ch / s / x, Nov 2026, after the trap moves and restaged
-    // twist / mambo were merged): novelty on the soft song 0.6-2.3 % of the danced time, on the loud one
-    // 8.6-19 %, a ratio of 0.07-0.16. Every novelty move seen on the soft song is classified (isNovelty)
-    // and weighted down to 0.08-0.23 by its softness; what remains is the odd slot, not a leak.
+    // Every novelty move seen on the soft song is classified (isNovelty) and weighted down to 0.08-0.23 by its
+    // softness; what remains is the odd slot, not a leak. A slot is 16-32 beats, so the share needs many songs:
+    // measured over 480 songs (Nov 2026, after the feet / anatomy pool re-roll), Easy's novelty on the soft song is
+    // 3.5 % of the danced time in the long run (3.2 % with the pool before it), but 2.3-4.4 % from one 48-song
+    // window to the next (both pools) and 2.6-4.0 % per 96-song window; the loud song's is 21-22 %. So: 96 songs,
+    // and a leak is anything from 5 % (a quarter of the loud song's) up.
     for (const lv of LEVELS) {
-      const a = shares(soft, 104, lv, undefined, MANY);
-      const b = shares(loud, 104, lv, undefined, MANY);
+      const a = shares(soft, 104, lv, undefined, MANY96);
+      const b = shares(loud, 104, lv, undefined, MANY96);
       expect(a.lyrical, lv).toBe(0);
       expect(a.jump, lv).toBeLessThan(0.03);
-      expect(a.nov, lv).toBeLessThan(0.04);
+      expect(a.nov, lv).toBeLessThan(0.05);
       expect(a.nov, lv).toBeLessThan(0.35 * b.nov);
     }
   });

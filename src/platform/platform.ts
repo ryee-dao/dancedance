@@ -62,6 +62,12 @@ export interface Platform {
   createPlayer?(item: PlayItem): MediaPlayer | null;
   /** The song's downloaded audio (encoded), for on-device beat analysis (source 'device'). */
   deviceAudio?(videoId: string): Promise<ArrayBuffer>;
+  /**
+   * The same for the background beat-finding (helperFill.ts): it yields to everything the user waits on. available()
+   * is false while a song's audio is being loaded or an app update downloads; an aborted fetch cancels its download
+   * (unless the user has just opened that song: then it is theirs).
+   */
+  readonly backgroundAudio?: { available(): Promise<boolean>; fetchAudio(videoId: string, opts?: { signal?: AbortSignal }): Promise<ArrayBuffer> };
   /** Reports an on-device analysis, for the diagnostics panel. */
   noteAnalysis?(info: DeviceAnalysisNote): void;
   /** Leave the app (BACK pressed on the home screen). */
