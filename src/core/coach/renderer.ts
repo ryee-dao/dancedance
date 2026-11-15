@@ -20,6 +20,7 @@ import { PoseEvaluator } from './animator';
 import { HumanPainter, humanLook } from './humanPainter';
 import { loopPlan, type LoopPlan } from './loop';
 import { DirtyRects, MAX_SLOTS, makeLayer } from './dirty';
+import { FOOT_TOE_Y, shoeAxis } from './foot';
 import { BODY, J, NUM_JOINTS, createPose, createSkeleton, solveSkeleton, type Skeleton } from './skeleton';
 import { DEFAULT_COACH_BUILD, DEFAULT_COACH_STYLE, VIEW, depthScale, screenUp, type CoachBuild, type CoachStyle } from './styles';
 import { lookIdOf, nullContext, scaleOf, sharedSpriteCache, spriteKey, type PieceArtist, type SpriteCache, type SpriteEntry } from './sprites';
@@ -119,6 +120,8 @@ const CLASSIC: Record<CoachBuild, ClassicBuild> = {
   male: { upper: 0.07, fore: 0.062, thigh: 0.086, shin: 0.071, shoulderOut: 0.03, waist: 0.47, capR: 0.054, shorts: 0.62, male: true },
 };
 const W_FOOT = 0.054;
+/** Shoe axis scratch (foot.ts shoeAxis). */
+const SHOE_AX = new Float64Array(3);
 /** Hand ghost trail (VIEW.ghost): samples and the time they span. */
 const GHOST_N = 14;
 const GHOST_SEC = 0.45;
@@ -240,6 +243,9 @@ export class FigurePainter implements PieceArtist {
   private readonly ps = new Float64Array(NUM_JOINTS);
   private readonly order = new Int8Array(6);
   private readonly zkey = new Float64Array(6);
+  /** The figure being drawn: solved joints and turn (shoes). */
+  private figP: Float64Array = new Float64Array(NUM_JOINTS * 3);
+  private figSpin = 0;
   private readonly wide = new Float64Array(8);
   private sk3: Float64Array | null = null;
   // Headband tail state (spring).
@@ -334,6 +340,8 @@ export class FigurePainter implements PieceArtist {
 
     // Draw order: 0 legL, 1 legR, 2 torso, 3 head, 4 armL, 5 armR.
     const p = sk.p;
+    this.figP = p;
+    this.figSpin = sk.spin;
     const zArm = (e: number, h: number) => (p[e * 3 + 2] + p[h * 3 + 2]) * 0.5;
     const zLeg = (k: number, a: number) => (p[k * 3 + 2] + p[a * 3 + 2]) * 0.5;
     const zk = this.zkey;
@@ -529,7 +537,7 @@ export class FigurePainter implements PieceArtist {
     for (let s = 0; s < 2; s++) {
       const an = s === 0 ? J.AN_R : J.AN_L, to = s === 0 ? J.TOE_R : J.TOE_L;
       const fx = (p[an * 3] + p[to * 3]) * 0.5, fz = (p[an * 3 + 2] + p[to * 3 + 2]) * 0.5;
-      const lift = Math.max(0, Math.min(p[an * 3 + 1] - BODY.ankleY, p[to * 3 + 1] - 0.004));
+      const lift = Math.max(0, Math.min(p[an * 3 + 1] - BODY.ankleY, p[to * 3 + 1] - FOOT_TOE_Y));
       const f = Math.max(0, 1 - lift * 3.5);
       if (f <= 0.05) continue;
       const fs = depthScale(fz);
@@ -691,18 +699,16 @@ export class FigurePainter implements PieceArtist {
   private leg(ctx: CanvasRenderingContext2D, hip: number, kn: number, an: number, toe: number, color: string, dark: string, scale: number, ol: number): void {
     const B = CLASSIC[this.build];
     this.seg2(ctx, hip, kn, an, B.thigh, B.shin, color, ol, scale, W_THIGH);
-    // Shoe: seen from the front, perpendicular to the shin, toes outward.
+    // Shoe: sole level on a flat foot in every view, tilted only by the
+    // foot's real pitch (foot.ts shoeAxis); "down" is square to it, away from the knee.
     const px = this.px;
     const s = this.ps[an] * scale;
-    let sx = px[an * 2] - px[kn * 2], sy = px[an * 2 + 1] - px[kn * 2 + 1];
-    const sl = Math.sqrt(sx * sx + sy * sy) || 1;
-    sx /= sl;
-    sy /= sl;
-    const side = px[toe * 2] >= px[an * 2] ? 1 : -1;
-    let qx = -sy, qy = sx;
-    if (qx * side < 0) {
-      qx = -qx;
-      qy = -qy;
+    shoeAxis(this.figP, an, toe, an === J.AN_R ? 1 : -1, this.figSpin, SHOE_AX);
+    const qx = SHOE_AX[0], qy = SHOE_AX[1];
+    let sx = -qy, sy = qx;
+    if (sx * (px[kn * 2] - px[an * 2]) + sy * (px[kn * 2 + 1] - px[an * 2 + 1]) > 0) {
+      sx = -sx;
+      sy = -sy;
     }
     const bx = px[an * 2] + sx * 0.024 * s, by = px[an * 2 + 1] + sy * 0.024 * s;
     if (this.sprites) {

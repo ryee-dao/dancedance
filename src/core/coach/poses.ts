@@ -276,6 +276,33 @@ export function channelDelta(c: number, a: number, b: number): number {
   return ANGULAR[c] ? wrap180(b - a) : b - a;
 }
 
+/** Forearm plane channel -> its upper arm's plane channel (-1: not a forearm plane). */
+const FOREARM_UP = new Int8Array(NUM_CHANNELS).fill(-1);
+FOREARM_UP[CH.RF_P] = CH.RA_P;
+FOREARM_UP[CH.LF_P] = CH.LA_P;
+/** Upper arms raised at least this much (deg) at both keys have a meaningful plane. */
+const PLANE_MIN_ELEV = 30;
+/** Longest forearm-plane sweep (deg) the relative winding may choose. */
+const PLANE_MAX_SWEEP = 195;
+
+/**
+ * Key-to-key change of channel c. A forearm's plane winds the short way
+ * RELATIVE TO ITS UPPER ARM (the upper arm's own short way plus the elbow's):
+ * the forearm folds in front of the elbow the way an elbow bends, instead of
+ * swinging through the back of the arm when the plain short way of its own
+ * angle happens to lie there (T arms folding to a broken T, the floss).
+ * Same end values (mod 360), so keys are still hit exactly.
+ */
+function keyDelta(c: number, from: Pose, to: Pose): number {
+  const up = FOREARM_UP[c];
+  if (up >= 0 && from[up - 1] >= PLANE_MIN_ELEV && to[up - 1] >= PLANE_MIN_ELEV) {
+    const d = wrap180(to[up] - from[up]) + wrap180(to[c] - to[up] - (from[c] - from[up]));
+    // Only to choose between the two ways round a half turn: never a sweep much longer than that.
+    if (d >= -PLANE_MAX_SWEEP && d <= PLANE_MAX_SWEEP) return d;
+  }
+  return channelDelta(c, from[c], to[c]);
+}
+
 /**
  * Interpolate between keyframes p0 (at u = 0) and p1 (at u = 1). `pm1` is the
  * key before p0 (for the settle after the p0 hit). Writes into `out`.
@@ -288,10 +315,10 @@ export function interpolateKeys(pm1: Pose, p0: Pose, p1: Pose, u: number, out: P
   const ov = overshoot(u) * OVER_AMT;
   for (let c = 0; c < NUM_CHANNELS; c++) {
     const a = p0[c];
-    const d = channelDelta(c, a, p1[c]);
+    const d = keyDelta(c, p0, p1);
     let v = a + d * (LINEAR[c] ? u : w);
     if (SNAPPY[c]) {
-      v += channelDelta(c, pm1[c], a) * ov - d * an;
+      v += keyDelta(c, pm1, p0) * ov - d * an;
     }
     if (STEP[c]) v = u >= 0.6 ? p1[c] : a;
     out[c] = v;
@@ -373,9 +400,9 @@ export function interpolateGroup(g: number, pm1: Pose, p0: Pose, p1: Pose, u: nu
   for (let i = 0; i < chs.length; i++) {
     const c = chs[i];
     const a = p0[c];
-    const d = channelDelta(c, a, p1[c]);
+    const d = keyDelta(c, p0, p1);
     let v = a + d * (LINEAR[c] ? u : w);
-    if (SNAPPY[c]) v += channelDelta(c, pm1[c], a) * ov - d * an;
+    if (SNAPPY[c]) v += keyDelta(c, pm1, p0) * ov - d * an;
     if (STEP[c]) v = u >= 0.6 ? p1[c] : a;
     out[c] = v;
   }
