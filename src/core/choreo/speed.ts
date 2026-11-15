@@ -215,12 +215,14 @@ export function readsAtHalf(m: Move, bpm: number): boolean {
  * Most coordination load (coordination.ts) a level dances, at any tempo. The
  * load grows with the tempo a move is danced at, so the coordination a move
  * may have per beat falls as the tempo rises (coordinationLimit). Set from
- * the measured loads (Nov 2026, published songs): Easy one thing at a time (a
- * march with swinging arms 1.05 x tempo / 120 fits up to ~140 BPM; a march
- * with arms pumping overhead, 2.1, only at half time); Medium moderate (a
- * jumping jack, 2.2, at full time up to ~95 BPM); Hard demanding but doable
- * (jumping jacks up to ~145 BPM, nothing like a jump with hammer fists, 2.9,
- * at full time above ~110).
+ * the measured loads (Nov 2026, published songs; coordination per beat x
+ * tempo / 120): Easy one thing at a time (a march with its arms swinging,
+ * 0.41, at any tempo; a march with side punches, 1.52, at full time up to ~100
+ * BPM; one with arms pumping overhead, 2.1, only at half time); Medium
+ * moderate (a jumping jack, 2.24, at full time up to ~95 BPM, with alternating
+ * punches, 2.32, up to ~90); Hard demanding but doable (jumping jacks up to
+ * ~145 BPM, nothing like a jump with hammer fists, 3.2, at full time above
+ * ~100).
  */
 export const COORD_LOAD: Readonly<Record<SpeedLevel, number>> = { chill: 1.25, cardio: 1.75, sweaty: 2.75 };
 /** Slowest tempo (move beats per minute) a move is slowed to for its coordination: below it, it is left out instead. */

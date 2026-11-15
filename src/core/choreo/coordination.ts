@@ -17,7 +17,12 @@
  *           shoulders and over: HAND_LOW, LOW_ARM), the
  *           torso (lean, twist, bend, rib slide), the head, hip isolations
  *           (a hip shift or tilt is a separate thing to do over the feet),
- *           and two arms moving DIFFERENTLY (not as mirror images).
+ *           and two arms each doing its own thing (both moving, not as
+ *           mirror images: alternating punches), weighted above raw hand
+ *           travel. The natural counter-swing of the steps adds little: the
+ *           feet taking turns, the arms swinging opposite ways, low (chest
+ *           height and down) or small (GAIT_W); over a jump (both feet
+ *           together) the same arms count in full.
  *
  * The demands are summed per move beat (each segment spread over the beats
  * it spans). A beat's coordination is high only when both halves are busy in
@@ -78,9 +83,25 @@ const W_ARM = 0.5;
 const W_TORSO = 0.4;
 const W_HEAD = 0.15;
 const W_HIPS = 0.3;
-const W_ASYM = 0.3;
+const W_ASYM = 0.6;
+/** How much of the arms' demand the counter-swing of the steps takes away (gait 1: a fully natural swing). */
+const GAIT_W = 0.8;
+/** Hand travel (in HAND units) below which an arm swing is small. */
+const SWING_AMP = 0.6;
+/** Hands this far below the shoulder line (and lower) swing low: chest height and down. */
+const SWING_LOW = 0.12;
+
+/**
+ * How much two left / right displacements go opposite ways (0..1): each is the reverse of the other's mirror image
+ * (x negated). One of them still (below `still`) counts as fully taking turns when `still` > 0.
+ */
+function reciprocal(r: readonly number[], l: readonly number[], still: number): number {
+  const nr = Math.hypot(r[0], r[1], r[2]), nl = Math.hypot(l[0], l[1], l[2]);
+  if (nr <= still || nl <= still) return still > 0 && Math.max(nr, nl) > still ? 1 : 0;
+  return clamp01(-(r[0] * -l[0] + r[1] * l[1] + r[2] * l[2]) / (nr * nl));
+}
 /** How much an arm rhythm of its own (changes where the feet hold) raises the coordination. */
-const OFF_RHYTHM = 0.5;
+const OFF_RHYTHM = 0.8;
 /** A segment's lower demand below this counts as the feet holding (for the arm rhythm). */
 const HOLD = 0.05;
 
@@ -99,7 +120,7 @@ export interface Coordination {
   /** The move's coordination per move beat: (mean + peak) / 2. Load at a tempo = perBeat x bpm / REF_BPM. */
   perBeat: number;
   /** The parts (sums over the loop per move beat): lower body air, steps, kicks, travel, turns, level; upper body arms, torso, head, hips, asym (arms not mirrored). */
-  parts: { air: number; step: number; kick: number; travel: number; turn: number; level: number; arms: number; torso: number; head: number; hips: number; asym: number };
+  parts: { air: number; step: number; kick: number; travel: number; turn: number; level: number; arms: number; torso: number; head: number; hips: number; asym: number; gait: number };
 }
 
 const CACHE = new WeakMap<Move, Coordination>();
@@ -142,7 +163,7 @@ interface Seg {
   lower: number;
   upper: number;
   air: number; step: number; kick: number; travel: number; turn: number; level: number;
-  arms: number; torso: number; head: number; hips: number; asym: number;
+  arms: number; torso: number; head: number; hips: number; asym: number; gait: number;
 }
 
 /** How much of a kick a foot at this lift and forward reach is (0..1). */
@@ -157,10 +178,15 @@ function segment(a: Pose, b: Pose): Seg {
   const upA = a[CH.Y] > AIR, upB = b[CH.Y] > AIR;
   const air = upA || upB ? 1 : 0;
   let step = 0;
+  const fv: [number, number, number][] = [];
   for (const [x, y, z] of [[CH.RFT_X, CH.RFT_Y, CH.RFT_Z], [CH.LFT_X, CH.LFT_Y, CH.LFT_Z]] as const) {
-    const d = Math.hypot(b[x] - a[x], b[y] - a[y], b[z] - a[z]);
-    step += Math.min(1, d / STEP);
+    const v: [number, number, number] = [b[x] - a[x], b[y] - a[y], b[z] - a[z]];
+    fv.push(v);
+    step += Math.min(1, Math.hypot(...v) / STEP);
   }
+  // The feet take turns (a step, a march, a run): one moves alone, or the two the opposite ways (one lifts as the other
+  // lands); not together like a jump's or a jack's mirrored feet.
+  const alternate = step > 0.1 ? reciprocal(fv[0], fv[1], 0.02) : 0;
   const kick = Math.max(kickOf(a[CH.RFT_Y], a[CH.RFT_Z]), kickOf(a[CH.LFT_Y], a[CH.LFT_Z]), kickOf(b[CH.RFT_Y], b[CH.RFT_Z]), kickOf(b[CH.LFT_Y], b[CH.LFT_Z]));
   const travel = Math.min(1, Math.abs(b[CH.X] - a[CH.X]) / TRAVEL);
   const turn = Math.min(1.5, angleDelta(a[CH.SPIN], b[CH.SPIN]) / 180);
@@ -176,17 +202,26 @@ function segment(a: Pose, b: Pose): Seg {
   const lr = Math.max(Math.hypot(...vr), Math.hypot(...er)), ll = Math.max(Math.hypot(...vl), Math.hypot(...el));
   // An arm working low (a relaxed swing, hands at the waist) is less than one lifted to the shoulders and over.
   const lift = (j: number) => LOW_ARM + (1 - LOW_ARM) * clamp01((Math.max(rel(ska, j, 1), rel(skb, j, 1)) - HAND_LOW) / -HAND_LOW);
-  const ar = Math.min(1.2, (lr / HAND) * lift(J.HA_R)), al = Math.min(1.2, (ll / HAND) * lift(J.HA_L));
-  const arms = ar + al;
+  const liftR = lift(J.HA_R), liftL = lift(J.HA_L);
+  const ar = Math.min(1.2, (lr / HAND) * liftR), al = Math.min(1.2, (ll / HAND) * liftL);
+  const nr = Math.hypot(...vr), nl = Math.hypot(...vl);
+  // The natural counter-swing of the steps: the feet taking turns, the arms swinging opposite ways (each the mirror
+  // image of the other's reverse: one forward as the other goes back), low or small. The body does it by itself.
+  const recip = nr > 1e-6 && nl > 1e-6 ? reciprocal(vr, vl, 0) : 0;
+  const lowOf = (j: number) => clamp01(-Math.max(rel(ska, j, 1), rel(skb, j, 1)) / SWING_LOW);
+  const low = (lowOf(J.HA_R) + lowOf(J.HA_L)) / 2;
+  const small = 1 - clamp01(Math.max(lr, ll) / HAND / SWING_AMP);
+  const gait = recip * alternate * Math.max(low, small);
+  const arms = (ar + al) * (1 - GAIT_W * gait);
   const torso = Math.min(1.5, (angleDelta(a[CH.LEAN], b[CH.LEAN]) + angleDelta(a[CH.TWIST], b[CH.TWIST]) + angleDelta(a[CH.BEND], b[CH.BEND])) / TORSO_DEG + Math.abs(b[CH.CHEST_X] - a[CH.CHEST_X]) / RIB);
   const head = Math.min(1, (angleDelta(a[CH.HEAD_NOD], b[CH.HEAD_NOD]) + angleDelta(a[CH.HEAD_ROLL], b[CH.HEAD_ROLL]) + angleDelta(a[CH.HEAD_TURN], b[CH.HEAD_TURN])) / HEAD_DEG);
   const hips = Math.min(1, Math.abs(b[CH.HIPS] - a[CH.HIPS]) / HIP_SHIFT + (angleDelta(a[CH.HIP_TILT], b[CH.HIP_TILT]) + angleDelta(a[CH.HIPTWIST], b[CH.HIPTWIST])) / HIP_DEG);
-  // Two arms moving, and not as mirror images of each other (mirror: x negated).
-  const dx = vr[0] + vl[0], dy = vr[1] - vl[1], dz = vr[2] - vl[2];
-  const nr = Math.hypot(...vr), nl = Math.hypot(...vl);
-  const asym = nr + nl > 1e-6 ? Math.min(1, Math.hypot(dx, dy, dz) / (nr + nl)) * Math.min(ar, al) : 0;
+  // Two arms each doing its own thing: both moving, not as mirror images (x negated), e.g. alternating punches; not
+  // the counter-swing of the steps.
+  const mirrorDev = Math.hypot(vr[0] + vl[0], vr[1] - vl[1], vr[2] - vl[2]);
+  const asym = nr + nl > 1e-6 ? Math.min(1, mirrorDev / (nr + nl)) * Math.min(ar, al) * (1 - gait) : 0;
   const upper = W_ARM * arms + W_TORSO * torso + W_HEAD * head + W_HIPS * hips + W_ASYM * asym;
-  return { lower, upper, air, step, kick, travel, turn, level, arms, torso, head, hips, asym };
+  return { lower, upper, air, step, kick, travel, turn, level, arms, torso, head, hips, asym, gait };
 }
 
 /** A move's coordination (cached). Parts of a move share their whole move's. */
@@ -202,7 +237,7 @@ export function moveCoordination(m: Move): Coordination {
   const beats = m.beats;
   const nb = Math.max(1, Math.round(beats));
   const L = new Float64Array(nb), U = new Float64Array(nb);
-  const parts = { air: 0, step: 0, kick: 0, travel: 0, turn: 0, level: 0, arms: 0, torso: 0, head: 0, hips: 0, asym: 0 };
+  const parts = { air: 0, step: 0, kick: 0, travel: 0, turn: 0, level: 0, arms: 0, torso: 0, head: 0, hips: 0, asym: 0, gait: 0 };
   let uSum = 0, uOff = 0, lSum = 0;
   const held = keys.length <= 1 && !m.mirror && !m.travel;
   if (keys.length >= 1 && !held) {

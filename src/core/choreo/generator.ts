@@ -999,6 +999,8 @@ export class Choreographer {
   private modes = new Map<Move, TempoMode>();
   /** Song beats per move beat of the song combo (half time when any of its moves needs it). */
   private sigMult = 1;
+  /** ... by the tempo modes alone: the song plan (phrases, holds) is laid out as without the coordination limit. */
+  private sigPlanMult = 1;
   /** The song's leading Latin dance (danceOf): moves named for it are favoured (NAMED_DANCE). */
   private dance: SubStyle | null;
   /** Most of the danced time jumps may take on this song at this level (jumpCap), and the planned / cast jump beats. */
@@ -1117,6 +1119,7 @@ export class Choreographer {
     this.signature = pickSignature(mulberry32(hashString(`${seedKey}|sig|${intensity}|${sk}`)), intensity, this.style, open, bpm, genreK, this.jumpCap >= SIG_JUMP_CAP, this.tone, this.energy, this.gate, mulberry32(hashString(`${seedKey}|sig-tone|${intensity}|${sk}`)), this.coordOn, mulberry32(hashString(`${seedKey}|sig-coord|${intensity}|${sk}`)));
     this.comboName = comboName(this.signature);
     this.sigMult = this.signature.some((x) => this.dmode(x.move) === 'half') ? 2 : 1;
+    this.sigPlanMult = this.signature.some((x) => this.mode(x.move) === 'half') ? 2 : 1;
   }
 
   /**
@@ -1213,8 +1216,8 @@ export class Choreographer {
   }
 
   /** Bars per unit of the song combo (twice as many when it is danced at half time). */
-  private sigUnitBars(): number {
-    return this.sigMult === 2 && !this.half ? this.unitBars * 2 : this.unitBars;
+  private sigUnitBars(mult = this.sigMult): number {
+    return mult === 2 && !this.half ? this.unitBars * 2 : this.unitBars;
   }
 
   /** Bars per unit of a move: a half-time move gets twice as many (its repeats are twice as long), unless the count is already halved. */
@@ -1252,7 +1255,7 @@ export class Choreographer {
     }
     let from = 0;
     if (o.signature && this.signature.length) {
-      let take = Math.min(bars.length, Math.max(1, o.sigUnits ?? (this.intensity === 'chill' ? 1 : 2)) * this.sigUnitBars());
+      let take = Math.min(bars.length, Math.max(1, o.sigUnits ?? (this.intensity === 'chill' ? 1 : 2)) * this.sigUnitBars(this.sigPlanMult));
       if (bars.length - take < unitBars) take = bars.length;
       items.push({ kind: 'sig', bars: bars.slice(0, take), section: o.section, phraseNo });
       // The combo's jumps count against the song's jump budget.
@@ -2041,10 +2044,14 @@ export class Choreographer {
   private emitHold(out: MoveInstance[], bars: readonly Bar[], move: Move, o: PhraseOpts, phraseNo: number, phraseEnd: boolean): void {
     const units = this.units(bars, this.unitBarsOf(move));
     const n = units.length;
+    // The random draws follow the hold's units as without the coordination limit (a move it slows to half time has
+    // half as many), so slowing one move doesn't reshuffle the rest of the routine.
+    const nDraw = this.coordOn && this.multOf(move) !== this.speedMult(move) ? this.units(bars, this.speedMult(move) === 2 && !this.half ? this.unitBars * 2 : this.unitBars).length : n;
     const calm = !!(o.warmup || o.cooldown);
     let second = move;
     const longHold = bars.length >= (this.half ? 16 : 8);
-    if (!calm && longHold && n >= 2 && this.rng() < MID_VARIANT_P[this.intensity]) second = this.variantOf(move, o) ?? move;
+    if (!calm && longHold && nDraw >= 2 && this.rng() < MID_VARIANT_P[this.intensity]) second = this.variantOf(move, o) ?? move;
+    if (n < 2) second = move;
     // Lead with the side that joins the last move best.
     const prev = this.lastMove;
     let side = false;
@@ -2054,7 +2061,7 @@ export class Choreographer {
     }
     for (let u = 0; u < n; u++) {
       const m = u >= Math.ceil(n / 2) ? second : move;
-      const flourish = phraseEnd && u === n - 1 && n > 1 ? this.ornament(m, ['spin', 'hit4', 'clap4'], FLOURISH_P[this.intensity]) : null;
+      const flourish = phraseEnd && u === n - 1 && nDraw > 1 ? this.ornament(m, ['spin', 'hit4', 'clap4'], FLOURISH_P[this.intensity]) : null;
       // A unit holding an odd number of repeats (a half-time move) hands the next unit the other side.
       const last = this.fillUnit(out, units[u], m, o.section, phraseNo, flourish, side && m.mirror);
       if (m.mirror && last !== null) side = !last;

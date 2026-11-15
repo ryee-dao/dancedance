@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { ARM, type PoseSpec } from '../coach/poses';
+import { ARM, hand, type PoseSpec } from '../coach/poses';
 import { buildFull, type Move } from './catalog';
 import { REF_BPM, coordinationLoad, moveCoordination } from './coordination';
 import { generateDuoRoutine } from './duo';
 import { generateRoutine, mapTempo, type Intensity, type MoveInstance, type Routine } from './generator';
 import { publishedSongs } from './published.testutil';
+import { findMove } from './moves';
 import { COORD_LOAD, LEVEL_SPEED, MIN_HALF_BPM, coordinationLimit, dancedTempoMode, moveTempoMode, readsAtHalf, speedLimit } from './speed';
 import { songMap } from './testutil';
 
@@ -33,6 +34,26 @@ const jack = move('t-jack', [{ y: -0.05, rf: OUT_R, lf: OUT_L, r: ARM.up, l: ARM
 const jackOwn = move('t-jack-own', [{ y: -0.05, rf: OUT_R, lf: OUT_L, r: ARM.up, l: ARM.rest }, { y: 0.07, r: ARM.rest, l: ARM.up }, { y: -0.05, rf: IN_R, lf: IN_L, r: ARM.up, l: ARM.rest }, { y: 0.07, r: ARM.rest, l: ARM.up }], true);
 
 describe('coordination load (from the keyframes)', () => {
+  it('lets the arms\' natural counter-swing of the steps add little, but not the same feet under arms pumped overhead', () => {
+    // A march: the feet take turns; the arms swing low, one forward as the other goes back, with the steps.
+    const FWD = hand(0.04, -0.24, 0.14), BACK = hand(0.04, -0.27, -0.1);
+    const swing = move('t-swing', [{ rf: UP_R, lf: IN_L, r: FWD, l: BACK }, { rf: IN_R, lf: IN_L }, { rf: IN_R, lf: UP_L, r: BACK, l: FWD }, { rf: IN_R, lf: IN_L }]);
+    const pump = move('t-pump', [{ rf: UP_R, lf: IN_L, r: ARM.up, l: ARM.rest }, { rf: IN_R, lf: IN_L }, { rf: IN_R, lf: UP_L, r: ARM.rest, l: ARM.up }, { rf: IN_R, lf: IN_L }]);
+    expect(moveCoordination(swing).parts.gait).toBeGreaterThan(0.5);
+    expect(moveCoordination(swing).perBeat).toBeLessThan(0.5 * moveCoordination(pump).perBeat);
+    // The same swing over jumps (both feet together) is not a step's counter-swing.
+    const hop = move('t-hop', [{ y: -0.05, r: FWD, l: BACK }, { y: 0.07 }, { y: -0.05, r: BACK, l: FWD }, { y: 0.07 }], true);
+    expect(moveCoordination(hop).parts.gait).toBe(0);
+  });
+
+  it('ranks catalogue anchors as a dancer would: arms of their own over jumps above big mirrored arms; feet drills by their feet', () => {
+    const c = (id: string) => moveCoordination(findMove(id)!).perBeat;
+    expect(c('jumping-jack-punch')).toBeGreaterThan(c('jumping-jack'));
+    expect(c('march')).toBeLessThan(0.5 * c('march-get-up'));
+    expect(c('fast-feet')).toBeLessThan(c('jumping-jack'));
+    expect(c('running-man-shuffle')).toBeLessThan(c('march-diagonal'));
+  });
+
   it('is zero for feet alone or arms alone, and high only when both halves are busy', () => {
     const f = moveCoordination(feet), a = moveCoordination(arms), b = moveCoordination(both), j = moveCoordination(jack);
     expect(f.lower).toBeGreaterThan(0.5);
