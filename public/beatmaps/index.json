@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-15T21:53:16.373Z",
+  "generatedAt": "2026-11-15T22:08:41.240Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -1212,7 +1212,7 @@
         "alternative rock",
         "alternative",
         "electronic",
-        "synth-pop"
+        "rock"
       ],
       "genreLevels": [
         "song",
@@ -1220,7 +1220,7 @@
         "song",
         "song",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "alternative rock",
@@ -1291,15 +1291,15 @@
         "alternative rock",
         "funk rock",
         "pop rock",
-        "funk metal",
         "rap rock",
-        "alternative"
+        "alternative",
+        "rock"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "album",
+        "song",
         "song",
         "song"
       ],
@@ -2551,17 +2551,17 @@
       "genres": [
         "indie pop",
         "pop rock",
+        "indie folk",
         "pop",
         "rock",
-        "pop rap",
-        "indie folk"
+        "folk"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
         "song",
-        "album",
+        "song",
         "song"
       ],
       "artistGenres": [

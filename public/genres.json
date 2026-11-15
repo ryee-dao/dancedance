@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-15T21:53:16.373Z",
+  "updatedAt": "2026-11-15T22:08:41.240Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -18987,15 +18987,15 @@
         "alternative rock",
         "funk rock",
         "pop rock",
-        "funk metal",
         "rap rock",
-        "alternative"
+        "alternative",
+        "rock"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "album",
+        "song",
         "song",
         "song"
       ],
@@ -19009,7 +19009,7 @@
         "moody"
       ],
       "complete": true,
-      "at": "2026-11-14T08:23:30.057Z",
+      "at": "2026-11-15T22:08:41.239Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -19069,6 +19069,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T22:08:41.239Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -19517,7 +19522,7 @@
         "rap rock"
       ],
       "complete": true,
-      "at": "2026-11-14T08:23:38.188Z",
+      "at": "2026-11-15T22:08:41.237Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -19569,6 +19574,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T22:08:41.237Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -24229,8 +24239,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T21:53:16.361Z"
+          "at": "2026-11-15T21:53:16.361Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -24419,7 +24429,7 @@
         "alternative rock",
         "alternative",
         "electronic",
-        "synth-pop"
+        "rock"
       ],
       "genreLevels": [
         "song",
@@ -24427,7 +24437,7 @@
         "song",
         "song",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "alternative rock",
@@ -24436,7 +24446,7 @@
         "indie pop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:22:40.390Z",
+      "at": "2026-11-15T22:08:41.231Z",
       "sources": {
         "wikipedia": {
           "status": "none",
@@ -24502,6 +24512,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T22:08:41.231Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -24959,17 +24974,17 @@
       "genres": [
         "indie pop",
         "pop rock",
+        "indie folk",
         "pop",
         "rock",
-        "pop rap",
-        "indie folk"
+        "folk"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
         "song",
-        "album",
+        "song",
         "song"
       ],
       "artistGenres": [
@@ -24979,7 +24994,7 @@
         "indie pop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:22:37.075Z",
+      "at": "2026-11-15T22:08:41.225Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -25039,6 +25054,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T22:08:41.225Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -25292,8 +25312,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T21:53:16.371Z"
+          "at": "2026-11-15T21:53:16.371Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -25582,8 +25602,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T21:53:16.370Z"
+          "at": "2026-11-15T21:53:16.370Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "none",
@@ -25754,7 +25774,7 @@
         "indie pop"
       ],
       "complete": true,
-      "at": "2026-11-14T08:22:57.382Z",
+      "at": "2026-11-15T22:08:41.233Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -25823,6 +25843,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T22:08:41.233Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -26378,8 +26403,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T21:53:16.366Z"
+          "at": "2026-11-15T21:53:16.366Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -26939,8 +26964,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T21:53:16.368Z"
+          "at": "2026-11-15T21:53:16.368Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
