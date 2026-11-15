@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-14T22:35:11.130Z",
+  "updatedAt": "2026-11-15T01:58:24.244Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -637,8 +637,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:35:11.129Z"
+          "at": "2026-11-14T22:35:11.129Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -868,8 +868,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:35:11.130Z"
+          "at": "2026-11-14T22:35:11.130Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "none",
@@ -2496,7 +2496,7 @@
         "funk"
       ],
       "complete": true,
-      "at": "2026-11-14T08:07:22.417Z",
+      "at": "2026-11-15T01:58:24.238Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -2554,6 +2554,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T01:58:24.238Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -2748,7 +2753,7 @@
         "new wave",
         "R&B",
         "pop",
-        "pop soul"
+        "electronic"
       ],
       "genreLevels": [
         "song",
@@ -2756,7 +2761,7 @@
         "song",
         "album",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "R&B",
@@ -2765,7 +2770,7 @@
         "funk"
       ],
       "complete": true,
-      "at": "2026-11-14T08:07:30.556Z",
+      "at": "2026-11-15T01:58:24.242Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -2832,6 +2837,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T01:58:24.242Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -3040,7 +3050,7 @@
         "soul",
         "R&B",
         "synth-pop",
-        "boogie"
+        "pop rock"
       ],
       "genreLevels": [
         "song",
@@ -3057,7 +3067,7 @@
         "funk"
       ],
       "complete": true,
-      "at": "2026-11-14T08:07:30.556Z",
+      "at": "2026-11-15T01:58:24.240Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -3117,6 +3127,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T01:58:24.240Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -3398,8 +3413,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:35:11.128Z"
+          "at": "2026-11-14T22:35:11.128Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "none",
@@ -3596,8 +3611,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:35:11.127Z"
+          "at": "2026-11-14T22:35:11.127Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -9727,7 +9742,7 @@
         "energetic"
       ],
       "complete": true,
-      "at": "2026-11-14T08:06:17.193Z",
+      "at": "2026-11-15T01:58:24.227Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -9789,6 +9804,11 @@
             "Soundtrack"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T01:58:24.227Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -14849,7 +14869,7 @@
         "energetic"
       ],
       "complete": true,
-      "at": "2026-11-14T08:06:33.497Z",
+      "at": "2026-11-15T01:58:24.235Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -14917,6 +14937,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-15T01:58:24.235Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -22482,8 +22507,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:35:11.126Z"
+          "at": "2026-11-14T22:35:11.126Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -23502,6 +23527,7 @@
       "sources": {
         "wikipedia": {
           "status": "found",
+          "at": "2026-11-14T22:34:44.414Z",
           "genres": [
             "Progressive rap",
             "trap"
@@ -23511,21 +23537,21 @@
             "albumArticle": "Astroworld (album)",
             "artistArticle": "Travis Scott"
           },
-          "at": "2026-11-14T22:34:44.414Z",
           "v": 3
         },
         "wikidata": {
           "status": "found",
+          "at": "2026-11-14T22:34:46.837Z",
           "genres": [
             "progressive rap",
             "trap music"
           ],
           "ref": "Q56145698",
-          "at": "2026-11-14T22:34:46.837Z",
           "v": 2
         },
         "musicbrainz": {
           "status": "found",
+          "at": "2026-11-14T22:35:00.327Z",
           "genres": [
             "trap"
           ],
@@ -23533,35 +23559,35 @@
             1
           ],
           "ref": "release-group/bd415c44-8810-4044-b616-18e3c244b346",
-          "at": "2026-11-14T22:35:00.327Z",
           "v": 2
         },
         "theaudiodb": {
           "status": "found",
+          "at": "2026-11-14T22:34:44.612Z",
           "genres": [
             "Trap"
           ],
           "moods": [
             "Boisterous"
           ],
-          "ref": "track/35039146",
-          "at": "2026-11-14T22:34:44.612Z"
+          "ref": "track/35039146"
         },
         "itunes": {
           "status": "found",
+          "at": "2026-11-14T22:34:44.344Z",
           "genres": [
             "Hip-Hop/Rap"
           ],
-          "ref": "stored",
-          "at": "2026-11-14T22:34:44.344Z"
+          "ref": "stored"
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-14T22:34:44.344Z"
+          "at": "2026-11-14T22:34:44.344Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
+          "at": "2026-11-14T22:35:07.840Z",
           "genres": [
             "hip hop",
             "pop rap",
@@ -23587,11 +23613,11 @@
             "discogsMaster": "1435589",
             "wikidata": "Q55934491"
           },
-          "at": "2026-11-14T22:35:07.840Z",
           "v": 2
         },
         "wikipedia-album": {
           "status": "found",
+          "at": "2026-11-14T22:35:07.986Z",
           "genres": [
             "Hip-hop",
             "psychedelic rap"
@@ -23599,42 +23625,42 @@
           "ref": "Astroworld (album)",
           "links": {
             "wikidata": "Q55934491"
-          },
-          "at": "2026-11-14T22:35:07.986Z"
+          }
         },
         "wikidata-album": {
           "status": "found",
+          "at": "2026-11-14T22:35:08.964Z",
           "genres": [
             "hip-hop",
             "psychedelic rap"
           ],
-          "ref": "Q55934491",
-          "at": "2026-11-14T22:35:08.964Z"
+          "ref": "Q55934491"
         },
         "discogs-album": {
           "status": "found",
+          "at": "2026-11-14T22:35:08.040Z",
           "genres": [
             "Trap",
             "Pop Rap",
             "Psychedelic",
             "Hip Hop"
           ],
-          "ref": "master/1435589 (Astroworld)",
-          "at": "2026-11-14T22:35:08.040Z"
+          "ref": "master/1435589 (Astroworld)"
         },
         "itunes-album": {
           "status": "found",
+          "at": "2026-11-14T22:34:47.668Z",
           "genres": [
             "Hip-Hop/Rap"
           ],
           "ref": "collection/1421658111 (ASTROWORLD)",
           "links": {
             "album": "ASTROWORLD"
-          },
-          "at": "2026-11-14T22:34:47.668Z"
+          }
         },
         "musicbrainz-artist": {
           "status": "found",
+          "at": "2026-11-14T22:35:09.428Z",
           "genres": [
             "hip hop",
             "trap",
@@ -23657,20 +23683,20 @@
           "links": {
             "mbArtist": "e4a51f17-a57b-47b1-b37b-f552d0f8e9e6",
             "wikidata": "Q13605596"
-          },
-          "at": "2026-11-14T22:35:09.428Z"
+          }
         },
         "wikipedia-artist": {
           "status": "none",
+          "at": "2026-11-14T22:35:10.096Z",
           "reason": "the artist article lists no genre",
           "ref": "Travis Scott",
           "links": {
             "wikidata": "Q13605596"
-          },
-          "at": "2026-11-14T22:35:10.096Z"
+          }
         },
         "wikidata-artist": {
           "status": "found",
+          "at": "2026-11-14T22:35:11.120Z",
           "genres": [
             "hip-hop",
             "trap music",
@@ -23687,25 +23713,24 @@
             "psychedelic rock",
             "psychedelic hip-hop"
           ],
-          "ref": "Q13605596",
-          "at": "2026-11-14T22:35:11.120Z"
+          "ref": "Q13605596"
         },
         "theaudiodb-artist": {
           "status": "found",
+          "at": "2026-11-14T22:34:46.813Z",
           "genres": [
             "Trap",
             "Urban/R&B"
           ],
-          "ref": "artist/144041",
-          "at": "2026-11-14T22:34:46.813Z"
+          "ref": "artist/144041"
         },
         "itunes-artist": {
           "status": "found",
+          "at": "2026-11-14T22:34:47.668Z",
           "genres": [
             "Hip-Hop/Rap"
           ],
-          "ref": "artist/549236696 (Travis Scott)",
-          "at": "2026-11-14T22:34:47.668Z"
+          "ref": "artist/549236696 (Travis Scott)"
         }
       }
     },
