@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-15T02:12:56.398Z",
+  "generatedAt": "2026-11-15T09:32:07.461Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -837,16 +837,16 @@
         "pop rock",
         "funk-pop",
         "disco",
-        "electropop",
         "pop",
+        "electropop",
         "new wave"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "album",
         "song",
+        "album",
         "album"
       ],
       "artistGenres": [
@@ -1155,16 +1155,16 @@
         "electropop",
         "dance-pop",
         "disco",
-        "blue-eyed soul",
         "pop rock",
-        "pop"
+        "pop",
+        "house"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
         "album",
-        "album",
+        "song",
         "song"
       ],
       "artistGenres": [
@@ -1718,17 +1718,17 @@
         "dance-pop",
         "synth-pop",
         "electronic",
-        "electro",
         "bubblegum pop",
-        "pop"
+        "pop",
+        "electro"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
         "album",
-        "album",
-        "song"
+        "song",
+        "album"
       ],
       "artistGenres": [
         "pop rock",
