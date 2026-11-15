@@ -57,6 +57,33 @@ export interface GenreRunnerDeps {
   log?: (line: string) => void;
   /** Schedule the next run by itself after each run (see the rules above). */
   periodic?: boolean;
+  /**
+   * Extra wait before each request (ms), read every time: a background job's pace while a song plays (the runner
+   * then keeps to one small request every so often, never a burst beside the dancing).
+   */
+  pace?: () => number;
+}
+
+/**
+ * Lookups running now, by video id, whichever runner (or the play screen's wait) started them: a second asker for
+ * the same song waits for that one instead of asking the sources again.
+ */
+const IN_FLIGHT = new Map<string, Promise<GenreLookup>>();
+
+/** The lookup running now for this song, if any. */
+export function lookupInFlight(videoId: string): Promise<GenreLookup> | null {
+  return IN_FLIGHT.get(videoId) ?? null;
+}
+
+/** Run `job` as this song's lookup unless one is running already (then that one's result). */
+export function sharedLookup(videoId: string, job: () => Promise<GenreLookup>): Promise<GenreLookup> {
+  const hit = IN_FLIGHT.get(videoId);
+  if (hit) return hit;
+  const p = job().finally(() => {
+    if (IN_FLIGHT.get(videoId) === p) IN_FLIGHT.delete(videoId);
+  });
+  IN_FLIGHT.set(videoId, p);
+  return p;
 }
 
 export class GenreRunner {
@@ -82,6 +109,11 @@ export class GenreRunner {
   /** Wait until nothing is playing. */
   async whenIdle(): Promise<void> {
     while (this.d.busy()) await this.sleep(BUSY_POLL_MS);
+    const pace = this.d.pace?.() ?? 0;
+    if (pace > 0) {
+      await this.sleep(pace);
+      while (this.d.busy()) await this.sleep(BUSY_POLL_MS);
+    }
   }
 
   /** Songs that need a lookup now: asked-for first, then never looked up (in list order), then the oldest retries. */
@@ -132,7 +164,7 @@ export class GenreRunner {
         await this.whenIdle();
         const current = this.d.songs().find((x) => x.videoId === s.videoId);
         if (!current) continue;
-        const l = await lookupGenres(current, { http: this.http, previous: current.genreLookup ?? null, now: () => new Date(this.now()) });
+        const l = await sharedLookup(current.videoId, () => lookupGenres(current, { http: this.http, previous: current.genreLookup ?? null, now: () => new Date(this.now()) }));
         this.first.delete(current.videoId);
         if (this.d.save(current.videoId, l)) saved++;
         this.d.log?.(`[dd:genres] ${current.artist} - ${current.title}: ${l.genres.join(', ') || 'none'}${l.complete ? '' : ' (some sources failed; retried later)'}`);

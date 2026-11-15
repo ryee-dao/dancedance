@@ -171,6 +171,8 @@ class CoachStageImpl implements CoachStage {
   private readonly urlStyle: CoachStyle | null = urlCoachStyle();
   // Song style + routine personalisation, resolved once per song (again when its beat map arrives).
   private songKey = '';
+  /** The song's genres the routine was resolved with (genreSignature), re-read only while the song loads. */
+  private genreSig = '';
   private routine: RoutineInfo | null = null;
   // Sprite prewarming: upcoming poses drawn into the sprite cache (not the screen).
   private warmEv = new PoseEvaluator();
@@ -220,9 +222,11 @@ class CoachStageImpl implements CoachStage {
   }
 
   /** Routine personalisation, cached per song (and per beat-map arrival). */
-  private routineFor(item: FrameInfo["item"], videoId: string, map: { bpm: number; sections: readonly { energy: number }[]; traits?: unknown } | null): RoutineInfo {
+  private routineFor(item: FrameInfo["item"], videoId: string, map: { bpm: number; sections: readonly { energy: number }[]; traits?: unknown } | null, waiting = true): RoutineInfo {
     const ov = this.deps.getStyleOverride?.();
-    const k = `${videoId}|${item.title}|${map ? 'map' : 'nomap'}${ov ? `|${JSON.stringify(ov)}` : ''}`;
+    // The song's genres as they stand while it loads (a lookup may land then); once it plays, the routine keeps them.
+    if (waiting || !this.genreSig.startsWith(`${videoId}|`)) this.genreSig = genreSignature(videoId, this.deps);
+    const k = `${videoId}|${item.title}|${map ? 'map' : 'nomap'}${ov ? `|${JSON.stringify(ov)}` : ''}|${this.genreSig}`;
     if (this.routine && k === this.songKey) return this.routine;
     // The play count / mode are read once per song: keep the earlier read when only the map arrived.
     const sameSong = this.songKey.split('|')[0] === videoId && this.routine;
@@ -333,7 +337,7 @@ class CoachStageImpl implements CoachStage {
     if (phase === 'playing' && this.lastPhase !== 'playing' && this.lastPhase !== 'paused') this.playStartWall = wall;
     this.lastPhase = phase;
 
-    const r = this.routineFor(item, videoId, tl?.map ?? null);
+    const r = this.routineFor(item, videoId, tl?.map ?? null, phase === 'loading' || phase === 'countdown');
     this.conductor.update(tl, videoId, intensity, t, { style: r.style, fresh: r.fresh }, r.key);
     const sec = this.conductor.sectionAt(t);
     const waiting = phase === 'loading' || phase === 'countdown';
@@ -425,6 +429,21 @@ class CoachStageImpl implements CoachStage {
     this.frozenDrawn = phase === 'paused';
     this.meter.drawn(wall, performance.now() - wall);
   }
+}
+
+/**
+ * What a song's genres are now, as a short key (its genre list and tag): the routine is resolved again when it
+ * changes while the song loads (a genre lookup that lands on the loading screen).
+ */
+export function genreSignature(videoId: string, deps: Pick<CoachStageDeps, 'getGenre' | 'getGenres'>): string {
+  let g: readonly string[] | undefined, tag: string | undefined;
+  try {
+    g = deps.getGenres?.(videoId);
+    tag = deps.getGenre?.(videoId);
+  } catch {
+    g = tag = undefined;
+  }
+  return `${videoId}|${Array.isArray(g) ? g.join(',') : ''}|${tag ?? ''}`;
 }
 
 export interface RoutineInfo {

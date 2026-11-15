@@ -180,5 +180,5 @@ describe('the tone gate', () => {
     expect(changed).toEqual([]);
     expect(same).toBeGreaterThan(500);
     expect(gated).toBeGreaterThan(0);
-  });
+  }, 300_000); // 1260 routines: about a minute on a loaded machine
 });

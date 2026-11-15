@@ -86,4 +86,38 @@ describe('background fill', () => {
     await new HelperFill(off.d).step();
     expect(off.saved).toEqual([]);
   });
+
+  it('is a background job: waits while the user\'s song loads, gives up its song for one opened mid-item (not a failure), and resumes after', async () => {
+    let userLoading = true;
+    const fetched: string[] = [];
+    const { d, saved } = deps({
+      fetch: (id, o) => {
+        fetched.push(id);
+        return new Promise((resolve, reject) => {
+          // A cancelled download answers with an error of its own, not 'aborted'.
+          o?.signal?.addEventListener('abort', () => reject(new HelperError('network')));
+          // The first download is still running when the song is opened; the one after it finishes.
+          if (fetched.length > 1) resolve(new ArrayBuffer(8));
+        });
+      },
+    });
+    // The TV's source (platform backgroundAudio): unavailable while anything of the user's is loading.
+    const tv = { ...d, helper: { ...d.helper, available: async () => !userLoading } };
+    const f = new HelperFill(tv);
+    await f.step();
+    expect(fetched).toEqual([]); // the user's song comes first
+    userLoading = false;
+    const p = f.step();
+    await vi.waitFor(() => expect(fetched).toEqual(['playlist0001']));
+    const release = f.hold(); // a song is opened mid-item
+    await p;
+    expect(saved).toEqual([]);
+    expect(f.state()).toMatchObject({ stopped: null, paused: true });
+    await f.step();
+    expect(fetched).toEqual(['playlist0001']); // nothing while the song is on screen
+    release();
+    await f.step(); // resumes, with the song it gave up first
+    expect(fetched).toEqual(['playlist0001', 'playlist0001']);
+    expect(saved).toEqual(['playlist0001']);
+  });
 });

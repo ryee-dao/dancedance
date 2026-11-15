@@ -71,7 +71,7 @@ export class BeatSession {
   private fetching: number | null = null; // helper download before analysis
   private readonly abort = new AbortController();
   /** The helper's background fill pauses while a song is on screen. */
-  private readonly releaseFill = holdBackgroundFill();
+  private readonly releaseFill: () => void;
   private refining: number | null = null; // full analysis after a partial map
   private noSync: NoSyncReason | null = null;
   private note: string | null = null;
@@ -90,6 +90,8 @@ export class BeatSession {
     private readonly traitsOpts: Omit<FillTraitsOptions, 'getAudio'> = {},
   ) {
     this.cache = cache ?? beatCache();
+    // The background beat-finding pauses (and abandons its song) while this one is on screen; it is this song's.
+    this.releaseFill = holdBackgroundFill(item.kind === 'youtube' ? item.videoId : null);
     if (item.kind === 'youtube') {
       this.key = item.videoId;
       this.videoId = item.videoId;
