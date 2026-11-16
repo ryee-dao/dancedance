@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-16T02:45:33.555Z",
+  "updatedAt": "2026-11-16T02:47:11.629Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -102,8 +102,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-16T02:45:33.553Z"
+          "at": "2026-11-16T02:45:33.553Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -287,7 +287,7 @@
         "disco",
         "synth-pop",
         "pop",
-        "pop rock"
+        "electronic"
       ],
       "genreLevels": [
         "song",
@@ -295,7 +295,7 @@
         "song",
         "song",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "pop rock",
@@ -307,7 +307,7 @@
         "cheerful"
       ],
       "complete": true,
-      "at": "2026-11-14T08:29:44.091Z",
+      "at": "2026-11-16T02:47:11.625Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -370,6 +370,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-16T02:47:11.625Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -1302,7 +1307,7 @@
         "adult contemporary"
       ],
       "complete": true,
-      "at": "2026-11-14T08:31:13.631Z",
+      "at": "2026-11-16T02:47:11.628Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -1364,6 +1369,11 @@
             "Pop"
           ],
           "ref": "Backstreet Boys - Everybody (Backstreet's Back) [Extended Version] (Backstreet Boys)"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-16T02:47:11.628Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -4067,7 +4077,7 @@
         "happy"
       ],
       "complete": true,
-      "at": "2026-11-14T08:31:05.482Z",
+      "at": "2026-11-16T02:47:11.627Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -4143,6 +4153,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-16T02:47:11.627Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -6980,7 +6995,7 @@
         "progressive soul"
       ],
       "complete": true,
-      "at": "2026-11-14T08:28:55.070Z",
+      "at": "2026-11-16T02:47:11.623Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -7034,6 +7049,11 @@
             "R&B/Soul"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-16T02:47:11.623Z"
         },
         "musicbrainz-album": {
           "status": "none",
@@ -12122,8 +12142,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-16T02:45:33.542Z"
+          "at": "2026-11-16T02:45:33.542Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "none",
@@ -12672,8 +12692,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-16T02:45:33.547Z"
+          "at": "2026-11-16T02:45:33.547Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -15908,8 +15928,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-16T02:45:33.550Z"
+          "at": "2026-11-16T02:45:33.550Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "none",
@@ -27777,7 +27797,7 @@
         "good natured"
       ],
       "complete": true,
-      "at": "2026-11-14T08:30:08.475Z",
+      "at": "2026-11-16T02:47:11.627Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -27839,6 +27859,11 @@
             "Pop"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-16T02:47:11.627Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -28068,8 +28093,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-16T02:45:33.552Z"
+          "at": "2026-11-16T02:45:33.552Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "none",

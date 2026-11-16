@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-16T02:45:33.555Z",
+  "generatedAt": "2026-11-16T02:47:11.629Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -174,7 +174,7 @@
         "disco",
         "synth-pop",
         "pop",
-        "pop rock"
+        "electronic"
       ],
       "genreLevels": [
         "song",
@@ -182,7 +182,7 @@
         "song",
         "song",
         "song",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "pop rock",
