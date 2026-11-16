@@ -20,6 +20,7 @@
  *   PLAYLIST_URL   YouTube playlist link (optional; without it only the starter pack is processed)
  *   YT_COOKIES     Netscape cookies.txt content (optional; never printed)
  *   YT_COOKIES_OUT file to copy the cookies to after the run, as refreshed by yt-dlp (optional)
+ *   YTDLP_POT_PROVIDER  non-empty when a PO token provider plugin and its server are ready (adds attempts)
  *   GITHUB_ACTIONS / GITHUB_STEP_SUMMARY   set by GitHub Actions
  *
  * Needs `yt-dlp` and `ffmpeg` on PATH, plus Deno (or it falls back to this Node) for yt-dlp's YouTube support.
@@ -195,6 +196,9 @@ async function main(): Promise<number> {
     ytOpts.jsRuntime = `node:${process.execPath}`;
     console.log('Deno not found: letting yt-dlp use this Node.js for YouTube challenges');
   }
+  // Set by the workflow once the PO token provider's server answered and its yt-dlp plugin is in place.
+  ytOpts.poTokenProvider = !!(process.env.YTDLP_POT_PROVIDER ?? '').trim();
+  console.log(ytOpts.poTokenProvider ? `PO token provider: ${process.env.YTDLP_POT_PROVIDER!.trim().slice(0, 40)}` : 'PO token provider: none');
 
   const temps = new Set<string>();
   const cleanupSync = () => {

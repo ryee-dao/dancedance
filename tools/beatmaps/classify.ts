@@ -4,8 +4,9 @@
  *  - blocked:     YouTube is refusing this machine (bot check, rate limit, login wall). Cookies may help.
  *  - outdated:    yt-dlp could not understand YouTube's current page or player (update yt-dlp), or its
  *                 JavaScript challenge solver could not run.
- *  - withheld:    yt-dlp read the video fine, but YouTube offered this machine no audio for it right now
- *                 ("Requested format is not available" with no sign of a broken extractor). Seen with a
+ *  - withheld:    yt-dlp read the video fine, but YouTube did not hand this machine the audio right now:
+ *                 no audio formats ("Requested format is not available"), or HTTP 403 on the media (a
+ *                 signed-in session without a PO token), with no sign of a broken extractor. Seen with a
  *                 signed-in session on GitHub's runners, per video and on and off. Retried later.
  *  - unavailable: this one video is private, removed, region-locked, members-only, age-restricted...
  *  - error:       anything else (network hiccups, ffmpeg, our own bugs). Retried later.
@@ -66,7 +67,9 @@ const RULES: Rule[] = [
   { kind: 'outdated', re: BREAKAGE_RE, summary: OUTDATED_SUMMARY },
   // yt-dlp read the page, but there was no audio to pick (see BREAKAGE_RE and classifyYtDlpError).
   { kind: 'withheld', re: /requested format is not available|only images are available|no video formats found/i, summary: 'YouTube offered this machine no audio for this video right now; it is tried again later' },
-  { kind: 'outdated', re: /HTTP Error 403/i, summary: 'YouTube refused the media download (HTTP 403); usually fixed by a newer yt-dlp' },
+  // With a current yt-dlp and a working JS runtime (else the checks in classifyYtDlpError make it 'outdated'),
+  // a 403 on the media is YouTube refusing this session's request: signed-in web clients need a PO token.
+  { kind: 'withheld', re: /HTTP Error 403/i, summary: 'YouTube refused the media download (HTTP 403; it wants a PO token from this session); it is tried again later' },
 
   { kind: 'error', re: /timed out|connection (?:reset|refused|aborted)|getaddrinfo|name resolution|network is unreachable|unable to download webpage|remote end closed/i, summary: 'Network error talking to YouTube' },
 ];

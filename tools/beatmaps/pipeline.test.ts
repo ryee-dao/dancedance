@@ -282,6 +282,7 @@ describe('runBeatmaps end to end (stubbed YouTube, real analyser)', () => {
   });
 
   const NO_AUDIO = 'ERROR: [youtube] aaaaaaaaaaa: Requested format is not available. Use --list-formats for a list of available formats';
+  const FORBIDDEN = 'ERROR: unable to download video data: HTTP Error 403: Forbidden';
 
   it('no audio offered for the only song tried is not "yt-dlp is out of date": the run stays green with a warning', async () => {
     const r = await runBeatmaps(paths, opts({ only: 'aaaaaaaaaaa', usedCookies: true }), deps(failing(NO_AUDIO)));
@@ -298,11 +299,13 @@ describe('runBeatmaps end to end (stubbed YouTube, real analyser)', () => {
     expect(status.videos.aaaaaaaaaaa).toMatchObject({ state: 'error', reason: 'withheld', attempts: 1 });
   });
 
-  it('several songs without audio in a row stop a run early (going easy on YouTube) but never fail it', async () => {
+  it('several songs without audio after one that worked: the run stops early (going easy on YouTube) and stays green', async () => {
     const more = Array.from({ length: 6 }, (_, i) => ({ videoId: `held${String(i).padStart(7, '0')}`, title: `H${i}` }));
     await writeFile(paths.starterFile, JSON.stringify(more));
-    const r = await runBeatmaps(paths, opts(), deps(failing(NO_AUDIO)));
-    expect(downloads).toHaveLength(3);
+    let n = 0;
+    const firstOk: Behaviour = async (id, dir) => (n++ === 0 ? okDownload()(id, dir) : failing(NO_AUDIO)(id, dir));
+    const r = await runBeatmaps(paths, opts(), deps(firstOk));
+    expect(downloads).toHaveLength(4);
     expect(r.exitCode).toBe(0);
     expect(r.report.fatal).toBeNull();
     expect(r.report.stoppedEarly).toBe('withheld');
@@ -311,15 +314,37 @@ describe('runBeatmaps end to end (stubbed YouTube, real analyser)', () => {
     // Retried on later runs: the rest first (never tried), the three an hour later.
     downloads = [];
     await runBeatmaps(paths, opts(), deps(okDownload(), { now: () => new Date('2026-11-10T12:20:00Z') }));
-    expect(downloads).toEqual(['held0000003', 'held0000004', 'held0000005']);
+    expect(downloads).toEqual(['held0000004', 'held0000005']);
     downloads = [];
     await runBeatmaps(paths, opts(), deps(okDownload(), { now: () => new Date('2026-11-10T13:00:00Z') }));
-    expect(downloads).toEqual(['held0000000', 'held0000001', 'held0000002']);
+    expect(downloads).toEqual(['held0000001', 'held0000002', 'held0000003']);
   });
 
-  it('every client’s answer reaches the job log, their kinds the status message; no cookie path anywhere', async () => {
+  it('every song of a run withheld, none working: that is the session, not a song, and the run goes red', async () => {
+    const more = Array.from({ length: 6 }, (_, i) => ({ videoId: `held${String(i).padStart(7, '0')}`, title: `H${i}` }));
+    await writeFile(paths.starterFile, JSON.stringify(more));
+    const r = await runBeatmaps(paths, opts(), deps(failing(FORBIDDEN)));
+    expect(downloads).toHaveLength(3);
+    expect(r.exitCode).toBe(1);
+    expect(r.report.fatal).toBe('withheld');
+    expect(renderSummary(r.report)).toContain('YouTube handed over no audio this run');
+    expect(renderSummary(r.report)).not.toMatch(/out of date/);
+    expect(renderAnnotations(r.report)[0]).toMatch(/^::error title=YouTube handed over no audio this run::.*PO token provider/);
+    // Two songs, both withheld: red too. One of two working: green.
+    await writeFile(paths.starterFile, JSON.stringify(more.slice(0, 2)));
+    await rm(join(paths.beatmapsDir, 'status.json'));
+    expect((await runBeatmaps(paths, opts(), deps(failing(FORBIDDEN)))).report.fatal).toBe('withheld');
+    await rm(join(paths.beatmapsDir, 'status.json'));
+    let n = 0;
+    const oneOk: Behaviour = async (id, dir) => (n++ === 0 ? failing(FORBIDDEN)(id, dir) : okDownload()(id, dir));
+    const mixed = await runBeatmaps(paths, opts(), deps(oneOk));
+    expect(mixed.exitCode).toBe(0);
+    expect(mixed.report.fatal).toBeNull();
+  });
+
+  it('the cloud run of 2026-11-15 on erSoNgCLGRE (--only): 403, reload, reload, no audio is green, every attempt logged', async () => {
     const lines: string[] = [];
-    const answers = [NO_AUDIO, 'ERROR: [youtube] aaaaaaaaaaa: The page needs to be reloaded.', NO_AUDIO, NO_AUDIO, BOT];
+    const answers = [FORBIDDEN, BOT, 'ERROR: [youtube] aaaaaaaaaaa: The page needs to be reloaded.', 'ERROR: [youtube] aaaaaaaaaaa: The page needs to be reloaded.', NO_AUDIO];
     const cookiesFile = join(root, 'secret-cookies', 'cookies.txt');
     const d = deps(okDownload(), {
       log: (l) => lines.push(l),
@@ -331,17 +356,46 @@ describe('runBeatmaps end to end (stubbed YouTube, real analyser)', () => {
         });
       },
     });
-    const r = await runBeatmaps(paths, opts({ only: 'aaaaaaaaaaa', usedCookies: true }), d);
+    const r = await runBeatmaps(paths, opts({ only: 'aaaaaaaaaaa', usedCookies: true, force: true }), d);
     expect(r.exitCode).toBe(0);
+    expect(r.report.fatal).toBeNull();
     expect(r.report.results[0].kind).toBe('withheld');
+    expect(renderAnnotations(r.report).filter((l) => l.startsWith('::error'))).toEqual([]);
     const log = lines.join('\n');
-    expect(log).toMatch(/attempt default: withheld - YouTube offered this machine no audio/);
-    expect(log).toMatch(/attempt tv: error - yt-dlp failed: \[youtube\] aaaaaaaaaaa: The page needs to be reloaded\./);
-    expect(log).toMatch(/attempt no cookies: blocked - YouTube asked this machine to prove it is not a bot/);
+    expect(log).toMatch(/attempt default \(\d+ s\): withheld - YouTube refused the media download \(HTTP 403/);
+    expect(log).toMatch(/attempt no cookies \(\d+ s\): blocked - YouTube asked this machine to prove it is not a bot/);
+    expect(log).toMatch(/attempt tv \(\d+ s\): error - yt-dlp failed: \[youtube\] aaaaaaaaaaa: The page needs to be reloaded\./);
+    expect(log).toMatch(/attempt web_safari \(\d+ s\): withheld - YouTube offered this machine no audio/);
     const status = JSON.parse(await readFile(join(paths.beatmapsDir, 'status.json'), 'utf8'));
-    expect(status.videos.aaaaaaaaaaa.message).toContain('[default: withheld; tv: error; tv_downgraded: withheld; web_safari: withheld; no cookies: blocked]');
+    expect(status.videos.aaaaaaaaaaa).toMatchObject({ state: 'error', reason: 'withheld' });
+    expect(status.videos.aaaaaaaaaaa.message).toContain('[default: withheld; no cookies: blocked; tv: error; tv_downgraded: error; web_safari: withheld]');
     expect(status.videos.aaaaaaaaaaa.message.length).toBeLessThanOrEqual(300);
     expect(log + JSON.stringify(status) + renderSummary(r.report)).not.toContain('secret-cookies');
+  });
+
+  it('attempts left out for lack of time are logged as such', async () => {
+    const lines: string[] = [];
+    let t = 0;
+    const d = deps(okDownload(), {
+      log: (l) => lines.push(l),
+      downloadAudio: (id, dir) =>
+        downloadWithFallbacks(
+          id,
+          dir,
+          { cookiesFile: join(root, 'c.txt') },
+          async () => {
+            t += 5 * 60_000;
+            throw new ToolFailure(classifyYtDlpError(FORBIDDEN), 'yt-dlp');
+          },
+          () => t,
+        ),
+    });
+    await runBeatmaps(paths, opts({ only: 'aaaaaaaaaaa', usedCookies: true }), d);
+    const log = lines.join('\n');
+    expect(log).toMatch(/attempt default \(300 s\): withheld/);
+    expect(log).toMatch(/attempt no cookies \(300 s\): withheld/);
+    expect(log).toMatch(/attempt tv: not tried \(the song's time for downloads was used up\)/);
+    expect(log).toMatch(/attempt web_safari: not tried/);
   });
 
   it('a private playlist fails the run but the starter pack is still processed', async () => {

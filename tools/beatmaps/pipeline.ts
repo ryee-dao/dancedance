@@ -420,11 +420,13 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
       } catch (e) {
         const cl = classify(e);
         // Several clients tried (signed in): each one's answer goes to the log, their kinds to the message.
-        const attempts = e instanceof DownloadFailure && e.attempts.length > 1 ? e.attempts : null;
+        const attempts = e instanceof DownloadFailure && e.attempts.length + e.skipped.length > 1 ? e.attempts : null;
         for (const a of attempts ?? []) {
           const c = a.classification;
-          deps.log(`${prefix}:   attempt ${a.label}: ${c.kind} - ${sanitizeMessage(c.detail ? `${c.summary}: ${c.detail}` : c.summary, dir)}`);
+          const took = a.ms !== undefined ? ` (${(a.ms / 1000).toFixed(0)} s)` : '';
+          deps.log(`${prefix}:   attempt ${a.label}${took}: ${c.kind} - ${sanitizeMessage(c.detail ? `${c.summary}: ${c.detail}` : c.summary, dir)}`);
         }
+        for (const label of attempts && e instanceof DownloadFailure ? e.skipped : []) deps.log(`${prefix}:   attempt ${label}: not tried (the song's time for downloads was used up)`);
         const text = `${cl.summary}${attempts ? ` [${attemptsLine(attempts)}]` : ''}${cl.detail ? `: ${cl.detail}` : ''}`;
         result = { ...base, kind: cl.kind, reason: cl.kind, message: sanitizeMessage(text, dir), seconds: deps.clock() - t0 };
       } finally {
@@ -607,7 +609,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     for (let i = 0; i < total; i++) {
       if (mustStop()) {
         stoppedEarly = runKind as 'blocked' | 'outdated' | 'withheld';
-        if (successes === 0 && stoppedEarly !== 'withheld') fatal = stoppedEarly;
+        if (successes === 0 && (stoppedEarly !== 'withheld' || needed >= 2)) fatal = stoppedEarly;
         deps.log(`stopping early: ${runLen} consecutive ${runKind} result(s)`);
         break;
       }
@@ -623,11 +625,14 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
       }
       await processVideo(c, item.why, prefix);
     }
-    // Every download blocked (or yt-dlp broken) with nothing left to try: the run fails. All of them
-    // withheld is not a failure (nothing was skipped either, so it is not "stopped early").
-    if (!stoppedEarly && mustStop() && runKind !== 'withheld') {
-      stoppedEarly = runKind as 'blocked' | 'outdated';
-      if (successes === 0) fatal = stoppedEarly;
+    // Every download blocked (or yt-dlp broken) with nothing left to try: the run fails. One song
+    // YouTube withheld is no failure; several songs and every one withheld (none worked) is, since then
+    // it is the session, not the song. (Nothing was skipped either, so it is not "stopped early".)
+    if (!stoppedEarly && mustStop()) {
+      if (runKind !== 'withheld') {
+        stoppedEarly = runKind as 'blocked' | 'outdated';
+        if (successes === 0) fatal = stoppedEarly;
+      } else if (successes === 0 && needed >= 2) fatal = 'withheld';
     }
 
     // --- Genres of catalog songs still missing them (or due again) -------------

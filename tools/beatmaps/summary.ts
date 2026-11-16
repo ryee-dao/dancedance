@@ -17,7 +17,8 @@ export interface SongResult {
   seconds?: number;
 }
 
-export type Fatal = 'blocked' | 'outdated' | 'playlist' | null;
+/** 'withheld': several songs this run and YouTube handed over the audio of none (the session, not one song). */
+export type Fatal = 'blocked' | 'outdated' | 'withheld' | 'playlist' | null;
 
 /** One "add a song by search" request. */
 export interface AddResult {
@@ -46,7 +47,7 @@ export interface RunReport {
   plan: { todo: number; done: number; waiting: number; deferred: number };
   /** `skipped`: an add-by-search run, which leaves the playlist for the next regular run. */
   playlist: { configured: boolean; count?: number; error?: string; skipped?: boolean };
-  /** Why the run stopped early, if it did ('withheld': several songs in a row got no audio; never fatal). */
+  /** Why the run stopped early, if it did ('withheld': several songs in a row got no audio). */
   stoppedEarly?: 'blocked' | 'outdated' | 'withheld';
   /** Contributed-map run (workflow input map_json). */
   contribution?: { videoId?: string; outcome: 'accepted' | 'rejected' | 'ignored'; source?: string; bpm?: number; replaces?: string; message: string };
@@ -104,6 +105,12 @@ export const OUTDATED_HELP =
   'a few days of YouTube changing something. If you pinned yt-dlp with the `YTDLP_VERSION` repository variable, raise ' +
   'or delete it. Make sure the job still installs Deno (yt-dlp needs it for YouTube).';
 
+export const WITHHELD_HELP =
+  'YouTube handed the signed-in cloud job the audio of none of the songs it tried this run (HTTP 403 or no audio formats). ' +
+  'The songs stay listed and playable, and later runs retry them by themselves. If this lasts, check the ' +
+  '"Start the PO token provider" step of this run (it should say the provider is ready), or run ' +
+  '`npm run beatmaps:local -- --push` on your Mac.';
+
 export const PENDING_HELP =
   'YouTube offered this machine no audio for it right now (it does that now and then, per video, to the signed-in cloud job). ' +
   'The song stays listed and playable: the app finds the beat by listening. Later runs try again by themselves, so nothing needs doing.';
@@ -137,6 +144,9 @@ export function renderSummary(r: RunReport): string {
     out.push('');
   } else if (r.fatal === 'outdated') {
     out.push(`> [!CAUTION]\n> **yt-dlp is out of date or could not run.** ${OUTDATED_HELP}`);
+    out.push('');
+  } else if (r.fatal === 'withheld') {
+    out.push(`> [!CAUTION]\n> **YouTube handed over no audio this run.** ${WITHHELD_HELP}`);
     out.push('');
   } else if (r.stoppedEarly === 'blocked') {
     out.push('> [!WARNING]\n> YouTube started rate-limiting part-way through, so this run stopped early. The rest will be retried on later runs.');
@@ -199,12 +209,13 @@ export function renderAnnotations(r: RunReport): string[] {
   const lines: string[] = [];
   if (r.fatal === 'blocked') lines.push(annotation('error', 'YouTube is bot-blocking this runner', COOKIES_HELP));
   if (r.fatal === 'outdated') lines.push(annotation('error', 'yt-dlp is out of date', OUTDATED_HELP));
+  if (r.fatal === 'withheld') lines.push(annotation('error', 'YouTube handed over no audio this run', WITHHELD_HELP));
   if (r.fatal === 'playlist') lines.push(annotation('error', 'Could not read the playlist', r.playlist.error ?? 'unknown error'));
   else if (r.playlist.error) lines.push(annotation('warning', 'Could not read the playlist', r.playlist.error));
   if (r.stoppedEarly === 'blocked' && r.fatal !== 'blocked') {
     lines.push(annotation('warning', 'YouTube rate limit', 'Stopped early after several blocked downloads; the rest will be retried later.'));
   }
-  if (r.stoppedEarly === 'withheld') {
+  if (r.stoppedEarly === 'withheld' && r.fatal !== 'withheld') {
     lines.push(annotation('warning', 'Stopped early', 'YouTube offered no audio for several songs in a row; the rest will be tried on later runs.'));
   }
   for (const a of r.adds ?? []) {

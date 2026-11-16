@@ -80,6 +80,12 @@ export interface YtDlpOptions {
   cookiesFile?: string;
   /** Extra `--js-runtimes` value when Deno (yt-dlp's default) is not installed. */
   jsRuntime?: string;
+  /**
+   * A PO token provider plugin is installed and its server answered (the workflow sets
+   * YTDLP_POT_PROVIDER). yt-dlp uses it by itself where a client requires a token; this
+   * only adds the attempts that ask for tokens on purpose (see attemptPlan).
+   */
+  poTokenProvider?: boolean;
 }
 
 /** Arguments shared by every yt-dlp call. */
@@ -119,15 +125,16 @@ const AUDIO_EXT = /\.(?:m4a|webm|opus|mp4|mp3|ogg|aac|mka|weba|wav|flac)$/i;
  *   tv_downgraded  the same app at an older version, which YouTube answers on its own
  *   web_safari     Safari's web player, whose HLS formats need no token for signed-in sessions
  * Clients that take no cookies (visionos, android_vr, ios) are dropped by
- * yt-dlp when cookies are passed; the last, cookie-less attempt reaches them.
- * Not here: mweb, web_music and web_creator need a PO token for their media.
+ * yt-dlp when cookies are passed; the cookie-less attempt reaches them.
+ * mweb needs a PO token for its media, so it is tried only with a provider;
+ * web_music and web_creator need one too and add nothing for plain videos.
  */
 export const COOKIE_CLIENT_FALLBACKS = ['tv', 'tv_downgraded', 'web_safari'] as const;
 
 /** One way of asking yt-dlp for the audio. */
 export interface AttemptSpec {
-  /** `youtube:player_client`; undefined = yt-dlp's defaults. */
-  client?: string;
+  /** `--extractor-args youtube:<this>`; undefined = yt-dlp's defaults. */
+  extractorArgs?: string;
   /** Whether the cookies (if any) are passed. */
   cookies: boolean;
   /** For logs and summaries. */
@@ -136,17 +143,31 @@ export interface AttemptSpec {
 
 /**
  * The attempts for one video. Without cookies: one, with yt-dlp's defaults (as
- * always). With cookies: the defaults, then COOKIE_CLIENT_FALLBACKS, then the
- * defaults WITHOUT cookies (tv_samsung, visionos, web). That last one is
- * usually bot-checked on GitHub's IP addresses, but it is cheap, and it is a
- * different session from the one YouTube held the video back from.
+ * always). With cookies, in this order:
+ *   default            yt-dlp's defaults, signed in (unchanged first attempt)
+ *   no cookies         the defaults without cookies (tv_samsung, visionos, web): a
+ *                      different session from the one YouTube refused, and quick
+ *                      (on GitHub it is often bot-checked within seconds), so it
+ *                      comes early, before the slower fallbacks can use up the time
+ *   po token           only with a PO token provider (o.poTokenProvider): the
+ *                      defaults signed in, with a token fetched for every client
+ *                      (`fetch_pot=always`), against YouTube's HTTP 403 on media
+ *   mweb               only with a provider: the mobile web client, which takes
+ *                      cookies and needs a GVS token (the PO Token Guide's suggestion)
+ *   COOKIE_CLIENT_FALLBACKS (tv, tv_downgraded, web_safari), signed in
  */
 export function attemptPlan(o: YtDlpOptions): AttemptSpec[] {
   if (!o.cookiesFile) return [{ cookies: false, label: 'default' }];
   return [
     { cookies: true, label: 'default' },
-    ...COOKIE_CLIENT_FALLBACKS.map((client) => ({ client, cookies: true, label: client })),
     { cookies: false, label: 'no cookies' },
+    ...(o.poTokenProvider
+      ? [
+          { extractorArgs: 'fetch_pot=always', cookies: true, label: 'po token' },
+          { extractorArgs: 'player_client=mweb', cookies: true, label: 'mweb' },
+        ]
+      : []),
+    ...COOKIE_CLIENT_FALLBACKS.map((client) => ({ extractorArgs: `player_client=${client}`, cookies: true, label: client })),
   ];
 }
 
@@ -155,6 +176,8 @@ export interface DownloadAttempt {
   label: string;
   cookies: boolean;
   classification: Classification;
+  /** How long it took (ms), when known. */
+  ms?: number;
 }
 
 const RANK: Record<FailureKind, number> = { unavailable: 5, blocked: 4, outdated: 3, withheld: 2, error: 1 };
@@ -179,24 +202,30 @@ export function attemptsLine(attempts: readonly DownloadAttempt[]): string {
   return attempts.map((a) => `${a.label}: ${a.classification.kind}`).join('; ');
 }
 
-/** A download that failed on every attempt: `classification` is the representative one, `attempts` all of them. */
+/**
+ * A download that failed on every attempt: `classification` is the representative one, `attempts` all of
+ * them, `skipped` the labels of attempts left out because the song's time budget ran out.
+ */
 export class DownloadFailure extends ToolFailure {
   constructor(
     classification: Classification,
     readonly attempts: readonly DownloadAttempt[],
+    readonly skipped: readonly string[] = [],
   ) {
     super(classification, 'yt-dlp');
     this.name = 'DownloadFailure';
   }
 }
 
-/** Per attempt (the timeout every download had before the fallbacks). */
+/** The first attempt (the timeout every download had before the fallbacks). */
 const ATTEMPT_TIMEOUT_MS = 6 * 60_000;
+/** Each later attempt: a working download of a song's audio takes seconds; a stalled one shouldn't eat the rest. */
+const FALLBACK_TIMEOUT_MS = 3 * 60_000;
 /** All attempts of one song together: a later attempt gets what is left, and none starts with under MIN_ATTEMPT_MS. */
 export const DOWNLOAD_BUDGET_MS = 10 * 60_000;
 const MIN_ATTEMPT_MS = 45_000;
 
-export type AttemptFn = (videoId: string, dir: string, o: YtDlpOptions, client: string | undefined, timeoutMs: number) => Promise<DownloadResult>;
+export type AttemptFn = (videoId: string, dir: string, o: YtDlpOptions, extractorArgs: string | undefined, timeoutMs: number) => Promise<DownloadResult>;
 
 /**
  * Try `attemptPlan(o)` in turn until one gives a file (or a "filtered" answer).
@@ -213,17 +242,23 @@ export async function downloadWithFallbacks(
 ): Promise<DownloadResult> {
   const deadline = now() + budgetMs;
   const tried: DownloadAttempt[] = [];
-  const failure = () => new DownloadFailure(representative(tried, !!o.cookiesFile).classification, tried);
+  const skipped: string[] = [];
+  const failure = () => new DownloadFailure(representative(tried, !!o.cookiesFile).classification, tried, skipped);
   for (const [i, spec] of attemptPlan(o).entries()) {
     const left = deadline - now();
-    if (i > 0 && left < MIN_ATTEMPT_MS) break;
+    // Out of time: the rest are listed as skipped (in the log too), not dropped silently.
+    if (i > 0 && left < MIN_ATTEMPT_MS) {
+      skipped.push(spec.label);
+      continue;
+    }
     const opts: YtDlpOptions = spec.cookies ? o : { ...o, cookiesFile: undefined };
+    const t0 = now();
     try {
-      return await attempt(videoId, dir, opts, spec.client, i === 0 ? ATTEMPT_TIMEOUT_MS : Math.min(ATTEMPT_TIMEOUT_MS, left));
+      return await attempt(videoId, dir, opts, spec.extractorArgs, i === 0 ? ATTEMPT_TIMEOUT_MS : Math.min(FALLBACK_TIMEOUT_MS, left));
     } catch (e) {
       const classification: Classification =
         e instanceof ToolFailure ? e.classification : { kind: 'error', summary: 'yt-dlp could not be run', detail: String((e as Error)?.message ?? e).slice(0, 300) };
-      tried.push({ label: spec.label, cookies: spec.cookies, classification });
+      tried.push({ label: spec.label, cookies: spec.cookies, classification, ms: now() - t0 });
       // A refusal is worth another client (the tv client can also answer "The
       // page needs to be reloaded", a plain error); a removed or private video is not.
       if (classification.kind === 'unavailable') throw failure();
@@ -238,10 +273,10 @@ export function downloadAudio(videoId: string, dir: string, o: YtDlpOptions): Pr
   return downloadWithFallbacks(videoId, dir, o);
 }
 
-async function downloadAudioOnce(videoId: string, dir: string, o: YtDlpOptions, client: string | undefined, timeoutMs: number): Promise<DownloadResult> {
+async function downloadAudioOnce(videoId: string, dir: string, o: YtDlpOptions, extractorArgs: string | undefined, timeoutMs: number): Promise<DownloadResult> {
   const args = [
     ...baseArgs(o),
-    ...(client ? ['--extractor-args', `youtube:player_client=${client}`] : []),
+    ...(extractorArgs ? ['--extractor-args', `youtube:${extractorArgs}`] : []),
     '-f', 'bestaudio/best',
     '--no-playlist',
     '--no-part',

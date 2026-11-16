@@ -158,9 +158,25 @@ const SAMPLES: { name: string; stderr: string; kind: string; summary?: RegExp }[
     kind: 'outdated',
   },
   {
-    name: 'HTTP 403 on media',
+    // The real failure (erSoNgCLGRE, signed-in default clients, 2026-11-15): YouTube refusing the media without a PO token.
+    name: 'HTTP 403 on media: YouTube refused this session, retried later',
     stderr: '[download] Destination: /tmp/x/abcdefghijk.webm\nERROR: unable to download video data: HTTP Error 403: Forbidden\n',
+    kind: 'withheld',
+    summary: /HTTP 403.*PO token/,
+  },
+  {
+    name: 'HTTP 403 after an unsolved n challenge (JS runtime)',
+    stderr:
+      'WARNING: [youtube] abcdefghijk: n challenge solving failed: Some formats may be missing. Ensure you have a supported JavaScript runtime and challenge solver script distribution installed.\n' +
+      'ERROR: unable to download video data: HTTP Error 403: Forbidden\n',
     kind: 'outdated',
+    summary: /Deno/,
+  },
+  {
+    name: 'HTTP 403 after nsig extraction failed (yt-dlp out of date)',
+    stderr: 'WARNING: [youtube] abcdefghijk: nsig extraction failed: Some formats may be missing\nERROR: unable to download video data: HTTP Error 403: Forbidden\n',
+    kind: 'outdated',
+    summary: /out of date/,
   },
   {
     name: 'DNS failure',
