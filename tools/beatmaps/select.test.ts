@@ -40,6 +40,18 @@ describe('retry backoff', () => {
     expect(isDue(st('error', 4, 8), NOW)).toBe(true);
     expect(isDue({ state: 'error', attempts: 1, lastTried: 'garbage' }, NOW)).toBe(true);
   });
+  it('a song YouTube offered no audio for is retried within hours, forever: 1 h, 2 h, 4 h, then every 6 h', () => {
+    expect([1, 2, 3, 4, 5, 50].map((n) => retryDelayMs(st('withheld', n, 0)) / 3600_000)).toEqual([1, 2, 4, 6, 6, 6]);
+    // A scheduled run every few hours always finds it due again.
+    expect(isDue(st('withheld', 40, 6), NOW)).toBe(true);
+  });
+  it('local sync (--retry-blocked) retries such songs right away', () => {
+    const c: Candidate = { videoId: 'aaaaaaaaaaa', origin: 'added' };
+    const status = { aaaaaaaaaaa: st('withheld', 3, 0) };
+    const p = { candidates: [c], existing: new Map<string, string>(), status, analyzerVersion: V, now: NOW, limit: 5 };
+    expect(planWork(p).todo).toEqual([]);
+    expect(planWork({ ...p, retryBlocked: true }).todo).toEqual([{ candidate: c, why: 'retry' }]);
+  });
 });
 
 describe('planWork', () => {

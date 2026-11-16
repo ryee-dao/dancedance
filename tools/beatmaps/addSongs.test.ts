@@ -10,10 +10,12 @@ import { classifyYtDlpError } from './classify';
 import { runBeatmaps, type Deps, type Paths, type RunOptions } from './pipeline';
 import { parseArgs } from './run';
 import { planAdds, renderSongs, requestRetryDue, type AddRequest } from './songs';
-import { renderSummary } from './summary';
+import { renderAnnotations, renderSummary } from './summary';
 import { ToolFailure, type EmbedCheck } from './youtube';
 
 const SONG = synthClickTrack({ bpm: 120, duration: 30, accent: true, pattern: 'pop', seed: 3 });
+/** What the signed-in cloud job got for two songs on 2026-11-15 (yt-dlp current, Deno installed). */
+const NO_AUDIO = 'ERROR: [youtube] lyricvid001: Requested format is not available. Use --list-formats for a list of available formats';
 const NOW = new Date('2026-11-10T12:00:00Z');
 
 /** Search results keyed by query; every request gets the same two lists. */
@@ -36,7 +38,7 @@ let clock: number;
 interface World {
   search?: (q: string) => Promise<unknown>;
   embed?: Record<string, EmbedCheck>;
-  download?: Record<string, 'ok' | 'unavailable' | 'blocked'>;
+  download?: Record<string, 'ok' | 'unavailable' | 'blocked' | 'withheld'>;
   itunes?: { artist: string; title: string; durationSec: number; genre?: string } | null;
   itunesThrows?: boolean;
 }
@@ -51,6 +53,7 @@ function deps(w: World = {}): Deps {
       const how = w.download?.[id] ?? 'ok';
       if (how === 'unavailable') throw new ToolFailure(classifyYtDlpError('ERROR: [youtube] x: Video unavailable'), 'yt-dlp');
       if (how === 'blocked') throw new ToolFailure(classifyYtDlpError("ERROR: [youtube] x: Sign in to confirm you're not a bot"), 'yt-dlp');
+      if (how === 'withheld') throw new ToolFailure(classifyYtDlpError(NO_AUDIO), 'yt-dlp');
       const p = join(dir, `${id}.m4a`);
       await writeFile(p, 'fake audio');
       return { kind: 'file', path: p };
@@ -237,6 +240,51 @@ describe('add a song by search', () => {
     expect(JSON.parse(await readFile(paths.songsFile!, 'utf8')).songs).toMatchObject([{ videoId: 'lyricvid001', hasMap: true }]);
     expect(await statusOnDisk()).toEqual({});
     expect(existsSync(join(paths.beatmapsDir, 'lyricvid001.json'))).toBe(true);
+  });
+
+  it('no audio offered: the song is listed, the run stays green with a "beat map pending" warning, and later runs retry it by themselves', async () => {
+    const out = await runBeatmaps(paths, opts(), deps({ download: { lyricvid001: 'withheld' } }));
+    expect(out.exitCode).toBe(0);
+    expect(out.report.fatal).toBeNull();
+    expect(out.report.stoppedEarly).toBeUndefined();
+    expect(out.report.adds?.[0]).toMatchObject({ kind: 'listed', videoId: 'lyricvid001', cause: 'withheld' });
+    const summary = renderSummary(out.report);
+    expect(summary).toContain('Beat map pending (retried automatically):** Dua Lipa - Levitating');
+    expect(summary).not.toMatch(/CAUTION|out of date/);
+    const notes = renderAnnotations(out.report);
+    expect(notes.filter((l) => l.startsWith('::error'))).toEqual([]);
+    expect(notes).toEqual([expect.stringMatching(/^::warning title=Beat map pending%3A Dua Lipa - Levitating::.*try again by themselves/)]);
+    expect(await songsOnDisk()).toMatchObject([{ videoId: 'lyricvid001', hasMap: false }]);
+    expect((await statusOnDisk())['dua lipa - levitating']).toMatchObject({
+      state: 'map-pending',
+      videoId: 'lyricvid001',
+      message: 'Added: you can dance to it now. A better beat map is being prepared and will arrive on its own.',
+    });
+    const vstat = () => readFile(join(paths.beatmapsDir, 'status.json'), 'utf8').then((t) => JSON.parse(t).videos.lyricvid001);
+    expect(await vstat()).toMatchObject({ state: 'error', reason: 'withheld', attempts: 1 });
+    expect((await vstat()).message).toMatch(/no audio/);
+    // A scheduled run an hour later (no add request: nobody does anything) tries again; still none: green again.
+    downloads = [];
+    const again = await runBeatmaps(paths, opts({ adds: [] }), { ...deps({ download: { lyricvid001: 'withheld' } }), now: () => new Date('2026-11-10T13:05:00Z') });
+    expect(downloads).toContain('lyricvid001');
+    expect(again.exitCode).toBe(0);
+    expect(renderSummary(again.report)).toContain('Beat map pending');
+    expect(await vstat()).toMatchObject({ reason: 'withheld', attempts: 2 });
+    // Two hours after that YouTube offers the audio again: the map arrives and the pending note goes.
+    downloads = [];
+    const ok = await runBeatmaps(paths, opts({ adds: [] }), { ...deps(), now: () => new Date('2026-11-10T15:10:00Z') });
+    expect(downloads).toContain('lyricvid001');
+    expect(ok.exitCode).toBe(0);
+    expect(JSON.parse(await readFile(paths.songsFile!, 'utf8')).songs).toMatchObject([{ videoId: 'lyricvid001', hasMap: true }]);
+    expect(await statusOnDisk()).toEqual({});
+  });
+
+  it('an older map-pending note is reworded on the next run', async () => {
+    await runBeatmaps(paths, opts(), deps({ download: { lyricvid001: 'withheld' } }));
+    const text = await readFile(paths.songsStatusFile!, 'utf8');
+    await writeFile(paths.songsStatusFile!, text.replace(/"message": "[^"]*"/, '"message": "Listed. YouTube refused the cloud download, so there is no beat map yet."'));
+    await runBeatmaps(paths, opts({ adds: [] }), { ...deps({ download: { lyricvid001: 'withheld' } }), now: () => new Date('2026-11-10T12:20:00Z') });
+    expect((await statusOnDisk())['dua lipa - levitating'].message).toBe('Added: you can dance to it now. A better beat map is being prepared and will arrive on its own.');
   });
 
   it('a song listed without a map (download blocked) keeps its iTunes genre, and index.json gets it with the map', async () => {
