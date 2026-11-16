@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-16T03:16:36.268Z",
+  "updatedAt": "2026-11-16T03:39:39.751Z",
   "videos": {
     "-7XnDlYY9qw": {
       "state": "ok",
@@ -438,11 +438,9 @@
       "lastTried": "2026-11-11T22:29:27.751Z"
     },
     "erSoNgCLGRE": {
-      "state": "error",
-      "reason": "withheld",
-      "message": "YouTube refused the media download (HTTP 403; it wants a PO token from this session); it is tried again later [default: withheld; no cookies: blocked; po token: withheld; mweb: withheld; tv: error; tv_downgraded: error; web_safari: withheld]: unable to download video data: HTTP Error 403: Forbidden",
-      "attempts": 4,
-      "lastTried": "2026-11-16T03:11:03.250Z"
+      "state": "ok",
+      "attempts": 5,
+      "lastTried": "2026-11-16T03:39:39.748Z"
     },
     "fH_OnJk6QqU": {
       "state": "ok",

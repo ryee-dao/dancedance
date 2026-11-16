@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-16T03:16:36.268Z",
+  "generatedAt": "2026-11-16T03:39:39.751Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -70,6 +70,7 @@
     "dWErisOfeyE",
     "eRogF6vbqsA",
     "egpE0ysQ21Q",
+    "erSoNgCLGRE",
     "fH_OnJk6QqU",
     "fw-QRyQcFH8",
     "g9j5UzxEhEM",
@@ -1910,6 +1911,33 @@
         "funk rock",
         "funk metal",
         "rap rock"
+      ]
+    },
+    "erSoNgCLGRE": {
+      "bpm": 100,
+      "duration": 259,
+      "genre": "Hard Rock",
+      "genres": [
+        "symphonic metal",
+        "hard rock",
+        "metal",
+        "symphonic rock",
+        "punk",
+        "rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "symphonic metal",
+        "power metal",
+        "metal",
+        "progressive metal"
       ]
     },
     "fH_OnJk6QqU": {

@@ -1,15 +1,4 @@
 {
-  "updatedAt": "2026-11-16T02:45:33.555Z",
-  "requests": {
-    "nightwish - while your lips are still red": {
-      "state": "map-pending",
-      "artist": "Nightwish",
-      "title": "While Your Lips Are Still Red",
-      "durationSec": 259,
-      "videoId": "erSoNgCLGRE",
-      "message": "Added: you can dance to it now. A better beat map is being prepared and will arrive on its own.",
-      "attempts": 1,
-      "lastTried": "2026-11-15T22:58:13.650Z"
-    }
-  }
+  "updatedAt": "2026-11-16T03:39:39.751Z",
+  "requests": {}
 }
