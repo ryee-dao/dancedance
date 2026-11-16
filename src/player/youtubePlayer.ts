@@ -36,6 +36,21 @@
  * While the page is hidden (background tab) browsers and YouTube may defer
  * media loading entirely, so hidden time doesn't count toward any timer.
  *
+ * Background tab (measured in Chrome, 2026-11): the song can get ready and
+ * start by itself while the user is in another tab, with three rules:
+ *  - the poll and the UI's countdown run on steadyTimers.ts (a hidden tab's
+ *    own timers fire at most once a second, after five minutes once a
+ *    minute);
+ *  - Chrome pauses muted media when its tab is hidden, and the start
+ *    sequence plays muted: a PAUSED we didn't ask for while hidden is played
+ *    again (playVideo() from a hidden tab is honoured, muted or not);
+ *  - Chrome holds back media loading in a hidden frame that has never played
+ *    anything, and every new IFrame player is a new frame: while the page is
+ *    hidden the current IFrame player is reused (the next song in Shuffle,
+ *    mid-song recovery) instead of a brand-new one that couldn't load. The
+ *    first song's player needs the tab visible until its video has started
+ *    loading (about a second after the choice).
+ *
  * After play() the player is supervised too: 'ad' when it reports PLAYING but
  * the song time stands still (a mid-roll or late preroll ad), 'slow' when it
  * buffers for a long time, and 'playing' once the song is moving again. While
@@ -52,6 +67,7 @@
  */
 
 import { SmoothClock } from './clock';
+import { steadyInterval } from './steadyTimers';
 import { PlayerError, type MediaPlayer, type PlayItem, type StartStatus } from './types';
 import { createYTPlayer, YTState, type YTPlayer } from './ytApi';
 
@@ -88,6 +104,8 @@ const FRESH_START_S = 3;
 const CONFIRM_LONG_MS = 4000;
 /** BUFFERING at 0 with no duration this long: retry once with a new player. */
 const STUCK_RETRY_MS = 10000;
+/** Hidden page, start sequence paused by the browser: play again at most this often. */
+const HIDDEN_KICK_MS = 1000;
 /** Mid-song recovery: the new player must be playing again within this long. */
 const RECOVER_MS = 20000;
 /** ...and its time advancing (from about where we were) for this long. */
@@ -125,7 +143,7 @@ export class YouTubePlayer implements MediaPlayer {
   private destroyed = false;
   private loadToken = 0;
   private pending: { resolve: () => void; reject: (e: PlayerError) => void } | null = null;
-  private pollTimer: ReturnType<typeof setInterval> | null = null;
+  private stopPoll: (() => void) | null = null;
 
   private phase: Phase = 'idle';
   private videoId = '';
@@ -156,6 +174,7 @@ export class YouTubePlayer implements MediaPlayer {
   private slowAfterMs = SLOW_MS;
   private lastPollAt = 0;
   private hiddenLogged = false;
+  private lastKickAt = -Infinity;
   /** Bumped whenever the IFrame player is replaced; stale callbacks are ignored. */
   private gen = 0;
   /** Any onStateChange since loadVideoById (diagnostics / early escape). */
@@ -182,10 +201,13 @@ export class YouTubePlayer implements MediaPlayer {
     this.cancelPending();
     const token = ++this.loadToken;
     this.loadAt = performance.now();
-    log(`load ${item.videoId}`, { haveApi: typeof window !== 'undefined' && !!window.YT?.Player, hadPlayer: !!this.yt });
     // Every song gets a brand-new IFrame player: nothing (ad state, playlist
-    // context, a wedged buffer) carries over from the previous one.
-    this.teardownPlayer();
+    // context, a wedged buffer) carries over from the previous one. Except
+    // while the page is hidden: a new player (a new frame) couldn't load its
+    // video until the tab is shown again, the current one can (file comment).
+    const reuse = !!this.yt && pageHidden();
+    log(`load ${item.videoId}`, { haveApi: typeof window !== 'undefined' && !!window.YT?.Player, hadPlayer: !!this.yt, reuse });
+    if (!reuse) this.teardownPlayer();
     this.phase = 'idle';
     this.wantPlaying = false;
     this.recoverUsed = false;
@@ -358,8 +380,8 @@ export class YouTubePlayer implements MediaPlayer {
   destroy(): void {
     this.destroyed = true;
     this.cancelPending();
-    if (this.pollTimer !== null) clearInterval(this.pollTimer);
-    this.pollTimer = null;
+    this.stopPoll?.();
+    this.stopPoll = null;
     this.teardownPlayer();
     this.onEnded = this.onError = this.onStatus = null;
   }
@@ -448,7 +470,7 @@ export class YouTubePlayer implements MediaPlayer {
   }
 
   private startPolling(): void {
-    if (this.pollTimer === null) this.pollTimer = setInterval(() => this.poll(), POLL_MS);
+    this.stopPoll ??= steadyInterval(() => this.poll(), POLL_MS);
   }
 
   private poll(): void {
@@ -468,14 +490,20 @@ export class YouTubePlayer implements MediaPlayer {
     if (this.phase === 'starting') {
       // A hidden page (background tab) may not load media at all until it is
       // shown again; don't let that time count toward any hint or timeout.
-      const hidden = typeof document !== 'undefined' && document.visibilityState === 'hidden';
+      const hidden = pageHidden();
       if (hidden) {
         if (!this.hiddenLogged) log('page is hidden; YouTube may wait until it is visible', this.snapshot(p));
         this.hiddenLogged = true;
+        // The browser pauses muted media when the tab is hidden (we never pause while starting): play on.
+        if (state === YTState.PAUSED && now - this.lastKickAt >= HIDDEN_KICK_MS) {
+          this.lastKickAt = now;
+          log('paused while hidden (muted media in a background tab); playing again', this.snapshot(p));
+          p.playVideo();
+        }
         this.phaseStart += dt;
         this.loadAt += dt;
         this.lastActivityAt += dt;
-        if (this.advancingSince) this.advancingSince += dt;
+        // (Not the confirming run: a song that does play while hidden is confirmed on the wall clock.)
         if (this.playingStuckSince) this.playingStuckSince += dt;
         if (this.adSeenAt) this.adSeenAt += dt;
       } else if (this.hiddenLogged) {
@@ -711,7 +739,8 @@ export class YouTubePlayer implements MediaPlayer {
     this.recoverAt = at;
     log(`recovering from error ${err.code}: new player, resume at ${at.toFixed(2)} s`);
     const token = this.loadToken;
-    this.teardownPlayer();
+    // While hidden a new player couldn't load (file comment): try the same one again.
+    if (!(this.yt && pageHidden())) this.teardownPlayer();
     this.enterPhase('recovering');
     this.clock.seek(at);
     this.clock.update(at, false);
@@ -771,6 +800,10 @@ export class YouTubePlayer implements MediaPlayer {
     this.wantPlaying = false;
     this.onError?.(err);
   }
+}
+
+function pageHidden(): boolean {
+  return typeof document !== 'undefined' && document.visibilityState === 'hidden';
 }
 
 function safeTime(p: YTPlayer): number {
