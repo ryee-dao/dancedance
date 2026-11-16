@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-16T02:26:34.799Z",
+  "generatedAt": "2026-11-16T02:45:33.555Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -1128,17 +1128,17 @@
       "genres": [
         "synth-pop",
         "new wave",
-        "new romantic",
         "electronic",
         "pop rock",
-        "pop"
+        "pop",
+        "dance"
       ],
       "genreLevels": [
         "song",
         "song",
-        "album",
         "song",
         "album",
+        "song",
         "song"
       ],
       "artistGenres": [
@@ -2607,15 +2607,15 @@
         "rap metal",
         "rap rock",
         "metal",
-        "alternative metal",
-        "hard rock"
+        "hard rock",
+        "industrial"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
         "song",
-        "album",
+        "song",
         "song"
       ],
       "artistGenres": [
@@ -2659,18 +2659,18 @@
       "genres": [
         "alternative rock",
         "hard rock",
-        "post-grunge",
         "electronic rock",
         "metal",
-        "rock"
+        "rock",
+        "post-grunge"
       ],
       "genreLevels": [
         "song",
         "song",
-        "album",
         "song",
         "song",
-        "song"
+        "song",
+        "album"
       ],
       "artistGenres": [
         "alternative rock",
