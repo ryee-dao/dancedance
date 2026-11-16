@@ -3,7 +3,7 @@
  */
 import type { StatusReason, WorkReason } from './select';
 
-export type ResultKind = 'ok' | 'blocked' | 'outdated' | 'unavailable' | 'error' | 'skipped';
+export type ResultKind = 'ok' | 'blocked' | 'outdated' | 'withheld' | 'unavailable' | 'error' | 'skipped';
 
 export interface SongResult {
   videoId: string;
@@ -35,6 +35,8 @@ export interface AddResult {
   bpm?: number;
   seconds?: number;
   message?: string;
+  /** 'listed': why the download failed (the song's map is retried by later runs). */
+  cause?: ResultKind;
 }
 
 export interface RunReport {
@@ -44,8 +46,8 @@ export interface RunReport {
   plan: { todo: number; done: number; waiting: number; deferred: number };
   /** `skipped`: an add-by-search run, which leaves the playlist for the next regular run. */
   playlist: { configured: boolean; count?: number; error?: string; skipped?: boolean };
-  /** Why the run stopped early, if it did. */
-  stoppedEarly?: 'blocked' | 'outdated';
+  /** Why the run stopped early, if it did ('withheld': several songs in a row got no audio; never fatal). */
+  stoppedEarly?: 'blocked' | 'outdated' | 'withheld';
   /** Contributed-map run (workflow input map_json). */
   contribution?: { videoId?: string; outcome: 'accepted' | 'rejected' | 'ignored'; source?: string; bpm?: number; replaces?: string; message: string };
   fatal: Fatal;
@@ -75,6 +77,7 @@ const KIND_LABEL: Record<ResultKind, string> = {
   ok: 'OK',
   blocked: 'Blocked',
   outdated: 'yt-dlp outdated',
+  withheld: 'No audio offered (retried later)',
   unavailable: 'Unavailable',
   error: 'Error',
   skipped: 'Skipped',
@@ -101,6 +104,19 @@ export const OUTDATED_HELP =
   'a few days of YouTube changing something. If you pinned yt-dlp with the `YTDLP_VERSION` repository variable, raise ' +
   'or delete it. Make sure the job still installs Deno (yt-dlp needs it for YouTube).';
 
+export const PENDING_HELP =
+  'YouTube offered this machine no audio for it right now (it does that now and then, per video, to the signed-in cloud job). ' +
+  'The song stays listed and playable: the app finds the beat by listening. Later runs try again by themselves, so nothing needs doing.';
+
+/** Songs whose beat map waits because YouTube offered no audio this run (not a failure of the run). */
+export function pendingMaps(r: RunReport): string[] {
+  const name = (artist: string | undefined, title: string | undefined, id: string) => (title ? (artist ? `${artist} - ${title}` : title) : id);
+  return [
+    ...(r.adds ?? []).filter((a) => a.kind === 'listed' && a.cause === 'withheld').map((a) => name(a.artist, a.title, a.videoId ?? '')),
+    ...r.results.filter((x) => x.kind === 'withheld').map((x) => name(x.artist, x.title, x.videoId)),
+  ];
+}
+
 export function renderSummary(r: RunReport): string {
   const out: string[] = [];
   const ok = r.results.filter((x) => x.kind === 'ok').length;
@@ -124,6 +140,14 @@ export function renderSummary(r: RunReport): string {
     out.push('');
   } else if (r.stoppedEarly === 'blocked') {
     out.push('> [!WARNING]\n> YouTube started rate-limiting part-way through, so this run stopped early. The rest will be retried on later runs.');
+    out.push('');
+  } else if (r.stoppedEarly === 'withheld') {
+    out.push('> [!NOTE]\n> YouTube offered no audio for several songs in a row, so this run stopped early to go easy on it. The rest will be tried on later runs.');
+    out.push('');
+  }
+  const pending = pendingMaps(r);
+  if (pending.length && !r.dryRun) {
+    out.push(`> [!NOTE]\n> **Beat map pending (retried automatically):** ${pending.map(cell).join(', ')}. ${PENDING_HELP}`);
     out.push('');
   }
   if (r.playlist.error) {
@@ -180,11 +204,15 @@ export function renderAnnotations(r: RunReport): string[] {
   if (r.stoppedEarly === 'blocked' && r.fatal !== 'blocked') {
     lines.push(annotation('warning', 'YouTube rate limit', 'Stopped early after several blocked downloads; the rest will be retried later.'));
   }
+  if (r.stoppedEarly === 'withheld') {
+    lines.push(annotation('warning', 'Stopped early', 'YouTube offered no audio for several songs in a row; the rest will be tried on later runs.'));
+  }
   for (const a of r.adds ?? []) {
     if (a.kind === 'not-found' || a.kind === 'error') lines.push(annotation('warning', `Could not add ${a.artist} - ${a.title}`, a.message ?? ''));
   }
+  if (!r.dryRun) for (const name of pendingMaps(r)) lines.push(annotation('warning', `Beat map pending: ${name}`, PENDING_HELP));
   for (const x of r.results) {
-    if (x.kind === 'ok' || x.kind === 'skipped') continue;
+    if (x.kind === 'ok' || x.kind === 'skipped' || x.kind === 'withheld') continue;
     if ((x.kind === 'blocked' && r.fatal === 'blocked') || (x.kind === 'outdated' && r.fatal === 'outdated')) continue;
     lines.push(annotation('warning', `${KIND_LABEL[x.kind]}: ${x.videoId}`, x.message ?? ''));
   }

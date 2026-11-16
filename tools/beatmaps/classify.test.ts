@@ -113,6 +113,7 @@ const SAMPLES: { name: string; stderr: string; kind: string; summary?: RegExp }[
       'WARNING: [youtube] abcdefghijk: nsig extraction failed: Some formats may be missing\n         n = AbCdEf ; player = https://www.youtube.com/s/player/12345678/player_ias.vflset/en_US/base.js\n' +
       'ERROR: [youtube] abcdefghijk: Requested format is not available. Use --list-formats for a list of available formats\n',
     kind: 'outdated',
+    summary: /out of date/,
   },
   {
     name: 'no JS runtime (real warning) then missing formats',
@@ -121,6 +122,40 @@ const SAMPLES: { name: string; stderr: string; kind: string; summary?: RegExp }[
       'ERROR: [youtube] abcdefghijk: Requested format is not available. Use --list-formats for a list of available formats\n',
     kind: 'outdated',
     summary: /Deno/,
+  },
+  {
+    // The real failure (erSoNgCLGRE, signed-in, GitHub runner, yt-dlp 2026.10.26 with Deno): YouTube's answer, not breakage.
+    name: 'requested format not available on its own: YouTube offered no audio',
+    stderr: head('erSoNgCLGRE') + 'ERROR: [youtube] erSoNgCLGRE: Requested format is not available. Use --list-formats for a list of available formats\n',
+    kind: 'withheld',
+    summary: /no audio/,
+  },
+  {
+    name: 'SABR-only warning then missing formats',
+    stderr:
+      'WARNING: [youtube] abcdefghijk: Some tv client https formats have been skipped as they are missing a URL. YouTube may have enabled the SABR-only streaming experiment for your account. See  https://github.com/yt-dlp/yt-dlp/issues/12482  for more details\n' +
+      'ERROR: [youtube] abcdefghijk: Requested format is not available. Use --list-formats for a list of available formats\n',
+    kind: 'withheld',
+  },
+  {
+    name: 'only images offered',
+    stderr: 'WARNING: Only images are available for download. use --list-formats to see them\nERROR: [youtube] abcdefghijk: Requested format is not available. Use --list-formats for a list of available formats\n',
+    kind: 'withheld',
+  },
+  {
+    name: 'n challenge not solved then missing formats (JS runtime)',
+    stderr:
+      'WARNING: [youtube] abcdefghijk: n challenge solving failed: Some formats may be missing. Ensure you have a supported JavaScript runtime and challenge solver script distribution installed.\n' +
+      'ERROR: [youtube] abcdefghijk: Requested format is not available. Use --list-formats for a list of available formats\n',
+    kind: 'outdated',
+    summary: /Deno/,
+  },
+  {
+    name: 'signature not solved then missing formats (JS runtime)',
+    stderr:
+      'WARNING: [youtube] abcdefghijk: Signature solving failed: Some formats may be missing. Ensure you have a supported JavaScript runtime and challenge solver script distribution installed.\n' +
+      'ERROR: [youtube] abcdefghijk: Requested format is not available. Use --list-formats for a list of available formats\n',
+    kind: 'outdated',
   },
   {
     name: 'HTTP 403 on media',

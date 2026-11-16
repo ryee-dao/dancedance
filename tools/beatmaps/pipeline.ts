@@ -21,7 +21,7 @@ import { planWork, preflightSkip, unionCandidates, type Candidate, type StatusRe
 import { parseSongsList, parseSongsStatus, planAdds, renderSongs, renderSongsStatus, songKey, type AddedSong, type AddRequest, type SongRequestStatus } from './songs';
 import { cleanGenreLevels, cleanGenreList } from '../../src/beat/cloud';
 import type { AddResult, Fatal, ResultKind, RunReport, SongResult } from './summary';
-import { PCM_RATE, ToolFailure, type DownloadResult, type EmbedCheck } from './youtube';
+import { attemptsLine, DownloadFailure, PCM_RATE, ToolFailure, type DownloadResult, type EmbedCheck } from './youtube';
 
 export interface Paths {
   /** public/beatmaps */
@@ -376,7 +376,9 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
         runLen = 1;
       }
     };
-    const mustStop = () => (runKind === 'blocked' || runKind === 'outdated') && runLen >= needed;
+    // 'withheld' (no audio for a video) stops a long run too, to go easy on YouTube, but never fails it:
+    // songs are listed without their map and retried later.
+    const mustStop = () => (runKind === 'blocked' || runKind === 'outdated' || runKind === 'withheld') && runLen >= needed;
     if (playlistError?.kind === 'blocked' || playlistError?.kind === 'outdated') note(playlistError.kind);
 
     /**
@@ -417,8 +419,14 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
         }
       } catch (e) {
         const cl = classify(e);
-        const message = sanitizeMessage(cl.detail ? `${cl.summary}: ${cl.detail}` : cl.summary, dir);
-        result = { ...base, kind: cl.kind, reason: cl.kind, message, seconds: deps.clock() - t0 };
+        // Several clients tried (signed in): each one's answer goes to the log, their kinds to the message.
+        const attempts = e instanceof DownloadFailure && e.attempts.length > 1 ? e.attempts : null;
+        for (const a of attempts ?? []) {
+          const c = a.classification;
+          deps.log(`${prefix}:   attempt ${a.label}: ${c.kind} - ${sanitizeMessage(c.detail ? `${c.summary}: ${c.detail}` : c.summary, dir)}`);
+        }
+        const text = `${cl.summary}${attempts ? ` [${attemptsLine(attempts)}]` : ''}${cl.detail ? `: ${cl.detail}` : ''}`;
+        result = { ...base, kind: cl.kind, reason: cl.kind, message: sanitizeMessage(text, dir), seconds: deps.clock() - t0 };
       } finally {
         await deps.removeDir(dir);
       }
@@ -456,7 +464,8 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     for (const item of addPlan.todo) {
       const label = `${item.req.artist} - ${item.req.title}`;
       const base = { artist: item.req.artist, title: item.req.title };
-      if (mustStop()) {
+      // Songs without audio don't hold up adds: an add lists its song even when the download fails.
+      if (mustStop() && runKind !== 'withheld') {
         addResults.push({ ...base, kind: 'skipped', message: 'run stopped early; will be retried' });
         continue;
       }
@@ -545,10 +554,11 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
           outcome = { ...base, kind: 'added', ...pick, bpm: res.bpm, seconds: deps.clock() - t0, message: res.message };
           break;
         }
-        if (res.kind === 'blocked' || res.kind === 'outdated') {
-          // The right video is known; only the download was refused. List the
-          // song now (the app finds its beat by listening) and keep trying to
-          // make its map on later runs, with the usual backoff in status.json.
+        if (res.kind === 'blocked' || res.kind === 'outdated' || res.kind === 'withheld') {
+          // The right video is known; only the download was refused (or YouTube
+          // offered no audio). List the song now (the app finds its beat by
+          // listening) and keep trying to make its map on later runs, with the
+          // usual backoff in status.json.
           status[id] = toStatus(res.kind, res.kind, res.message, status[id], nowIso());
           const listed: AddedSong = {
             videoId: id,
@@ -573,7 +583,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
             attempts: (prev?.attempts ?? 0) + 1,
             lastTried: nowIso(),
           };
-          outcome = { ...base, kind: 'listed', ...pick, seconds: deps.clock() - t0, message: `listed; beat map pending (${res.kind}: ${res.message ?? ''})` };
+          outcome = { ...base, kind: 'listed', ...pick, cause: res.kind, seconds: deps.clock() - t0, message: `listed; beat map pending (${res.kind}: ${res.message ?? ''})` };
           break;
         }
         deps.log(`    ${id}: ${res.kind}, trying the next one`);
@@ -596,8 +606,8 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     const total = plan.todo.length;
     for (let i = 0; i < total; i++) {
       if (mustStop()) {
-        stoppedEarly = runKind as 'blocked' | 'outdated';
-        if (successes === 0) fatal = stoppedEarly;
+        stoppedEarly = runKind as 'blocked' | 'outdated' | 'withheld';
+        if (successes === 0 && stoppedEarly !== 'withheld') fatal = stoppedEarly;
         deps.log(`stopping early: ${runLen} consecutive ${runKind} result(s)`);
         break;
       }
@@ -613,7 +623,9 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
       }
       await processVideo(c, item.why, prefix);
     }
-    if (!stoppedEarly && mustStop()) {
+    // Every download blocked (or yt-dlp broken) with nothing left to try: the run fails. All of them
+    // withheld is not a failure (nothing was skipped either, so it is not "stopped early").
+    if (!stoppedEarly && mustStop() && runKind !== 'withheld') {
       stoppedEarly = runKind as 'blocked' | 'outdated';
       if (successes === 0) fatal = stoppedEarly;
     }
@@ -670,7 +682,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
 
 /** songs-status.json note for a song listed without a map (not a failure). */
 export const MAP_PENDING_MESSAGE =
-  'Listed. YouTube refused the cloud download, so there is no beat map yet: the app finds the beat by listening, and the job keeps trying.';
+  'Added: you can dance to it now. A better beat map is being prepared and will arrive on its own.';
 
 /**
  * songs.json and songs-status.json: `hasMap` follows the map files on disk,
@@ -690,7 +702,9 @@ async function writeSongFiles(
 ): Promise<void> {
   for (const song of o.songs) song.hasMap = o.mapIds.has(song.videoId);
   for (const [key, st] of Object.entries(o.songsStatus)) {
-    if (st.state === 'map-pending' && (!st.videoId || o.mapIds.has(st.videoId) || !o.songs.some((x) => x.videoId === st.videoId))) delete o.songsStatus[key];
+    if (st.state !== 'map-pending') continue;
+    if (!st.videoId || o.mapIds.has(st.videoId) || !o.songs.some((x) => x.videoId === st.videoId)) delete o.songsStatus[key];
+    else st.message = MAP_PENDING_MESSAGE; // notes written with older wording read the same as new ones
   }
   // Created on the first add, so a repo that never adds songs gets no extra files.
   if (paths.songsFile && (o.prevSongsText !== undefined || o.songs.length)) {

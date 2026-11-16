@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ANALYZER_VERSION, analyzeOffline, parse, serialize, TRAIT_KEYS } from '../../src/core/analysis';
 import { synthClickTrack } from '../../src/core/analysis/synth.testutil';
 import { runBeatmaps, sanitizeMessage, songGenres, type Deps, type Paths, type RunOptions } from './pipeline';
-import { ToolFailure, f32leToFloat32, type DownloadResult } from './youtube';
+import { downloadWithFallbacks, ToolFailure, f32leToFloat32, type DownloadResult } from './youtube';
 import { classifyYtDlpError } from './classify';
 import { renderAnnotations, renderSummary } from './summary';
 import { parseArgs } from './run';
@@ -279,6 +279,69 @@ describe('runBeatmaps end to end (stubbed YouTube, real analyser)', () => {
     expect(r.report.fatal).toBe('outdated');
     expect(r.exitCode).toBe(1);
     expect(renderSummary(r.report)).toContain('YTDLP_VERSION');
+  });
+
+  const NO_AUDIO = 'ERROR: [youtube] aaaaaaaaaaa: Requested format is not available. Use --list-formats for a list of available formats';
+
+  it('no audio offered for the only song tried is not "yt-dlp is out of date": the run stays green with a warning', async () => {
+    const r = await runBeatmaps(paths, opts({ only: 'aaaaaaaaaaa', usedCookies: true }), deps(failing(NO_AUDIO)));
+    expect(r.exitCode).toBe(0);
+    expect(r.report.fatal).toBeNull();
+    expect(r.report.stoppedEarly).toBeUndefined();
+    expect(r.report.results[0]).toMatchObject({ kind: 'withheld', reason: 'withheld' });
+    const ann = renderAnnotations(r.report);
+    expect(ann).toEqual([expect.stringMatching(/^::warning title=Beat map pending%3A Artist A - Song A::/)]);
+    const summary = renderSummary(r.report);
+    expect(summary).not.toMatch(/out of date|CAUTION/);
+    expect(summary).toContain('No audio offered (retried later)');
+    const status = JSON.parse(await readFile(join(paths.beatmapsDir, 'status.json'), 'utf8'));
+    expect(status.videos.aaaaaaaaaaa).toMatchObject({ state: 'error', reason: 'withheld', attempts: 1 });
+  });
+
+  it('several songs without audio in a row stop a run early (going easy on YouTube) but never fail it', async () => {
+    const more = Array.from({ length: 6 }, (_, i) => ({ videoId: `held${String(i).padStart(7, '0')}`, title: `H${i}` }));
+    await writeFile(paths.starterFile, JSON.stringify(more));
+    const r = await runBeatmaps(paths, opts(), deps(failing(NO_AUDIO)));
+    expect(downloads).toHaveLength(3);
+    expect(r.exitCode).toBe(0);
+    expect(r.report.fatal).toBeNull();
+    expect(r.report.stoppedEarly).toBe('withheld');
+    expect(renderSummary(r.report)).toContain('stopped early to go easy on it');
+    expect(renderAnnotations(r.report).some((l) => l.startsWith('::error'))).toBe(false);
+    // Retried on later runs: the rest first (never tried), the three an hour later.
+    downloads = [];
+    await runBeatmaps(paths, opts(), deps(okDownload(), { now: () => new Date('2026-11-10T12:20:00Z') }));
+    expect(downloads).toEqual(['held0000003', 'held0000004', 'held0000005']);
+    downloads = [];
+    await runBeatmaps(paths, opts(), deps(okDownload(), { now: () => new Date('2026-11-10T13:00:00Z') }));
+    expect(downloads).toEqual(['held0000000', 'held0000001', 'held0000002']);
+  });
+
+  it('every client’s answer reaches the job log, their kinds the status message; no cookie path anywhere', async () => {
+    const lines: string[] = [];
+    const answers = [NO_AUDIO, 'ERROR: [youtube] aaaaaaaaaaa: The page needs to be reloaded.', NO_AUDIO, NO_AUDIO, BOT];
+    const cookiesFile = join(root, 'secret-cookies', 'cookies.txt');
+    const d = deps(okDownload(), {
+      log: (l) => lines.push(l),
+      downloadAudio: (id, dir) => {
+        let i = 0;
+        downloads.push(id);
+        return downloadWithFallbacks(id, dir, { cookiesFile }, async () => {
+          throw new ToolFailure(classifyYtDlpError(answers[i++]), 'yt-dlp');
+        });
+      },
+    });
+    const r = await runBeatmaps(paths, opts({ only: 'aaaaaaaaaaa', usedCookies: true }), d);
+    expect(r.exitCode).toBe(0);
+    expect(r.report.results[0].kind).toBe('withheld');
+    const log = lines.join('\n');
+    expect(log).toMatch(/attempt default: withheld - YouTube offered this machine no audio/);
+    expect(log).toMatch(/attempt tv: error - yt-dlp failed: \[youtube\] aaaaaaaaaaa: The page needs to be reloaded\./);
+    expect(log).toMatch(/attempt no cookies: blocked - YouTube asked this machine to prove it is not a bot/);
+    const status = JSON.parse(await readFile(join(paths.beatmapsDir, 'status.json'), 'utf8'));
+    expect(status.videos.aaaaaaaaaaa.message).toContain('[default: withheld; tv: error; tv_downgraded: withheld; web_safari: withheld; no cookies: blocked]');
+    expect(status.videos.aaaaaaaaaaa.message.length).toBeLessThanOrEqual(300);
+    expect(log + JSON.stringify(status) + renderSummary(r.report)).not.toContain('secret-cookies');
   });
 
   it('a private playlist fails the run but the starter pack is still processed', async () => {

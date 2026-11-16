@@ -149,7 +149,9 @@ const FRIENDLY: Partial<Record<ErrorCode, string>> = {
 /** Map a failed yt-dlp run (stderr text) to a page code, as tools/beatmaps/classify.ts does for the cloud job. */
 export function classifyFailure(stderr: string): Failure {
   const c = classifyYtDlpError(stderr);
-  let code: ErrorCode = c.kind;
+  // 'withheld' (no audio offered) keeps the code it had before that kind existed: on a home computer
+  // without a sign-in it most often means the downloader needs its update.
+  let code: ErrorCode = c.kind === 'withheld' ? 'outdated' : c.kind;
   if (c.kind === 'error' && /^Network error/.test(c.summary)) code = 'network';
   return { code, message: FRIENDLY[code] ?? c.summary, detail: c.detail };
 }

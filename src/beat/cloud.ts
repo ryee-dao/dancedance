@@ -12,6 +12,8 @@ export type FetchLike = (url: string, init?: RequestInit) => Promise<Pick<Respon
 
 export interface CloudStatus {
   state: 'ok' | 'blocked' | 'error';
+  /** Why (tools/beatmaps/select.ts StatusReason), e.g. 'withheld', 'unavailable'. */
+  reason?: string;
   message?: string;
 }
 
@@ -77,11 +79,18 @@ export function parseStatus(text: string): Record<string, CloudStatus> {
     if (!v || typeof v !== 'object') continue;
     const state = (v as { state?: unknown }).state;
     if (state !== 'ok' && state !== 'blocked' && state !== 'error') continue;
-    const message = (v as { message?: unknown }).message;
-    out[id] = typeof message === 'string' ? { state, message: message.slice(0, 300) } : { state };
+    const { message, reason } = v as { message?: unknown; reason?: unknown };
+    out[id] = {
+      state,
+      ...(typeof reason === 'string' && /^[a-z-]{1,20}$/.test(reason) ? { reason } : {}),
+      ...(typeof message === 'string' ? { message: message.slice(0, 300) } : {}),
+    };
   }
   return out;
 }
+
+/** Reasons the cloud job won't try a song again by itself (removed, private, too long, live). */
+const FINAL_REASONS = new Set(['unavailable', 'too-long', 'live', 'filtered']);
 
 const statusCache = new Map<string, Promise<Record<string, CloudStatus>>>();
 
@@ -100,11 +109,15 @@ export async function cloudStatus(
   return (await p)[videoId] ?? null;
 }
 
-/** User-facing sentence for a non-ok status, or null. */
+/**
+ * User-facing sentence for a non-ok status (shown while the song has no full
+ * map), or null. Calm and without technical words: the song plays either way,
+ * and the cloud job retries most failures by itself.
+ */
 export function describeCloudStatus(s: CloudStatus | null): string | null {
   if (!s || s.state === 'ok') return null;
-  if (s.state === 'blocked') return 'Cloud beat analysis was blocked by YouTube for this song.';
-  return 'Cloud beat analysis failed for this song.';
+  if (s.state === 'error' && s.reason && FINAL_REASONS.has(s.reason)) return 'There’s no ready-made beat map for this song, so the coach finds the beat by listening.';
+  return 'The coach finds the beat by listening for now. A better beat map is being prepared and will arrive on its own.';
 }
 
 function defaultFetch(): FetchLike {

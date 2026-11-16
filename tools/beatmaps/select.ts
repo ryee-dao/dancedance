@@ -3,7 +3,7 @@
  */
 
 /** Finer-grained reason stored next to a non-ok state in status.json. */
-export type StatusReason = 'blocked' | 'outdated' | 'unavailable' | 'error' | 'too-long' | 'live' | 'filtered';
+export type StatusReason = 'blocked' | 'outdated' | 'withheld' | 'unavailable' | 'error' | 'too-long' | 'live' | 'filtered';
 
 export interface VideoStatus {
   state: 'ok' | 'blocked' | 'error';
@@ -48,7 +48,7 @@ export interface PlanInput {
   force?: boolean;
   /** videoId -> `source` of the existing map; maps from listening ('tab'/'mic') are re-analysed when possible. */
   sources?: ReadonlyMap<string, string>;
-  /** Ignore the backoff of songs that failed because YouTube blocked or yt-dlp broke (local sync). */
+  /** Ignore the backoff of songs that failed because YouTube blocked or withheld them, or yt-dlp broke (local sync). */
   retryBlocked?: boolean;
 }
 
@@ -98,6 +98,10 @@ export function retryDelayMs(s: VideoStatus): number {
     case 'blocked':
       // Not the song's fault, but don't hammer: 1h, 2h, 4h, 8h, then every 12h.
       return exp(HOUR, 12 * HOUR);
+    case 'withheld':
+      // YouTube offered no audio for this one video right now; it usually does again within hours.
+      // 1h, 2h, 4h, then every 6h: scheduled runs (every few hours) keep trying, without a limit.
+      return exp(HOUR, 6 * HOUR);
     case 'unavailable':
       return exp(DAY, 30 * DAY);
     case 'live':
@@ -127,7 +131,7 @@ export function planWork(p: PlanInput): Plan {
   let done = 0;
   let waiting = 0;
   const due = (st: VideoStatus) =>
-    (p.retryBlocked && (st.state === 'blocked' || st.reason === 'blocked' || st.reason === 'outdated')) || isDue(st, p.now);
+    (p.retryBlocked && (st.state === 'blocked' || st.reason === 'blocked' || st.reason === 'outdated' || st.reason === 'withheld')) || isDue(st, p.now);
   for (const c of p.candidates) {
     const version = p.existing.get(c.videoId);
     const st = p.status[c.videoId];

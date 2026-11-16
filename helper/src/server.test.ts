@@ -141,6 +141,8 @@ Deno.test('yt-dlp failures become plain codes', async () => {
   assertEquals(classifyFailure('ERROR: [youtube] x: Video unavailable. This video is private').code, 'unavailable');
   assertEquals(classifyFailure('ERROR: unable to extract player response; please report').code, 'outdated');
   assertEquals(classifyFailure('WARNING: No supported JavaScript runtime could be found\nERROR: Requested format is not available').code, 'outdated');
+  // No audio offered without any sign of a broken extractor: the same code as before 'withheld' existed.
+  assertEquals(classifyFailure('ERROR: [youtube] x: Requested format is not available. Use --list-formats for a list of available formats').code, 'outdated');
   assertEquals(classifyFailure('ERROR: Unable to download webpage: <urlopen error [Errno 8] nodename nor servname provided> (caused by getaddrinfo failed)').code, 'network');
   assertEquals(classifyFailure('ERROR: something odd').code, 'error');
   assertEquals(classifyNoFile('[download] audio does not pass filter (!is_live & duration <=? 900), skipping ..').code, 'unavailable');

@@ -37,14 +37,25 @@ describe('cloud beat maps', () => {
     const throwing: FetchLike = () => Promise.reject(new TypeError('Failed to fetch'));
     expect(await fetchCloudMap(base, 'ok', throwing)).toBeNull();
   });
-  it('parses status.json tolerantly and phrases blocked songs', () => {
-    const s = parseStatus(JSON.stringify({ videos: { a: { state: 'blocked', message: 'bot check' }, b: { state: 'ok' }, c: { state: 'nope' }, d: 5 } }));
-    expect(s).toEqual({ a: { state: 'blocked', message: 'bot check' }, b: { state: 'ok' } });
+  it('parses status.json tolerantly and phrases songs without a map calmly', () => {
+    const s = parseStatus(
+      JSON.stringify({
+        videos: { a: { state: 'blocked', reason: 'blocked', message: 'bot check' }, b: { state: 'ok' }, c: { state: 'nope' }, d: 5, e: { state: 'error', reason: 'withheld' }, f: { state: 'error', reason: '<b>x</b>' } },
+      }),
+    );
+    expect(s).toEqual({ a: { state: 'blocked', reason: 'blocked', message: 'bot check' }, b: { state: 'ok' }, e: { state: 'error', reason: 'withheld' }, f: { state: 'error' } });
     expect(parseStatus('not json')).toEqual({});
     expect(parseStatus('{"videos":[]}')).toEqual({});
-    expect(describeCloudStatus(s.a)).toMatch(/blocked by YouTube/);
     expect(describeCloudStatus(s.b)).toBeNull();
-    expect(describeCloudStatus({ state: 'error' })).toMatch(/failed/);
+    // Retried by the job: the map is on its way. No failure wording, no technical words.
+    for (const st of [s.a, s.e, { state: 'error' as const }, { state: 'error' as const, reason: 'outdated' }]) {
+      const text = describeCloudStatus(st)!;
+      expect(text).toMatch(/arrive on its own/);
+      expect(text).not.toMatch(/fail|block|yt-dlp|cookie|format|YouTube/i);
+    }
+    // Never retried by itself (removed, private, too long): no promise of a map.
+    expect(describeCloudStatus({ state: 'error', reason: 'unavailable' })).toMatch(/finds the beat by listening/);
+    expect(describeCloudStatus({ state: 'error', reason: 'too-long' })).not.toMatch(/arrive/);
   });
   it('reads BPMs from index.json songs, tolerating its absence', () => {
     expect(parseIndexSongs(JSON.stringify({ ids: ['a'] }))).toEqual({});

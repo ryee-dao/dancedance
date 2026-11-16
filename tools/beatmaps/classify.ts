@@ -4,13 +4,16 @@
  *  - blocked:     YouTube is refusing this machine (bot check, rate limit, login wall). Cookies may help.
  *  - outdated:    yt-dlp could not understand YouTube's current page or player (update yt-dlp), or its
  *                 JavaScript challenge solver could not run.
+ *  - withheld:    yt-dlp read the video fine, but YouTube offered this machine no audio for it right now
+ *                 ("Requested format is not available" with no sign of a broken extractor). Seen with a
+ *                 signed-in session on GitHub's runners, per video and on and off. Retried later.
  *  - unavailable: this one video is private, removed, region-locked, members-only, age-restricted...
  *  - error:       anything else (network hiccups, ffmpeg, our own bugs). Retried later.
  *
  * Pure: no I/O.
  */
 
-export type FailureKind = 'blocked' | 'outdated' | 'unavailable' | 'error';
+export type FailureKind = 'blocked' | 'outdated' | 'withheld' | 'unavailable' | 'error';
 
 export interface Classification {
   kind: FailureKind;
@@ -26,8 +29,15 @@ interface Rule {
   summary: string;
 }
 
-const JS_RUNTIME_RE = /no supported javascript runtime|javascript runtime (?:could not|was not) (?:be )?found|challenge solving failed|ejs[^\n]*(?:not (?:installed|found|available)|missing)/i;
+const JS_RUNTIME_RE = /no supported javascript runtime|javascript runtime (?:could not|was not) (?:be )?found|(?:challenge|signature) solving failed|ejs[^\n]*(?:not (?:installed|found|available)|missing)/i;
 const JS_RUNTIME_SUMMARY = "yt-dlp could not solve YouTube's JavaScript challenge (is Deno installed? is yt-dlp current?)";
+/**
+ * Signs that yt-dlp itself could not read YouTube (anywhere in stderr, warnings included). With one of
+ * these, "no audio formats" is a symptom of a broken extractor; without, it is YouTube's answer.
+ */
+const BREAKAGE_RE =
+  /unable to extract|signature extraction failed|nsig extraction failed|failed to extract any player response|failed to parse json|confirm you are on the latest version|yt-dlp -U/i;
+const OUTDATED_SUMMARY = 'yt-dlp could not read YouTube; it is probably out of date';
 
 // Order matters: the first matching rule wins. Rate-limit wording contains
 // "isn't available", so the blocked rules come before the unavailable ones.
@@ -53,7 +63,9 @@ const RULES: Rule[] = [
   { kind: 'blocked', re: /login required|requires? (?:a )?log ?in|use --cookies-from-browser or --cookies for the authentication|need to log in/i, summary: 'YouTube wants a signed-in session for this request' },
 
   { kind: 'outdated', re: JS_RUNTIME_RE, summary: JS_RUNTIME_SUMMARY },
-  { kind: 'outdated', re: /unable to extract|signature extraction failed|nsig extraction failed|failed to extract any player response|failed to parse json|confirm you are on the latest version|yt-dlp -U|requested format is not available|only images are available/i, summary: 'yt-dlp could not read YouTube; it is probably out of date' },
+  { kind: 'outdated', re: BREAKAGE_RE, summary: OUTDATED_SUMMARY },
+  // yt-dlp read the page, but there was no audio to pick (see BREAKAGE_RE and classifyYtDlpError).
+  { kind: 'withheld', re: /requested format is not available|only images are available|no video formats found/i, summary: 'YouTube offered this machine no audio for this video right now; it is tried again later' },
   { kind: 'outdated', re: /HTTP Error 403/i, summary: 'YouTube refused the media download (HTTP 403); usually fixed by a newer yt-dlp' },
 
   { kind: 'error', re: /timed out|connection (?:reset|refused|aborted)|getaddrinfo|name resolution|network is unreachable|unable to download webpage|remote end closed/i, summary: 'Network error talking to YouTube' },
@@ -89,7 +101,9 @@ export function classifyYtDlpError(stderr: string): Classification {
     for (const r of RULES) {
       if (!r.re.test(text)) continue;
       // "Requested format is not available" is usually the symptom; a missing JS runtime warning is the cause.
-      if (r.kind === 'outdated' && JS_RUNTIME_RE.test(stderr)) return { kind: 'outdated', summary: JS_RUNTIME_SUMMARY, detail };
+      if ((r.kind === 'outdated' || r.kind === 'withheld') && JS_RUNTIME_RE.test(stderr)) return { kind: 'outdated', summary: JS_RUNTIME_SUMMARY, detail };
+      // ... or a warning that yt-dlp could not read the player (nsig, signature): then it is out of date.
+      if (r.kind === 'withheld' && BREAKAGE_RE.test(stderr)) return { kind: 'outdated', summary: OUTDATED_SUMMARY, detail };
       return { kind: r.kind, summary: r.summary, detail };
     }
   }

@@ -139,6 +139,8 @@ export interface VideoAttempt {
   videoId: string;
   state: 'ok' | 'blocked' | 'error';
   reason?: string;
+  /** Tries so far (status.json `attempts`), when given. */
+  attempts?: number;
   lastTried: string;
 }
 
@@ -184,7 +186,13 @@ export function parseVideoAttempts(text: string | null): VideoAttempt[] | null {
     for (const [videoId, v] of Object.entries(videos as Record<string, unknown>)) {
       const r = (v ?? {}) as Record<string, unknown>;
       if ((r.state !== 'ok' && r.state !== 'blocked' && r.state !== 'error') || typeof r.lastTried !== 'string') continue;
-      out.push({ videoId, state: r.state, ...(typeof r.reason === 'string' ? { reason: r.reason } : {}), lastTried: r.lastTried });
+      out.push({
+        videoId,
+        state: r.state,
+        ...(typeof r.reason === 'string' ? { reason: r.reason } : {}),
+        ...(typeof r.attempts === 'number' && Number.isFinite(r.attempts) ? { attempts: r.attempts } : {}),
+        lastTried: r.lastTried,
+      });
     }
     return out;
   } catch {
@@ -377,30 +385,50 @@ export function checkSite(runs: RunsResult | null, now: number): HealthCheck {
   return { id: 'site', title, state: 'ok', text: `The site last updated ${when}.` };
 }
 
-export type YoutubeState = 'ok' | 'blocked' | 'outdated' | 'signin' | 'unknown';
+/**
+ * 'withheld': YouTube offered the job no audio for some songs on its last try
+ * (status.json reason 'withheld'). Not a failure: those songs are listed and
+ * playable, and later runs retry them by themselves.
+ */
+export type YoutubeState = 'ok' | 'blocked' | 'outdated' | 'withheld' | 'signin' | 'unknown';
+
+/**
+ * Tries after which a song YouTube keeps holding back is worth the owner's look:
+ * with the job's backoff (1 h, 2 h, 4 h, then every 6 h) that is about a day.
+ */
+export const WITHHELD_STUCK_ATTEMPTS = 6;
 
 /**
  * Whether YouTube lets the cloud job download, from its newest attempts: the
  * entries of status.json and songs-status.json tried within 45 min of the newest
  * one, plus a rejected sign-in (signInRejected) in the newest finished run.
+ * A 'map-pending' note is told by its video's status.json entry; without one it
+ * counts as a song still waiting ('withheld'). For 'withheld': how many songs
+ * wait, and whether one has waited WITHHELD_STUCK_ATTEMPTS tries.
  */
 export function youtubeState(
   videos: readonly VideoAttempt[] | null | undefined,
   requests: Readonly<Record<string, SongRequestStatus>> | null | undefined,
   runs: readonly RunSummary[] | null,
-): { state: YoutubeState; at: string | null } {
+): { state: YoutubeState; at: string | null; waiting?: number; stuck?: boolean } {
   const last = runs ? songRuns(runs).find((r) => r.status === 'completed') : undefined;
   const upd = last && updateJob(last);
   if (upd?.signInRejected) return { state: 'signin', at: last!.updatedAt };
-  const tries: { state: string; reason?: string; t: number; at: string }[] = [];
+  const tries: { state: string; reason?: string; attempts?: number; t: number; at: string }[] = [];
+  const known = new Set<string>();
   for (const v of videos ?? []) {
+    known.add(v.videoId);
     const t = Date.parse(v.lastTried);
-    if (Number.isFinite(t)) tries.push({ state: v.state, reason: v.reason, t, at: v.lastTried });
+    if (Number.isFinite(t)) tries.push({ state: v.state, reason: v.reason, attempts: v.attempts, t, at: v.lastTried });
   }
   for (const r of Object.values(requests ?? {})) {
     const t = Date.parse(r.lastTried);
     if (!Number.isFinite(t) || r.state === 'not-found') continue;
-    tries.push({ state: r.state === 'map-pending' ? 'blocked' : r.state, t, at: r.lastTried });
+    if (r.state === 'map-pending') {
+      if (!r.videoId || !known.has(r.videoId)) tries.push({ state: 'error', reason: 'withheld', t, at: r.lastTried });
+      continue;
+    }
+    tries.push({ state: r.state, t, at: r.lastTried });
   }
   if (!tries.length) return { state: 'unknown', at: null };
   const newest = Math.max(...tries.map((x) => x.t));
@@ -408,6 +436,8 @@ export function youtubeState(
   const at = tries.find((x) => x.t === newest)!.at;
   if (batch.some((x) => x.state === 'blocked' || x.reason === 'blocked')) return { state: 'blocked', at };
   if (batch.some((x) => x.reason === 'outdated')) return { state: 'outdated', at };
+  const held = batch.filter((x) => x.reason === 'withheld');
+  if (held.length) return { state: 'withheld', at, waiting: held.length, stuck: held.some((x) => (x.attempts ?? 0) >= WITHHELD_STUCK_ATTEMPTS) };
   return { state: 'ok', at };
 }
 
@@ -434,6 +464,25 @@ export function checkYoutube(repo: SiteData | null, runs: RunsResult | null, now
         text: `YouTube refused some downloads on the last try (${when}).`,
         todo: 'This usually fixes itself within a day or two, when the downloader the job uses is updated. Songs are still listed meanwhile.',
       };
+    case 'withheld': {
+      const n = y.waiting ?? 1;
+      const songs = n === 1 ? 'one song' : `${n} songs`;
+      if (y.stuck) {
+        return {
+          id: 'youtube',
+          title,
+          state: 'warn',
+          text: `YouTube still hasn’t handed the cloud job ${songs} after about a day of tries (last try ${when}). ${n === 1 ? 'It plays' : 'They play'} fine meanwhile; only the ready-made beat map is missing.`,
+          todo: 'Nothing is broken, and the job keeps trying by itself. To get the beat map sooner, make it on your own computer (README: “Making beat maps on your own computer”).',
+        };
+      }
+      return {
+        id: 'youtube',
+        title,
+        state: 'ok',
+        text: `On its last try (${when}) YouTube didn’t hand the cloud job ${songs} yet. You can dance to ${n === 1 ? 'it' : 'them'} now; a better beat map arrives on its own.`,
+      };
+    }
     case 'ok':
       return { id: 'youtube', title, state: 'ok', text: `YouTube let the cloud job download on its last try (${when}).` };
     default:
