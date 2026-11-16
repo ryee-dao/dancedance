@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-16T03:11:03.259Z",
+  "updatedAt": "2026-11-16T03:16:36.268Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -1875,8 +1875,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-16T03:11:03.254Z"
+          "at": "2026-11-16T03:11:03.254Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "none",
@@ -10563,6 +10563,129 @@
         }
       }
     },
+    "leviathanjptv - chug jug with you": {
+      "artist": "LeviathanJPTV",
+      "title": "Chug Jug With You",
+      "videoIds": [
+        "GMmrNCSVcwI"
+      ],
+      "genres": [
+        "pop"
+      ],
+      "genreLevels": [
+        "song"
+      ],
+      "complete": true,
+      "at": "2026-11-16T03:16:36.263Z",
+      "sources": {
+        "wikipedia": {
+          "status": "none",
+          "reason": "no article about this song (Chug Jug With You: by another artist)",
+          "at": "2026-11-16T03:16:17.799Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "none",
+          "reason": "no song item by this artist",
+          "at": "2026-11-16T03:16:17.832Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "fortnite",
+            "single"
+          ],
+          "counts": [
+            1,
+            1
+          ],
+          "ref": "release-group/96dee92f-4d33-424f-b617-b3b5f66581f5",
+          "at": "2026-11-16T03:16:34.808Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "none",
+          "reason": "no track by this artist with this title",
+          "at": "2026-11-16T03:16:16.761Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored",
+          "at": "2026-11-16T03:16:16.344Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-16T03:16:16.344Z"
+        },
+        "musicbrainz-album": {
+          "status": "none",
+          "reason": "no recording or album of this song by this artist",
+          "at": "2026-11-16T03:16:34.808Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "none",
+          "reason": "no album (the song is a single, or the album is unknown)",
+          "at": "2026-11-16T03:16:34.808Z"
+        },
+        "wikidata-album": {
+          "status": "none",
+          "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+          "at": "2026-11-16T03:16:34.808Z"
+        },
+        "discogs-album": {
+          "status": "none",
+          "reason": "no Discogs master linked from the MusicBrainz album",
+          "at": "2026-11-16T03:16:34.808Z"
+        },
+        "itunes-album": {
+          "status": "none",
+          "reason": "the release is the song's single",
+          "ref": "Chug Jug With You - Single",
+          "links": {
+            "album": "Chug Jug With You - Single"
+          },
+          "at": "2026-11-16T03:16:19.737Z"
+        },
+        "musicbrainz-artist": {
+          "status": "none",
+          "reason": "the artist has no tags",
+          "ref": "artist/ee4e4b7d-cb1c-485b-aa0e-a871909675e0 (LeviathanJPTV; credited on the song)",
+          "links": {
+            "mbArtist": "ee4e4b7d-cb1c-485b-aa0e-a871909675e0"
+          },
+          "at": "2026-11-16T03:16:36.116Z"
+        },
+        "wikipedia-artist": {
+          "status": "none",
+          "reason": "no article about this artist",
+          "at": "2026-11-16T03:16:36.263Z"
+        },
+        "wikidata-artist": {
+          "status": "none",
+          "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the artist",
+          "at": "2026-11-16T03:16:36.263Z"
+        },
+        "theaudiodb-artist": {
+          "status": "none",
+          "reason": "no artist of this name",
+          "at": "2026-11-16T03:16:18.994Z"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "genres": [
+            "Comedy"
+          ],
+          "ref": "artist/1466070181 (LeviathanJPTV)",
+          "at": "2026-11-16T03:16:19.737Z"
+        }
+      }
+    },
     "linkin park - bleed it out": {
       "artist": "Linkin Park",
       "title": "Bleed It Out",
@@ -17200,8 +17323,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-16T03:11:03.257Z"
+          "at": "2026-11-16T03:11:03.257Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",

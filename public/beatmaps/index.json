@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-16T02:47:11.629Z",
+  "generatedAt": "2026-11-16T03:16:36.268Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -26,6 +26,7 @@
     "DlSsIKn3HTU",
     "EQzXwcZS-FU",
     "FHo-g6DCTv4",
+    "GMmrNCSVcwI",
     "GT1lysg-Kw4",
     "GcHHjq8pXec",
     "GchEVSx9XEA",
@@ -747,6 +748,17 @@
         "country",
         "pop soul",
         "pop rap"
+      ]
+    },
+    "GMmrNCSVcwI": {
+      "bpm": 124,
+      "duration": 138,
+      "genre": "Pop",
+      "genres": [
+        "pop"
+      ],
+      "genreLevels": [
+        "song"
       ]
     },
     "GT1lysg-Kw4": {
