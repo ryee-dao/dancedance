@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-15T22:58:13.662Z",
+  "generatedAt": "2026-11-16T02:13:50.693Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -146,8 +146,8 @@
         "alternative rock",
         "metal",
         "emo",
-        "alternative metal",
-        "rap metal"
+        "rap metal",
+        "pop rock"
       ],
       "genreLevels": [
         "song",
@@ -155,7 +155,7 @@
         "song",
         "song",
         "album",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "alternative rock",
@@ -2714,8 +2714,8 @@
         "alternative rock",
         "nu metal",
         "hard rock",
-        "metal",
-        "rap rock"
+        "rap rock",
+        "pop rock"
       ],
       "genreLevels": [
         "song",

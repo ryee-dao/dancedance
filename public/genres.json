@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-15T22:58:13.662Z",
+  "updatedAt": "2026-11-16T02:13:50.693Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -11142,7 +11142,7 @@
         "alternative metal"
       ],
       "complete": true,
-      "at": "2026-11-14T08:25:16.914Z",
+      "at": "2026-11-16T02:13:50.687Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -11214,6 +11214,11 @@
             "Hard Rock"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-16T02:13:50.687Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -11724,7 +11729,7 @@
         "angry"
       ],
       "complete": true,
-      "at": "2026-11-14T08:26:05.743Z",
+      "at": "2026-11-16T02:13:50.692Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -11793,6 +11798,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-16T02:13:50.692Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -12243,8 +12253,8 @@
         "alternative rock",
         "metal",
         "emo",
-        "alternative metal",
-        "rap metal"
+        "rap metal",
+        "pop rock"
       ],
       "genreLevels": [
         "song",
@@ -12252,7 +12262,7 @@
         "song",
         "song",
         "album",
-        "album"
+        "song"
       ],
       "artistGenres": [
         "alternative rock",
@@ -12261,7 +12271,7 @@
         "alternative metal"
       ],
       "complete": true,
-      "at": "2026-11-14T08:25:49.486Z",
+      "at": "2026-11-16T02:13:50.690Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -12320,6 +12330,11 @@
             "Hard Rock"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-16T02:13:50.690Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -13157,8 +13172,8 @@
         "alternative rock",
         "nu metal",
         "hard rock",
-        "metal",
-        "rap rock"
+        "rap rock",
+        "pop rock"
       ],
       "genreLevels": [
         "song",
@@ -13178,7 +13193,7 @@
         "angry"
       ],
       "complete": true,
-      "at": "2026-11-14T08:25:25.040Z",
+      "at": "2026-11-16T02:13:50.689Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -13235,6 +13250,11 @@
           "status": "none",
           "at": "2026-11-14T04:30:48.095Z",
           "reason": "no matching track"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-16T02:13:50.689Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -16271,18 +16291,19 @@
       "sources": {
         "wikipedia": {
           "status": "none",
-          "reason": "no article about this song (While Your Lips Are Still Red: by another artist)",
           "at": "2026-11-15T22:57:08.163Z",
+          "reason": "no article about this song (While Your Lips Are Still Red: by another artist)",
           "v": 3
         },
         "wikidata": {
           "status": "none",
-          "reason": "no song item by this artist",
           "at": "2026-11-15T22:57:09.183Z",
+          "reason": "no song item by this artist",
           "v": 2
         },
         "musicbrainz": {
           "status": "found",
+          "at": "2026-11-15T22:57:08.682Z",
           "genres": [
             "metal",
             "rock",
@@ -16302,32 +16323,32 @@
             1
           ],
           "ref": "recording/f0b9e7e1-882f-4c1b-b1a1-586ec4090535",
-          "at": "2026-11-15T22:57:08.682Z",
           "v": 2
         },
         "theaudiodb": {
           "status": "found",
+          "at": "2026-11-15T22:57:07.050Z",
           "genres": [
             "Symphonic Metal"
           ],
-          "ref": "track/33161469",
-          "at": "2026-11-15T22:57:07.050Z"
+          "ref": "track/33161469"
         },
         "itunes": {
           "status": "found",
+          "at": "2026-11-15T22:57:06.825Z",
           "genres": [
             "Hard Rock"
           ],
-          "ref": "stored",
-          "at": "2026-11-15T22:57:06.825Z"
+          "ref": "stored"
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T22:57:06.825Z"
+          "at": "2026-11-15T22:57:06.825Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
+          "at": "2026-11-15T22:57:40.523Z",
           "genres": [
             "symphonic metal",
             "rock",
@@ -16375,11 +16396,11 @@
             "discogsMaster": "2872",
             "wikidata": "Q212822"
           },
-          "at": "2026-11-15T22:57:40.523Z",
           "v": 2
         },
         "wikipedia-album": {
           "status": "found",
+          "at": "2026-11-15T22:57:40.655Z",
           "genres": [
             "Symphonic metal",
             "gothic metal"
@@ -16387,36 +16408,36 @@
           "ref": "Dark Passion Play",
           "links": {
             "wikidata": "Q212822"
-          },
-          "at": "2026-11-15T22:57:40.655Z"
+          }
         },
         "wikidata-album": {
           "status": "found",
+          "at": "2026-11-15T22:57:41.629Z",
           "genres": [
             "symphonic metal"
           ],
-          "ref": "Q212822",
-          "at": "2026-11-15T22:57:41.629Z"
+          "ref": "Q212822"
         },
         "discogs-album": {
           "status": "none",
+          "at": "2026-11-15T22:57:40.885Z",
           "reason": "the master (Dark Passion Play) does not list the song",
-          "ref": "master/2872",
-          "at": "2026-11-15T22:57:40.885Z"
+          "ref": "master/2872"
         },
         "itunes-album": {
           "status": "found",
+          "at": "2026-11-15T22:57:10.139Z",
           "genres": [
             "Hard Rock"
           ],
           "ref": "collection/288794558 (The Sound of Nightwish Reborn - Early Demos for \"Dark Passion Play\")",
           "links": {
             "album": "The Sound of Nightwish Reborn - Early Demos for \"Dark Passion Play\""
-          },
-          "at": "2026-11-15T22:57:10.139Z"
+          }
         },
         "musicbrainz-artist": {
           "status": "found",
+          "at": "2026-11-15T22:58:12.476Z",
           "genres": [
             "symphonic metal",
             "power metal",
@@ -16435,11 +16456,11 @@
           "links": {
             "mbArtist": "00a9f935-ba93-4fc8-a33a-993abe9c936b",
             "wikidata": "Q43510"
-          },
-          "at": "2026-11-15T22:58:12.476Z"
+          }
         },
         "wikipedia-artist": {
           "status": "found",
+          "at": "2026-11-15T22:58:12.667Z",
           "genres": [
             "Symphonic metal",
             "power metal",
@@ -16449,34 +16470,33 @@
           "ref": "Nightwish",
           "links": {
             "wikidata": "Q43510"
-          },
-          "at": "2026-11-15T22:58:12.667Z"
+          }
         },
         "wikidata-artist": {
           "status": "found",
+          "at": "2026-11-15T22:58:13.644Z",
           "genres": [
             "symphonic metal",
             "power metal"
           ],
-          "ref": "Q43510",
-          "at": "2026-11-15T22:58:13.644Z"
+          "ref": "Q43510"
         },
         "theaudiodb-artist": {
           "status": "found",
+          "at": "2026-11-15T22:57:09.255Z",
           "genres": [
             "Symphonic Metal",
             "Rock/Pop"
           ],
-          "ref": "artist/111939",
-          "at": "2026-11-15T22:57:09.255Z"
+          "ref": "artist/111939"
         },
         "itunes-artist": {
           "status": "found",
+          "at": "2026-11-15T22:57:10.139Z",
           "genres": [
             "Hard Rock"
           ],
-          "ref": "artist/2898807 (Nightwish)",
-          "at": "2026-11-15T22:57:10.139Z"
+          "ref": "artist/2898807 (Nightwish)"
         }
       }
     },
@@ -18825,8 +18845,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T22:58:13.654Z"
+          "at": "2026-11-15T22:58:13.654Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -19072,8 +19092,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T22:58:13.661Z"
+          "at": "2026-11-15T22:58:13.661Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -19581,8 +19601,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T22:58:13.656Z"
+          "at": "2026-11-15T22:58:13.656Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -20085,8 +20105,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T22:58:13.658Z"
+          "at": "2026-11-15T22:58:13.658Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "none",
@@ -20245,7 +20265,7 @@
         "moody"
       ],
       "complete": true,
-      "at": "2026-11-14T08:24:28.034Z",
+      "at": "2026-11-16T02:13:50.684Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -20307,6 +20327,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-16T02:13:50.684Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -20551,8 +20576,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-15T22:58:13.660Z"
+          "at": "2026-11-15T22:58:13.660Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
