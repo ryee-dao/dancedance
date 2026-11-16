@@ -165,8 +165,44 @@ describe('YouTube state', () => {
     const v = (state: 'ok' | 'blocked' | 'error', lastTried: string, reason?: string) => ({ videoId: 'x', state, lastTried, ...(reason ? { reason } : {}) });
     expect(youtubeState([v('blocked', '2026-11-10T00:00:00Z'), v('ok', '2026-11-14T22:00:00Z')], {}, null).state).toBe('ok');
     expect(youtubeState([v('ok', '2026-11-14T21:40:00Z'), v('error', '2026-11-14T22:00:00Z', 'outdated')], {}, null).state).toBe('outdated');
-    expect(youtubeState([], { k: { state: 'map-pending', artist: 'a', title: 't', attempts: 1, lastTried: '2026-11-14T22:00:00Z' } }, null).state).toBe('blocked');
+    // A listed song waiting for its map, with nothing else known: waiting, not "blocked".
+    expect(youtubeState([], { k: { state: 'map-pending', artist: 'a', title: 't', attempts: 1, lastTried: '2026-11-14T22:00:00Z' } }, null)).toMatchObject({ state: 'withheld', waiting: 1, stuck: false });
     expect(youtubeState(null, null, null).state).toBe('unknown');
+  });
+  it('a map-pending note is told by its video’s entry in status.json', () => {
+    const pending = { k: { state: 'map-pending' as const, artist: 'a', title: 't', videoId: 'x', attempts: 1, lastTried: '2026-11-14T22:00:00Z' } };
+    const v = (state: 'ok' | 'blocked' | 'error', reason?: string) => [{ videoId: 'x', state, lastTried: '2026-11-14T22:00:00Z', ...(reason ? { reason } : {}) }];
+    expect(youtubeState(v('blocked', 'blocked'), pending, null).state).toBe('blocked');
+    expect(youtubeState(v('error', 'outdated'), pending, null).state).toBe('outdated');
+    expect(youtubeState(v('error', 'withheld'), pending, null)).toMatchObject({ state: 'withheld', waiting: 1 });
+  });
+  it('no audio offered: calm and "ok" at first, worth a look after about a day of tries', () => {
+    const vids = (attempts: number) =>
+      JSON.stringify({
+        updatedAt: '2026-11-14T22:40:00Z',
+        videos: {
+          erSoNgCLGRE: { state: 'error', reason: 'withheld', message: 'YouTube offered this machine no audio for this video right now', attempts, lastTried: '2026-11-14T22:40:00Z' },
+          aaaaaaaaaaa: { state: 'ok', attempts: 1, lastTried: '2026-11-14T22:39:00Z' },
+        },
+      });
+    const songsStatus = JSON.stringify({
+      updatedAt: '2026-11-14T22:40:00Z',
+      requests: { 'nightwish - while your lips are still red': { state: 'map-pending', artist: 'Nightwish', title: 'While Your Lips Are Still Red', videoId: 'erSoNgCLGRE', attempts: 1, lastTried: '2026-11-14T22:40:00Z' } },
+    });
+    const fresh = assessHealth({ now: NOW, relay: relayOk, runs: ok([addRunOk()]), live: site({}), repo: site({ status: vids(1), songsStatus }, true) });
+    const y = byId(fresh.checks).youtube;
+    expect(y.state).toBe('ok');
+    expect(y.text).toBe('On its last try (20 min ago) YouTube didn’t hand the cloud job one song yet. You can dance to it now; a better beat map arrives on its own.');
+    expect(fresh.overall).toBe('ok');
+    expect(fresh.summary).toBe('Adding songs is working');
+    // Nothing technical for the person adding songs.
+    for (const c of fresh.checks) expect(`${c.text} ${c.todo ?? ''}`).not.toMatch(/yt-dlp|cookie|format|outdated|out of date/i);
+
+    const stuck = byId(assessHealth({ now: NOW, relay: relayOk, runs: ok([addRunOk()]), live: site({}), repo: site({ status: vids(6), songsStatus }, true) }).checks).youtube;
+    expect(stuck.state).toBe('warn');
+    expect(stuck.text).toMatch(/after about a day of tries/);
+    expect(stuck.todo).toMatch(/Nothing is broken/);
+    expect(`${stuck.text} ${stuck.todo}`).not.toMatch(/yt-dlp|cookie|format/i);
   });
   it('a red "YouTube rejected the sign-in" step means the cookies expired', () => {
     const [run] = summarizeRuns({ workflow_runs: [ghRun({ id: 7, event: 'schedule', conclusion: 'failure', created: '2026-11-14T22:23:00Z' })] });

@@ -78,7 +78,7 @@ class Library extends EventTarget {
         dup
           ? `“${song.title}” is already in your songs.`
           : song.hasMap === false
-            ? `“${song.title}” is in My added songs. The coach learns its beat the first time it’s played.`
+            ? `“${song.title}” is added: you can dance to it now. A better beat map is being prepared and will arrive on its own.`
             : `“${song.title}” is ready to dance. It’s in My added songs.`,
         6000,
       );

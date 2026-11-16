@@ -134,7 +134,7 @@ export class BeatSession {
     return this.tracker;
   }
 
-  /** e.g. "Cloud beat analysis was blocked by YouTube for this song." while there is no map. */
+  /** e.g. "The coach finds the beat by listening for now. ..." while there is no map (describeCloudStatus). */
   cloudNote(): string | null {
     const m = this.hub.map();
     return m && !m.partial ? null : this.note;
