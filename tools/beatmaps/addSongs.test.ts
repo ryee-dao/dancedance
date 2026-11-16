@@ -15,6 +15,7 @@ import { ToolFailure, type EmbedCheck } from './youtube';
 
 const SONG = synthClickTrack({ bpm: 120, duration: 30, accent: true, pattern: 'pop', seed: 3 });
 /** What the signed-in cloud job got for two songs on 2026-11-15 (yt-dlp current, Deno installed). */
+const ALL_HELD = { lyricvid001: 'withheld', lyricvid002: 'withheld', officialmv1: 'withheld' } as const;
 const NO_AUDIO = 'ERROR: [youtube] lyricvid001: Requested format is not available. Use --list-formats for a list of available formats';
 const NOW = new Date('2026-11-10T12:00:00Z');
 
@@ -30,6 +31,7 @@ const REMIX = { id: 'remixvid001', title: 'Dua Lipa - Levitating (Remix) Lyrics'
 let root: string;
 let paths: Paths;
 let downloads: string[];
+let lightDownloads: string[];
 let searches: string[];
 let embedChecks: string[];
 let audioDirs: string[];
@@ -48,8 +50,9 @@ function deps(w: World = {}): Deps {
     fetchPlaylist: async () => {
       throw new Error('playlist must not be read on an add run');
     },
-    downloadAudio: async (id, dir) => {
+    downloadAudio: async (id, dir, o) => {
       downloads.push(id);
+      if (o?.light) lightDownloads.push(id);
       const how = w.download?.[id] ?? 'ok';
       if (how === 'unavailable') throw new ToolFailure(classifyYtDlpError('ERROR: [youtube] x: Video unavailable'), 'yt-dlp');
       if (how === 'blocked') throw new ToolFailure(classifyYtDlpError("ERROR: [youtube] x: Sign in to confirm you're not a bot"), 'yt-dlp');
@@ -110,6 +113,7 @@ beforeEach(async () => {
   await mkdir(paths.beatmapsDir);
   await writeFile(paths.starterFile, JSON.stringify([{ videoId: 'starter0001', title: 'S', artist: 'A' }]));
   downloads = [];
+  lightDownloads = [];
   searches = [];
   embedChecks = [];
   audioDirs = [];
@@ -242,12 +246,15 @@ describe('add a song by search', () => {
     expect(existsSync(join(paths.beatmapsDir, 'lyricvid001.json'))).toBe(true);
   });
 
-  it('no audio offered: the song is listed, the run stays green with a "beat map pending" warning, and later runs retry it by themselves', async () => {
-    const out = await runBeatmaps(paths, opts(), deps({ download: { lyricvid001: 'withheld' } }));
+  it('no audio for any acceptable upload: the first choice is listed, the run stays green with a "beat map pending" warning, and later runs retry it by themselves', async () => {
+    const out = await runBeatmaps(paths, opts(), deps({ download: ALL_HELD }));
     expect(out.exitCode).toBe(0);
     expect(out.report.fatal).toBeNull();
     expect(out.report.stoppedEarly).toBeUndefined();
     expect(out.report.adds?.[0]).toMatchObject({ kind: 'listed', videoId: 'lyricvid001', cause: 'withheld' });
+    // Every acceptable upload was tried (the remix is not acceptable), the others with the light chain.
+    expect(downloads).toEqual(['lyricvid001', 'lyricvid002', 'officialmv1']);
+    expect(lightDownloads).toEqual(['lyricvid002', 'officialmv1']);
     const summary = renderSummary(out.report);
     expect(summary).toContain('Beat map pending (retried automatically):** Dua Lipa - Levitating');
     expect(summary).not.toMatch(/CAUTION|out of date/);
@@ -255,18 +262,27 @@ describe('add a song by search', () => {
     expect(notes.filter((l) => l.startsWith('::error'))).toEqual([]);
     expect(notes).toEqual([expect.stringMatching(/^::warning title=Beat map pending%3A Dua Lipa - Levitating::.*try again by themselves/)]);
     expect(await songsOnDisk()).toMatchObject([{ videoId: 'lyricvid001', hasMap: false }]);
-    expect((await statusOnDisk())['dua lipa - levitating']).toMatchObject({
+    expect(JSON.parse(await readFile(paths.songsStatusFile!, 'utf8')).requests['dua lipa - levitating']).toMatchObject({
       state: 'map-pending',
       videoId: 'lyricvid001',
       message: 'Added: you can dance to it now. A better beat map is being prepared and will arrive on its own.',
+      refused: [
+        { videoId: 'lyricvid002', lastTried: NOW.toISOString() },
+        { videoId: 'officialmv1', lastTried: NOW.toISOString() },
+      ],
     });
+    // The app's own reader ignores the extra field (old app versions too).
+    expect(parseSongsStatus(await readFile(paths.songsStatusFile!, 'utf8'))['dua lipa - levitating']).not.toHaveProperty('refused');
     const vstat = () => readFile(join(paths.beatmapsDir, 'status.json'), 'utf8').then((t) => JSON.parse(t).videos.lyricvid001);
     expect(await vstat()).toMatchObject({ state: 'error', reason: 'withheld', attempts: 1 });
     expect((await vstat()).message).toMatch(/no audio/);
     // A scheduled run an hour later (no add request: nobody does anything) tries again; still none: green again.
     downloads = [];
-    const again = await runBeatmaps(paths, opts({ adds: [] }), { ...deps({ download: { lyricvid001: 'withheld' } }), now: () => new Date('2026-11-10T13:05:00Z') });
+    const again = await runBeatmaps(paths, opts({ adds: [] }), { ...deps({ download: ALL_HELD }), now: () => new Date('2026-11-10T13:05:00Z') });
     expect(downloads).toContain('lyricvid001');
+    // The other uploads were refused within the last 3 days: not downloaded again.
+    expect(downloads).not.toContain('lyricvid002');
+    expect(downloads).not.toContain('officialmv1');
     expect(again.exitCode).toBe(0);
     expect(renderSummary(again.report)).toContain('Beat map pending');
     expect(await vstat()).toMatchObject({ reason: 'withheld', attempts: 2 });
@@ -280,11 +296,98 @@ describe('add a song by search', () => {
   });
 
   it('an older map-pending note is reworded on the next run', async () => {
-    await runBeatmaps(paths, opts(), deps({ download: { lyricvid001: 'withheld' } }));
+    await runBeatmaps(paths, opts(), deps({ download: ALL_HELD }));
     const text = await readFile(paths.songsStatusFile!, 'utf8');
     await writeFile(paths.songsStatusFile!, text.replace(/"message": "[^"]*"/, '"message": "Listed. YouTube refused the cloud download, so there is no beat map yet."'));
-    await runBeatmaps(paths, opts({ adds: [] }), { ...deps({ download: { lyricvid001: 'withheld' } }), now: () => new Date('2026-11-10T12:20:00Z') });
+    await runBeatmaps(paths, opts({ adds: [] }), { ...deps({ download: ALL_HELD }), now: () => new Date('2026-11-10T12:20:00Z') });
     expect((await statusOnDisk())['dua lipa - levitating'].message).toBe('Added: you can dance to it now. A better beat map is being prepared and will arrive on its own.');
+  });
+
+  it('first choice withheld while adding: the next acceptable upload is used, with its own map, and the run is clean', async () => {
+    const out = await runBeatmaps(paths, opts(), deps({ download: { lyricvid001: 'withheld' } }));
+    expect(out.exitCode).toBe(0);
+    expect(downloads).toEqual(['lyricvid001', 'lyricvid002']);
+    expect(lightDownloads).toEqual(['lyricvid002']);
+    expect(out.report.adds?.[0]).toMatchObject({ kind: 'added', videoId: 'lyricvid002', tier: 'lyric' });
+    expect(out.report.adds?.[0].message).toMatch(/YouTube withheld the first choice lyricvid001, so this upload is used/);
+    // The app plays the upload the map was made from.
+    expect(JSON.parse(await readFile(paths.songsFile!, 'utf8')).songs).toMatchObject([{ videoId: 'lyricvid002', hasMap: true }]);
+    expect(existsSync(join(paths.beatmapsDir, 'lyricvid002.json'))).toBe(true);
+    expect(existsSync(join(paths.beatmapsDir, 'lyricvid001.json'))).toBe(false);
+    expect(JSON.parse(await readFile(join(paths.beatmapsDir, 'index.json'), 'utf8')).ids).toEqual(['lyricvid002']);
+    expect(await statusOnDisk()).toEqual({});
+    const vids = JSON.parse(await readFile(join(paths.beatmapsDir, 'status.json'), 'utf8')).videos;
+    expect(Object.keys(vids)).toEqual(['lyricvid002']); // nothing withheld left to show in "Is adding songs working?"
+    expect(renderSummary(out.report)).not.toContain('Beat map pending');
+    expect(renderAnnotations(out.report)).toEqual([]);
+  });
+
+  it('a first choice that downloads behaves exactly as before: one download, no alternates', async () => {
+    await runBeatmaps(paths, opts(), deps());
+    expect(downloads).toEqual(['lyricvid001']);
+    expect(lightDownloads).toEqual([]);
+    expect(searches).toHaveLength(2);
+  });
+
+  it('a listed song whose video is withheld again switches to another upload on a later run (refusals expire after 3 days)', async () => {
+    await runBeatmaps(paths, opts(), deps({ download: ALL_HELD }));
+    expect(await songsOnDisk()).toMatchObject([{ videoId: 'lyricvid001', hasMap: false }]);
+    // Four days later: the first choice is due and still withheld; the earlier refusals have expired.
+    downloads = [];
+    lightDownloads = [];
+    searches = [];
+    const later = new Date('2026-11-14T12:00:00Z');
+    const out = await runBeatmaps(paths, opts({ adds: [] }), { ...deps({ download: { lyricvid001: 'withheld' } }), now: () => later });
+    expect(out.exitCode).toBe(0);
+    expect(downloads).toEqual(['starter0001', 'lyricvid001', 'lyricvid002']);
+    expect(lightDownloads).toEqual(['lyricvid002']);
+    expect(searches.length).toBeGreaterThan(0);
+    const songs = JSON.parse(await readFile(paths.songsFile!, 'utf8')).songs;
+    // Same song, same add time and genres; only the video (and its map) changed.
+    expect(songs).toEqual([{ videoId: 'lyricvid002', title: 'Levitating', artist: 'Dua Lipa', addedAt: NOW.toISOString(), durationSec: 203, hasMap: true }]);
+    expect(await statusOnDisk()).toEqual({});
+    const vids = JSON.parse(await readFile(join(paths.beatmapsDir, 'status.json'), 'utf8')).videos;
+    expect(vids.lyricvid001).toBeUndefined();
+    expect(vids.lyricvid002).toMatchObject({ state: 'ok' });
+    const first = out.report.results.find((x) => x.videoId === 'lyricvid001');
+    expect(first).toMatchObject({ kind: 'withheld', replacedBy: 'lyricvid002' });
+    expect(out.report.results.find((x) => x.videoId === 'lyricvid002')).toMatchObject({ kind: 'ok', why: 'alternate' });
+    expect(renderSummary(out.report)).not.toContain('Beat map pending');
+    expect(renderAnnotations(out.report).filter((l) => /Beat map pending|::error/.test(l))).toEqual([]);
+  });
+
+  it('at most 5 videos per song, never below the bar: rejected uploads are not tried at all', async () => {
+    const lyric = (n: number) => ({ id: `lyricvid0${String(n).padStart(2, '0')}`, title: 'Dua Lipa - Levitating (Lyrics)', channel: `Lyrics ${n}`, view_count: 9e6 - n * 1e5, duration: 204 });
+    const many = [lyric(1), lyric(2), lyric(3), lyric(4), lyric(5), lyric(6), lyric(7), REMIX, { ...LYRIC2, id: 'lowviews001', view_count: 1000, channel: 'Tiny' }];
+    const held = Object.fromEntries(many.map((e) => [e.id, 'withheld' as const]));
+    const out = await runBeatmaps(paths, opts(), deps({ search: async () => results(...many), download: held }));
+    expect(out.exitCode).toBe(0);
+    expect(downloads).toEqual(['lyricvid001', 'lyricvid002', 'lyricvid003', 'lyricvid004', 'lyricvid005']);
+    expect(out.report.adds?.[0]).toMatchObject({ kind: 'listed', videoId: 'lyricvid001' });
+    // Fewer acceptable uploads than 5: only those.
+    downloads = [];
+    await rm(paths.songsFile!);
+    await rm(paths.songsStatusFile!);
+    await runBeatmaps(paths, opts(), deps({ search: async () => results(lyric(1), lyric(2), REMIX), download: held }));
+    expect(downloads).toEqual(['lyricvid001', 'lyricvid002']);
+  });
+
+  it('when the withheld video is the only acceptable upload (as for the Nightwish song), nothing else is tried and it stays listed', async () => {
+    const w = { search: async () => results(LYRIC, REMIX), download: { lyricvid001: 'withheld' as const } };
+    const out = await runBeatmaps(paths, opts(), deps(w));
+    expect(downloads).toEqual(['lyricvid001']);
+    expect(out.report.adds?.[0]).toMatchObject({ kind: 'listed', videoId: 'lyricvid001' });
+    downloads = [];
+    const again = await runBeatmaps(paths, opts({ adds: [] }), { ...deps(w), now: () => new Date('2026-11-10T13:05:00Z') });
+    expect(downloads).toEqual(['starter0001', 'lyricvid001']);
+    expect(again.exitCode).toBe(0);
+    expect(await songsOnDisk()).toMatchObject([{ videoId: 'lyricvid001', hasMap: false }]);
+  });
+
+  it('a bot check on an alternate stops the search: the first choice is listed', async () => {
+    const out = await runBeatmaps(paths, opts(), deps({ download: { lyricvid001: 'withheld', lyricvid002: 'blocked' } }));
+    expect(downloads).toEqual(['lyricvid001', 'lyricvid002']);
+    expect(out.report.adds?.[0]).toMatchObject({ kind: 'listed', videoId: 'lyricvid001', cause: 'withheld' });
   });
 
   it('a song listed without a map (download blocked) keeps its iTunes genre, and index.json gets it with the map', async () => {

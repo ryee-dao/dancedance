@@ -15,6 +15,7 @@ import {
   representative,
   ToolFailure,
   type AttemptFn,
+  poTokenLines,
   type DownloadAttempt,
   type YtDlpOptions,
 } from './youtube';
@@ -91,6 +92,25 @@ describe('download attempts', () => {
       ['tv_downgraded', 'player_client=tv_downgraded', true],
       ['web_safari', 'player_client=web_safari', true],
     ]);
+  });
+
+  it('alternate uploads get the light chain: the first two routes, 3 min each', async () => {
+    expect(attemptPlan({ ...POT, lightAttempts: true }).map((a) => a.label)).toEqual(['default', 'no cookies']);
+    const calls: Call[] = [];
+    const e = (await downloadWithFallbacks('erSoNgCLGRE', dir, { ...COOKIES, lightAttempts: true }, scripted([FORBIDDEN, BOT], calls)).catch((x: unknown) => x)) as DownloadFailure;
+    expect(calls.map((c) => c.timeoutMs)).toEqual([3 * 60_000, 3 * 60_000]);
+    expect(e.classification.kind).toBe('withheld');
+  });
+
+  it('PO token lines: what yt-dlp said about the provider, never a token-like string', () => {
+    const out = '[youtube] [pot:bgutil:http] Generating a gvs PO Token for web client via bgutil HTTP server\n[download] Destination: x.webm\n';
+    const err = `WARNING: [youtube] [pot:bgutil:http] Error reaching POST /get_pot (caused by x) ${'A'.repeat(60)}\n[debug] PO Token secret\nERROR: unable to download video data: HTTP Error 403: Forbidden\n`;
+    const lines = poTokenLines(out, err);
+    expect(lines).toEqual([
+      '[youtube] [pot:bgutil:http] Generating a gvs PO Token for web client via bgutil HTTP server',
+      'WARNING: [youtube] [pot:bgutil:http] Error reaching POST /get_pot (caused by x) <…>',
+    ]);
+    expect(poTokenLines('[download] 100%', 'ERROR: x')).toEqual([]);
   });
 
   it('the first attempt is unchanged: the same options, no extractor args, the old 6 min timeout', async () => {

@@ -236,7 +236,7 @@ async function main(): Promise<number> {
       checkEmbed: (id) => checkEmbed(id),
       lookupOfficial: (req) => lookupOfficial(req),
       lookupGenres: (song, previous) => lookupGenres(song, { http: genres, previous }),
-      downloadAudio: (id, dir) => downloadAudio(id, dir, ytOpts),
+      downloadAudio: (id, dir, o) => downloadAudio(id, dir, o?.light ? { ...ytOpts, lightAttempts: true } : ytOpts),
       decode: decodeWithFfmpeg,
       makeTempDir: async () => {
         const d = await mkdtemp(join(tmpdir(), 'dancedance-audio-'));

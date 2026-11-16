@@ -15,6 +15,8 @@ export interface SongResult {
   message?: string;
   bpm?: number;
   seconds?: number;
+  /** Withheld, but another upload of the song worked and became its video (no longer pending). */
+  replacedBy?: string;
 }
 
 /** 'withheld': several songs this run and YouTube handed over the audio of none (the session, not one song). */
@@ -120,7 +122,7 @@ export function pendingMaps(r: RunReport): string[] {
   const name = (artist: string | undefined, title: string | undefined, id: string) => (title ? (artist ? `${artist} - ${title}` : title) : id);
   return [
     ...(r.adds ?? []).filter((a) => a.kind === 'listed' && a.cause === 'withheld').map((a) => name(a.artist, a.title, a.videoId ?? '')),
-    ...r.results.filter((x) => x.kind === 'withheld').map((x) => name(x.artist, x.title, x.videoId)),
+    ...r.results.filter((x) => x.kind === 'withheld' && !x.replacedBy).map((x) => name(x.artist, x.title, x.videoId)),
   ];
 }
 

@@ -16,9 +16,9 @@ import type { Classification } from './classify';
 import { classifyYtDlpError } from './classify';
 import { parseFlatPlaylist, parseStatus, renderIndex, renderPlaylist, renderStatus, type GenreMeta, type MapInfo, type PlaylistInfo } from './output';
 import type { OfficialSong } from './itunes';
-import { degradedSearch, fallbackQuery, mergeSearches, parseSearch, rankCandidates, searchQueries, type SearchEntry } from './pick';
+import { degradedSearch, fallbackQuery, mergeSearches, parseSearch, rankCandidates, searchQueries, type Ranked, type SearchEntry } from './pick';
 import { planWork, preflightSkip, unionCandidates, type Candidate, type StatusReason, type VideoStatus, type WorkItem, type WorkReason } from './select';
-import { parseSongsList, parseSongsStatus, planAdds, renderSongs, renderSongsStatus, songKey, type AddedSong, type AddRequest, type SongRequestStatus } from './songs';
+import { mergeRefusals, parseRequests, parseSongsList, planAdds, recentRefusals, renderSongs, renderSongsStatus, songKey, type AddedSong, type AddRequest, type RequestStatus } from './songs';
 import { cleanGenreLevels, cleanGenreList } from '../../src/beat/cloud';
 import type { AddResult, Fatal, ResultKind, RunReport, SongResult } from './summary';
 import { attemptsLine, DownloadFailure, PCM_RATE, ToolFailure, type DownloadResult, type EmbedCheck } from './youtube';
@@ -40,7 +40,8 @@ export interface Paths {
 
 export interface Deps {
   fetchPlaylist(url: string): Promise<unknown>;
-  downloadAudio(videoId: string, dir: string): Promise<DownloadResult>;
+  /** `light`: an alternate upload of a song: only the first routes (see youtube.ts lightAttempts). */
+  downloadAudio(videoId: string, dir: string, opts?: { light?: boolean }): Promise<DownloadResult>;
   /** Decode to mono PCM at PCM_RATE (22050 Hz). */
   decode(path: string): Promise<Float32Array>;
   makeTempDir(): Promise<string>;
@@ -185,6 +186,15 @@ function describe(c: Candidate): string {
 /** At most this many candidates are checked / analysed per add request. */
 const ADD_MAX_EMBED_CHECKS = 8;
 const ADD_MAX_ANALYSES = 3;
+/**
+ * When YouTube withholds a song's chosen video (no audio, or HTTP 403 for every route), other
+ * uploads of the same song that pass the same ranking rules are tried in the same run: at most
+ * this many videos per song in all (the first choice plus 4 alternates), each with the light
+ * attempt chain, within ALT_BUDGET_S per song and ALT_DOWNLOADS_PER_RUN per run.
+ */
+export const MAX_VIDEOS_PER_SONG = 5;
+const ALT_BUDGET_S = 6 * 60;
+const ALT_DOWNLOADS_PER_RUN = 12;
 
 export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): Promise<RunOutcome> {
   const stopAfter = opts.stopAfter ?? 3;
@@ -204,7 +214,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
   const prevSongsText = paths.songsFile ? await readText(paths.songsFile) : undefined;
   const prevSongsStatusText = paths.songsStatusFile ? await readText(paths.songsStatusFile) : undefined;
   const songs: AddedSong[] = prevSongsText ? parseSongsList(prevSongsText) : [];
-  const songsStatus: Record<string, SongRequestStatus> = prevSongsStatusText ? parseSongsStatus(prevSongsStatusText) : {};
+  const songsStatus: Record<string, RequestStatus> = prevSongsStatusText ? parseRequests(prevSongsStatusText) : {};
   const prevGenresText = paths.genresFile ? await readText(paths.genresFile) : undefined;
   const genreRecords = parseGenresFile(prevGenresText);
   if (opts.contributed !== undefined) {
@@ -366,6 +376,8 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     const downloads = plan.todo.filter((w) => !preflightSkip(w.candidate)).length + addPlan.todo.length;
     const needed = Math.max(1, Math.min(stopAfter, downloads + (playlistError ? 1 : 0)));
     let successes = 0;
+    /** Downloads of alternate uploads this run (bounded by ALT_DOWNLOADS_PER_RUN). */
+    let altDownloads = 0;
     let runKind = null as ResultKind | null;
     let runLen = 0;
     const note = (kind: ResultKind) => {
@@ -387,14 +399,21 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
      * candidates): a failure is only logged, since the next candidate is tried
      * and songs-status.json reports the request.
      */
-    const processVideo = async (c: Candidate, why: WorkReason, prefix: string, recordFailure = true): Promise<SongResult> => {
+    const processVideo = async (
+      c: Candidate,
+      why: WorkReason,
+      prefix: string,
+      recordFailure = true,
+      /** `count: false`: an alternate upload, which doesn't count towards the run's streaks (the song does, once). */
+      extra: { count?: boolean; light?: boolean } = {},
+    ): Promise<SongResult> => {
       await pause();
       const t0 = deps.clock();
       const dir = await deps.makeTempDir();
       const base = { videoId: c.videoId, title: c.title, artist: c.artist, why };
       let result: SongResult;
       try {
-        const dl = await deps.downloadAudio(c.videoId, dir);
+        const dl = extra.light ? await deps.downloadAudio(c.videoId, dir, { light: true }) : await deps.downloadAudio(c.videoId, dir);
         if (dl.kind === 'filtered') {
           result = { ...base, kind: 'skipped', reason: 'filtered', message: dl.message };
         } else {
@@ -424,7 +443,8 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
         for (const a of attempts ?? []) {
           const c = a.classification;
           const took = a.ms !== undefined ? ` (${(a.ms / 1000).toFixed(0)} s)` : '';
-          deps.log(`${prefix}:   attempt ${a.label}${took}: ${c.kind} - ${sanitizeMessage(c.detail ? `${c.summary}: ${c.detail}` : c.summary, dir)}`);
+          const pot = a.diagnostics?.length ? ` | ${a.diagnostics.join(' | ')}` : '';
+          deps.log(`${prefix}:   attempt ${a.label}${took}: ${c.kind} - ${sanitizeMessage(c.detail ? `${c.summary}: ${c.detail}` : c.summary, dir)}${sanitizeMessage(pot, dir)}`);
         }
         for (const label of attempts && e instanceof DownloadFailure ? e.skipped : []) deps.log(`${prefix}:   attempt ${label}: not tried (the song's time for downloads was used up)`);
         const text = `${cl.summary}${attempts ? ` [${attemptsLine(attempts)}]` : ''}${cl.detail ? `: ${cl.detail}` : ''}`;
@@ -436,7 +456,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
         results.push(result);
         status[c.videoId] = toStatus(result.kind, result.reason, result.kind === 'ok' ? undefined : result.message, status[c.videoId], nowIso());
       }
-      note(result.kind);
+      if (extra.count !== false) note(result.kind);
       deps.log(`${prefix}: ${result.kind}${result.bpm !== undefined ? ` ${result.bpm} BPM` : ''}${result.message ? ` - ${result.message}` : ''}`);
       return result;
     };
@@ -516,11 +536,49 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
       let checks = 0;
       let analyses = 0;
       let outcome: AddResult | null = null;
+      const official = req;
+      type Pick = { videoId: string; tier: Ranked['tier']; videoTitle: string; channel: string; videoSeconds?: number; officialSeconds: number };
+      /** List the song with this video and no map yet (the app finds its beat by listening); later runs retry the map. */
+      const listPending = async (id: string, tier: Ranked['tier'], pick: Pick, res: SongResult, refused: string[]): Promise<AddResult> => {
+        status[id] = toStatus(res.kind, res.kind as StatusReason, res.message, status[id], nowIso());
+        const listed: AddedSong = {
+          videoId: id,
+          title: official.title,
+          artist: official.artist,
+          addedAt: nowIso(),
+          durationSec: official.durationSec,
+          hasMap: false,
+          ...(tier === 'music-video' ? { note: 'music-video' as const } : {}),
+          ...(official.genre ? { genre: official.genre } : {}),
+        };
+        songs.push(listed);
+        await lookupSongGenres(catalogEntry(listed));
+        const prev = songsStatus[item.key];
+        const merged = mergeRefusals(prev?.state === 'map-pending' ? prev.refused : undefined, refused, deps.now());
+        songsStatus[item.key] = {
+          state: 'map-pending',
+          artist: official.artist,
+          title: official.title,
+          durationSec: official.durationSec,
+          videoId: id,
+          message: MAP_PENDING_MESSAGE,
+          attempts: (prev?.attempts ?? 0) + 1,
+          lastTried: nowIso(),
+          ...(merged.length ? { refused: merged } : {}),
+        };
+        const others = refused.length ? `; ${refused.length} other upload(s) withheld too` : '';
+        return { ...base, kind: 'listed', ...pick, cause: res.kind, seconds: deps.clock() - t0, message: `listed; beat map pending (${res.kind}: ${res.message ?? ''})${others}` };
+      };
+      // The first choice YouTube withheld: other uploads that pass the same rules are tried, then it is listed.
+      let held: { id: string; tier: Ranked['tier']; pick: Pick; res: SongResult; at: number } | null = null;
+      const refused: string[] = [];
       for (const r of ranked) {
-        if (checks >= ADD_MAX_EMBED_CHECKS || analyses >= ADD_MAX_ANALYSES) break;
+        if (checks >= ADD_MAX_EMBED_CHECKS || analyses >= (held ? MAX_VIDEOS_PER_SONG : ADD_MAX_ANALYSES)) break;
+        if (held && (altDownloads >= ALT_DOWNLOADS_PER_RUN || deps.clock() - held.at > ALT_BUDGET_S)) break;
         const id = r.entry.id;
         const dup = songs.find((x) => x.videoId === id);
         if (dup) {
+          if (held) continue; // another song's video: not an alternate for this one
           outcome = { ...base, kind: 'already', videoId: id, message: `already added as ${dup.artist} - ${dup.title}` };
           break;
         }
@@ -530,7 +588,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
           deps.log(`    ${id}: ${embed === 'disabled' ? 'embedding disabled' : 'removed or private'}, trying the next one`);
           continue;
         }
-        const pick = { videoId: id, tier: r.tier, videoTitle: r.entry.title, channel: r.entry.channel, videoSeconds: r.entry.duration ?? undefined, officialSeconds: req.durationSec };
+        const pick: Pick = { videoId: id, tier: r.tier, videoTitle: r.entry.title, channel: r.entry.channel, videoSeconds: r.entry.duration ?? undefined, officialSeconds: req.durationSec };
         let res: SongResult;
         if (existing.get(id)?.analyzerVersion === ANALYZER_VERSION) {
           res = { videoId: id, why: 'add', kind: 'ok', message: 'beat map already exists' };
@@ -538,9 +596,11 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
         } else {
           analyses++;
           const c: Candidate = { videoId: id, title: req.title, artist: req.artist, origin: 'added' };
-          res = await processVideo(c, 'add', `  ${id}`, false);
+          if (held) altDownloads++;
+          res = await processVideo(c, held ? 'alternate' : 'add', `  ${id}`, false, held ? { count: false, light: true } : {});
         }
         if (res.kind === 'ok') {
+          if (held) note('ok');
           const song: AddedSong = {
             videoId: id,
             title: req.title,
@@ -553,43 +613,26 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
           songs.push(song);
           delete songsStatus[item.key];
           await lookupSongGenres(catalogEntry(song));
-          outcome = { ...base, kind: 'added', ...pick, bpm: res.bpm, seconds: deps.clock() - t0, message: res.message };
+          const instead = held ? `; YouTube withheld the first choice ${held.id}${refused.length ? ` and ${refused.length} other upload(s)` : ''}, so this upload is used` : '';
+          outcome = { ...base, kind: 'added', ...pick, bpm: res.bpm, seconds: deps.clock() - t0, message: `${res.message ?? ''}${instead}` };
           break;
         }
-        if (res.kind === 'blocked' || res.kind === 'outdated' || res.kind === 'withheld') {
-          // The right video is known; only the download was refused (or YouTube
-          // offered no audio). List the song now (the app finds its beat by
-          // listening) and keep trying to make its map on later runs, with the
-          // usual backoff in status.json.
-          status[id] = toStatus(res.kind, res.kind, res.message, status[id], nowIso());
-          const listed: AddedSong = {
-            videoId: id,
-            title: req.title,
-            artist: req.artist,
-            addedAt: nowIso(),
-            durationSec: req.durationSec,
-            hasMap: false,
-            ...(r.tier === 'music-video' ? { note: 'music-video' as const } : {}),
-            ...(req.genre ? { genre: req.genre } : {}),
-          };
-          songs.push(listed);
-          await lookupSongGenres(catalogEntry(listed));
-          const prev = songsStatus[item.key];
-          songsStatus[item.key] = {
-            state: 'map-pending',
-            artist: req.artist,
-            title: req.title,
-            durationSec: req.durationSec,
-            videoId: id,
-            message: MAP_PENDING_MESSAGE,
-            attempts: (prev?.attempts ?? 0) + 1,
-            lastTried: nowIso(),
-          };
-          outcome = { ...base, kind: 'listed', ...pick, cause: res.kind, seconds: deps.clock() - t0, message: `listed; beat map pending (${res.kind}: ${res.message ?? ''})` };
+        if (res.kind === 'withheld') {
+          if (!held) {
+            held = { id, tier: r.tier, pick, res, at: deps.clock() };
+            deps.log(`    ${id}: YouTube withheld it; trying other uploads of the song (at most ${MAX_VIDEOS_PER_SONG} videos in all)`);
+          } else refused.push(id);
+          continue;
+        }
+        if (res.kind === 'blocked' || res.kind === 'outdated') {
+          // The right video is known; only the download was refused. List the song now with the best
+          // video found (the first choice when YouTube withheld it) and keep trying on later runs.
+          outcome = held ? await listPending(held.id, held.tier, held.pick, held.res, refused) : await listPending(id, r.tier, pick, res, []);
           break;
         }
         deps.log(`    ${id}: ${res.kind}, trying the next one`);
       }
+      if (!outcome && held) outcome = await listPending(held.id, held.tier, held.pick, held.res, refused);
       if (outcome) {
         addResults.push(outcome);
         deps.log(`  ${outcome.kind}: ${outcome.videoId}${outcome.tier ? ` (${outcome.tier})` : ''}`);
@@ -603,6 +646,87 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
         );
       }
     }
+
+    /**
+     * A song added by search, listed without a map, whose video YouTube withheld again: try other
+     * uploads of it that pass the same ranking rules as an add (search, length window, embeddable,
+     * not another song's video, not in the playlist or starter pack, not refused in the last
+     * REFUSED_FOR_MS). The first that gives audio becomes the song's video in songs.json, so the
+     * app plays the very upload its beat map was made from. Songs from the playlist or the starter
+     * pack keep their video: there the video is the owner's choice (the caller checks origin).
+     */
+    const tryAlternates = async (c: Candidate, first: SongResult, prefix: string): Promise<void> => {
+      const song = songs.find((s) => s.videoId === c.videoId);
+      if (!song || !(song.durationSec > 0) || !deps.searchVideos || !deps.checkEmbed) return;
+      if (altDownloads >= ALT_DOWNLOADS_PER_RUN || (mustStop() && runKind !== 'withheld')) return;
+      const key = songKey(song.artist, song.title);
+      const noteNow = songsStatus[key]?.state === 'map-pending' && songsStatus[key].videoId === song.videoId ? songsStatus[key] : undefined;
+      const skip = recentRefusals(noteNow?.refused, deps.now());
+      const fixed = knownSongs(starter, [], playlist ? JSON.stringify({ videos: playlist.videos }) : await readText(paths.playlistFile)).ids;
+      deps.log(`${prefix}: YouTube withheld it; looking for other uploads of the song (at most ${MAX_VIDEOS_PER_SONG - 1})`);
+      let ranked: Ranked[];
+      try {
+        ranked = (await searchAndRank({ artist: song.artist, title: song.title, durationSec: song.durationSec })).ranked;
+      } catch (e) {
+        deps.log(`${prefix}: search for other uploads failed (${classify(e).summary}); tried again on a later run`);
+        return;
+      }
+      const t0 = deps.clock();
+      const refusedNow: string[] = [];
+      let tried = 0;
+      let checks = 0;
+      for (const r of ranked) {
+        if (tried >= MAX_VIDEOS_PER_SONG - 1 || checks >= ADD_MAX_EMBED_CHECKS || altDownloads >= ALT_DOWNLOADS_PER_RUN || deps.clock() - t0 > ALT_BUDGET_S) break;
+        const id = r.entry.id;
+        if (id === song.videoId || skip.has(id) || fixed.has(id) || songs.some((s) => s.videoId === id)) continue;
+        checks++;
+        const embed = await deps.checkEmbed(id);
+        if (embed === 'disabled' || embed === 'gone') continue;
+        let res: SongResult;
+        if (existing.get(id)?.analyzerVersion === ANALYZER_VERSION) res = { videoId: id, why: 'alternate', kind: 'ok', message: 'beat map already exists' };
+        else {
+          tried++;
+          altDownloads++;
+          const alt: Candidate = { videoId: id, title: song.title, artist: song.artist, origin: 'added' };
+          res = await processVideo(alt, 'alternate', `${prefix} -> ${id}`, false, { count: false, light: true });
+        }
+        if (res.kind === 'ok') {
+          note('ok');
+          const old = song.videoId;
+          song.videoId = id;
+          if (r.tier === 'music-video') song.note = 'music-video';
+          else delete song.note;
+          // The withheld video is no longer anyone's song: its failure would only confuse "Is adding songs working?".
+          if (!fixed.has(old)) delete status[old];
+          first.replacedBy = id;
+          first.message = `${first.message ?? ''}; replaced by ${id}, another upload of the song that YouTube handed over`;
+          deps.log(`${prefix}: switched to ${id} (${r.tier}, "${r.entry.title}"); the app plays this upload, with its own beat map`);
+          return;
+        }
+        if (res.kind === 'withheld') refusedNow.push(id);
+        else if (res.kind === 'blocked' || res.kind === 'outdated') break; // the session, not the video
+      }
+      deps.log(
+        tried || checks
+          ? `${prefix}: no other upload worked (${tried} tried, ${refusedNow.length} withheld); the song keeps ${song.videoId} and is retried later`
+          : `${prefix}: no other upload of the song passes the rules for adding one (${ranked.length} acceptable, all known); the song keeps ${song.videoId} and is retried later`,
+      );
+      if (!refusedNow.length) return;
+      const prev = songsStatus[key];
+      songsStatus[key] = {
+        ...(noteNow ?? {
+          state: 'map-pending' as const,
+          artist: song.artist,
+          title: song.title,
+          durationSec: song.durationSec,
+          videoId: song.videoId,
+          message: MAP_PENDING_MESSAGE,
+          attempts: prev?.attempts ?? 0,
+          lastTried: nowIso(),
+        }),
+        refused: mergeRefusals(noteNow?.refused, refusedNow, deps.now()),
+      };
+    };
 
     // --- Regular work -------------------------------------------------------
     const total = plan.todo.length;
@@ -623,7 +747,8 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
         deps.log(`${prefix}: ${pre.message}`);
         continue;
       }
-      await processVideo(c, item.why, prefix);
+      const res = await processVideo(c, item.why, prefix);
+      if (res.kind === 'withheld' && c.origin === 'added' && !existing.has(c.videoId)) await tryAlternates(c, res, prefix);
     }
     // Every download blocked (or yt-dlp broken) with nothing left to try: the run fails. One song
     // YouTube withheld is no failure; several songs and every one withheld (none worked) is, since then
@@ -697,7 +822,7 @@ async function writeSongFiles(
   paths: Paths,
   o: {
     songs: AddedSong[];
-    songsStatus: Record<string, SongRequestStatus>;
+    songsStatus: Record<string, RequestStatus>;
     prevSongsText: string | undefined;
     prevSongsStatusText: string | undefined;
     mapIds: ReadonlySet<string>;
@@ -851,7 +976,7 @@ async function runContribution(
   st: {
     existing: Map<string, MapInfo>;
     songs: AddedSong[];
-    songsStatus: Record<string, SongRequestStatus>;
+    songsStatus: Record<string, RequestStatus>;
     prevSongsText: string | undefined;
     prevSongsStatusText: string | undefined;
     starter: Candidate[];

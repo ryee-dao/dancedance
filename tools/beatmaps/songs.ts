@@ -9,6 +9,9 @@
  *                      keys sorted; failed requests ('not-found', or 'blocked'/'error'
  *                      while searching), plus a 'map-pending' note for listed songs
  *                      whose download was refused; removed once the song has a map.
+ *                      A map-pending note may carry `refused`: other uploads of the song
+ *                      YouTube also withheld (videoId + when), so later runs skip them
+ *                      for a while (REFUSED_FOR_MS). The app ignores the field.
  */
 import { parseSongsList, parseSongsStatus, songKey, type AddedSong, type SongRequestStatus } from '../../src/beat/cloud';
 import { renderStable, toJsonText } from './output';
@@ -16,6 +19,61 @@ import { MAX_ADDS } from './pick';
 
 export { parseSongsList, parseSongsStatus, songKey };
 export type { AddedSong, SongRequestStatus };
+
+/** Another upload of a song that YouTube withheld from the cloud job. */
+export interface Refusal {
+  videoId: string;
+  /** ISO timestamp. */
+  lastTried: string;
+}
+
+/** A songs-status.json request as the job keeps it: the app's fields plus `refused` (map-pending notes). */
+export type RequestStatus = SongRequestStatus & { refused?: Refusal[] };
+
+/** How long a withheld alternate upload is left alone before it may be tried again. */
+export const REFUSED_FOR_MS = 3 * 24 * 3600_000;
+/** Most refusals kept per song (newest first). */
+export const MAX_REFUSALS = 12;
+
+const REFUSAL_ID = /^[A-Za-z0-9_-]{11}$/;
+
+/** parseSongsStatus, keeping each map-pending note's well-formed `refused` list. */
+export function parseRequests(text: string): Record<string, RequestStatus> {
+  const out: Record<string, RequestStatus> = parseSongsStatus(text);
+  let raw: Record<string, { refused?: unknown }> = {};
+  try {
+    raw = ((JSON.parse(text) as { requests?: unknown })?.requests ?? {}) as Record<string, { refused?: unknown }>;
+  } catch {
+    return out;
+  }
+  for (const [key, r] of Object.entries(out)) {
+    const list = r.state === 'map-pending' ? raw[key]?.refused : undefined;
+    if (!Array.isArray(list)) continue;
+    const refused = list
+      .filter((x): x is Refusal => !!x && typeof x.videoId === 'string' && REFUSAL_ID.test(x.videoId) && typeof x.lastTried === 'string' && Number.isFinite(Date.parse(x.lastTried)))
+      .map((x) => ({ videoId: x.videoId, lastTried: x.lastTried }))
+      .slice(0, MAX_REFUSALS);
+    if (refused.length) r.refused = refused;
+  }
+  return out;
+}
+
+/** Merge new refusals into a list: one entry per video (the newest time), newest first, expired ones dropped, capped. */
+export function mergeRefusals(prev: readonly Refusal[] | undefined, ids: readonly string[], now: Date): Refusal[] {
+  const at = now.toISOString();
+  const byId = new Map<string, string>();
+  for (const id of ids) byId.set(id, at);
+  for (const r of prev ?? []) if (!byId.has(r.videoId) && now.getTime() - Date.parse(r.lastTried) < REFUSED_FOR_MS) byId.set(r.videoId, r.lastTried);
+  return [...byId]
+    .map(([videoId, lastTried]) => ({ videoId, lastTried }))
+    .sort((a, b) => (a.lastTried < b.lastTried ? 1 : a.lastTried > b.lastTried ? -1 : a.videoId.localeCompare(b.videoId)))
+    .slice(0, MAX_REFUSALS);
+}
+
+/** Video IDs refused within REFUSED_FOR_MS of `now`. */
+export function recentRefusals(list: readonly Refusal[] | undefined, now: Date): Set<string> {
+  return new Set((list ?? []).filter((r) => now.getTime() - Date.parse(r.lastTried) < REFUSED_FOR_MS).map((r) => r.videoId));
+}
 
 export interface AddRequest {
   artist: string;
@@ -75,7 +133,7 @@ export function renderSongs(prevText: string | undefined, songs: AddedSong[], no
   return renderStable(prevText, 'updatedAt', now, (updatedAt) => toJsonText({ updatedAt, songs: list }));
 }
 
-function normRequest(r: SongRequestStatus): SongRequestStatus {
+function normRequest(r: RequestStatus): RequestStatus {
   return {
     state: r.state,
     artist: r.artist,
@@ -85,11 +143,12 @@ function normRequest(r: SongRequestStatus): SongRequestStatus {
     ...(r.message !== undefined ? { message: r.message } : {}),
     attempts: r.attempts,
     lastTried: r.lastTried,
+    ...(r.state === 'map-pending' && r.refused?.length ? { refused: r.refused.map((x) => ({ videoId: x.videoId, lastTried: x.lastTried })) } : {}),
   };
 }
 
-export function renderSongsStatus(prevText: string | undefined, requests: Readonly<Record<string, SongRequestStatus>>, now: string): string {
-  const sorted: Record<string, SongRequestStatus> = {};
+export function renderSongsStatus(prevText: string | undefined, requests: Readonly<Record<string, RequestStatus>>, now: string): string {
+  const sorted: Record<string, RequestStatus> = {};
   for (const k of Object.keys(requests).sort()) sorted[k] = normRequest(requests[k]);
   return renderStable(prevText, 'updatedAt', now, (updatedAt) => toJsonText({ updatedAt, requests: sorted }));
 }

@@ -27,10 +27,11 @@ export interface Candidate {
 
 /**
  * 'add': chosen for a song added by search (not produced by planWork).
+ * 'alternate': another upload of a song whose video YouTube withheld (not produced by planWork).
  * 'upgrade': the only map is a contributed listening ('tab') map; a real
  * download + analysis replaces it ('cloud' outranks 'tab'). Lowest priority.
  */
-export type WorkReason = 'new' | 'retry' | 'stale' | 'forced' | 'add' | 'upgrade';
+export type WorkReason = 'new' | 'retry' | 'stale' | 'forced' | 'add' | 'upgrade' | 'alternate';
 
 export interface WorkItem {
   candidate: Candidate;
@@ -127,7 +128,7 @@ export function isDue(s: VideoStatus, now: Date): boolean {
  * (contributed 'tab' maps). Capped at `limit`.
  */
 export function planWork(p: PlanInput): Plan {
-  const groups: Record<Exclude<WorkReason, 'add'>, WorkItem[]> = { forced: [], new: [], retry: [], stale: [], upgrade: [] };
+  const groups: Record<Exclude<WorkReason, 'add' | 'alternate'>, WorkItem[]> = { forced: [], new: [], retry: [], stale: [], upgrade: [] };
   let done = 0;
   let waiting = 0;
   const due = (st: VideoStatus) =>

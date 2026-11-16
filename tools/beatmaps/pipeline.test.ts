@@ -373,6 +373,41 @@ describe('runBeatmaps end to end (stubbed YouTube, real analyser)', () => {
     expect(log + JSON.stringify(status) + renderSummary(r.report)).not.toContain('secret-cookies');
   });
 
+  it('playlist and starter songs keep their video when YouTube withholds it: no other upload is searched for', async () => {
+    const searched: string[] = [];
+    const songsFile = join(root, 'songs.json');
+    // An added song whose video is also in the playlist counts as the playlist's (the owner chose that video).
+    await writeFile(
+      songsFile,
+      JSON.stringify({ updatedAt: '2026-11-10T00:00:00Z', songs: [{ videoId: 'ddddddddddd', title: 'Song D', artist: 'Artist D', addedAt: '2026-11-10T00:00:00Z', durationSec: 200, hasMap: false }] }),
+    );
+    const d = deps(failing(NO_AUDIO), {
+      searchVideos: async (q) => {
+        searched.push(q);
+        return { entries: [] };
+      },
+      checkEmbed: async () => 'ok',
+    });
+    const r = await runBeatmaps({ ...paths, songsFile }, opts({ playlistUrl: 'https://www.youtube.com/playlist?list=PLtesttesttest' }), d);
+    expect(r.report.results.filter((x) => x.kind === 'withheld').length).toBeGreaterThan(0);
+    expect(searched).toEqual([]);
+    expect(JSON.parse(await readFile(songsFile, 'utf8')).songs[0].videoId).toBe('ddddddddddd');
+  });
+
+  it('a withheld attempt logs whether yt-dlp asked the PO token provider', async () => {
+    const lines: string[] = [];
+    const d = deps(okDownload(), {
+      log: (l) => lines.push(l),
+      downloadAudio: (id, dir) =>
+        downloadWithFallbacks(id, dir, { cookiesFile: join(root, 'c.txt'), poTokenProvider: true }, async (_id, _dir, _o, args) => {
+          const pot = args === 'fetch_pot=always' ? ['[youtube] [pot:bgutil:http] Generating a gvs PO Token for web client via bgutil HTTP server'] : [];
+          throw new ToolFailure(classifyYtDlpError(FORBIDDEN), 'yt-dlp', pot);
+        }),
+    });
+    await runBeatmaps(paths, opts({ only: 'aaaaaaaaaaa', usedCookies: true }), d);
+    expect(lines.join('\n')).toMatch(/attempt po token \(\d+ s\): withheld - .*HTTP 403.* \| \[youtube\] \[pot:bgutil:http\] Generating a gvs PO Token for web client/);
+  });
+
   it('attempts left out for lack of time are logged as such', async () => {
     const lines: string[] = [];
     let t = 0;

@@ -18,6 +18,8 @@ export class ToolFailure extends Error {
   constructor(
     readonly classification: Classification,
     readonly tool: string,
+    /** Non-secret yt-dlp lines worth logging with the failure (e.g. whether a PO token was made). */
+    readonly diagnostics: readonly string[] = [],
   ) {
     super(`${tool}: ${classification.summary}${classification.detail ? ` (${classification.detail})` : ''}`);
     this.name = 'ToolFailure';
@@ -86,6 +88,26 @@ export interface YtDlpOptions {
    * only adds the attempts that ask for tokens on purpose (see attemptPlan).
    */
   poTokenProvider?: boolean;
+  /**
+   * Only the first two routes (signed-in defaults, then without cookies) and a shorter timeout:
+   * for alternate uploads of a song, where a refused video fails every route anyway and a good
+   * one works on the first.
+   */
+  lightAttempts?: boolean;
+}
+
+/**
+ * Lines about PO tokens from a yt-dlp run (it prints "Generating a gvs PO Token for web client
+ * via bgutil HTTP server" when it asks the provider, and warnings when the provider fails).
+ * yt-dlp never prints a token itself without trace logging; anything token-like is cut anyway.
+ */
+export function poTokenLines(stdout: string, stderr: string): string[] {
+  return `${stdout}\n${stderr}`
+    .split(/\r?\n/)
+    .filter((l) => /PO Token|\[pot[:\]]|bgutil/i.test(l) && !/^\s*\[debug\]/.test(l))
+    .map((l) => l.trim().replace(/[A-Za-z0-9_-]{40,}/g, '<…>').slice(0, 200))
+    .filter((l, i, a) => l && a.indexOf(l) === i)
+    .slice(0, 3);
 }
 
 /** Arguments shared by every yt-dlp call. */
@@ -155,10 +177,11 @@ export interface AttemptSpec {
  *   mweb               only with a provider: the mobile web client, which takes
  *                      cookies and needs a GVS token (the PO Token Guide's suggestion)
  *   COOKIE_CLIENT_FALLBACKS (tv, tv_downgraded, web_safari), signed in
+ * With `lightAttempts` (alternate uploads), only the first two.
  */
 export function attemptPlan(o: YtDlpOptions): AttemptSpec[] {
   if (!o.cookiesFile) return [{ cookies: false, label: 'default' }];
-  return [
+  const all: AttemptSpec[] = [
     { cookies: true, label: 'default' },
     { cookies: false, label: 'no cookies' },
     ...(o.poTokenProvider
@@ -169,6 +192,7 @@ export function attemptPlan(o: YtDlpOptions): AttemptSpec[] {
       : []),
     ...COOKIE_CLIENT_FALLBACKS.map((client) => ({ extractorArgs: `player_client=${client}`, cookies: true, label: client })),
   ];
+  return o.lightAttempts ? all.slice(0, 2) : all;
 }
 
 /** What one attempt said. */
@@ -178,6 +202,8 @@ export interface DownloadAttempt {
   classification: Classification;
   /** How long it took (ms), when known. */
   ms?: number;
+  /** poTokenLines of the attempt (whether yt-dlp asked the PO token provider, and what went wrong). */
+  diagnostics?: readonly string[];
 }
 
 const RANK: Record<FailureKind, number> = { unavailable: 5, blocked: 4, outdated: 3, withheld: 2, error: 1 };
@@ -253,12 +279,14 @@ export async function downloadWithFallbacks(
     }
     const opts: YtDlpOptions = spec.cookies ? o : { ...o, cookiesFile: undefined };
     const t0 = now();
+    const first = i === 0 && !o.lightAttempts ? ATTEMPT_TIMEOUT_MS : FALLBACK_TIMEOUT_MS;
     try {
-      return await attempt(videoId, dir, opts, spec.extractorArgs, i === 0 ? ATTEMPT_TIMEOUT_MS : Math.min(FALLBACK_TIMEOUT_MS, left));
+      return await attempt(videoId, dir, opts, spec.extractorArgs, i === 0 ? first : Math.min(FALLBACK_TIMEOUT_MS, left));
     } catch (e) {
       const classification: Classification =
         e instanceof ToolFailure ? e.classification : { kind: 'error', summary: 'yt-dlp could not be run', detail: String((e as Error)?.message ?? e).slice(0, 300) };
-      tried.push({ label: spec.label, cookies: spec.cookies, classification, ms: now() - t0 });
+      const diagnostics = e instanceof ToolFailure && e.diagnostics.length ? { diagnostics: e.diagnostics } : {};
+      tried.push({ label: spec.label, cookies: spec.cookies, classification, ms: now() - t0, ...diagnostics });
       // A refusal is worth another client (the tv client can also answer "The
       // page needs to be reloaded", a plain error); a removed or private video is not.
       if (classification.kind === 'unavailable') throw failure();
@@ -287,7 +315,7 @@ async function downloadAudioOnce(videoId: string, dir: string, o: YtDlpOptions, 
     '--', `https://www.youtube.com/watch?v=${videoId}`,
   ];
   const r = await run('yt-dlp', args, { timeoutMs, maxStdout: 4 << 20 });
-  if (r.code !== 0) throw new ToolFailure(classifyYtDlpError(r.stderr), 'yt-dlp');
+  if (r.code !== 0) throw new ToolFailure(classifyYtDlpError(r.stderr), 'yt-dlp', poTokenLines(r.stdout.toString('utf8'), r.stderr));
   const files = (await readdir(dir)).filter((f) => AUDIO_EXT.test(f));
   if (files.length) return { kind: 'file', path: join(dir, files[0]) };
   const out = r.stdout.toString('utf8');
