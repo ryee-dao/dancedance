@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-16T02:13:50.693Z",
+  "updatedAt": "2026-11-16T02:26:34.799Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -10543,15 +10543,15 @@
         "rap rock",
         "alternative rock",
         "alternative metal",
-        "rap metal",
         "metal",
-        "rock"
+        "rock",
+        "hard rock"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "album",
+        "song",
         "song",
         "song"
       ],
@@ -10562,7 +10562,7 @@
         "alternative metal"
       ],
       "complete": true,
-      "at": "2026-11-14T08:26:14.024Z",
+      "at": "2026-11-16T02:26:34.791Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -10619,6 +10619,11 @@
             "Hard Rock"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-16T02:26:34.791Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -10840,7 +10845,7 @@
         "angry"
       ],
       "complete": true,
-      "at": "2026-11-14T08:26:17.075Z",
+      "at": "2026-11-16T02:26:34.797Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -10899,6 +10904,11 @@
             "Alternative"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-16T02:26:34.797Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -11217,8 +11227,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-16T02:13:50.687Z"
+          "at": "2026-11-16T02:13:50.687Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -11424,7 +11434,7 @@
         "alternative metal"
       ],
       "complete": true,
-      "at": "2026-11-14T08:26:07.588Z",
+      "at": "2026-11-16T02:26:34.786Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -11483,6 +11493,11 @@
             "Hard Rock"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-16T02:26:34.786Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -11801,8 +11816,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-16T02:13:50.692Z"
+          "at": "2026-11-16T02:13:50.692Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -12333,8 +12348,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-16T02:13:50.690Z"
+          "at": "2026-11-16T02:13:50.690Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -12876,7 +12891,7 @@
         "alternative metal"
       ],
       "complete": true,
-      "at": "2026-11-14T08:26:10.194Z",
+      "at": "2026-11-16T02:26:34.788Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -12947,6 +12962,11 @@
             "Hard Rock"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-16T02:26:34.788Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -13253,8 +13273,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-16T02:13:50.689Z"
+          "at": "2026-11-16T02:13:50.689Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -13461,7 +13481,7 @@
         "alternative metal"
       ],
       "complete": true,
-      "at": "2026-11-14T08:26:14.024Z",
+      "at": "2026-11-16T02:26:34.778Z",
       "sources": {
         "wikipedia": {
           "status": "found",
@@ -13531,6 +13551,11 @@
             "Hard Rock"
           ],
           "ref": "stored"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-16T02:26:34.778Z"
         },
         "musicbrainz-album": {
           "status": "found",
@@ -20330,8 +20355,8 @@
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-16T02:13:50.684Z"
+          "at": "2026-11-16T02:13:50.684Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",

@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-16T02:13:50.693Z",
+  "generatedAt": "2026-11-16T02:26:34.799Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -1773,15 +1773,15 @@
         "rap rock",
         "alternative rock",
         "alternative metal",
-        "rap metal",
         "metal",
-        "rock"
+        "rock",
+        "hard rock"
       ],
       "genreLevels": [
         "song",
         "song",
         "song",
-        "album",
+        "song",
         "song",
         "song"
       ],
