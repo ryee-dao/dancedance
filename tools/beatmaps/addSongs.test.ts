@@ -384,6 +384,19 @@ describe('add a song by search', () => {
     expect(await songsOnDisk()).toMatchObject([{ videoId: 'lyricvid001', hasMap: false }]);
   });
 
+  it('alternates may be up to 3 s shorter; the first choice may not', async () => {
+    const SHORT = { id: 'shortvid001', title: 'Dua Lipa - Levitating (Lyrics)', channel: 'Short Lyrics', view_count: 8e6, duration: 201 }; // -2 s
+    const out = await runBeatmaps(paths, opts(), deps({ search: async () => results(LYRIC, SHORT), download: { lyricvid001: 'withheld' } }));
+    expect(downloads).toEqual(['lyricvid001', 'shortvid001']);
+    expect(out.report.adds?.[0]).toMatchObject({ kind: 'added', videoId: 'shortvid001' });
+    // As a first choice the same upload is still out of the window: not found, nothing downloaded.
+    await rm(paths.songsFile!);
+    downloads = [];
+    const alone = await runBeatmaps(paths, opts(), deps({ search: async () => results(SHORT) }));
+    expect(downloads).toEqual([]);
+    expect(alone.report.adds?.[0]).toMatchObject({ kind: 'not-found' });
+  });
+
   it('a bot check on an alternate stops the search: the first choice is listed', async () => {
     const out = await runBeatmaps(paths, opts(), deps({ download: { lyricvid001: 'withheld', lyricvid002: 'blocked' } }));
     expect(downloads).toEqual(['lyricvid001', 'lyricvid002']);

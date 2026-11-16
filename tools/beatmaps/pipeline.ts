@@ -16,7 +16,7 @@ import type { Classification } from './classify';
 import { classifyYtDlpError } from './classify';
 import { parseFlatPlaylist, parseStatus, renderIndex, renderPlaylist, renderStatus, type GenreMeta, type MapInfo, type PlaylistInfo } from './output';
 import type { OfficialSong } from './itunes';
-import { degradedSearch, fallbackQuery, mergeSearches, parseSearch, rankCandidates, searchQueries, type Ranked, type SearchEntry } from './pick';
+import { ALT_WINDOW, degradedSearch, fallbackQuery, mergeSearches, parseSearch, rankCandidates, searchQueries, type Ranked, type SearchEntry } from './pick';
 import { planWork, preflightSkip, unionCandidates, type Candidate, type StatusReason, type VideoStatus, type WorkItem, type WorkReason } from './select';
 import { mergeRefusals, parseRequests, parseSongsList, planAdds, recentRefusals, renderSongs, renderSongsStatus, songKey, type AddedSong, type AddRequest, type RequestStatus } from './songs';
 import { cleanGenreLevels, cleanGenreList } from '../../src/beat/cloud';
@@ -305,7 +305,9 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     for (const r of ranked.ranked.slice(0, 5)) {
       deps.log(`    ${r.tier.padEnd(11)} ${r.entry.id} ${r.entry.duration} s ${r.entry.views ?? '?'} views "${r.entry.title}" (${r.entry.channel})`);
     }
-    return ranked;
+    // For alternates only (after YouTube withheld the first choice): the same rules with ALT_WINDOW.
+    const alternates = () => rankCandidates(req, entries, { window: ALT_WINDOW }).ranked;
+    return { ...ranked, alternates };
   };
 
   /**
@@ -524,15 +526,16 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
         delete songsStatus[item.key];
         continue;
       }
-      let ranked: Awaited<ReturnType<typeof searchAndRank>>['ranked'];
+      let found: Awaited<ReturnType<typeof searchAndRank>>;
       try {
-        ranked = (await searchAndRank(req)).ranked;
+        found = await searchAndRank(req);
       } catch (e) {
         const cl = classify(e);
         note(cl.kind);
         fail(cl.kind === 'blocked' ? 'blocked' : 'error', `YouTube search failed: ${cl.summary}`, req.durationSec);
         continue;
       }
+      const ranked = found.ranked;
       let checks = 0;
       let analyses = 0;
       let outcome: AddResult | null = null;
@@ -572,7 +575,14 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
       // The first choice YouTube withheld: other uploads that pass the same rules are tried, then it is listed.
       let held: { id: string; tier: Ranked['tier']; pick: Pick; res: SongResult; at: number } | null = null;
       const refused: string[] = [];
-      for (const r of ranked) {
+      // The first choice comes from `ranked` (the usual rules); once it is withheld, the rest come from
+      // the alternates' ranking (ALT_WINDOW), skipping what was already looked at.
+      let queue: Ranked[] = ranked;
+      const seen = new Set<string>();
+      for (let qi = 0; qi < queue.length; qi++) {
+        const r = queue[qi];
+        if (seen.has(r.entry.id)) continue;
+        seen.add(r.entry.id);
         if (checks >= ADD_MAX_EMBED_CHECKS || analyses >= (held ? MAX_VIDEOS_PER_SONG : ADD_MAX_ANALYSES)) break;
         if (held && (altDownloads >= ALT_DOWNLOADS_PER_RUN || deps.clock() - held.at > ALT_BUDGET_S)) break;
         const id = r.entry.id;
@@ -620,6 +630,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
         if (res.kind === 'withheld') {
           if (!held) {
             held = { id, tier: r.tier, pick, res, at: deps.clock() };
+            queue = [...queue.slice(0, qi + 1), ...found.alternates().filter((x) => !seen.has(x.entry.id))];
             deps.log(`    ${id}: YouTube withheld it; trying other uploads of the song (at most ${MAX_VIDEOS_PER_SONG} videos in all)`);
           } else refused.push(id);
           continue;
@@ -666,7 +677,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
       deps.log(`${prefix}: YouTube withheld it; looking for other uploads of the song (at most ${MAX_VIDEOS_PER_SONG - 1})`);
       let ranked: Ranked[];
       try {
-        ranked = (await searchAndRank({ artist: song.artist, title: song.title, durationSec: song.durationSec })).ranked;
+        ranked = (await searchAndRank({ artist: song.artist, title: song.title, durationSec: song.durationSec })).alternates();
       } catch (e) {
         deps.log(`${prefix}: search for other uploads failed (${classify(e).summary}); tried again on a later run`);
         return;

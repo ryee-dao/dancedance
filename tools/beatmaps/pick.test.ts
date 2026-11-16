@@ -27,6 +27,7 @@ import {
   youLie,
 } from './pick.fixtures';
 import {
+  ALT_WINDOW,
   artistVariants,
   cleanRequest,
   coreTokens,
@@ -39,6 +40,7 @@ import {
   splitArtistTitle,
   type SearchEntry,
   type SongRequest,
+  WINDOW,
 } from './pick';
 import { cleanGenre, parseItunes, pickOfficialLength } from './itunes';
 import { embedFromStatus } from './youtube';
@@ -582,5 +584,39 @@ describe('official length from iTunes', () => {
     expect(cleanGenre(42)).toBeUndefined();
     expect(cleanGenre('   ')).toBeUndefined();
     expect(cleanGenre('x'.repeat(61))).toBeUndefined();
+  });
+});
+
+describe('the alternates window (after YouTube withheld the first choice)', () => {
+  const req = { artist: 'Nightwish', title: 'While Your Lips Are Still Red', durationSec: 259 };
+  const lyric = (id: string, duration: number, views = 900_000) => e({ id, title: 'Nightwish - While Your Lips Are Still Red (Lyrics)', channel: `Lyrics ${id}`, duration, views });
+  const alt = (entries: SearchEntry[]) => rankCandidates(req, entries, { window: ALT_WINDOW }).ranked.map((r) => r.entry.id);
+
+  it('is 3 s shorter to 6 s longer; the first choice keeps -1..+6 s', () => {
+    expect(WINDOW).toEqual([-1, 6]);
+    expect(ALT_WINDOW).toEqual([-3, 6]);
+    const entries = [lyric('minus2sec01', 257), lyric('minus3sec01', 256), lyric('minus4sec01', 255), lyric('plus7sec001', 266)];
+    // First choice: unchanged, -2 s is still out.
+    expect(ids(req, entries)).toEqual([]);
+    expect(reasonFor(req, entries, 'minus2sec01')).toBe('length 257 s vs 259 s');
+    // Alternates: -2 and -3 s in, -4 s and +7 s out.
+    expect(alt(entries)).toEqual(['minus2sec01', 'minus3sec01']);
+    expect(rankCandidates(req, entries, { window: ALT_WINDOW }).rejected.map((r) => r.reason)).toEqual(['length 255 s vs 259 s', 'length 266 s vs 259 s']);
+  });
+
+  it('puts uploads inside the usual window first, then the newly allowed ones', () => {
+    // More views would rank the -2 s upload first within its tier; the in-window ones still go first.
+    const entries = [lyric('minus2sec01', 257, 5_000_000), lyric('exact000001', 259, 400_000), lyric('plus3sec001', 262, 600_000)];
+    expect(alt(entries)).toEqual(['plus3sec001', 'exact000001', 'minus2sec01']);
+    expect(ids(req, entries)).toEqual(['lyric:plus3sec001', 'lyric:exact000001']);
+  });
+
+  it('every other rule stays: views, live, remixes', () => {
+    const entries = [
+      lyric('fewviews001', 257, 5_000),
+      e({ id: 'livewemb001', title: 'Nightwish - While Your Lips Are Still Red (Live at Wembley)', channel: 'Fan', duration: 257, views: 9e6 }),
+      e({ id: 'remix000001', title: 'Nightwish - While Your Lips Are Still Red (Remix) Lyrics', channel: 'Remixes', duration: 257, views: 9e6 }),
+    ];
+    expect(alt(entries)).toEqual([]);
   });
 });

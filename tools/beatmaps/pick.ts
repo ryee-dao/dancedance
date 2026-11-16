@@ -67,6 +67,12 @@ export const TOPIC_MIN_VIEWS = 10_000;
 export const KNOWN_SONG_VIEWS = 100_000;
 /** Allowed length difference (video - official), seconds. */
 export const WINDOW: readonly [number, number] = [-1, 6];
+/**
+ * The window for alternates: uploads tried only after YouTube withheld the first choice
+ * (pipeline.ts). Up to 3 s shorter (a slightly trimmed fade-out or intro); the first
+ * choice always uses WINDOW.
+ */
+export const ALT_WINDOW: readonly [number, number] = [-3, 6];
 export const MV_WINDOW: readonly [number, number] = [-2, 60];
 
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
@@ -538,9 +544,12 @@ function eraTag(title: string, reqTitle: string): 'style' | 'year' | null {
 
 /**
  * Rank the candidates for a request. `ranked` is in the order to try them;
- * `rejected` explains the rest (for logs and tests).
+ * `rejected` explains the rest (for logs and tests). `opts.window` replaces the
+ * length window (WINDOW) of the official/lyric/topic tiers, for alternates
+ * (ALT_WINDOW); candidates inside WINDOW still come first. All other rules stay.
  */
-export function rankCandidates(req: SongRequest, entries: SearchEntry[]): { ranked: Ranked[]; rejected: Rejected[] } {
+export function rankCandidates(req: SongRequest, entries: SearchEntry[], opts: { window?: readonly [number, number] } = {}): { ranked: Ranked[]; rejected: Rejected[] } {
+  const window = opts.window ?? WINDOW;
   const variants = artistVariants(req.artist);
   const chanVariants = channelVariants(req.artist);
   const tiers: Record<Tier, { e: SearchEntry; key: number[] }[]> = { official: [], lyric: [], topic: [], 'music-video': [] };
@@ -565,7 +574,7 @@ export function rankCandidates(req: SongRequest, entries: SearchEntry[]): { rank
     }
     const f = facts(req, e, chanVariants);
     const views = e.views ?? 0;
-    const inWindow = f.dt >= WINDOW[0] && f.dt <= WINDOW[1];
+    const inWindow = f.dt >= window[0] && f.dt <= window[1];
     if (inWindow && f.official && (f.lyric || f.audio)) {
       tiers.official.push({ e, key: [f.lyric ? 0 : 1, -views] });
     } else if (inWindow && f.lyric && !f.artTrack && !f.artistChannel && !/topic/i.test(e.channel)) {
@@ -598,7 +607,11 @@ export function rankCandidates(req: SongRequest, entries: SearchEntry[]): { rank
   for (const tier of ['official', 'lyric', 'topic', 'music-video'] as Tier[]) {
     for (const c of tiers[tier].sort((a, b) => cmp(a.key, b.key))) ranked.push({ entry: c.e, tier });
   }
-  return { ranked: untaggedFirst(req, ranked), rejected };
+  const ordered = untaggedFirst(req, ranked);
+  if (!opts.window) return { ranked: ordered, rejected };
+  // Wider window: an upload inside the usual one still goes first.
+  const widened = (r: Ranked) => r.tier !== 'music-video' && r.entry.duration !== null && (r.entry.duration - req.durationSec < WINDOW[0] || r.entry.duration - req.durationSec > WINDOW[1]);
+  return { ranked: [...ordered.filter((r) => !widened(r)), ...ordered.filter(widened)], rejected };
 }
 
 /**
