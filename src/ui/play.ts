@@ -18,6 +18,7 @@ import { BeatSession, type SyncStatus } from '../beat/session';
 import { LiveDevices } from '../live/devices';
 import { getPlatform } from '../platform/platform';
 import { AudioFilePlayer } from '../player/audioPlayer';
+import { steadyInterval, steadyTimeout } from '../player/steadyTimers';
 import { PlayerError, type MediaPlayer, type PlayItem, type StartStatus } from '../player/types';
 import { YouTubePlayer } from '../player/youtubePlayer';
 import { store, type Intensity } from '../store';
@@ -99,7 +100,8 @@ export function createPlay(
   let session: BeatSession | null = null;
   let phase: PlayPhase = 'loading';
   let token = 0; // bumps on every song start / exit; stale callbacks compare against it
-  let timers: ReturnType<typeof setTimeout>[] = [];
+  /** Cancel functions of the song's countdown timers (steadyTimers: they keep time in a background tab). */
+  let timers: (() => void)[] = [];
   let raf = 0;
   let markedPlayed = false;
   let lastShownSec = -1;
@@ -526,7 +528,7 @@ export function createPlay(
   }
 
   function clearTimers(): void {
-    for (const t of timers) clearTimeout(t);
+    for (const cancel of timers) cancel();
     timers = [];
   }
 
@@ -617,13 +619,13 @@ export function createPlay(
     if (d) total.textContent = formatTime(d);
     [3, 2, 1].forEach((n, k) => {
       timers.push(
-        setTimeout(() => {
+        steadyTimeout(() => {
           if (my === token) countdownOverlay(n);
         }, k * 1000),
       );
     });
     timers.push(
-      setTimeout(() => {
+      steadyTimeout(() => {
         if (my !== token) return;
         setOverlay('none', null);
         phase = 'playing';
@@ -717,16 +719,12 @@ export function createPlay(
     fpsReadout.hidden = !text;
   }
 
-  let shownChip = '';
-  let shownHelp = '';
-  let helpShownAt = 0;
-  function frame(): void {
-    raf = requestAnimationFrame(frame);
-    const p = player;
-    const t = p ? p.time() : 0;
-    const dur = p ? p.duration() : 0;
-    const playing = !!p && p.isPlaying();
-
+  /**
+   * Bookkeeping that isn't drawing: from every frame, and from a steady timer
+   * as well (no animation frames run in a background tab, and a song that
+   * started there still counts as played).
+   */
+  function notePlayback(t: number, playing: boolean): void {
     if (playing && overlayKind === 'gesture') setOverlay('none', null);
     if (!markedPlayed && playing && phase === 'playing' && t > 0.3) {
       markedPlayed = true;
@@ -736,6 +734,21 @@ export function createPlay(
         notePlayedForGenres(item.videoId);
       }
     }
+  }
+  const stopSupervise = steadyInterval(() => {
+    if (!markedPlayed && player) notePlayback(player.time(), player.isPlaying());
+  }, 1000);
+
+  let shownChip = '';
+  let shownHelp = '';
+  let helpShownAt = 0;
+  function frame(): void {
+    raf = requestAnimationFrame(frame);
+    const p = player;
+    const t = p ? p.time() : 0;
+    const dur = p ? p.duration() : 0;
+    const playing = !!p && p.isPlaying();
+    notePlayback(t, playing);
 
     // HUD: text only when the second changes; progress bar every frame.
     const sec = Math.floor(t);
@@ -840,6 +853,7 @@ export function createPlay(
     destroy() {
       token++;
       clearTimers();
+      stopSupervise();
       cancelAnimationFrame(raf);
       window.removeEventListener('dd:app-pause', onAppPause);
       if (readoutTimer !== null) clearTimeout(readoutTimer);

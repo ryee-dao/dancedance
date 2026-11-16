@@ -584,3 +584,104 @@ describe('YouTubePlayer mid-song error recovery', () => {
     }
   });
 });
+
+describe('YouTubePlayer in a background tab', () => {
+  let visibility: 'visible' | 'hidden' = 'visible';
+  beforeEach(() => {
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'performance', 'Date'],
+    });
+    visibility = 'visible';
+    vi.stubGlobal('document', {
+      get visibilityState() {
+        return visibility;
+      },
+      addEventListener() {},
+    });
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  it('a song chosen and then left in another tab still gets ready: hidden time counts for the confirming run', async () => {
+    script = {};
+    const p = new YouTubePlayer();
+    let done = false;
+    void p.load(ITEM).then(() => (done = true));
+    await run(100);
+    visibility = 'hidden';
+    await run(2500);
+    expect(done).toBe(true);
+    expect(fake.state).toBe(S.PAUSED);
+    expect(fake.t).toBe(0);
+    expect(fake.muted).toBe(false);
+    p.destroy();
+  });
+
+  it('the browser pausing the muted start when the tab is hidden: played again, and the start completes', async () => {
+    script = {};
+    const p = new YouTubePlayer();
+    let done = false;
+    void p.load(ITEM).then(() => (done = true));
+    await run(400);
+    visibility = 'hidden';
+    fake.pauseVideo(); // what Chrome does to muted media in a tab that goes to the background
+    await run(400);
+    expect(fake.state).toBe(S.PLAYING);
+    expect(fake.muted).toBe(true);
+    await run(2000);
+    expect(done).toBe(true);
+    expect(fake.t).toBe(0);
+    p.destroy();
+  });
+
+  it('the next song while hidden reuses the IFrame player (a new frame could not load until shown)', async () => {
+    created = 0;
+    script = {};
+    const p = new YouTubePlayer();
+    await Promise.all([p.load(ITEM), run(3000)]);
+    const first = fake;
+    p.play();
+    await run(1000);
+    visibility = 'hidden';
+    let done = false;
+    void p.load({ ...ITEM, videoId: 'zyxwvutsrqp' }).then(() => (done = true));
+    await run(3000);
+    expect(done).toBe(true);
+    expect(created).toBe(1);
+    expect(fake).toBe(first);
+    expect(first.destroyed).toBe(false);
+    expect(fake.vid).toBe('zyxwvutsrqp');
+    expect(fake.muted).toBe(false);
+    p.play();
+    await run(1000);
+    expect(p.isPlaying()).toBe(true);
+    // Visible again: the next load gets a brand-new player as usual.
+    visibility = 'visible';
+    await Promise.all([p.load(ITEM), run(3000)]);
+    expect(created).toBe(2);
+    expect(first.destroyed).toBe(true);
+    p.destroy();
+  });
+
+  it('mid-song recovery while hidden tries the same IFrame player again', async () => {
+    created = 0;
+    script = { duration: 200 };
+    const p = new YouTubePlayer();
+    const recovering: boolean[] = [];
+    p.onRecovering = (a) => recovering.push(a);
+    await Promise.all([p.load(ITEM), run(2600)]);
+    p.play();
+    await run(10000);
+    visibility = 'hidden';
+    const before = p.time();
+    fake.fail(5);
+    await run(1600);
+    expect(created).toBe(1);
+    expect(recovering).toEqual([true, false]);
+    expect(fake.t).toBeGreaterThanOrEqual(before - 0.5);
+    expect(p.isPlaying()).toBe(true);
+    p.destroy();
+  });
+});
