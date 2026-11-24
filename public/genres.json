@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-24T05:43:10.494Z",
+  "updatedAt": "2026-11-24T05:49:14.243Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -8464,6 +8464,7 @@
       "sources": {
         "wikipedia": {
           "status": "found",
+          "at": "2026-11-24T05:43:01.236Z",
           "genres": [
             "Post-punk revival",
             "indie rock",
@@ -8476,20 +8477,20 @@
             "albumArticle": "Franz Ferdinand (album)",
             "artistArticle": "Franz Ferdinand (band)"
           },
-          "at": "2026-11-24T05:43:01.236Z",
           "v": 3
         },
         "wikidata": {
           "status": "found",
+          "at": "2026-11-24T05:43:03.700Z",
           "genres": [
             "rock music"
           ],
           "ref": "Q941387",
-          "at": "2026-11-24T05:43:03.700Z",
           "v": 2
         },
         "musicbrainz": {
           "status": "found",
+          "at": "2026-11-24T05:43:05.545Z",
           "genres": [
             "electronic",
             "house",
@@ -8507,32 +8508,32 @@
             1
           ],
           "ref": "release-group/fa222710-b1c5-37e5-830a-cffc4fe79d28",
-          "at": "2026-11-24T05:43:05.545Z",
           "v": 2
         },
         "theaudiodb": {
           "status": "found",
+          "at": "2026-11-24T05:43:01.283Z",
           "genres": [
             "Alternative Rock"
           ],
-          "ref": "track/32777973",
-          "at": "2026-11-24T05:43:01.283Z"
+          "ref": "track/32777973"
         },
         "itunes": {
           "status": "found",
+          "at": "2026-11-24T05:43:00.963Z",
           "genres": [
             "Pop"
           ],
-          "ref": "stored",
-          "at": "2026-11-24T05:43:00.963Z"
+          "ref": "stored"
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-24T05:43:00.963Z"
+          "at": "2026-11-24T05:43:00.963Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
+          "at": "2026-11-24T05:43:06.839Z",
           "genres": [
             "indie rock",
             "new wave",
@@ -8570,11 +8571,11 @@
             "discogsMaster": "4334",
             "wikidata": "Q829973"
           },
-          "at": "2026-11-24T05:43:06.839Z",
           "v": 2
         },
         "wikipedia-album": {
           "status": "found",
+          "at": "2026-11-24T05:43:07.193Z",
           "genres": [
             "Post-punk revival",
             "dance-punk"
@@ -8582,41 +8583,41 @@
           "ref": "Franz Ferdinand (album)",
           "links": {
             "wikidata": "Q829973"
-          },
-          "at": "2026-11-24T05:43:07.193Z"
+          }
         },
         "wikidata-album": {
           "status": "found",
+          "at": "2026-11-24T05:43:08.133Z",
           "genres": [
             "indie rock"
           ],
-          "ref": "Q829973",
-          "at": "2026-11-24T05:43:08.133Z"
+          "ref": "Q829973"
         },
         "discogs-album": {
           "status": "found",
+          "at": "2026-11-24T05:43:06.999Z",
           "genres": [
             "Alternative Rock",
             "Indie Rock",
             "Post-Punk",
             "Rock"
           ],
-          "ref": "master/4334 (Franz Ferdinand)",
-          "at": "2026-11-24T05:43:06.999Z"
+          "ref": "master/4334 (Franz Ferdinand)"
         },
         "itunes-album": {
           "status": "found",
+          "at": "2026-11-24T05:43:04.295Z",
           "genres": [
             "Pop"
           ],
           "ref": "collection/315843479 (Franz Ferdinand)",
           "links": {
             "album": "Franz Ferdinand"
-          },
-          "at": "2026-11-24T05:43:04.295Z"
+          }
         },
         "musicbrainz-artist": {
           "status": "found",
+          "at": "2026-11-24T05:43:08.385Z",
           "genres": [
             "indie rock",
             "post-punk revival",
@@ -8657,11 +8658,11 @@
           "links": {
             "mbArtist": "aa7a2827-f74b-473c-bd79-03d065835cf7",
             "wikidata": "Q173180"
-          },
-          "at": "2026-11-24T05:43:08.385Z"
+          }
         },
         "wikipedia-artist": {
           "status": "found",
+          "at": "2026-11-24T05:43:09.496Z",
           "genres": [
             "Indie rock",
             "post-punk revival",
@@ -8672,34 +8673,33 @@
           "ref": "Franz Ferdinand (band)",
           "links": {
             "wikidata": "Q173180"
-          },
-          "at": "2026-11-24T05:43:09.496Z"
+          }
         },
         "wikidata-artist": {
           "status": "found",
+          "at": "2026-11-24T05:43:10.484Z",
           "genres": [
             "punk rock",
             "indie rock"
           ],
-          "ref": "Q173180",
-          "at": "2026-11-24T05:43:10.484Z"
+          "ref": "Q173180"
         },
         "theaudiodb-artist": {
           "status": "found",
+          "at": "2026-11-24T05:43:03.542Z",
           "genres": [
             "Indie Rock",
             "Rock/Pop"
           ],
-          "ref": "artist/111778",
-          "at": "2026-11-24T05:43:03.542Z"
+          "ref": "artist/111778"
         },
         "itunes-artist": {
           "status": "found",
+          "at": "2026-11-24T05:43:04.295Z",
           "genres": [
             "Alternative"
           ],
-          "ref": "artist/6596751 (Franz Ferdinand)",
-          "at": "2026-11-24T05:43:04.295Z"
+          "ref": "artist/6596751 (Franz Ferdinand)"
         }
       }
     },

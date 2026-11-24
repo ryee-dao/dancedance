@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-24T05:43:10.494Z",
+  "updatedAt": "2026-11-24T05:49:14.243Z",
   "requests": {
     "nguyen đinh vu neko le flechazowu - lieu thuoc cho trai tim slowed": {
       "state": "not-found",
@@ -7,8 +7,8 @@
       "title": "Liều Thuốc Cho Trái Tim (Slowed)",
       "durationSec": 397,
       "message": "Couldn't find a YouTube video of this song that matches its official length.",
-      "attempts": 1,
-      "lastTried": "2026-11-24T05:42:28.916Z"
+      "attempts": 2,
+      "lastTried": "2026-11-24T05:49:14.240Z"
     }
   }
 }
