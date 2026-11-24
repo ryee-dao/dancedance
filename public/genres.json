@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-24T05:38:46.049Z",
+  "updatedAt": "2026-11-24T05:43:10.494Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -6996,6 +6996,7 @@
       "sources": {
         "wikipedia": {
           "status": "found",
+          "at": "2026-11-24T05:38:26.309Z",
           "genres": [
             "Rock"
           ],
@@ -7004,21 +7005,21 @@
             "albumArticle": "Hotel California (album)",
             "artistArticle": "Eagles (band)"
           },
-          "at": "2026-11-24T05:38:26.309Z",
           "v": 3
         },
         "wikidata": {
           "status": "found",
+          "at": "2026-11-24T05:38:28.529Z",
           "genres": [
             "rock music",
             "soft rock"
           ],
           "ref": "Q780394",
-          "at": "2026-11-24T05:38:28.529Z",
           "v": 2
         },
         "musicbrainz": {
           "status": "found",
+          "at": "2026-11-24T05:38:42.549Z",
           "genres": [
             "classic rock",
             "rock",
@@ -7030,71 +7031,71 @@
             1
           ],
           "ref": "release-group/b85c13de-264e-46af-9626-68e3b6cdf541,0005a2cb-fb46-4407-ac1b-fcb0932ae50a,d9797f23-a517-498c-be57-960d656a633f",
-          "at": "2026-11-24T05:38:42.549Z",
           "v": 2
         },
         "theaudiodb": {
           "status": "found",
+          "at": "2026-11-24T05:38:26.415Z",
           "genres": [
             "Rock"
           ],
-          "ref": "track/32749151",
-          "at": "2026-11-24T05:38:26.415Z"
+          "ref": "track/32749151"
         },
         "itunes": {
           "status": "found",
+          "at": "2026-11-24T05:38:26.151Z",
           "genres": [
             "Rock"
           ],
-          "ref": "stored",
-          "at": "2026-11-24T05:38:26.151Z"
+          "ref": "stored"
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-24T05:38:26.151Z"
+          "at": "2026-11-24T05:38:26.151Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "none",
-          "reason": "the recordings are on no album or EP",
           "at": "2026-11-24T05:38:42.549Z",
+          "reason": "the recordings are on no album or EP",
           "v": 2
         },
         "wikipedia-album": {
           "status": "found",
+          "at": "2026-11-24T05:38:42.668Z",
           "genres": [
             "Rock"
           ],
           "ref": "Hotel California (album)",
           "links": {
             "wikidata": "Q752172"
-          },
-          "at": "2026-11-24T05:38:42.668Z"
+          }
         },
         "wikidata-album": {
           "status": "found",
+          "at": "2026-11-24T05:38:43.847Z",
           "genres": [
             "rock music"
           ],
-          "ref": "Q752172",
-          "at": "2026-11-24T05:38:43.847Z"
+          "ref": "Q752172"
         },
         "discogs-album": {
           "status": "none",
-          "reason": "no Discogs master linked from the MusicBrainz album",
-          "at": "2026-11-24T05:38:42.550Z"
+          "at": "2026-11-24T05:38:42.550Z",
+          "reason": "no Discogs master linked from the MusicBrainz album"
         },
         "itunes-album": {
           "status": "none",
+          "at": "2026-11-24T05:38:29.454Z",
           "reason": "the release is the song's single",
           "ref": "Hotel California",
           "links": {
             "album": "Hotel California"
-          },
-          "at": "2026-11-24T05:38:29.454Z"
+          }
         },
         "musicbrainz-artist": {
           "status": "found",
+          "at": "2026-11-24T05:38:44.112Z",
           "genres": [
             "rock",
             "country rock",
@@ -7122,11 +7123,11 @@
             "mbArtist": "f46bd570-5768-462e-b84c-c7c993bbf47e",
             "wikidata": "Q189635",
             "enwiki": "Eagles (band)"
-          },
-          "at": "2026-11-24T05:38:44.112Z"
+          }
         },
         "wikipedia-artist": {
           "status": "found",
+          "at": "2026-11-24T05:38:45.058Z",
           "genres": [
             "Rock",
             "country rock",
@@ -7136,34 +7137,33 @@
           "ref": "Eagles (band)",
           "links": {
             "wikidata": "Q189635"
-          },
-          "at": "2026-11-24T05:38:45.058Z"
+          }
         },
         "wikidata-artist": {
           "status": "found",
+          "at": "2026-11-24T05:38:46.041Z",
           "genres": [
             "country rock",
             "folk rock"
           ],
-          "ref": "Q189635",
-          "at": "2026-11-24T05:38:46.041Z"
+          "ref": "Q189635"
         },
         "theaudiodb-artist": {
           "status": "found",
+          "at": "2026-11-24T05:38:28.750Z",
           "genres": [
             "Rock",
             "Folk"
           ],
-          "ref": "artist/111416",
-          "at": "2026-11-24T05:38:28.750Z"
+          "ref": "artist/111416"
         },
         "itunes-artist": {
           "status": "found",
+          "at": "2026-11-24T05:38:29.454Z",
           "genres": [
             "Rock"
           ],
-          "ref": "artist/1053549 (Eagles)",
-          "at": "2026-11-24T05:38:29.454Z"
+          "ref": "artist/1053549 (Eagles)"
         }
       }
     },
@@ -8428,6 +8428,278 @@
             "Alternative"
           ],
           "ref": "artist/96318432 (Finger Eleven)"
+        }
+      }
+    },
+    "franz ferdinand - take me out": {
+      "artist": "Franz Ferdinand",
+      "title": "Take Me Out",
+      "videoIds": [
+        "r6ZFvXQBpKk"
+      ],
+      "genres": [
+        "indie rock",
+        "post punk revival",
+        "alternative rock",
+        "art rock",
+        "dance-rock",
+        "garage rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "indie rock",
+        "post punk revival",
+        "dance-punk",
+        "art rock"
+      ],
+      "complete": true,
+      "at": "2026-11-24T05:43:10.484Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "genres": [
+            "Post-punk revival",
+            "indie rock",
+            "dance-rock",
+            "garage rock",
+            "art rock"
+          ],
+          "ref": "Take Me Out (song)",
+          "links": {
+            "albumArticle": "Franz Ferdinand (album)",
+            "artistArticle": "Franz Ferdinand (band)"
+          },
+          "at": "2026-11-24T05:43:01.236Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "found",
+          "genres": [
+            "rock music"
+          ],
+          "ref": "Q941387",
+          "at": "2026-11-24T05:43:03.700Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "electronic",
+            "house",
+            "indie rock",
+            "pop rock",
+            "post-punk revival",
+            "rock"
+          ],
+          "counts": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "release-group/fa222710-b1c5-37e5-830a-cffc4fe79d28",
+          "at": "2026-11-24T05:43:05.545Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "found",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "ref": "track/32777973",
+          "at": "2026-11-24T05:43:01.283Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored",
+          "at": "2026-11-24T05:43:00.963Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-24T05:43:00.963Z"
+        },
+        "musicbrainz-album": {
+          "status": "found",
+          "genres": [
+            "indie rock",
+            "new wave",
+            "post-punk revival",
+            "art rock",
+            "alternative and punk",
+            "alternative punk",
+            "dance-punk",
+            "rock",
+            "alternative/indie",
+            "contemporary rock",
+            "dance-punk revival",
+            "indie",
+            "indie sleaze"
+          ],
+          "counts": [
+            8,
+            4,
+            4,
+            3,
+            2,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "release-group/c145ca26-2556-3780-828f-82729de51f7b (Franz Ferdinand; release of the matched recording)",
+          "links": {
+            "mbReleaseGroup": "c145ca26-2556-3780-828f-82729de51f7b",
+            "album": "Franz Ferdinand",
+            "discogsMaster": "4334",
+            "wikidata": "Q829973"
+          },
+          "at": "2026-11-24T05:43:06.839Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "found",
+          "genres": [
+            "Post-punk revival",
+            "dance-punk"
+          ],
+          "ref": "Franz Ferdinand (album)",
+          "links": {
+            "wikidata": "Q829973"
+          },
+          "at": "2026-11-24T05:43:07.193Z"
+        },
+        "wikidata-album": {
+          "status": "found",
+          "genres": [
+            "indie rock"
+          ],
+          "ref": "Q829973",
+          "at": "2026-11-24T05:43:08.133Z"
+        },
+        "discogs-album": {
+          "status": "found",
+          "genres": [
+            "Alternative Rock",
+            "Indie Rock",
+            "Post-Punk",
+            "Rock"
+          ],
+          "ref": "master/4334 (Franz Ferdinand)",
+          "at": "2026-11-24T05:43:06.999Z"
+        },
+        "itunes-album": {
+          "status": "found",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "collection/315843479 (Franz Ferdinand)",
+          "links": {
+            "album": "Franz Ferdinand"
+          },
+          "at": "2026-11-24T05:43:04.295Z"
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "genres": [
+            "indie rock",
+            "post-punk revival",
+            "art rock",
+            "dance-punk",
+            "alternative dance",
+            "alternative rock",
+            "british",
+            "post-punk",
+            "new wave",
+            "rock",
+            "scottish",
+            "britpop",
+            "dance-rock",
+            "indie pop",
+            "indietronica",
+            "pop"
+          ],
+          "counts": [
+            16,
+            7,
+            5,
+            5,
+            3,
+            3,
+            3,
+            3,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "artist/aa7a2827-f74b-473c-bd79-03d065835cf7 (Franz Ferdinand; credited on the song)",
+          "links": {
+            "mbArtist": "aa7a2827-f74b-473c-bd79-03d065835cf7",
+            "wikidata": "Q173180"
+          },
+          "at": "2026-11-24T05:43:08.385Z"
+        },
+        "wikipedia-artist": {
+          "status": "found",
+          "genres": [
+            "Indie rock",
+            "post-punk revival",
+            "dance-punk",
+            "art rock",
+            "art punk"
+          ],
+          "ref": "Franz Ferdinand (band)",
+          "links": {
+            "wikidata": "Q173180"
+          },
+          "at": "2026-11-24T05:43:09.496Z"
+        },
+        "wikidata-artist": {
+          "status": "found",
+          "genres": [
+            "punk rock",
+            "indie rock"
+          ],
+          "ref": "Q173180",
+          "at": "2026-11-24T05:43:10.484Z"
+        },
+        "theaudiodb-artist": {
+          "status": "found",
+          "genres": [
+            "Indie Rock",
+            "Rock/Pop"
+          ],
+          "ref": "artist/111778",
+          "at": "2026-11-24T05:43:03.542Z"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "artist/6596751 (Franz Ferdinand)",
+          "at": "2026-11-24T05:43:04.295Z"
         }
       }
     },

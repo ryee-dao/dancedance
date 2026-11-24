@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-24T05:38:46.049Z",
+  "generatedAt": "2026-11-24T05:43:10.494Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -97,6 +97,7 @@
     "pd1_SxHh2vo",
     "qJ_Tw0w3lLA",
     "qX0cPZT3Lzg",
+    "r6ZFvXQBpKk",
     "s8ZXJ5QUYvQ",
     "sKtl7-_6AjE",
     "sLqdRmwY6vc",
@@ -2630,6 +2631,33 @@
         "alternative hip hop",
         "electropop",
         "indie pop"
+      ]
+    },
+    "r6ZFvXQBpKk": {
+      "bpm": 104.9,
+      "duration": 239,
+      "genre": "Pop",
+      "genres": [
+        "indie rock",
+        "post punk revival",
+        "alternative rock",
+        "art rock",
+        "dance-rock",
+        "garage rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "indie rock",
+        "post punk revival",
+        "dance-punk",
+        "art rock"
       ]
     },
     "s8ZXJ5QUYvQ": {

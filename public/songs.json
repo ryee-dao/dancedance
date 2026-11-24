@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-24T05:38:46.049Z",
+  "updatedAt": "2026-11-24T05:43:10.494Z",
   "songs": [
     {
       "videoId": "_Vj092UgKwQ",
@@ -378,6 +378,37 @@
         "folk rock",
         "soft rock",
         "pop rock"
+      ]
+    },
+    {
+      "videoId": "r6ZFvXQBpKk",
+      "title": "Take Me Out",
+      "artist": "Franz Ferdinand",
+      "addedAt": "2026-11-24T05:43:00.959Z",
+      "durationSec": 237,
+      "hasMap": true,
+      "genre": "Pop",
+      "genres": [
+        "indie rock",
+        "post punk revival",
+        "alternative rock",
+        "art rock",
+        "dance-rock",
+        "garage rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "indie rock",
+        "post punk revival",
+        "dance-punk",
+        "art rock"
       ]
     }
   ]
