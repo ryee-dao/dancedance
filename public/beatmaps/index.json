@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-16T03:39:39.751Z",
+  "generatedAt": "2026-11-24T05:06:05.996Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -106,6 +106,7 @@
     "w5i-cwLH7s0",
     "xjiYBGs0TUA",
     "yvvamodXZbw",
+    "z0GKGpObgPY",
     "zIh5AHxh-Ok",
     "zLxXqEZ5OoA",
     "zd-h01o7LtI",
@@ -2874,6 +2875,33 @@
         "R&B",
         "dance-pop",
         "electropop"
+      ]
+    },
+    "z0GKGpObgPY": {
+      "bpm": 120,
+      "duration": 342,
+      "genre": "Pop",
+      "genres": [
+        "soft rock",
+        "pop rock",
+        "glam rock",
+        "pop",
+        "rock",
+        "Britpop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "soft rock",
+        "pop rock",
+        "Britpop",
+        "rock"
       ]
     },
     "zIh5AHxh-Ok": {

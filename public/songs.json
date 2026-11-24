@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-16T03:39:39.751Z",
+  "updatedAt": "2026-11-24T05:06:05.996Z",
   "songs": [
     {
       "videoId": "_Vj092UgKwQ",
@@ -324,6 +324,37 @@
       ],
       "genreLevels": [
         "song"
+      ]
+    },
+    {
+      "videoId": "z0GKGpObgPY",
+      "title": "Sign of the Times",
+      "artist": "Harry Styles",
+      "addedAt": "2026-11-24T05:05:59.182Z",
+      "durationSec": 341,
+      "hasMap": true,
+      "genre": "Pop",
+      "genres": [
+        "soft rock",
+        "pop rock",
+        "glam rock",
+        "pop",
+        "rock",
+        "Britpop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "soft rock",
+        "pop rock",
+        "Britpop",
+        "rock"
       ]
     }
   ]

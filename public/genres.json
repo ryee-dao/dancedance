@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-16T03:39:39.751Z",
+  "updatedAt": "2026-11-24T05:06:05.996Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -8489,6 +8489,259 @@
             "Pop"
           ],
           "ref": "artist/471260289 (Harry Styles)"
+        }
+      }
+    },
+    "harry styles - sign of the times": {
+      "artist": "Harry Styles",
+      "title": "Sign of the Times",
+      "videoIds": [
+        "z0GKGpObgPY"
+      ],
+      "genres": [
+        "soft rock",
+        "pop rock",
+        "glam rock",
+        "pop",
+        "rock",
+        "Britpop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "soft rock",
+        "pop rock",
+        "Britpop",
+        "rock"
+      ],
+      "moods": [
+        "happy"
+      ],
+      "complete": true,
+      "at": "2026-11-24T05:06:05.988Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "genres": [
+            "Pop rock",
+            "soft rock"
+          ],
+          "ref": "Sign of the Times (Harry Styles song)",
+          "links": {
+            "albumArticle": "Harry Styles (album)",
+            "artistArticle": "Harry Styles"
+          },
+          "at": "2026-11-24T05:05:59.500Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "found",
+          "genres": [
+            "glam rock",
+            "soft rock",
+            "pop rock"
+          ],
+          "ref": "Q29341805",
+          "at": "2026-11-24T05:06:01.633Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "pop",
+            "pop rock",
+            "rock",
+            "soft rock"
+          ],
+          "counts": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "ref": "release-group/f002e8f7-852e-4ece-92ee-c5cac26747bc",
+          "at": "2026-11-24T05:06:01.221Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "found",
+          "genres": [
+            "Pop"
+          ],
+          "moods": [
+            "Happy"
+          ],
+          "ref": "track/34797213",
+          "at": "2026-11-24T05:05:59.551Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "stored",
+          "at": "2026-11-24T05:05:59.185Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-24T05:05:59.185Z"
+        },
+        "musicbrainz-album": {
+          "status": "found",
+          "genres": [
+            "pop",
+            "5+ wochen",
+            "ph_temp_checken",
+            "plattentests.de",
+            "rock",
+            "self-titled"
+          ],
+          "counts": [
+            4,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "release-group/05e6b686-b590-472a-9924-e623b223cb6d (Harry Styles; release of the matched recording)",
+          "links": {
+            "mbReleaseGroup": "05e6b686-b590-472a-9924-e623b223cb6d",
+            "album": "Harry Styles",
+            "discogsMaster": "1179077",
+            "wikidata": "Q29391051"
+          },
+          "at": "2026-11-24T05:06:02.470Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "found",
+          "genres": [
+            "Soft rock",
+            "Britpop",
+            "pop",
+            "rock"
+          ],
+          "ref": "Harry Styles (album)",
+          "links": {
+            "wikidata": "Q29391051"
+          },
+          "at": "2026-11-24T05:06:02.800Z"
+        },
+        "wikidata-album": {
+          "status": "found",
+          "genres": [
+            "pop rock",
+            "soft rock",
+            "pop music"
+          ],
+          "ref": "Q29391051",
+          "at": "2026-11-24T05:06:03.808Z"
+        },
+        "discogs-album": {
+          "status": "found",
+          "genres": [
+            "Pop Rock",
+            "Soft Rock",
+            "Vocal",
+            "Ballad",
+            "Rock",
+            "Pop"
+          ],
+          "ref": "master/1179077 (Harry Styles)",
+          "at": "2026-11-24T05:06:02.673Z"
+        },
+        "itunes-album": {
+          "status": "found",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "collection/1226034336 (Harry Styles)",
+          "links": {
+            "album": "Harry Styles"
+          },
+          "at": "2026-11-24T05:06:02.582Z"
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "genres": [
+            "pop",
+            "rock",
+            "soft rock",
+            "2020s",
+            "folk",
+            "funk",
+            "new wave",
+            "nuno",
+            "pop rock",
+            "soul",
+            "synth-pop"
+          ],
+          "counts": [
+            9,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "artist/7eb1ce54-a355-41f9-8d68-e018b096d427 (Harry Styles; credited on the song)",
+          "links": {
+            "mbArtist": "7eb1ce54-a355-41f9-8d68-e018b096d427",
+            "wikidata": "Q3626966",
+            "enwiki": "Harry Styles"
+          },
+          "at": "2026-11-24T05:06:03.863Z"
+        },
+        "wikipedia-artist": {
+          "status": "none",
+          "reason": "the artist article lists no genre",
+          "ref": "Harry Styles",
+          "links": {
+            "wikidata": "Q3626966"
+          },
+          "at": "2026-11-24T05:06:04.972Z"
+        },
+        "wikidata-artist": {
+          "status": "found",
+          "genres": [
+            "soft rock",
+            "pop music",
+            "rock music",
+            "Britpop",
+            "traditional folk music"
+          ],
+          "ref": "Q3626966",
+          "at": "2026-11-24T05:06:05.988Z"
+        },
+        "theaudiodb-artist": {
+          "status": "found",
+          "genres": [
+            "Pop",
+            "Rock/Pop"
+          ],
+          "ref": "artist/146664",
+          "at": "2026-11-24T05:06:01.763Z"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "genres": [
+            "Pop"
+          ],
+          "ref": "artist/471260289 (Harry Styles)",
+          "at": "2026-11-24T05:06:02.583Z"
         }
       }
     },
