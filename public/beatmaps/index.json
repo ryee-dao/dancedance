@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-24T05:06:05.996Z",
+  "generatedAt": "2026-11-24T05:38:46.049Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -67,6 +67,7 @@
     "bOq67Poe95w",
     "bSwzZoLCoZ0",
     "d-JBBNg8YKs",
+    "dLl4PZtxia8",
     "dWErisOfeyE",
     "eRogF6vbqsA",
     "egpE0ysQ21Q",
@@ -1831,6 +1832,25 @@
         "southern hip hop",
         "pop rap",
         "alternative hip hop"
+      ]
+    },
+    "dLl4PZtxia8": {
+      "bpm": 147.3,
+      "duration": 391,
+      "genre": "Rock",
+      "genres": [
+        "soft rock",
+        "rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "country rock",
+        "folk rock",
+        "soft rock",
+        "pop rock"
       ]
     },
     "dWErisOfeyE": {

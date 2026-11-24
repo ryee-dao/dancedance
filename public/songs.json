@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-24T05:06:05.996Z",
+  "updatedAt": "2026-11-24T05:38:46.049Z",
   "songs": [
     {
       "videoId": "_Vj092UgKwQ",
@@ -355,6 +355,29 @@
         "pop rock",
         "Britpop",
         "rock"
+      ]
+    },
+    {
+      "videoId": "dLl4PZtxia8",
+      "title": "Hotel California",
+      "artist": "Eagles",
+      "addedAt": "2026-11-24T05:38:26.146Z",
+      "durationSec": 391,
+      "hasMap": true,
+      "genre": "Rock",
+      "genres": [
+        "soft rock",
+        "rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "country rock",
+        "folk rock",
+        "soft rock",
+        "pop rock"
       ]
     }
   ]

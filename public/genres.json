@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-24T05:06:05.996Z",
+  "updatedAt": "2026-11-24T05:38:46.049Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -6971,6 +6971,202 @@
         }
       }
     },
+    "eagles - hotel california": {
+      "artist": "Eagles",
+      "title": "Hotel California",
+      "videoIds": [
+        "dLl4PZtxia8"
+      ],
+      "genres": [
+        "soft rock",
+        "rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "country rock",
+        "folk rock",
+        "soft rock",
+        "pop rock"
+      ],
+      "complete": true,
+      "at": "2026-11-24T05:38:46.041Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "genres": [
+            "Rock"
+          ],
+          "ref": "Hotel California",
+          "links": {
+            "albumArticle": "Hotel California (album)",
+            "artistArticle": "Eagles (band)"
+          },
+          "at": "2026-11-24T05:38:26.309Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "found",
+          "genres": [
+            "rock music",
+            "soft rock"
+          ],
+          "ref": "Q780394",
+          "at": "2026-11-24T05:38:28.529Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "classic rock",
+            "rock",
+            "soft rock"
+          ],
+          "counts": [
+            5,
+            3,
+            1
+          ],
+          "ref": "release-group/b85c13de-264e-46af-9626-68e3b6cdf541,0005a2cb-fb46-4407-ac1b-fcb0932ae50a,d9797f23-a517-498c-be57-960d656a633f",
+          "at": "2026-11-24T05:38:42.549Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "found",
+          "genres": [
+            "Rock"
+          ],
+          "ref": "track/32749151",
+          "at": "2026-11-24T05:38:26.415Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Rock"
+          ],
+          "ref": "stored",
+          "at": "2026-11-24T05:38:26.151Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-24T05:38:26.151Z"
+        },
+        "musicbrainz-album": {
+          "status": "none",
+          "reason": "the recordings are on no album or EP",
+          "at": "2026-11-24T05:38:42.549Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "found",
+          "genres": [
+            "Rock"
+          ],
+          "ref": "Hotel California (album)",
+          "links": {
+            "wikidata": "Q752172"
+          },
+          "at": "2026-11-24T05:38:42.668Z"
+        },
+        "wikidata-album": {
+          "status": "found",
+          "genres": [
+            "rock music"
+          ],
+          "ref": "Q752172",
+          "at": "2026-11-24T05:38:43.847Z"
+        },
+        "discogs-album": {
+          "status": "none",
+          "reason": "no Discogs master linked from the MusicBrainz album",
+          "at": "2026-11-24T05:38:42.550Z"
+        },
+        "itunes-album": {
+          "status": "none",
+          "reason": "the release is the song's single",
+          "ref": "Hotel California",
+          "links": {
+            "album": "Hotel California"
+          },
+          "at": "2026-11-24T05:38:29.454Z"
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "genres": [
+            "rock",
+            "country rock",
+            "classic rock",
+            "folk rock",
+            "soft rock",
+            "country",
+            "pop",
+            "pop rock",
+            "southern rock"
+          ],
+          "counts": [
+            12,
+            11,
+            3,
+            3,
+            3,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "artist/f46bd570-5768-462e-b84c-c7c993bbf47e (Eagles; credited on the song)",
+          "links": {
+            "mbArtist": "f46bd570-5768-462e-b84c-c7c993bbf47e",
+            "wikidata": "Q189635",
+            "enwiki": "Eagles (band)"
+          },
+          "at": "2026-11-24T05:38:44.112Z"
+        },
+        "wikipedia-artist": {
+          "status": "found",
+          "genres": [
+            "Rock",
+            "country rock",
+            "soft rock",
+            "folk rock"
+          ],
+          "ref": "Eagles (band)",
+          "links": {
+            "wikidata": "Q189635"
+          },
+          "at": "2026-11-24T05:38:45.058Z"
+        },
+        "wikidata-artist": {
+          "status": "found",
+          "genres": [
+            "country rock",
+            "folk rock"
+          ],
+          "ref": "Q189635",
+          "at": "2026-11-24T05:38:46.041Z"
+        },
+        "theaudiodb-artist": {
+          "status": "found",
+          "genres": [
+            "Rock",
+            "Folk"
+          ],
+          "ref": "artist/111416",
+          "at": "2026-11-24T05:38:28.750Z"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "genres": [
+            "Rock"
+          ],
+          "ref": "artist/1053549 (Eagles)",
+          "at": "2026-11-24T05:38:29.454Z"
+        }
+      }
+    },
     "earth wind fire - september": {
       "artist": "Earth, Wind & Fire",
       "title": "September",
@@ -8528,6 +8724,7 @@
       "sources": {
         "wikipedia": {
           "status": "found",
+          "at": "2026-11-24T05:05:59.500Z",
           "genres": [
             "Pop rock",
             "soft rock"
@@ -8537,22 +8734,22 @@
             "albumArticle": "Harry Styles (album)",
             "artistArticle": "Harry Styles"
           },
-          "at": "2026-11-24T05:05:59.500Z",
           "v": 3
         },
         "wikidata": {
           "status": "found",
+          "at": "2026-11-24T05:06:01.633Z",
           "genres": [
             "glam rock",
             "soft rock",
             "pop rock"
           ],
           "ref": "Q29341805",
-          "at": "2026-11-24T05:06:01.633Z",
           "v": 2
         },
         "musicbrainz": {
           "status": "found",
+          "at": "2026-11-24T05:06:01.221Z",
           "genres": [
             "pop",
             "pop rock",
@@ -8566,35 +8763,35 @@
             1
           ],
           "ref": "release-group/f002e8f7-852e-4ece-92ee-c5cac26747bc",
-          "at": "2026-11-24T05:06:01.221Z",
           "v": 2
         },
         "theaudiodb": {
           "status": "found",
+          "at": "2026-11-24T05:05:59.551Z",
           "genres": [
             "Pop"
           ],
           "moods": [
             "Happy"
           ],
-          "ref": "track/34797213",
-          "at": "2026-11-24T05:05:59.551Z"
+          "ref": "track/34797213"
         },
         "itunes": {
           "status": "found",
+          "at": "2026-11-24T05:05:59.185Z",
           "genres": [
             "Pop"
           ],
-          "ref": "stored",
-          "at": "2026-11-24T05:05:59.185Z"
+          "ref": "stored"
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-24T05:05:59.185Z"
+          "at": "2026-11-24T05:05:59.185Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
+          "at": "2026-11-24T05:06:02.470Z",
           "genres": [
             "pop",
             "5+ wochen",
@@ -8618,11 +8815,11 @@
             "discogsMaster": "1179077",
             "wikidata": "Q29391051"
           },
-          "at": "2026-11-24T05:06:02.470Z",
           "v": 2
         },
         "wikipedia-album": {
           "status": "found",
+          "at": "2026-11-24T05:06:02.800Z",
           "genres": [
             "Soft rock",
             "Britpop",
@@ -8632,21 +8829,21 @@
           "ref": "Harry Styles (album)",
           "links": {
             "wikidata": "Q29391051"
-          },
-          "at": "2026-11-24T05:06:02.800Z"
+          }
         },
         "wikidata-album": {
           "status": "found",
+          "at": "2026-11-24T05:06:03.808Z",
           "genres": [
             "pop rock",
             "soft rock",
             "pop music"
           ],
-          "ref": "Q29391051",
-          "at": "2026-11-24T05:06:03.808Z"
+          "ref": "Q29391051"
         },
         "discogs-album": {
           "status": "found",
+          "at": "2026-11-24T05:06:02.673Z",
           "genres": [
             "Pop Rock",
             "Soft Rock",
@@ -8655,22 +8852,22 @@
             "Rock",
             "Pop"
           ],
-          "ref": "master/1179077 (Harry Styles)",
-          "at": "2026-11-24T05:06:02.673Z"
+          "ref": "master/1179077 (Harry Styles)"
         },
         "itunes-album": {
           "status": "found",
+          "at": "2026-11-24T05:06:02.582Z",
           "genres": [
             "Pop"
           ],
           "ref": "collection/1226034336 (Harry Styles)",
           "links": {
             "album": "Harry Styles"
-          },
-          "at": "2026-11-24T05:06:02.582Z"
+          }
         },
         "musicbrainz-artist": {
           "status": "found",
+          "at": "2026-11-24T05:06:03.863Z",
           "genres": [
             "pop",
             "rock",
@@ -8702,20 +8899,20 @@
             "mbArtist": "7eb1ce54-a355-41f9-8d68-e018b096d427",
             "wikidata": "Q3626966",
             "enwiki": "Harry Styles"
-          },
-          "at": "2026-11-24T05:06:03.863Z"
+          }
         },
         "wikipedia-artist": {
           "status": "none",
+          "at": "2026-11-24T05:06:04.972Z",
           "reason": "the artist article lists no genre",
           "ref": "Harry Styles",
           "links": {
             "wikidata": "Q3626966"
-          },
-          "at": "2026-11-24T05:06:04.972Z"
+          }
         },
         "wikidata-artist": {
           "status": "found",
+          "at": "2026-11-24T05:06:05.988Z",
           "genres": [
             "soft rock",
             "pop music",
@@ -8723,25 +8920,24 @@
             "Britpop",
             "traditional folk music"
           ],
-          "ref": "Q3626966",
-          "at": "2026-11-24T05:06:05.988Z"
+          "ref": "Q3626966"
         },
         "theaudiodb-artist": {
           "status": "found",
+          "at": "2026-11-24T05:06:01.763Z",
           "genres": [
             "Pop",
             "Rock/Pop"
           ],
-          "ref": "artist/146664",
-          "at": "2026-11-24T05:06:01.763Z"
+          "ref": "artist/146664"
         },
         "itunes-artist": {
           "status": "found",
+          "at": "2026-11-24T05:06:02.583Z",
           "genres": [
             "Pop"
           ],
-          "ref": "artist/471260289 (Harry Styles)",
-          "at": "2026-11-24T05:06:02.583Z"
+          "ref": "artist/471260289 (Harry Styles)"
         }
       }
     },
