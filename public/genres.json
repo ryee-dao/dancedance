@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-27T01:44:41.495Z",
+  "updatedAt": "2026-11-27T01:51:00.324Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -2515,18 +2515,19 @@
       "sources": {
         "wikipedia": {
           "status": "none",
-          "reason": "no article about this song (Bobby Shmurda: not a song article (musical artist))",
           "at": "2026-11-27T01:44:38.107Z",
+          "reason": "no article about this song (Bobby Shmurda: not a song article (musical artist))",
           "v": 3
         },
         "wikidata": {
           "status": "none",
-          "reason": "no item with this title",
           "at": "2026-11-27T01:44:36.919Z",
+          "reason": "no item with this title",
           "v": 2
         },
         "musicbrainz": {
           "status": "found",
+          "at": "2026-11-27T01:44:38.701Z",
           "genres": [
             "gangsta rap",
             "trap"
@@ -2536,59 +2537,59 @@
             1
           ],
           "ref": "release-group/ff4db692-9ef0-4f1a-bf1a-4eddacb28bb2",
-          "at": "2026-11-27T01:44:38.701Z",
           "v": 2
         },
         "theaudiodb": {
           "status": "none",
-          "reason": "no track by this artist with this title",
-          "at": "2026-11-27T01:44:36.970Z"
+          "at": "2026-11-27T01:44:36.970Z",
+          "reason": "no track by this artist with this title"
         },
         "itunes": {
           "status": "found",
+          "at": "2026-11-27T01:44:36.675Z",
           "genres": [
             "Rap"
           ],
-          "ref": "stored",
-          "at": "2026-11-27T01:44:36.675Z"
+          "ref": "stored"
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-27T01:44:36.675Z"
+          "at": "2026-11-27T01:44:36.675Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "none",
-          "reason": "the recordings are on no album or EP",
           "at": "2026-11-27T01:44:38.701Z",
+          "reason": "the recordings are on no album or EP",
           "v": 2
         },
         "wikipedia-album": {
           "status": "none",
-          "reason": "no album (the song is a single, or the album is unknown)",
-          "at": "2026-11-27T01:44:40.244Z"
+          "at": "2026-11-27T01:44:40.244Z",
+          "reason": "no album (the song is a single, or the album is unknown)"
         },
         "wikidata-album": {
           "status": "none",
-          "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
-          "at": "2026-11-27T01:44:40.244Z"
+          "at": "2026-11-27T01:44:40.244Z",
+          "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album"
         },
         "discogs-album": {
           "status": "none",
-          "reason": "no Discogs master linked from the MusicBrainz album",
-          "at": "2026-11-27T01:44:38.701Z"
+          "at": "2026-11-27T01:44:38.701Z",
+          "reason": "no Discogs master linked from the MusicBrainz album"
         },
         "itunes-album": {
           "status": "none",
+          "at": "2026-11-27T01:44:40.243Z",
           "reason": "the release is the song's single",
           "ref": "Shmoney (feat. Quavo & Rowdy Rebel) - Single",
           "links": {
             "album": "Shmoney (feat. Quavo & Rowdy Rebel) - Single"
-          },
-          "at": "2026-11-27T01:44:40.243Z"
+          }
         },
         "musicbrainz-artist": {
           "status": "found",
+          "at": "2026-11-27T01:44:40.184Z",
           "genres": [
             "drill",
             "east coast hip hop",
@@ -2603,11 +2604,11 @@
           "links": {
             "mbArtist": "4ec3b7d8-efbb-4672-8067-5e72bd8dba3e",
             "wikidata": "Q17501920"
-          },
-          "at": "2026-11-27T01:44:40.184Z"
+          }
         },
         "wikipedia-artist": {
           "status": "found",
+          "at": "2026-11-27T01:44:40.467Z",
           "genres": [
             "East Coast hip-hop",
             "Brooklyn drill"
@@ -2615,11 +2616,11 @@
           "ref": "Bobby Shmurda",
           "links": {
             "wikidata": "Q17501920"
-          },
-          "at": "2026-11-27T01:44:40.467Z"
+          }
         },
         "wikidata-artist": {
           "status": "found",
+          "at": "2026-11-27T01:44:41.489Z",
           "genres": [
             "East Coast hip-hop",
             "Brooklyn drill",
@@ -2629,25 +2630,24 @@
             "drill",
             "contemporary R&B"
           ],
-          "ref": "Q17501920",
-          "at": "2026-11-27T01:44:41.489Z"
+          "ref": "Q17501920"
         },
         "theaudiodb-artist": {
           "status": "found",
+          "at": "2026-11-27T01:44:39.244Z",
           "genres": [
             "Hip-Hop",
             "Urban/R&B"
           ],
-          "ref": "artist/132230",
-          "at": "2026-11-27T01:44:39.244Z"
+          "ref": "artist/132230"
         },
         "itunes-artist": {
           "status": "found",
+          "at": "2026-11-27T01:44:40.243Z",
           "genres": [
             "Hip-Hop/Rap"
           ],
-          "ref": "artist/902809133 (Bobby Shmurda)",
-          "at": "2026-11-27T01:44:40.243Z"
+          "ref": "artist/902809133 (Bobby Shmurda)"
         }
       }
     },
@@ -24672,6 +24672,251 @@
             "Pop"
           ],
           "ref": "artist/1435848034 (The Kid LAROI)"
+        }
+      }
+    },
+    "the strokes - ode to the mets": {
+      "artist": "The Strokes",
+      "title": "Ode To The Mets",
+      "videoIds": [
+        "LNq4xox99HY"
+      ],
+      "genres": [
+        "dream pop",
+        "alternative rock",
+        "indie rock",
+        "post punk revival",
+        "alternative",
+        "new wave"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "album",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "indie rock",
+        "post punk revival",
+        "garage rock revival",
+        "new wave"
+      ],
+      "complete": true,
+      "at": "2026-11-27T01:51:00.320Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "genres": [
+            "Dream pop"
+          ],
+          "ref": "Ode to the Mets",
+          "links": {
+            "albumArticle": "The New Abnormal",
+            "artistArticle": "the Strokes"
+          },
+          "at": "2026-11-27T01:50:35.130Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "found",
+          "genres": [
+            "dream pop"
+          ],
+          "ref": "Q96397138",
+          "at": "2026-11-27T01:50:35.102Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "alternative rock"
+          ],
+          "counts": [
+            1
+          ],
+          "ref": "recording/3d5ba249-0bf6-42ec-ae85-52cb31750ea3",
+          "at": "2026-11-27T01:50:34.579Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "none",
+          "reason": "the track has no genre",
+          "ref": "track/35420144",
+          "at": "2026-11-27T01:50:33.015Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored",
+          "at": "2026-11-27T01:50:32.630Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-27T01:50:32.630Z"
+        },
+        "musicbrainz-album": {
+          "status": "found",
+          "genres": [
+            "indie rock",
+            "rock",
+            "post-punk revival",
+            "alternative rock",
+            "alternative/indie",
+            "animal on cover",
+            "bird on cover",
+            "contemporary rock",
+            "new wave",
+            "pop rock"
+          ],
+          "counts": [
+            4,
+            3,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "release-group/43ca5aa6-92de-47e9-8f0b-9112e4881426 (The New Abnormal; release of the matched recording)",
+          "links": {
+            "mbReleaseGroup": "43ca5aa6-92de-47e9-8f0b-9112e4881426",
+            "album": "The New Abnormal",
+            "discogsMaster": "1712601",
+            "wikidata": "Q85552601"
+          },
+          "at": "2026-11-27T01:50:53.760Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "found",
+          "genres": [
+            "Indie rock",
+            "new wave",
+            "post-punk revival",
+            "synth-pop",
+            "electronica"
+          ],
+          "ref": "The New Abnormal",
+          "links": {
+            "wikidata": "Q85552601"
+          },
+          "at": "2026-11-27T01:50:53.950Z"
+        },
+        "wikidata-album": {
+          "status": "found",
+          "genres": [
+            "indie rock",
+            "post-punk"
+          ],
+          "ref": "Q85552601",
+          "at": "2026-11-27T01:50:54.934Z"
+        },
+        "discogs-album": {
+          "status": "found",
+          "genres": [
+            "Pop Rock",
+            "Indie Rock",
+            "Alternative Rock",
+            "Electronic",
+            "Rock"
+          ],
+          "ref": "master/1712601 (The New Abnormal)",
+          "at": "2026-11-27T01:50:54.097Z"
+        },
+        "itunes-album": {
+          "status": "none",
+          "reason": "no matching track",
+          "at": "2026-11-27T01:50:32.976Z"
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "genres": [
+            "indie rock",
+            "garage rock revival",
+            "post-punk revival",
+            "new wave",
+            "rock",
+            "alternative rock music",
+            "garage rock",
+            "synth-pop",
+            "alternative",
+            "alternative rock",
+            "alternative/indie rock",
+            "garage rock music",
+            "pop",
+            "rock music"
+          ],
+          "counts": [
+            19,
+            10,
+            7,
+            5,
+            5,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "artist/f181961b-20f7-459e-89de-920ef03c7ed0 (The Strokes; credited on the song)",
+          "links": {
+            "mbArtist": "f181961b-20f7-459e-89de-920ef03c7ed0",
+            "wikidata": "Q211583"
+          },
+          "at": "2026-11-27T01:50:55.171Z"
+        },
+        "wikipedia-artist": {
+          "status": "found",
+          "genres": [
+            "Indie rock",
+            "garage rock revival",
+            "post-punk revival",
+            "new wave",
+            "synth-pop"
+          ],
+          "ref": "The Strokes",
+          "links": {
+            "wikidata": "Q211583"
+          },
+          "at": "2026-11-27T01:51:00.188Z"
+        },
+        "wikidata-artist": {
+          "status": "found",
+          "genres": [
+            "rock music",
+            "indie rock",
+            "garage rock",
+            "post-punk revival",
+            "new wave"
+          ],
+          "ref": "Q211583",
+          "at": "2026-11-27T01:51:00.320Z"
+        },
+        "theaudiodb-artist": {
+          "status": "found",
+          "genres": [
+            "Indie",
+            "Rock/Pop"
+          ],
+          "ref": "artist/112035",
+          "at": "2026-11-27T01:50:35.245Z"
+        },
+        "itunes-artist": {
+          "status": "none",
+          "reason": "no matching track",
+          "at": "2026-11-27T01:50:32.976Z"
         }
       }
     },

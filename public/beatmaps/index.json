@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-27T01:44:41.495Z",
+  "generatedAt": "2026-11-27T01:51:00.324Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -37,6 +37,7 @@
     "IhP3J0j9JmY",
     "JDHoc9qzC5I",
     "JTBoLANhyVA",
+    "LNq4xox99HY",
     "LhZ5GXCZtEw",
     "Mr_uHJPUlO8",
     "Mzk6KkyxXC8",
@@ -1032,6 +1033,33 @@
         "new wave",
         "blue-eyed soul",
         "pop rock"
+      ]
+    },
+    "LNq4xox99HY": {
+      "bpm": 92,
+      "duration": 353,
+      "genre": "Alternative",
+      "genres": [
+        "dream pop",
+        "alternative rock",
+        "indie rock",
+        "post punk revival",
+        "alternative",
+        "new wave"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "album",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "indie rock",
+        "post punk revival",
+        "garage rock revival",
+        "new wave"
       ]
     },
     "LhZ5GXCZtEw": {
