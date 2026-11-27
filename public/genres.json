@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-27T02:00:19.283Z",
+  "updatedAt": "2026-11-27T02:16:48.151Z",
   "songs": {
     "21 savage offset metro boomin - rap saved me feat quavo": {
       "artist": "21 Savage, Offset & Metro Boomin",
@@ -30,6 +30,7 @@
       "sources": {
         "wikipedia": {
           "status": "found",
+          "at": "2026-11-27T01:59:18.419Z",
           "genres": [
             "Hip hop",
             "trap"
@@ -39,41 +40,41 @@
             "albumArticle": "Without Warning (album)",
             "artistArticle": "21 Savage"
           },
-          "at": "2026-11-27T01:59:18.419Z",
           "v": 3
         },
         "wikidata": {
           "status": "none",
-          "reason": "no song item by this artist",
           "at": "2026-11-27T01:59:19.525Z",
+          "reason": "no song item by this artist",
           "v": 2
         },
         "musicbrainz": {
           "status": "none",
-          "reason": "0 single(s) and 2 recording(s) found, none tagged",
           "at": "2026-11-27T01:59:20.018Z",
+          "reason": "0 single(s) and 2 recording(s) found, none tagged",
           "v": 2
         },
         "theaudiodb": {
           "status": "none",
-          "reason": "no track by this artist with this title",
-          "at": "2026-11-27T01:59:18.485Z"
+          "at": "2026-11-27T01:59:18.485Z",
+          "reason": "no track by this artist with this title"
         },
         "itunes": {
           "status": "found",
+          "at": "2026-11-27T01:59:18.355Z",
           "genres": [
             "Hip-Hop/Rap"
           ],
-          "ref": "stored",
-          "at": "2026-11-27T01:59:18.355Z"
+          "ref": "stored"
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-27T01:59:18.355Z"
+          "at": "2026-11-27T01:59:18.355Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
+          "at": "2026-11-27T01:59:21.263Z",
           "genres": [
             "southern hip hop",
             "hip hop",
@@ -92,11 +93,11 @@
             "album": "Without Warning",
             "wikidata": "Q47519752"
           },
-          "at": "2026-11-27T01:59:21.263Z",
           "v": 2
         },
         "wikipedia-album": {
           "status": "found",
+          "at": "2026-11-27T01:59:22.086Z",
           "genres": [
             "Hip-hop",
             "trap"
@@ -104,36 +105,36 @@
           "ref": "Without Warning (album)",
           "links": {
             "wikidata": "Q47519752"
-          },
-          "at": "2026-11-27T01:59:22.086Z"
+          }
         },
         "wikidata-album": {
           "status": "found",
+          "at": "2026-11-27T01:59:23.065Z",
           "genres": [
             "horrorcore",
             "Southern hip-hop"
           ],
-          "ref": "Q47519752",
-          "at": "2026-11-27T01:59:23.065Z"
+          "ref": "Q47519752"
         },
         "discogs-album": {
           "status": "none",
-          "reason": "no Discogs master linked from the MusicBrainz album",
-          "at": "2026-11-27T01:59:21.263Z"
+          "at": "2026-11-27T01:59:21.263Z",
+          "reason": "no Discogs master linked from the MusicBrainz album"
         },
         "itunes-album": {
           "status": "found",
+          "at": "2026-11-27T01:59:21.974Z",
           "genres": [
             "Hip-Hop/Rap"
           ],
           "ref": "collection/1310806859 (Without Warning)",
           "links": {
             "album": "Without Warning"
-          },
-          "at": "2026-11-27T01:59:21.974Z"
+          }
         },
         "musicbrainz-artist": {
           "status": "found",
+          "at": "2026-11-27T01:59:22.566Z",
           "genres": [
             "trap",
             "hip hop",
@@ -154,43 +155,42 @@
           "links": {
             "mbArtist": "37b2cb82-ef79-4d46-a184-a549450aa231",
             "wikidata": "Q25095399"
-          },
-          "at": "2026-11-27T01:59:22.566Z"
+          }
         },
         "wikipedia-artist": {
           "status": "none",
+          "at": "2026-11-27T01:59:24.192Z",
           "reason": "the artist article lists no genre",
           "ref": "21 Savage",
           "links": {
             "wikidata": "Q25095399"
-          },
-          "at": "2026-11-27T01:59:24.192Z"
+          }
         },
         "wikidata-artist": {
           "status": "found",
+          "at": "2026-11-27T01:59:25.195Z",
           "genres": [
             "Southern hip-hop",
             "trap music",
             "mumble rap"
           ],
-          "ref": "Q25095399",
-          "at": "2026-11-27T01:59:25.195Z"
+          "ref": "Q25095399"
         },
         "theaudiodb-artist": {
           "status": "found",
+          "at": "2026-11-27T01:59:20.702Z",
           "genres": [
             "Rap"
           ],
-          "ref": "artist/146009",
-          "at": "2026-11-27T01:59:20.702Z"
+          "ref": "artist/146009"
         },
         "itunes-artist": {
           "status": "found",
+          "at": "2026-11-27T01:59:21.974Z",
           "genres": [
             "Hip-Hop/Rap"
           ],
-          "ref": "artist/894820464 (21 Savage)",
-          "at": "2026-11-27T01:59:21.974Z"
+          "ref": "artist/894820464 (21 Savage)"
         }
       }
     },
@@ -16005,6 +16005,7 @@
       "sources": {
         "wikipedia": {
           "status": "found",
+          "at": "2026-11-27T01:55:57.041Z",
           "genres": [
             "Dance-pop"
           ],
@@ -16013,20 +16014,20 @@
             "albumArticle": "LSD (LSD album)",
             "artistArticle": "LSD (group)"
           },
-          "at": "2026-11-27T01:55:57.041Z",
           "v": 3
         },
         "wikidata": {
           "status": "found",
+          "at": "2026-11-27T01:55:59.395Z",
           "genres": [
             "dance-pop"
           ],
           "ref": "Q56051891",
-          "at": "2026-11-27T01:55:59.395Z",
           "v": 2
         },
         "musicbrainz": {
           "status": "found",
+          "at": "2026-11-27T01:56:03.514Z",
           "genres": [
             "pop"
           ],
@@ -16034,30 +16035,30 @@
             1
           ],
           "ref": "release-group/45847504-00f7-43de-898a-f7d81d5acf75",
-          "at": "2026-11-27T01:56:03.514Z",
           "v": 2
         },
         "theaudiodb": {
           "status": "none",
+          "at": "2026-11-27T01:55:57.329Z",
           "reason": "the track has no genre",
-          "ref": "track/35057968",
-          "at": "2026-11-27T01:55:57.329Z"
+          "ref": "track/35057968"
         },
         "itunes": {
           "status": "found",
+          "at": "2026-11-27T01:55:56.930Z",
           "genres": [
             "Pop"
           ],
-          "ref": "stored",
-          "at": "2026-11-27T01:55:56.930Z"
+          "ref": "stored"
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-27T01:55:56.930Z"
+          "at": "2026-11-27T01:55:56.930Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
+          "at": "2026-11-27T01:56:11.041Z",
           "genres": [
             "dance-pop",
             "electronic",
@@ -16077,11 +16078,11 @@
             "discogsMaster": "1531968",
             "wikidata": "Q60741532"
           },
-          "at": "2026-11-27T01:56:11.041Z",
           "v": 2
         },
         "wikipedia-album": {
           "status": "found",
+          "at": "2026-11-27T01:56:11.223Z",
           "genres": [
             "Dance-pop",
             "pop rock",
@@ -16091,51 +16092,51 @@
           "ref": "Labrinth, Sia & Diplo Present... LSD",
           "links": {
             "wikidata": "Q60741532"
-          },
-          "at": "2026-11-27T01:56:11.223Z"
+          }
         },
         "wikidata-album": {
           "status": "found",
+          "at": "2026-11-27T01:56:12.185Z",
           "genres": [
             "electronic music"
           ],
-          "ref": "Q60741532",
-          "at": "2026-11-27T01:56:12.185Z"
+          "ref": "Q60741532"
         },
         "discogs-album": {
           "status": "found",
+          "at": "2026-11-27T01:56:11.263Z",
           "genres": [
             "Synth-pop",
             "Dance-pop",
             "Electronic",
             "Pop"
           ],
-          "ref": "master/1531968 (LSD)",
-          "at": "2026-11-27T01:56:11.263Z"
+          "ref": "master/1531968 (LSD)"
         },
         "itunes-album": {
           "status": "found",
+          "at": "2026-11-27T01:56:00.849Z",
           "genres": [
             "Pop"
           ],
           "ref": "collection/1455271201 (LABRINTH, SIA & DIPLO PRESENT... LSD)",
           "links": {
             "album": "LABRINTH, SIA & DIPLO PRESENT... LSD"
-          },
-          "at": "2026-11-27T01:56:00.849Z"
+          }
         },
         "musicbrainz-artist": {
           "status": "none",
+          "at": "2026-11-27T01:56:12.343Z",
           "reason": "the artist has no tags",
           "ref": "artist/8d79b49a-143c-4807-bd44-6c985a4655bf (LSD; credited on the song)",
           "links": {
             "mbArtist": "8d79b49a-143c-4807-bd44-6c985a4655bf",
             "wikidata": "Q52397902"
-          },
-          "at": "2026-11-27T01:56:12.343Z"
+          }
         },
         "wikipedia-artist": {
           "status": "found",
+          "at": "2026-11-27T01:56:13.279Z",
           "genres": [
             "Electronic",
             "pop",
@@ -16145,36 +16146,35 @@
           "ref": "LSD (group)",
           "links": {
             "wikidata": "Q52397902"
-          },
-          "at": "2026-11-27T01:56:13.279Z"
+          }
         },
         "wikidata-artist": {
           "status": "found",
+          "at": "2026-11-27T01:56:14.329Z",
           "genres": [
             "psychedelic pop",
             "electropop",
             "trip hop",
             "pop music"
           ],
-          "ref": "Q52397902",
-          "at": "2026-11-27T01:56:14.329Z"
+          "ref": "Q52397902"
         },
         "theaudiodb-artist": {
           "status": "found",
+          "at": "2026-11-27T01:55:59.520Z",
           "genres": [
             "Pop",
             "Electronic"
           ],
-          "ref": "artist/151286",
-          "at": "2026-11-27T01:55:59.520Z"
+          "ref": "artist/151286"
         },
         "itunes-artist": {
           "status": "found",
+          "at": "2026-11-27T01:56:00.849Z",
           "genres": [
             "Pop"
           ],
-          "ref": "artist/1377413450 (LSD)",
-          "at": "2026-11-27T01:56:00.849Z"
+          "ref": "artist/1377413450 (LSD)"
         }
       }
     },
@@ -17254,6 +17254,7 @@
       "sources": {
         "wikipedia": {
           "status": "found",
+          "at": "2026-11-27T02:00:01.052Z",
           "genres": [
             "Hip hop"
           ],
@@ -17261,20 +17262,20 @@
           "links": {
             "artistArticle": "Meek Mill"
           },
-          "at": "2026-11-27T02:00:01.052Z",
           "v": 3
         },
         "wikidata": {
           "status": "found",
+          "at": "2026-11-27T02:00:03.320Z",
           "genres": [
             "hip-hop"
           ],
           "ref": "Q16995952",
-          "at": "2026-11-27T02:00:03.320Z",
           "v": 2
         },
         "musicbrainz": {
           "status": "found",
+          "at": "2026-11-27T02:00:13.706Z",
           "genres": [
             "hip hop",
             "east coast hip hop"
@@ -17284,74 +17285,74 @@
             1
           ],
           "ref": "recording/7726ae47-dae1-491f-9d88-3f6f0cea011e,4f962163-d569-4b71-9222-3d4ca5b01624",
-          "at": "2026-11-27T02:00:13.706Z",
           "v": 2
         },
         "theaudiodb": {
           "status": "found",
+          "at": "2026-11-27T01:59:58.018Z",
           "genres": [
             "Hip-Hop"
           ],
-          "ref": "track/32991892",
-          "at": "2026-11-27T01:59:58.018Z"
+          "ref": "track/32991892"
         },
         "itunes": {
           "status": "found",
+          "at": "2026-11-27T01:59:57.907Z",
           "genres": [
             "Hip-Hop/Rap"
           ],
-          "ref": "stored",
-          "at": "2026-11-27T01:59:57.907Z"
+          "ref": "stored"
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-27T01:59:57.907Z"
+          "at": "2026-11-27T01:59:57.907Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "none",
+          "at": "2026-11-27T02:00:15.047Z",
           "reason": "the album has no tags",
           "ref": "release-group/e7804bad-1537-4394-8ad8-d921712156d2 (Dreamchasers; release of the matched recording)",
           "links": {
             "mbReleaseGroup": "e7804bad-1537-4394-8ad8-d921712156d2",
             "album": "Dreamchasers"
           },
-          "at": "2026-11-27T02:00:15.047Z",
           "v": 2
         },
         "wikipedia-album": {
           "status": "found",
+          "at": "2026-11-27T02:00:15.105Z",
           "genres": [
             "Hip-hop"
           ],
           "ref": "Dreamchasers",
           "links": {
             "wikidata": "Q5306547"
-          },
-          "at": "2026-11-27T02:00:15.105Z"
+          }
         },
         "wikidata-album": {
           "status": "none",
+          "at": "2026-11-27T02:00:15.163Z",
           "reason": "the album item has no genre",
-          "ref": "Q5306547",
-          "at": "2026-11-27T02:00:15.163Z"
+          "ref": "Q5306547"
         },
         "discogs-album": {
           "status": "none",
-          "reason": "no Discogs master linked from the MusicBrainz album",
-          "at": "2026-11-27T02:00:15.047Z"
+          "at": "2026-11-27T02:00:15.047Z",
+          "reason": "no Discogs master linked from the MusicBrainz album"
         },
         "itunes-album": {
           "status": "none",
+          "at": "2026-11-27T02:00:01.489Z",
           "reason": "the release is the song's single",
           "ref": "House Party (feat. Young Chris) - Single",
           "links": {
             "album": "House Party (feat. Young Chris) - Single"
-          },
-          "at": "2026-11-27T02:00:01.489Z"
+          }
         },
         "musicbrainz-artist": {
           "status": "found",
+          "at": "2026-11-27T02:00:16.423Z",
           "genres": [
             "hip hop",
             "trap",
@@ -17374,20 +17375,20 @@
           "links": {
             "mbArtist": "31bcadcc-e1da-4cad-bec8-2f4f1d41b095",
             "wikidata": "Q1897911"
-          },
-          "at": "2026-11-27T02:00:16.423Z"
+          }
         },
         "wikipedia-artist": {
           "status": "none",
+          "at": "2026-11-27T02:00:17.289Z",
           "reason": "the artist article lists no genre",
           "ref": "Meek Mill",
           "links": {
             "wikidata": "Q1897911"
-          },
-          "at": "2026-11-27T02:00:17.289Z"
+          }
         },
         "wikidata-artist": {
           "status": "found",
+          "at": "2026-11-27T02:00:19.279Z",
           "genres": [
             "East Coast hip-hop",
             "hardcore hip-hop",
@@ -17395,25 +17396,24 @@
             "trap music",
             "hip-hop"
           ],
-          "ref": "Q1897911",
-          "at": "2026-11-27T02:00:19.279Z"
+          "ref": "Q1897911"
         },
         "theaudiodb-artist": {
           "status": "found",
+          "at": "2026-11-27T02:00:00.214Z",
           "genres": [
             "Hip-Hop",
             "Urban/R&B"
           ],
-          "ref": "artist/113638",
-          "at": "2026-11-27T02:00:00.214Z"
+          "ref": "artist/113638"
         },
         "itunes-artist": {
           "status": "found",
+          "at": "2026-11-27T02:00:01.489Z",
           "genres": [
             "Hip-Hop/Rap"
           ],
-          "ref": "artist/313865761 (Meek Mill)",
-          "at": "2026-11-27T02:00:01.489Z"
+          "ref": "artist/313865761 (Meek Mill)"
         }
       }
     },
@@ -17695,18 +17695,19 @@
       "sources": {
         "wikipedia": {
           "status": "none",
-          "reason": "no article about this song (Ransom 2: not a song article (album: studio))",
           "at": "2026-11-27T01:58:13.128Z",
+          "reason": "no article about this song (Ransom 2: not a song article (album: studio))",
           "v": 3
         },
         "wikidata": {
           "status": "none",
-          "reason": "no item with this title",
           "at": "2026-11-27T01:58:11.938Z",
+          "reason": "no item with this title",
           "v": 2
         },
         "musicbrainz": {
           "status": "found",
+          "at": "2026-11-27T01:58:26.629Z",
           "genres": [
             "hip-hop/rap"
           ],
@@ -17714,29 +17715,29 @@
             1
           ],
           "ref": "recording/e23c7c32-85e1-44d1-ad60-add61aa35bdf",
-          "at": "2026-11-27T01:58:26.629Z",
           "v": 2
         },
         "theaudiodb": {
           "status": "none",
-          "reason": "no track by this artist with this title",
-          "at": "2026-11-27T01:58:11.992Z"
+          "at": "2026-11-27T01:58:11.992Z",
+          "reason": "no track by this artist with this title"
         },
         "itunes": {
           "status": "found",
+          "at": "2026-11-27T01:58:11.856Z",
           "genres": [
             "Hip-Hop/Rap"
           ],
-          "ref": "stored",
-          "at": "2026-11-27T01:58:11.856Z"
+          "ref": "stored"
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-27T01:58:11.856Z"
+          "at": "2026-11-27T01:58:11.856Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
+          "at": "2026-11-27T01:58:32.791Z",
           "genres": [
             "hip hop"
           ],
@@ -17748,11 +17749,11 @@
             "mbReleaseGroup": "eda65fb7-b131-4ddd-9e8d-a0462e7c2340",
             "album": "Ransom 2"
           },
-          "at": "2026-11-27T01:58:32.791Z",
           "v": 2
         },
         "wikipedia-album": {
           "status": "found",
+          "at": "2026-11-27T01:58:32.863Z",
           "genres": [
             "Hip-hop",
             "trap"
@@ -17760,33 +17761,33 @@
           "ref": "Ransom 2",
           "links": {
             "wikidata": "Q27816906"
-          },
-          "at": "2026-11-27T01:58:32.863Z"
+          }
         },
         "wikidata-album": {
           "status": "none",
+          "at": "2026-11-27T01:58:32.916Z",
           "reason": "the album item has no genre",
-          "ref": "Q27816906",
-          "at": "2026-11-27T01:58:32.916Z"
+          "ref": "Q27816906"
         },
         "discogs-album": {
           "status": "none",
-          "reason": "no Discogs master linked from the MusicBrainz album",
-          "at": "2026-11-27T01:58:32.791Z"
+          "at": "2026-11-27T01:58:32.791Z",
+          "reason": "no Discogs master linked from the MusicBrainz album"
         },
         "itunes-album": {
           "status": "found",
+          "at": "2026-11-27T01:58:15.164Z",
           "genres": [
             "Hip-Hop/Rap"
           ],
           "ref": "collection/1443196857 (Ransom 2)",
           "links": {
             "album": "Ransom 2"
-          },
-          "at": "2026-11-27T01:58:15.164Z"
+          }
         },
         "musicbrainz-artist": {
           "status": "found",
+          "at": "2026-11-27T01:58:45.641Z",
           "genres": [
             "hip hop",
             "southern hip hop",
@@ -17801,11 +17802,11 @@
           "links": {
             "mbArtist": "5a2071aa-0787-49fb-931c-fa85ba86e681",
             "wikidata": "Q6849262"
-          },
-          "at": "2026-11-27T01:58:45.641Z"
+          }
         },
         "wikipedia-artist": {
           "status": "found",
+          "at": "2026-11-27T01:58:45.766Z",
           "genres": [
             "Hip-hop",
             "R&B",
@@ -17815,35 +17816,34 @@
           "ref": "Mike Will Made It",
           "links": {
             "wikidata": "Q6849262"
-          },
-          "at": "2026-11-27T01:58:45.766Z"
+          }
         },
         "wikidata-artist": {
           "status": "found",
+          "at": "2026-11-27T01:58:46.812Z",
           "genres": [
             "hip-hop",
             "pop music",
             "trap music",
             "contemporary R&B"
           ],
-          "ref": "Q6849262",
-          "at": "2026-11-27T01:58:46.812Z"
+          "ref": "Q6849262"
         },
         "theaudiodb-artist": {
           "status": "found",
+          "at": "2026-11-27T01:58:14.184Z",
           "genres": [
             "Hip-Hop"
           ],
-          "ref": "artist/124541",
-          "at": "2026-11-27T01:58:14.184Z"
+          "ref": "artist/124541"
         },
         "itunes-artist": {
           "status": "found",
+          "at": "2026-11-27T01:58:15.164Z",
           "genres": [
             "Hip-Hop/Rap"
           ],
-          "ref": "artist/511333957 (Mike WiLL Made-It)",
-          "at": "2026-11-27T01:58:15.164Z"
+          "ref": "artist/511333957 (Mike WiLL Made-It)"
         }
       }
     },
@@ -25418,6 +25418,7 @@
       "sources": {
         "wikipedia": {
           "status": "found",
+          "at": "2026-11-27T01:56:47.160Z",
           "genres": [
             "Future bass",
             "electropop"
@@ -25426,21 +25427,21 @@
           "links": {
             "artistArticle": "the Chainsmokers"
           },
-          "at": "2026-11-27T01:56:47.160Z",
           "v": 3
         },
         "wikidata": {
           "status": "found",
+          "at": "2026-11-27T01:56:49.550Z",
           "genres": [
             "electronic dance music",
             "future bass"
           ],
           "ref": "Q26257738",
-          "at": "2026-11-27T01:56:49.550Z",
           "v": 2
         },
         "musicbrainz": {
           "status": "found",
+          "at": "2026-11-27T01:57:23.773Z",
           "genres": [
             "electronic",
             "pop",
@@ -25454,35 +25455,35 @@
             1
           ],
           "ref": "release-group/2c0acac5-36fe-4731-877c-c4812ad751d9",
-          "at": "2026-11-27T01:57:23.773Z",
           "v": 2
         },
         "theaudiodb": {
           "status": "found",
+          "at": "2026-11-27T01:56:47.194Z",
           "genres": [
             "House"
           ],
           "moods": [
             "Dreamy"
           ],
-          "ref": "track/34645622",
-          "at": "2026-11-27T01:56:47.194Z"
+          "ref": "track/34645622"
         },
         "itunes": {
           "status": "found",
+          "at": "2026-11-27T01:56:47.060Z",
           "genres": [
             "Dance"
           ],
-          "ref": "stored",
-          "at": "2026-11-27T01:56:47.060Z"
+          "ref": "stored"
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-27T01:56:47.060Z"
+          "at": "2026-11-27T01:56:47.060Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
+          "at": "2026-11-27T01:57:28.565Z",
           "genres": [
             "electro house",
             "electronic",
@@ -25514,11 +25515,11 @@
             "discogsMaster": "1087375",
             "wikidata": "Q27563326"
           },
-          "at": "2026-11-27T01:57:28.565Z",
           "v": 2
         },
         "wikipedia-album": {
           "status": "found",
+          "at": "2026-11-27T01:57:28.719Z",
           "genres": [
             "Electronic",
             "pop",
@@ -25528,17 +25529,17 @@
           "ref": "Collage (EP)",
           "links": {
             "wikidata": "Q27563326"
-          },
-          "at": "2026-11-27T01:57:28.719Z"
+          }
         },
         "wikidata-album": {
           "status": "none",
+          "at": "2026-11-27T01:57:28.719Z",
           "reason": "the album item has no genre",
-          "ref": "Q27563326",
-          "at": "2026-11-27T01:57:28.719Z"
+          "ref": "Q27563326"
         },
         "discogs-album": {
           "status": "found",
+          "at": "2026-11-27T01:57:28.710Z",
           "genres": [
             "Synth-pop",
             "Dance-pop",
@@ -25548,22 +25549,22 @@
             "Electronic",
             "Pop"
           ],
-          "ref": "master/1087375 (Collage)",
-          "at": "2026-11-27T01:57:28.710Z"
+          "ref": "master/1087375 (Collage)"
         },
         "itunes-album": {
           "status": "found",
+          "at": "2026-11-27T01:56:50.660Z",
           "genres": [
             "Dance"
           ],
           "ref": "collection/1170699510 (Collage - EP)",
           "links": {
             "album": "Collage - EP"
-          },
-          "at": "2026-11-27T01:56:50.660Z"
+          }
         },
         "musicbrainz-artist": {
           "status": "found",
+          "at": "2026-11-27T01:57:30.557Z",
           "genres": [
             "electro house",
             "edm",
@@ -25596,11 +25597,11 @@
           "links": {
             "mbArtist": "91a81925-92f9-4fc9-b897-93cf01226282",
             "wikidata": "Q7721993"
-          },
-          "at": "2026-11-27T01:57:30.557Z"
+          }
         },
         "wikipedia-artist": {
           "status": "found",
+          "at": "2026-11-27T01:57:30.694Z",
           "genres": [
             "EDM",
             "pop",
@@ -25610,33 +25611,32 @@
           "ref": "The Chainsmokers",
           "links": {
             "wikidata": "Q7721993"
-          },
-          "at": "2026-11-27T01:57:30.694Z"
+          }
         },
         "wikidata-artist": {
           "status": "found",
+          "at": "2026-11-27T01:57:31.688Z",
           "genres": [
             "electronic dance music"
           ],
-          "ref": "Q7721993",
-          "at": "2026-11-27T01:57:31.688Z"
+          "ref": "Q7721993"
         },
         "theaudiodb-artist": {
           "status": "found",
+          "at": "2026-11-27T01:56:49.401Z",
           "genres": [
             "House",
             "Electronic"
           ],
-          "ref": "artist/128263",
-          "at": "2026-11-27T01:56:49.401Z"
+          "ref": "artist/128263"
         },
         "itunes-artist": {
           "status": "found",
+          "at": "2026-11-27T01:56:50.660Z",
           "genres": [
             "Dance"
           ],
-          "ref": "artist/580391756 (The Chainsmokers)",
-          "at": "2026-11-27T01:56:50.660Z"
+          "ref": "artist/580391756 (The Chainsmokers)"
         }
       }
     },
