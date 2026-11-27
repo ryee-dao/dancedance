@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-27T01:51:00.324Z",
+  "updatedAt": "2026-11-27T01:54:05.956Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -23404,6 +23404,179 @@
         }
       }
     },
+    "surf mesa - ily i love you baby feat emilee": {
+      "artist": "Surf Mesa",
+      "title": "ily (i love you baby) [feat. Emilee]",
+      "videoIds": [
+        "zAMOeZijKms"
+      ],
+      "genres": [
+        "tropical house",
+        "deep house",
+        "house",
+        "dance",
+        "chillwave"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "tropical house",
+        "house",
+        "dance",
+        "electronic"
+      ],
+      "complete": true,
+      "at": "2026-11-27T01:54:05.950Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "genres": [
+            "Chillwave",
+            "tropical house"
+          ],
+          "ref": "ILY (I Love You Baby)",
+          "links": {
+            "artistArticle": "Surf Mesa"
+          },
+          "at": "2026-11-27T01:53:44.984Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "found",
+          "genres": [
+            "tropical house",
+            "deep house"
+          ],
+          "ref": "Q89575591",
+          "at": "2026-11-27T01:53:44.968Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "dance",
+            "house"
+          ],
+          "counts": [
+            5,
+            2
+          ],
+          "ref": "release-group/641609b6-ff95-4349-8945-3bfd2177afc9",
+          "at": "2026-11-27T01:54:03.400Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "none",
+          "reason": "the track has no genre",
+          "ref": "track/35526386",
+          "at": "2026-11-27T01:53:42.648Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Dance"
+          ],
+          "ref": "stored",
+          "at": "2026-11-27T01:53:42.425Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-27T01:53:42.425Z"
+        },
+        "musicbrainz-album": {
+          "status": "none",
+          "reason": "the recordings are on no album or EP",
+          "at": "2026-11-27T01:54:03.400Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "none",
+          "reason": "no album (the song is a single, or the album is unknown)",
+          "at": "2026-11-27T01:54:03.400Z"
+        },
+        "wikidata-album": {
+          "status": "none",
+          "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+          "at": "2026-11-27T01:54:03.400Z"
+        },
+        "discogs-album": {
+          "status": "none",
+          "reason": "no Discogs master linked from the MusicBrainz album",
+          "at": "2026-11-27T01:54:03.400Z"
+        },
+        "itunes-album": {
+          "status": "none",
+          "reason": "the release is the song's single",
+          "ref": "ily (i love you baby) [feat. Emilee] - Single",
+          "links": {
+            "album": "ily (i love you baby) [feat. Emilee] - Single"
+          },
+          "at": "2026-11-27T01:53:45.928Z"
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "genres": [
+            "dance",
+            "electronic",
+            "english",
+            "house"
+          ],
+          "counts": [
+            2,
+            2,
+            1,
+            1
+          ],
+          "ref": "artist/5ed8f4ac-3ae8-4a83-9ff9-565510c7f6e5 (Surf Mesa; credited on the song)",
+          "links": {
+            "mbArtist": "5ed8f4ac-3ae8-4a83-9ff9-565510c7f6e5",
+            "wikidata": "Q93771412"
+          },
+          "at": "2026-11-27T01:54:04.594Z"
+        },
+        "wikipedia-artist": {
+          "status": "found",
+          "genres": [
+            "Electronic"
+          ],
+          "ref": "Surf Mesa",
+          "links": {
+            "wikidata": "Q93771412"
+          },
+          "at": "2026-11-27T01:54:04.990Z"
+        },
+        "wikidata-artist": {
+          "status": "found",
+          "genres": [
+            "tropical house"
+          ],
+          "ref": "Q93771412",
+          "at": "2026-11-27T01:54:05.950Z"
+        },
+        "theaudiodb-artist": {
+          "status": "found",
+          "genres": [
+            "Electronic"
+          ],
+          "ref": "artist/162397",
+          "at": "2026-11-27T01:53:44.896Z"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "genres": [
+            "Dance"
+          ],
+          "ref": "artist/1445956748 (Surf Mesa)",
+          "at": "2026-11-27T01:53:45.928Z"
+        }
+      }
+    },
     "taio cruz - dynamite": {
       "artist": "Taio Cruz",
       "title": "Dynamite",
@@ -24708,6 +24881,7 @@
       "sources": {
         "wikipedia": {
           "status": "found",
+          "at": "2026-11-27T01:50:35.130Z",
           "genres": [
             "Dream pop"
           ],
@@ -24716,20 +24890,20 @@
             "albumArticle": "The New Abnormal",
             "artistArticle": "the Strokes"
           },
-          "at": "2026-11-27T01:50:35.130Z",
           "v": 3
         },
         "wikidata": {
           "status": "found",
+          "at": "2026-11-27T01:50:35.102Z",
           "genres": [
             "dream pop"
           ],
           "ref": "Q96397138",
-          "at": "2026-11-27T01:50:35.102Z",
           "v": 2
         },
         "musicbrainz": {
           "status": "found",
+          "at": "2026-11-27T01:50:34.579Z",
           "genres": [
             "alternative rock"
           ],
@@ -24737,30 +24911,30 @@
             1
           ],
           "ref": "recording/3d5ba249-0bf6-42ec-ae85-52cb31750ea3",
-          "at": "2026-11-27T01:50:34.579Z",
           "v": 2
         },
         "theaudiodb": {
           "status": "none",
+          "at": "2026-11-27T01:50:33.015Z",
           "reason": "the track has no genre",
-          "ref": "track/35420144",
-          "at": "2026-11-27T01:50:33.015Z"
+          "ref": "track/35420144"
         },
         "itunes": {
           "status": "found",
+          "at": "2026-11-27T01:50:32.630Z",
           "genres": [
             "Alternative"
           ],
-          "ref": "stored",
-          "at": "2026-11-27T01:50:32.630Z"
+          "ref": "stored"
         },
         "title": {
           "status": "none",
-          "reason": "the title is not a genre name",
-          "at": "2026-11-27T01:50:32.630Z"
+          "at": "2026-11-27T01:50:32.630Z",
+          "reason": "the title is not a genre name"
         },
         "musicbrainz-album": {
           "status": "found",
+          "at": "2026-11-27T01:50:53.760Z",
           "genres": [
             "indie rock",
             "rock",
@@ -24792,11 +24966,11 @@
             "discogsMaster": "1712601",
             "wikidata": "Q85552601"
           },
-          "at": "2026-11-27T01:50:53.760Z",
           "v": 2
         },
         "wikipedia-album": {
           "status": "found",
+          "at": "2026-11-27T01:50:53.950Z",
           "genres": [
             "Indie rock",
             "new wave",
@@ -24807,20 +24981,20 @@
           "ref": "The New Abnormal",
           "links": {
             "wikidata": "Q85552601"
-          },
-          "at": "2026-11-27T01:50:53.950Z"
+          }
         },
         "wikidata-album": {
           "status": "found",
+          "at": "2026-11-27T01:50:54.934Z",
           "genres": [
             "indie rock",
             "post-punk"
           ],
-          "ref": "Q85552601",
-          "at": "2026-11-27T01:50:54.934Z"
+          "ref": "Q85552601"
         },
         "discogs-album": {
           "status": "found",
+          "at": "2026-11-27T01:50:54.097Z",
           "genres": [
             "Pop Rock",
             "Indie Rock",
@@ -24828,16 +25002,16 @@
             "Electronic",
             "Rock"
           ],
-          "ref": "master/1712601 (The New Abnormal)",
-          "at": "2026-11-27T01:50:54.097Z"
+          "ref": "master/1712601 (The New Abnormal)"
         },
         "itunes-album": {
           "status": "none",
-          "reason": "no matching track",
-          "at": "2026-11-27T01:50:32.976Z"
+          "at": "2026-11-27T01:50:32.976Z",
+          "reason": "no matching track"
         },
         "musicbrainz-artist": {
           "status": "found",
+          "at": "2026-11-27T01:50:55.171Z",
           "genres": [
             "indie rock",
             "garage rock revival",
@@ -24874,11 +25048,11 @@
           "links": {
             "mbArtist": "f181961b-20f7-459e-89de-920ef03c7ed0",
             "wikidata": "Q211583"
-          },
-          "at": "2026-11-27T01:50:55.171Z"
+          }
         },
         "wikipedia-artist": {
           "status": "found",
+          "at": "2026-11-27T01:51:00.188Z",
           "genres": [
             "Indie rock",
             "garage rock revival",
@@ -24889,11 +25063,11 @@
           "ref": "The Strokes",
           "links": {
             "wikidata": "Q211583"
-          },
-          "at": "2026-11-27T01:51:00.188Z"
+          }
         },
         "wikidata-artist": {
           "status": "found",
+          "at": "2026-11-27T01:51:00.320Z",
           "genres": [
             "rock music",
             "indie rock",
@@ -24901,22 +25075,21 @@
             "post-punk revival",
             "new wave"
           ],
-          "ref": "Q211583",
-          "at": "2026-11-27T01:51:00.320Z"
+          "ref": "Q211583"
         },
         "theaudiodb-artist": {
           "status": "found",
+          "at": "2026-11-27T01:50:35.245Z",
           "genres": [
             "Indie",
             "Rock/Pop"
           ],
-          "ref": "artist/112035",
-          "at": "2026-11-27T01:50:35.245Z"
+          "ref": "artist/112035"
         },
         "itunes-artist": {
           "status": "none",
-          "reason": "no matching track",
-          "at": "2026-11-27T01:50:32.976Z"
+          "at": "2026-11-27T01:50:32.976Z",
+          "reason": "no matching track"
         }
       }
     },

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-27T01:51:00.324Z",
+  "updatedAt": "2026-11-27T01:54:05.956Z",
   "songs": [
     {
       "videoId": "_Vj092UgKwQ",
@@ -461,6 +461,35 @@
         "post punk revival",
         "garage rock revival",
         "new wave"
+      ]
+    },
+    {
+      "videoId": "zAMOeZijKms",
+      "title": "ily (i love you baby) [feat. Emilee]",
+      "artist": "Surf Mesa",
+      "addedAt": "2026-11-27T01:53:42.422Z",
+      "durationSec": 177,
+      "hasMap": true,
+      "genre": "Dance",
+      "genres": [
+        "tropical house",
+        "deep house",
+        "house",
+        "dance",
+        "chillwave"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "tropical house",
+        "house",
+        "dance",
+        "electronic"
       ]
     }
   ]

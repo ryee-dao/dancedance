@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-27T01:51:00.324Z",
+  "generatedAt": "2026-11-27T01:54:05.956Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -111,6 +111,7 @@
     "xjiYBGs0TUA",
     "yvvamodXZbw",
     "z0GKGpObgPY",
+    "zAMOeZijKms",
     "zIh5AHxh-Ok",
     "zLxXqEZ5OoA",
     "zd-h01o7LtI",
@@ -2996,6 +2997,31 @@
         "pop rock",
         "Britpop",
         "rock"
+      ]
+    },
+    "zAMOeZijKms": {
+      "bpm": 112,
+      "duration": 181,
+      "genre": "Dance",
+      "genres": [
+        "tropical house",
+        "deep house",
+        "house",
+        "dance",
+        "chillwave"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "tropical house",
+        "house",
+        "dance",
+        "electronic"
       ]
     },
     "zIh5AHxh-Ok": {
