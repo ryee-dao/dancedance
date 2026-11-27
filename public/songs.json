@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-27T02:00:19.283Z",
+  "updatedAt": "2026-11-27T02:25:55.391Z",
   "songs": [
     {
       "videoId": "_Vj092UgKwQ",
@@ -623,6 +623,109 @@
         "trap",
         "gangsta rap",
         "hardcore hip hop"
+      ]
+    },
+    {
+      "videoId": "k_aQYP8rsgE",
+      "title": "Pumped Up Kicks",
+      "artist": "Foster the People",
+      "addedAt": "2026-11-27T02:21:26.229Z",
+      "durationSec": 240,
+      "hasMap": true,
+      "genre": "Alternative",
+      "genres": [
+        "indie pop",
+        "pop rock",
+        "alternative rock",
+        "indie rock",
+        "psychedelic pop",
+        "alternative dance"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "indie pop",
+        "indie rock",
+        "dance-pop"
+      ]
+    },
+    {
+      "videoId": "axAtWjn3MfI",
+      "title": "Bohemian Rhapsody",
+      "artist": "Queen",
+      "addedAt": "2026-11-27T02:22:35.534Z",
+      "durationSec": 354,
+      "hasMap": true,
+      "genre": "Rock",
+      "genres": [
+        "progressive rock",
+        "hard rock",
+        "progressive pop",
+        "art rock",
+        "art pop",
+        "pop rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "glam rock",
+        "progressive rock",
+        "hard rock"
+      ]
+    },
+    {
+      "videoId": "EzrM9RJnAhA",
+      "title": "WHATS POPPIN",
+      "artist": "Jack Harlow",
+      "addedAt": "2026-11-27T02:24:14.855Z",
+      "durationSec": 140,
+      "hasMap": true,
+      "genre": "Hip-Hop/Rap",
+      "genres": [
+        "trap",
+        "hip hop"
+      ],
+      "genreLevels": [
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rap",
+        "southern hip hop",
+        "hip hop",
+        "urban"
+      ]
+    },
+    {
+      "videoId": "6hd9z-J5FcI",
+      "title": "La La Land",
+      "artist": "Bryce Vine",
+      "addedAt": "2026-11-27T02:25:29.240Z",
+      "durationSec": 157,
+      "hasMap": true,
+      "genre": "Hip-Hop/Rap",
+      "genres": [
+        "hip hop"
+      ],
+      "genreLevels": [
+        "song"
+      ],
+      "artistGenres": [
+        "dance"
       ]
     }
   ]

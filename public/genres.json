@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-27T02:16:48.151Z",
+  "updatedAt": "2026-11-27T02:25:55.391Z",
   "songs": {
     "21 savage offset metro boomin - rap saved me feat quavo": {
       "artist": "21 Savage, Offset & Metro Boomin",
@@ -3702,6 +3702,156 @@
             "Pop"
           ],
           "ref": "artist/278873078 (Bruno Mars)"
+        }
+      }
+    },
+    "bryce vine - la la land": {
+      "artist": "Bryce Vine",
+      "title": "La La Land",
+      "videoIds": [
+        "6hd9z-J5FcI"
+      ],
+      "genres": [
+        "hip hop"
+      ],
+      "genreLevels": [
+        "song"
+      ],
+      "artistGenres": [
+        "dance"
+      ],
+      "complete": true,
+      "at": "2026-11-27T02:25:55.388Z",
+      "sources": {
+        "wikipedia": {
+          "status": "none",
+          "reason": "the article lists no genre",
+          "ref": "La La Land (Bryce Vine song)",
+          "links": {
+            "albumArticle": "Carnival (Bryce Vine album)",
+            "artistArticle": "Bryce Vine"
+          },
+          "at": "2026-11-27T02:25:29.421Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "none",
+          "reason": "the item has no genre",
+          "ref": "Q65086275",
+          "at": "2026-11-27T02:25:31.789Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "foreignrap"
+          ],
+          "counts": [
+            1
+          ],
+          "ref": "release-group/2c104c28-b296-42c1-8cda-3f115aec9004",
+          "at": "2026-11-27T02:25:37.833Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "none",
+          "reason": "the track has no genre",
+          "ref": "track/36063516",
+          "at": "2026-11-27T02:25:29.403Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Hip-Hop/Rap"
+          ],
+          "ref": "stored",
+          "at": "2026-11-27T02:25:29.241Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-27T02:25:29.241Z"
+        },
+        "musicbrainz-album": {
+          "status": "none",
+          "reason": "the album has no tags",
+          "ref": "release-group/2b6f099b-25b4-439d-beb2-5e83697fdd1b (Carnival; release of the matched recording)",
+          "links": {
+            "mbReleaseGroup": "2b6f099b-25b4-439d-beb2-5e83697fdd1b",
+            "album": "Carnival"
+          },
+          "at": "2026-11-27T02:25:39.247Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "none",
+          "reason": "no article about the album Carnival",
+          "at": "2026-11-27T02:25:40.518Z"
+        },
+        "wikidata-album": {
+          "status": "none",
+          "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+          "at": "2026-11-27T02:25:40.518Z"
+        },
+        "discogs-album": {
+          "status": "none",
+          "reason": "no Discogs master linked from the MusicBrainz album",
+          "at": "2026-11-27T02:25:39.247Z"
+        },
+        "itunes-album": {
+          "status": "found",
+          "genres": [
+            "Hip-Hop/Rap"
+          ],
+          "ref": "collection/1478624412 (Carnival)",
+          "links": {
+            "album": "Carnival"
+          },
+          "at": "2026-11-27T02:25:32.330Z"
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "genres": [
+            "hip hop"
+          ],
+          "counts": [
+            1
+          ],
+          "ref": "artist/a9630d3d-2a3b-4b51-903d-3b092abbc443 (Bryce Vine; credited on the song)",
+          "links": {
+            "mbArtist": "a9630d3d-2a3b-4b51-903d-3b092abbc443",
+            "wikidata": "Q25324725"
+          },
+          "at": "2026-11-27T02:25:55.131Z"
+        },
+        "wikipedia-artist": {
+          "status": "none",
+          "reason": "the artist article lists no genre",
+          "ref": "Bryce Vine",
+          "links": {
+            "wikidata": "Q25324725"
+          },
+          "at": "2026-11-27T02:25:55.388Z"
+        },
+        "wikidata-artist": {
+          "status": "none",
+          "reason": "the artist item has no genre",
+          "ref": "Q25324725",
+          "at": "2026-11-27T02:25:55.388Z"
+        },
+        "theaudiodb-artist": {
+          "status": "none",
+          "reason": "the artist has no genre",
+          "ref": "artist/174735",
+          "at": "2026-11-27T02:25:31.648Z"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "genres": [
+            "Dance"
+          ],
+          "ref": "artist/667593422 (Bryce Vine)",
+          "at": "2026-11-27T02:25:32.330Z"
         }
       }
     },
@@ -8783,6 +8933,272 @@
         }
       }
     },
+    "foster the people - pumped up kicks": {
+      "artist": "Foster the People",
+      "title": "Pumped Up Kicks",
+      "videoIds": [
+        "k_aQYP8rsgE"
+      ],
+      "genres": [
+        "indie pop",
+        "pop rock",
+        "alternative rock",
+        "indie rock",
+        "psychedelic pop",
+        "alternative dance"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "alternative rock",
+        "indie pop",
+        "indie rock",
+        "dance-pop"
+      ],
+      "complete": true,
+      "at": "2026-11-27T02:22:06.304Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "genres": [
+            "Indie pop",
+            "psychedelic pop",
+            "alternative rock",
+            "alternative pop"
+          ],
+          "ref": "Pumped Up Kicks",
+          "links": {
+            "artistArticle": "Foster the People"
+          },
+          "at": "2026-11-27T02:21:26.353Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "found",
+          "genres": [
+            "pop rock"
+          ],
+          "ref": "Q2411420",
+          "at": "2026-11-27T02:21:28.646Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "electronic",
+            "alternative dance",
+            "indie pop",
+            "indie rock",
+            "pop rock",
+            "rock",
+            "pop",
+            "synth-pop"
+          ],
+          "counts": [
+            3,
+            2,
+            2,
+            2,
+            2,
+            2,
+            1,
+            1
+          ],
+          "ref": "release-group/32075acd-de5e-4888-b49a-d59b9664616d",
+          "at": "2026-11-27T02:21:59.253Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "found",
+          "genres": [
+            "Alternative Rock"
+          ],
+          "ref": "track/32798712",
+          "at": "2026-11-27T02:21:26.445Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "stored",
+          "at": "2026-11-27T02:21:26.232Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-27T02:21:26.232Z"
+        },
+        "musicbrainz-album": {
+          "status": "found",
+          "genres": [
+            "alternative rock",
+            "alternative pop/rock",
+            "indie pop",
+            "electronic",
+            "indie rock",
+            "rock",
+            "alternative",
+            "alternative/indie rock",
+            "indie electronic",
+            "neo-psychedelia",
+            "pop/rock",
+            "alternative rock; ambient; electronic; indie pop; jazz; rhythm and blues",
+            "like",
+            "pop"
+          ],
+          "counts": [
+            7,
+            5,
+            5,
+            4,
+            4,
+            4,
+            3,
+            2,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1
+          ],
+          "ref": "release-group/535748f7-5b3d-4a2a-8f9c-bd8baa587239 (Torches; release of the matched recording)",
+          "links": {
+            "mbReleaseGroup": "535748f7-5b3d-4a2a-8f9c-bd8baa587239",
+            "album": "Torches",
+            "discogsMaster": "339399",
+            "wikidata": "Q1706786"
+          },
+          "at": "2026-11-27T02:22:02.741Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "found",
+          "genres": [
+            "Indie pop",
+            "indietronica",
+            "synth-pop",
+            "psychedelic pop",
+            "dance-pop"
+          ],
+          "ref": "Torches (album)",
+          "links": {
+            "wikidata": "Q1706786"
+          },
+          "at": "2026-11-27T02:22:02.989Z"
+        },
+        "wikidata-album": {
+          "status": "found",
+          "genres": [
+            "indie pop"
+          ],
+          "ref": "Q1706786",
+          "at": "2026-11-27T02:22:04.001Z"
+        },
+        "discogs-album": {
+          "status": "found",
+          "genres": [
+            "Alternative Rock",
+            "Indie Rock",
+            "Electronic",
+            "Rock"
+          ],
+          "ref": "master/339399 (Torches)",
+          "at": "2026-11-27T02:22:02.867Z"
+        },
+        "itunes-album": {
+          "status": "found",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "collection/435761204 (Torches)",
+          "links": {
+            "album": "Torches"
+          },
+          "at": "2026-11-27T02:21:29.309Z"
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "genres": [
+            "indie pop",
+            "pop",
+            "alternative",
+            "alternative rock",
+            "dance-pop",
+            "electronic",
+            "indie",
+            "indie rock",
+            "rock"
+          ],
+          "counts": [
+            3,
+            3,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "artist/e0e1a584-dd0a-4bd1-88d1-c4c62895039d (Foster the People; credited on the song)",
+          "links": {
+            "mbArtist": "e0e1a584-dd0a-4bd1-88d1-c4c62895039d",
+            "wikidata": "Q61113"
+          },
+          "at": "2026-11-27T02:22:04.180Z"
+        },
+        "wikipedia-artist": {
+          "status": "found",
+          "genres": [
+            "Indie pop",
+            "synth-pop",
+            "dance-pop",
+            "alternative rock",
+            "indie rock",
+            "neo-psychedelia"
+          ],
+          "ref": "Foster the People",
+          "links": {
+            "wikidata": "Q61113"
+          },
+          "at": "2026-11-27T02:22:05.297Z"
+        },
+        "wikidata-artist": {
+          "status": "found",
+          "genres": [
+            "alternative rock",
+            "indie pop"
+          ],
+          "ref": "Q61113",
+          "at": "2026-11-27T02:22:06.304Z"
+        },
+        "theaudiodb-artist": {
+          "status": "found",
+          "genres": [
+            "Alternative Rock",
+            "Rock/Pop"
+          ],
+          "ref": "artist/112112",
+          "at": "2026-11-27T02:21:28.689Z"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "genres": [
+            "Alternative"
+          ],
+          "ref": "artist/414023649 (Foster the People)",
+          "at": "2026-11-27T02:21:29.309Z"
+        }
+      }
+    },
     "franz ferdinand - take me out": {
       "artist": "Franz Ferdinand",
       "title": "Take Me Out",
@@ -10343,6 +10759,190 @@
             "Alternative"
           ],
           "ref": "artist/358714030 (Imagine Dragons)"
+        }
+      }
+    },
+    "jack harlow - whats poppin": {
+      "artist": "Jack Harlow",
+      "title": "WHATS POPPIN",
+      "videoIds": [
+        "EzrM9RJnAhA"
+      ],
+      "genres": [
+        "trap",
+        "hip hop"
+      ],
+      "genreLevels": [
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rap",
+        "southern hip hop",
+        "hip hop",
+        "urban"
+      ],
+      "complete": true,
+      "at": "2026-11-27T02:24:56.200Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "genres": [
+            "Hip hop",
+            "trap"
+          ],
+          "ref": "Whats Poppin",
+          "links": {
+            "artistArticle": "Jack Harlow"
+          },
+          "at": "2026-11-27T02:24:14.955Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "found",
+          "genres": [
+            "hip-hop",
+            "trap music"
+          ],
+          "ref": "Q89461958",
+          "at": "2026-11-27T02:24:17.246Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "hip hop",
+            "trap"
+          ],
+          "counts": [
+            1,
+            1
+          ],
+          "ref": "release-group/f7da9c50-abf3-44c6-bfa3-d1b3f57aa0dc",
+          "at": "2026-11-27T02:24:19.019Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "none",
+          "reason": "the track has no genre",
+          "ref": "track/36096919",
+          "at": "2026-11-27T02:24:15.029Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Hip-Hop/Rap"
+          ],
+          "ref": "stored",
+          "at": "2026-11-27T02:24:14.856Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-27T02:24:14.856Z"
+        },
+        "musicbrainz-album": {
+          "status": "none",
+          "reason": "the album has no tags",
+          "ref": "release-group/8b9b18bf-b41c-49fe-b587-f506953a8d54 (Sweet Action; release of the matched recording)",
+          "links": {
+            "mbReleaseGroup": "8b9b18bf-b41c-49fe-b587-f506953a8d54",
+            "album": "Sweet Action"
+          },
+          "at": "2026-11-27T02:24:51.438Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "found",
+          "genres": [
+            "Hip-hop"
+          ],
+          "ref": "Sweet Action",
+          "links": {
+            "wikidata": "Q134589668"
+          },
+          "at": "2026-11-27T02:24:51.528Z"
+        },
+        "wikidata-album": {
+          "status": "none",
+          "reason": "the album item has no genre",
+          "ref": "Q134589668",
+          "at": "2026-11-27T02:24:51.638Z"
+        },
+        "discogs-album": {
+          "status": "none",
+          "reason": "no Discogs master linked from the MusicBrainz album",
+          "at": "2026-11-27T02:24:51.438Z"
+        },
+        "itunes-album": {
+          "status": "found",
+          "genres": [
+            "Hip-Hop/Rap"
+          ],
+          "ref": "collection/1502760060 (Sweet Action)",
+          "links": {
+            "album": "Sweet Action"
+          },
+          "at": "2026-11-27T02:24:18.071Z"
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "genres": [
+            "hip hop",
+            "english",
+            "pop rap",
+            "rap"
+          ],
+          "counts": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "ref": "artist/134cb0bc-06fa-42f7-8078-b0c858349975 (Jack Harlow; credited on the song)",
+          "links": {
+            "mbArtist": "134cb0bc-06fa-42f7-8078-b0c858349975",
+            "wikidata": "Q59727812"
+          },
+          "at": "2026-11-27T02:24:54.988Z"
+        },
+        "wikipedia-artist": {
+          "status": "found",
+          "genres": [
+            "Southern hip-hop",
+            "pop rap"
+          ],
+          "ref": "Jack Harlow",
+          "links": {
+            "wikidata": "Q59727812"
+          },
+          "at": "2026-11-27T02:24:55.183Z"
+        },
+        "wikidata-artist": {
+          "status": "found",
+          "genres": [
+            "hip-hop",
+            "pop rap"
+          ],
+          "ref": "Q59727812",
+          "at": "2026-11-27T02:24:56.200Z"
+        },
+        "theaudiodb-artist": {
+          "status": "found",
+          "genres": [
+            "Rap",
+            "Urban/R&B"
+          ],
+          "ref": "artist/160494",
+          "at": "2026-11-27T02:24:17.275Z"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "genres": [
+            "Hip-Hop/Rap"
+          ],
+          "ref": "artist/1047679432 (Jack Harlow)",
+          "at": "2026-11-27T02:24:18.071Z"
         }
       }
     },
@@ -20580,6 +21180,289 @@
             "Pop"
           ],
           "ref": "artist/554290495 (PSY)"
+        }
+      }
+    },
+    "queen - bohemian rhapsody": {
+      "artist": "Queen",
+      "title": "Bohemian Rhapsody",
+      "videoIds": [
+        "axAtWjn3MfI"
+      ],
+      "genres": [
+        "progressive rock",
+        "hard rock",
+        "progressive pop",
+        "art rock",
+        "art pop",
+        "pop rock"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "pop rock",
+        "glam rock",
+        "progressive rock",
+        "hard rock"
+      ],
+      "moods": [
+        "rousing"
+      ],
+      "complete": true,
+      "at": "2026-11-27T02:23:40.146Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "genres": [
+            "Progressive rock",
+            "hard rock",
+            "progressive pop",
+            "art rock",
+            "art pop"
+          ],
+          "ref": "Bohemian Rhapsody",
+          "links": {
+            "albumArticle": "A Night at the Opera (Queen album)",
+            "artistArticle": "Queen (band)"
+          },
+          "at": "2026-11-27T02:22:35.653Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "found",
+          "genres": [
+            "progressive rock",
+            "hard rock",
+            "progressive pop"
+          ],
+          "ref": "Q187745,Q64431898",
+          "at": "2026-11-27T02:22:38.094Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "rock",
+            "pop rock",
+            "classic hard rock",
+            "classic rock",
+            "pop"
+          ],
+          "counts": [
+            3,
+            2,
+            1,
+            1,
+            1
+          ],
+          "ref": "release-group/361a28b7-4588-44a6-8c96-86c1efb8258f,21ae7b0d-6784-448a-bdde-c170d8fbea0c",
+          "at": "2026-11-27T02:23:23.001Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "found",
+          "genres": [
+            "Rock"
+          ],
+          "moods": [
+            "Rousing"
+          ],
+          "ref": "track/32768007",
+          "at": "2026-11-27T02:22:35.709Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Rock"
+          ],
+          "ref": "stored",
+          "at": "2026-11-27T02:22:35.535Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-27T02:22:35.535Z"
+        },
+        "musicbrainz-album": {
+          "status": "none",
+          "reason": "the recordings are on no album or EP",
+          "at": "2026-11-27T02:23:23.001Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "found",
+          "genres": [
+            "Progressive rock",
+            "pop",
+            "heavy metal",
+            "hard rock",
+            "avant-pop",
+            "symphonic rock"
+          ],
+          "ref": "A Night at the Opera (Queen album)",
+          "links": {
+            "wikidata": "Q193477"
+          },
+          "at": "2026-11-27T02:23:23.176Z"
+        },
+        "wikidata-album": {
+          "status": "found",
+          "genres": [
+            "rock music",
+            "progressive rock",
+            "pop music",
+            "heavy metal music",
+            "hard rock",
+            "avant-pop",
+            "opera"
+          ],
+          "ref": "Q193477",
+          "at": "2026-11-27T02:23:24.543Z"
+        },
+        "discogs-album": {
+          "status": "none",
+          "reason": "no Discogs master linked from the MusicBrainz album",
+          "at": "2026-11-27T02:23:23.001Z"
+        },
+        "itunes-album": {
+          "status": "found",
+          "genres": [
+            "Rock"
+          ],
+          "ref": "collection/6781024026 (A Night At The Opera (Deluxe Edition))",
+          "links": {
+            "album": "A Night At The Opera (Deluxe Edition)"
+          },
+          "at": "2026-11-27T02:22:38.713Z"
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "genres": [
+            "rock",
+            "glam rock",
+            "hard rock",
+            "art rock",
+            "british",
+            "pop rock",
+            "classic rock",
+            "progressive rock",
+            "symphonic rock",
+            "uk",
+            "glorious",
+            "70's",
+            "beholder",
+            "pop",
+            "80's",
+            "80s",
+            "afro house",
+            "album rock",
+            "baroque pop",
+            "british metal",
+            "contemporary pop/rock",
+            "dance-rock",
+            "deep tech",
+            "disco",
+            "eclectic",
+            "film soundtrack",
+            "heavy metal",
+            "heavy metal music",
+            "medley",
+            "queer",
+            "traditional heavy metal",
+            "united kingdom",
+            "vyrzukhisuc-artiest"
+          ],
+          "counts": [
+            45,
+            26,
+            23,
+            16,
+            15,
+            12,
+            8,
+            7,
+            6,
+            5,
+            3,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "artist/0383dadf-2a4e-4d10-a46a-e9e041da8eb3 (Queen; credited on the song)",
+          "links": {
+            "mbArtist": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+            "wikidata": "Q15862"
+          },
+          "at": "2026-11-27T02:23:38.923Z"
+        },
+        "wikipedia-artist": {
+          "status": "found",
+          "genres": [
+            "Rock",
+            "pop"
+          ],
+          "ref": "Queen (band)",
+          "links": {
+            "wikidata": "Q15862"
+          },
+          "at": "2026-11-27T02:23:39.158Z"
+        },
+        "wikidata-artist": {
+          "status": "found",
+          "genres": [
+            "progressive rock",
+            "glam rock",
+            "hard rock",
+            "rock music",
+            "art rock",
+            "pop rock",
+            "traditional heavy metal",
+            "heavy metal music"
+          ],
+          "ref": "Q15862",
+          "at": "2026-11-27T02:23:40.146Z"
+        },
+        "theaudiodb-artist": {
+          "status": "found",
+          "genres": [
+            "Rock",
+            "Rock/Pop"
+          ],
+          "ref": "artist/111238",
+          "at": "2026-11-27T02:22:37.969Z"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "genres": [
+            "Rock"
+          ],
+          "ref": "artist/3296287 (Queen)",
+          "at": "2026-11-27T02:22:38.713Z"
         }
       }
     },

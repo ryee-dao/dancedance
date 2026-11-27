@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-27T02:00:19.283Z",
+  "updatedAt": "2026-11-27T02:25:55.391Z",
   "videos": {
     "-7XnDlYY9qw": {
       "state": "ok",
@@ -86,6 +86,11 @@
       "attempts": 1,
       "lastTried": "2026-11-11T03:58:43.114Z"
     },
+    "6hd9z-J5FcI": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-27T02:25:29.240Z"
+    },
     "7-x3uD5z1bQ": {
       "state": "ok",
       "attempts": 4,
@@ -156,6 +161,11 @@
       "message": "YouTube refused the media download (HTTP 403); usually fixed by a newer yt-dlp: unable to download video data: HTTP Error 403: Forbidden",
       "attempts": 4,
       "lastTried": "2026-11-14T22:05:53.630Z"
+    },
+    "EzrM9RJnAhA": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-27T02:24:14.855Z"
     },
     "FHo-g6DCTv4": {
       "state": "ok",
@@ -417,6 +427,11 @@
       "attempts": 3,
       "lastTried": "2026-11-11T22:26:57.114Z"
     },
+    "axAtWjn3MfI": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-27T02:22:35.534Z"
+    },
     "b3bkpyNiv8Y": {
       "state": "ok",
       "attempts": 4,
@@ -566,6 +581,11 @@
       "state": "ok",
       "attempts": 1,
       "lastTried": "2026-11-11T03:41:36.493Z"
+    },
+    "k_aQYP8rsgE": {
+      "state": "ok",
+      "attempts": 1,
+      "lastTried": "2026-11-27T02:21:26.229Z"
     },
     "loOWKm8GW6A": {
       "state": "ok",
