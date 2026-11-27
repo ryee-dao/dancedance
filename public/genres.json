@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-24T05:49:14.243Z",
+  "updatedAt": "2026-11-27T01:44:41.495Z",
   "songs": {
     "a ha - take on me": {
       "artist": "a-ha",
@@ -2489,6 +2489,165 @@
             "Alternative"
           ],
           "ref": "artist/1065981054 (Billie Eilish)"
+        }
+      }
+    },
+    "bobby shmurda - shmoney feat quavo rowdy rebel": {
+      "artist": "Bobby Shmurda",
+      "title": "Shmoney (feat. Quavo & Rowdy Rebel)",
+      "videoIds": [
+        "deU7cswUmbw"
+      ],
+      "genres": [
+        "hip hop"
+      ],
+      "genreLevels": [
+        "song"
+      ],
+      "artistGenres": [
+        "East Coast hip hop",
+        "drill",
+        "Brooklyn drill",
+        "gangsta rap"
+      ],
+      "complete": true,
+      "at": "2026-11-27T01:44:41.489Z",
+      "sources": {
+        "wikipedia": {
+          "status": "none",
+          "reason": "no article about this song (Bobby Shmurda: not a song article (musical artist))",
+          "at": "2026-11-27T01:44:38.107Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "none",
+          "reason": "no item with this title",
+          "at": "2026-11-27T01:44:36.919Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "gangsta rap",
+            "trap"
+          ],
+          "counts": [
+            1,
+            1
+          ],
+          "ref": "release-group/ff4db692-9ef0-4f1a-bf1a-4eddacb28bb2",
+          "at": "2026-11-27T01:44:38.701Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "none",
+          "reason": "no track by this artist with this title",
+          "at": "2026-11-27T01:44:36.970Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Rap"
+          ],
+          "ref": "stored",
+          "at": "2026-11-27T01:44:36.675Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-27T01:44:36.675Z"
+        },
+        "musicbrainz-album": {
+          "status": "none",
+          "reason": "the recordings are on no album or EP",
+          "at": "2026-11-27T01:44:38.701Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "none",
+          "reason": "no album (the song is a single, or the album is unknown)",
+          "at": "2026-11-27T01:44:40.244Z"
+        },
+        "wikidata-album": {
+          "status": "none",
+          "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+          "at": "2026-11-27T01:44:40.244Z"
+        },
+        "discogs-album": {
+          "status": "none",
+          "reason": "no Discogs master linked from the MusicBrainz album",
+          "at": "2026-11-27T01:44:38.701Z"
+        },
+        "itunes-album": {
+          "status": "none",
+          "reason": "the release is the song's single",
+          "ref": "Shmoney (feat. Quavo & Rowdy Rebel) - Single",
+          "links": {
+            "album": "Shmoney (feat. Quavo & Rowdy Rebel) - Single"
+          },
+          "at": "2026-11-27T01:44:40.243Z"
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "genres": [
+            "drill",
+            "east coast hip hop",
+            "hip hop"
+          ],
+          "counts": [
+            1,
+            1,
+            1
+          ],
+          "ref": "artist/4ec3b7d8-efbb-4672-8067-5e72bd8dba3e (Bobby Shmurda; credited on the song)",
+          "links": {
+            "mbArtist": "4ec3b7d8-efbb-4672-8067-5e72bd8dba3e",
+            "wikidata": "Q17501920"
+          },
+          "at": "2026-11-27T01:44:40.184Z"
+        },
+        "wikipedia-artist": {
+          "status": "found",
+          "genres": [
+            "East Coast hip-hop",
+            "Brooklyn drill"
+          ],
+          "ref": "Bobby Shmurda",
+          "links": {
+            "wikidata": "Q17501920"
+          },
+          "at": "2026-11-27T01:44:40.467Z"
+        },
+        "wikidata-artist": {
+          "status": "found",
+          "genres": [
+            "East Coast hip-hop",
+            "Brooklyn drill",
+            "gangsta rap",
+            "hardcore hip-hop",
+            "trap music",
+            "drill",
+            "contemporary R&B"
+          ],
+          "ref": "Q17501920",
+          "at": "2026-11-27T01:44:41.489Z"
+        },
+        "theaudiodb-artist": {
+          "status": "found",
+          "genres": [
+            "Hip-Hop",
+            "Urban/R&B"
+          ],
+          "ref": "artist/132230",
+          "at": "2026-11-27T01:44:39.244Z"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "genres": [
+            "Hip-Hop/Rap"
+          ],
+          "ref": "artist/902809133 (Bobby Shmurda)",
+          "at": "2026-11-27T01:44:40.243Z"
         }
       }
     },

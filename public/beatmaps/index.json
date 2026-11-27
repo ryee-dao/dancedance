@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-24T05:43:10.494Z",
+  "generatedAt": "2026-11-27T01:44:41.495Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -69,6 +69,7 @@
     "d-JBBNg8YKs",
     "dLl4PZtxia8",
     "dWErisOfeyE",
+    "deU7cswUmbw",
     "eRogF6vbqsA",
     "egpE0ysQ21Q",
     "erSoNgCLGRE",
@@ -1879,6 +1880,23 @@
         "Latin pop",
         "pop",
         "Latin rock"
+      ]
+    },
+    "deU7cswUmbw": {
+      "bpm": 145,
+      "duration": 172,
+      "genre": "Rap",
+      "genres": [
+        "hip hop"
+      ],
+      "genreLevels": [
+        "song"
+      ],
+      "artistGenres": [
+        "East Coast hip hop",
+        "drill",
+        "Brooklyn drill",
+        "gangsta rap"
       ]
     },
     "eRogF6vbqsA": {
