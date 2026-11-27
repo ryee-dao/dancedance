@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-27T01:54:05.956Z",
+  "generatedAt": "2026-11-27T02:00:19.283Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -8,6 +8,7 @@
     "0Bl8dDFsAQU",
     "0Ui-QzihJGo",
     "1j_XvebOg4c",
+    "25ROFXjoaAU",
     "4-TbQnONe_w",
     "47NhAUUnIjs",
     "4AqjqOqNrjw",
@@ -31,12 +32,14 @@
     "GcHHjq8pXec",
     "GchEVSx9XEA",
     "GhH4rTap48M",
+    "H8okvjwqHok",
     "HbzZPpWr4MI",
     "HhwTF97OyX8",
     "IgCHFfDFivc",
     "IhP3J0j9JmY",
     "JDHoc9qzC5I",
     "JTBoLANhyVA",
+    "LK9rgGmrH7I",
     "LNq4xox99HY",
     "LhZ5GXCZtEw",
     "Mr_uHJPUlO8",
@@ -46,6 +49,7 @@
     "OjX4Fpb7LX8",
     "PdKKoOiEgqY",
     "Pmv8aQKO6k0",
+    "Pq77yB2PPqY",
     "RwTwd5tAq1U",
     "SRdlnO9gMIY",
     "TIUwLfpufs0",
@@ -96,6 +100,7 @@
     "nx3-XCtnEqU",
     "o6Tf-xcVB_o",
     "o6ytLPKscrU",
+    "pWQF-ETjzx8",
     "pd1_SxHh2vo",
     "qJ_Tw0w3lLA",
     "qX0cPZT3Lzg",
@@ -278,6 +283,33 @@
         "dream pop",
         "synth-pop",
         "funktronica"
+      ]
+    },
+    "25ROFXjoaAU": {
+      "bpm": 95,
+      "duration": 245,
+      "genre": "Dance",
+      "genres": [
+        "future bass",
+        "electropop",
+        "electro house",
+        "electronic",
+        "house",
+        "alt-pop"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "album"
+      ],
+      "artistGenres": [
+        "EDM",
+        "electropop",
+        "future bass",
+        "house"
       ]
     },
     "4-TbQnONe_w": {
@@ -876,6 +908,23 @@
         "alternative rock"
       ]
     },
+    "H8okvjwqHok": {
+      "bpm": 80.6,
+      "duration": 261,
+      "genre": "Hip-Hop/Rap",
+      "genres": [
+        "hip hop"
+      ],
+      "genreLevels": [
+        "song"
+      ],
+      "artistGenres": [
+        "East Coast hip hop",
+        "trap",
+        "gangsta rap",
+        "hardcore hip hop"
+      ]
+    },
     "HbzZPpWr4MI": {
       "bpm": 90,
       "duration": 225,
@@ -1034,6 +1083,29 @@
         "new wave",
         "blue-eyed soul",
         "pop rock"
+      ]
+    },
+    "LK9rgGmrH7I": {
+      "bpm": 143,
+      "duration": 258,
+      "genre": "Hip-Hop/Rap",
+      "genres": [
+        "trap",
+        "southern hip hop",
+        "horrorcore",
+        "hip hop"
+      ],
+      "genreLevels": [
+        "song",
+        "album",
+        "album",
+        "song"
+      ],
+      "artistGenres": [
+        "southern hip hop",
+        "trap",
+        "mumble rap",
+        "gangsta rap"
       ]
     },
     "LNq4xox99HY": {
@@ -1273,6 +1345,25 @@
         "alternative hip hop",
         "electropop",
         "indie pop"
+      ]
+    },
+    "Pq77yB2PPqY": {
+      "bpm": 90,
+      "duration": 241,
+      "genre": "Hip-Hop/Rap",
+      "genres": [
+        "hip hop",
+        "trap"
+      ],
+      "genreLevels": [
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "trap",
+        "hip hop",
+        "R&B",
+        "pop"
       ]
     },
     "RwTwd5tAq1U": {
@@ -2597,6 +2688,33 @@
         "R&B",
         "electropop",
         "synth-pop"
+      ]
+    },
+    "pWQF-ETjzx8": {
+      "bpm": 112.2,
+      "duration": 187,
+      "genre": "Pop",
+      "genres": [
+        "dance-pop",
+        "synth-pop",
+        "pop",
+        "power pop",
+        "psychedelic pop",
+        "pop rock"
+      ],
+      "genreLevels": [
+        "song",
+        "album",
+        "song",
+        "album",
+        "album",
+        "album"
+      ],
+      "artistGenres": [
+        "psychedelic pop",
+        "electropop",
+        "power pop",
+        "pop"
       ]
     },
     "pd1_SxHh2vo": {
