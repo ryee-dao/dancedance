@@ -120,7 +120,12 @@ class SongHealth extends EventTarget {
   }
 
   private feed(runs: RunsResult | null, repo: SiteData | null): void {
-    addedSongs.setCloudFacts({ runs: runs?.state === 'ok' ? runs.runs : null, repoSongs: repo?.songs ?? null, repoRequests: repo?.requests ?? null });
+    addedSongs.setCloudFacts({
+      runs: runs?.state === 'ok' ? runs.runs : null,
+      ...(runs?.state === 'ok' ? { runsAt: runs.at } : {}),
+      repoSongs: repo?.songs ?? null,
+      repoRequests: repo?.requests ?? null,
+    });
   }
 
   private async relayState(): Promise<HealthInput['relay']> {

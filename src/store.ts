@@ -56,8 +56,18 @@ export interface PendingAdd {
   artworkUrl?: string;
   /** iTunes track ID (the relay re-sends waiting songs by ID). */
   trackId?: number;
+  /** A YouTube video the person chose for the song (a pasted link), sent instead of a search. */
+  videoId?: string;
+  /** With videoId: sent with "Use it anyway" (added even if it doesn't look like the song). */
+  force?: boolean;
   /** Epoch ms of the last successful send to GitHub. */
   sentAt: number;
+  /** Times the app sent it again by itself after GitHub dropped the request (src/ui/addedSongs.ts; capped). */
+  autoResends?: number;
+  /** Epoch ms an automatic send was last tried (spaces out tries that never reached the relay, and other tabs). */
+  autoTriedAt?: number;
+  /** An automatic send was refused for the day: it isn't sent again by itself. */
+  autoStop?: 'daily-limit';
 }
 
 export type BlockReason = 'embed' | 'gone';
@@ -406,7 +416,19 @@ export const store = {
         typeof p.title === 'string' &&
         typeof p.durationSec === 'number' &&
         typeof p.sentAt === 'number',
-    );
+    ).map((p) => {
+      // A chosen video must be a video ID, and force a boolean that goes with one; anything else is dropped.
+      const { videoId, force, autoResends, autoTriedAt, autoStop, ...plain } = p;
+      // The automatic-resend bookkeeping: a small whole count, a time, a known reason.
+      const rest: PendingAdd = {
+        ...plain,
+        ...(typeof autoResends === 'number' && Number.isInteger(autoResends) && autoResends > 0 ? { autoResends: Math.min(autoResends, 100) } : {}),
+        ...(typeof autoTriedAt === 'number' && Number.isFinite(autoTriedAt) && autoTriedAt > 0 ? { autoTriedAt } : {}),
+        ...(autoStop === 'daily-limit' ? { autoStop } : {}),
+      };
+      if (typeof videoId !== 'string' || !/^[A-Za-z0-9_-]{11}$/.test(videoId)) return rest;
+      return { ...rest, videoId, ...(force === true ? { force: true } : {}) };
+    });
   },
   setPendingAdds(list: PendingAdd[]): void {
     writeJson(STORE_KEYS.addPending, list.length ? list : null);

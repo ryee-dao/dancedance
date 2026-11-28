@@ -16,7 +16,8 @@ import type { PlayItem } from '../player/types';
 import { store, type Intensity } from '../store';
 import { addedSongs, type PendingView } from './addedSongs';
 import { h, type HomeOptions, type Nav, type Screen } from './dom';
-import { isConnected, openConnectDialog, sendSong } from './githubConnect';
+import { githubConnection, isConnected, OLD_RELAY_MESSAGE, openConnectDialog, relayVersion, resendRequest, sendSong, videoLinkSupport } from './githubConnect';
+import { parseVideoLink } from '../player/playlistReader';
 import { ensureFocus, focusEl, type Scope } from './focusNav';
 import { openLevelPicker } from './levelPicker';
 import { library, thumbnailUrl, type Song, type ThumbSize } from './library';
@@ -31,6 +32,10 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
   /** What the last render laid out; a 'change' that leaves it the same only refreshes the tiles. */
   let lastLayout = '';
   let closePicker: (() => void) | null = null;
+  /** What was typed into each pending card's link field (by song key), so a re-render keeps it. */
+  const linkDrafts = new Map<string, string>();
+  /** Relays whose version is being asked (to know whether a pasted link can be sent). */
+  const askingRelay = new Set<string>();
 
   const linkBtn = h('button', { class: 'btn', 'data-action': 'link', type: 'button' });
   const actions = h(
@@ -106,7 +111,7 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
       ids(playlist),
       ids(added),
       // Progress ticks don't relayout the shelves: patchPending updates those cards in place.
-      pending.map((p) => [p.key, p.state, p.state === 'waiting' && p.progress ? '' : p.message]),
+      pending.map((p) => [p.key, p.state, p.state === 'waiting' && p.progress ? '' : p.message, p.canPaste ? videoLinkSupport() : '']),
       hiddenCount,
       groups.map((g) => [g.id, g.title, ids(g.songs)]),
     ]);
@@ -215,7 +220,9 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
     const btn = (action: string, label: string, primary = false) =>
       h('button', { class: `btn btn-small${primary ? ' btn-primary' : ''}`, type: 'button', 'data-action': action, 'data-key': p.key }, label);
     const buttons =
-      p.state === 'failed'
+      p.state === 'check'
+        ? [btn('add-force', 'Use it anyway', true), btn('add-dismiss', 'Dismiss')]
+        : p.state === 'failed'
         ? [btn('add-retry', 'Try again', true), btn('add-dismiss', 'Dismiss')]
         : p.state === 'slow'
           ? [btn('add-retry', 'Send again', true), btn('add-dismiss', 'Stop waiting')]
@@ -250,9 +257,72 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
               ),
             ]
           : h('span', { class: 'pending-msg' }, p.state === 'waiting' && h('span', { class: 'spinner', 'aria-hidden': 'true' }), p.message),
+        p.state === 'check' &&
+          p.checkedVideo &&
+          h('a', { class: 'inline-link pending-watch', href: `https://www.youtube.com/watch?v=${p.checkedVideo}`, target: '_blank', rel: 'noopener noreferrer' }, 'Watch the video on YouTube'),
         buttons.length > 0 && h('span', { class: 'pending-buttons' }, ...buttons),
+        p.canPaste && videoLinkRow(p),
       ),
     );
+  }
+
+  /** "Paste a YouTube link" on a song the cloud couldn't find (or whose pasted video didn't match). */
+  function videoLinkRow(p: PendingView): HTMLElement {
+    const support = videoLinkSupport();
+    const relay = githubConnection().relay;
+    if (support === 'unknown' && relay && !askingRelay.has(relay)) {
+      askingRelay.add(relay);
+      void relayVersion(relay).then(() => {
+        askingRelay.delete(relay);
+        if (el.isConnected) render();
+      });
+    }
+    const label = p.state === 'check' ? 'Or paste a different YouTube link' : 'Know the right video? Paste its YouTube link';
+    if (support === 'old-relay') return h('p', { class: 'pending-video-note' }, `To use a YouTube link instead: ${OLD_RELAY_MESSAGE.replace(/^Your relay is/, 'your relay is')}`);
+    const id = `video-link-${Math.abs(hash(p.key))}`;
+    const input = h('input', {
+      id,
+      class: 'text-input pending-video-input',
+      type: 'url',
+      inputmode: 'url',
+      autocomplete: 'off',
+      autocapitalize: 'off',
+      spellcheck: 'false',
+      enterkeyhint: 'send',
+      placeholder: 'https://www.youtube.com/watch?v=…',
+      'data-action': 'add-video-input',
+      'data-key': p.key,
+      'aria-describedby': `${id}-msg`,
+    });
+    input.value = linkDrafts.get(p.key) ?? '';
+    return h(
+      'span',
+      { class: 'pending-video' },
+      h('label', { class: 'pending-video-label', for: id }, label),
+      h(
+        'span',
+        { class: 'pending-video-row' },
+        input,
+        h('button', { class: 'btn btn-small', type: 'button', 'data-action': 'add-video', 'data-key': p.key }, 'Use this video'),
+      ),
+      h('span', { id: `${id}-msg`, class: 'pending-video-msg', role: 'alert' }),
+    );
+  }
+
+  /** The pasted link of a card: checked here, then sent as the song's video. */
+  function sendVideoLink(key: string, from: HTMLElement): void {
+    const card = from.closest<HTMLElement>('.pending-card');
+    const input = card?.querySelector<HTMLInputElement>('.pending-video-input');
+    const msg = card?.querySelector<HTMLElement>('.pending-video-msg');
+    if (!input || !msg) return;
+    const parsed = parseVideoLink(input.value);
+    if (!parsed.ok) {
+      msg.textContent = parsed.error;
+      input.focus();
+      return;
+    }
+    msg.textContent = '';
+    void resend(key, from, { videoId: parsed.videoId }, msg);
   }
 
   /** Swap in fresh pending cards (new percentage and time left); a focused card only gets its progress lines replaced. */
@@ -274,18 +344,33 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
     }
   }
 
-  /** "Try again" / "Send again" on a pending card. */
-  async function resend(key: string, from: HTMLElement): Promise<void> {
+  /**
+   * "Try again" (a new search: 'search'), "Send again" (the same request: 'same'), or a chosen
+   * video (a pasted link, or "Use it anyway" with force) on a pending card. `msgEl`: where to
+   * say what went wrong (else a toast).
+   */
+  async function resend(key: string, from: HTMLElement, choice: 'search' | 'same' | { videoId: string; force?: boolean }, msgEl?: HTMLElement): Promise<void> {
     const p = addedSongs.pending().find((x) => x.key === key);
     if (!p) return;
     const go = async (): Promise<void> => {
       from.setAttribute('disabled', '');
-      const res = await sendSong({ key: p.key, artist: p.artist, title: p.title, durationSec: p.durationSec, artworkUrl: p.artworkUrl, trackId: p.trackId });
+      const res = await sendSong(resendRequest(p, choice));
       from.removeAttribute('disabled');
-      if (res.ok) toast(`Sent again. “${p.title}” usually takes 3–5 minutes.`);
-      else if (res.needs) {
+      if (res.ok) {
+        if (typeof choice === 'object') linkDrafts.delete(key);
+        toast(
+          typeof choice !== 'object'
+            ? `Sent again. “${p.title}” usually takes 3–5 minutes.`
+            : choice.force
+              ? `Sent. “${p.title}” is added with this video. It usually takes 3–5 minutes.`
+              : `Sent. The cloud checks that the video is “${p.title}”, then adds it. It usually takes 3–5 minutes.`,
+          6000,
+        );
+      } else if (res.needs) {
         openConnectDialog({ parent: el, returnFocus: from, message: res.message, mode: res.needs, submitLabel: 'Save and send', onConnected: () => void go() });
-      } else toast(res.message, 6000);
+      } else if (msgEl?.isConnected) msgEl.textContent = res.message;
+      else toast(res.message, 6000);
+      if (!res.ok && res.error === 'old-relay') render();
     };
     if (!isConnected()) openConnectDialog({ parent: el, returnFocus: from, submitLabel: 'Connect and send', onConnected: () => void go() });
     else await go();
@@ -488,6 +573,19 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
     return (i >= 0 && (all[i + 1] ?? all[i - 1])) || el.querySelector<HTMLElement>('[data-action="shuffle"]');
   }
 
+  // A pending card's link field: keep what is typed across re-renders; Enter sends it.
+  el.addEventListener('input', (e) => {
+    const t = e.target as HTMLInputElement;
+    if (t.dataset.action === 'add-video-input' && t.dataset.key) linkDrafts.set(t.dataset.key, t.value);
+  });
+  el.addEventListener('keydown', (e) => {
+    const t = e.target as HTMLInputElement;
+    if (e.key !== 'Enter' || t.dataset.action !== 'add-video-input' || !t.dataset.key) return;
+    e.preventDefault();
+    const send = t.closest('.pending-card')?.querySelector<HTMLElement>('[data-action="add-video"]');
+    if (send) sendVideoLink(t.dataset.key, send);
+  });
+
   el.addEventListener('click', (e) => {
     const target = (e.target as HTMLElement).closest<HTMLElement>('button');
     if (!target || !el.contains(target)) return;
@@ -539,7 +637,21 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
         addedSongs.unhideAll();
         break;
       case 'add-retry':
-        if (target.dataset.key) void resend(target.dataset.key, target);
+        if (target.dataset.key) {
+          const p = addedSongs.pending().find((x) => x.key === target.dataset.key);
+          // "Try again" after not-found searches again; "Send again" (slow) re-sends the same request.
+          void resend(target.dataset.key, target, p?.state === 'failed' ? 'search' : 'same');
+        }
+        break;
+      case 'add-video':
+        if (target.dataset.key) sendVideoLink(target.dataset.key, target);
+        break;
+      case 'add-force':
+        if (target.dataset.key) {
+          const p = addedSongs.pending().find((x) => x.key === target.dataset.key);
+          const card = target.closest<HTMLElement>('.pending-card');
+          if (p?.checkedVideo) void resend(p.key, target, { videoId: p.checkedVideo, force: true }, card?.querySelector<HTMLElement>('.pending-video-msg') ?? undefined);
+        }
         break;
       case 'add-dismiss':
         if (target.dataset.key) {
@@ -587,6 +699,13 @@ export function createHome(nav: Nav, opts: HomeOptions = {}): Screen {
       library.removeEventListener('song', onSong);
     },
   };
+}
+
+/** A small stable number for a string (element IDs from song keys). */
+function hash(s: string): number {
+  let x = 0;
+  for (let i = 0; i < s.length; i++) x = (x * 31 + s.charCodeAt(i)) | 0;
+  return x;
 }
 
 /** Thumbnail size, decided from the first laid-out tile (see useThumbs). */

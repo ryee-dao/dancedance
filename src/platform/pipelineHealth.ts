@@ -27,7 +27,7 @@ export type { RunJob, RunSummary };
  * RELAY_VERSION, kept equal by a test). Older relays still add songs; the
  * check then says to redeploy it.
  */
-export const RELAY_VERSION = 2;
+export const RELAY_VERSION = 3;
 /**
  * Committed song data normally reaches the site within a few minutes: a data-only
  * deploy takes under a minute (measured 19 s), it may wait behind a code push's

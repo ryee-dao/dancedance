@@ -5,10 +5,16 @@
  *
  *   POST /add      { "trackId": 1440936016,
  *                    "song"?:  { "artist": "...", "title": "...", "durationSec"?: 219 },
- *                    "queue"?: [123, { "trackId": 456, "song"?: { ... } }] }
+ *                    "video"?: "8O7yWgX6--4", "force"?: true,
+ *                    "queue"?: [123, { "trackId": 456, "song"?: { ... }, "video"?: "...", "force"?: true }] }
  *                  headers: Content-Type: application/json
  *                           X-Add-Passphrase: <passphrase>   (only when ADD_PASSPHRASE is set)
- *     200 { ok: true, source: 'apple' | 'client', song: { trackId, artist, title, durationSec?, artworkUrl }, detail? }
+ *     200 { ok: true, source: 'apple' | 'client', song: { trackId, artist, title, durationSec?, artworkUrl }, video?, detail? }
+ *                  `video` (version 3+): a YouTube video the person chose (pasted link) for the
+ *                  song, instead of a search; `force`: add it even if it doesn't look like the
+ *                  song. Strict: video an 11-character ID, force a boolean and only with a video
+ *                  (else bad-request, detail video / force / queue-video / queue-force). The answer
+ *                  echoes `video` when it was forwarded, so the app can tell a relay that ignored it.
  *     4xx/5xx { ok: false, error: <code>, detail? }   codes: bad-origin, bad-request, passphrase,
  *         not-found, daily-limit, lookup-failed, not-configured, github-<status>
  *   POST /map      a beat map a player's browser made (source 'tab': heard via
@@ -84,7 +90,7 @@ export interface HandleOptions {
  * relies on; the app (RELAY_VERSION in src/platform/pipelineHealth.ts, kept equal by a test)
  * says "redeploy the relay" while the live one reports less. Relays from before this field = 1.
  */
-export const RELAY_VERSION = 2;
+export const RELAY_VERSION = 3;
 export const WORKFLOW_FILE = 'beatmaps.yml';
 export const WORKFLOW_REF = 'main';
 export const DEFAULT_DAILY_LIMIT = 30;
@@ -184,6 +190,20 @@ export function parseClientDetails(v: unknown): { ok: true; details?: ClientDeta
   if (d === undefined || d === null) return { ok: true, details: { artist, title } };
   if (typeof d !== 'number' || !Number.isInteger(d) || d < 20 || d > 900) return { ok: false, field: 'song-duration' };
   return { ok: true, details: { artist, title, durationSec: d } };
+}
+
+/** A video the person chose for a song (version 3+). */
+export interface Choice {
+  video?: string;
+  force?: boolean;
+}
+
+/** Strictly validated `video` / `force`; the name of the bad field otherwise. */
+export function parseChoice(video: unknown, force: unknown): { ok: true; choice: Choice } | { ok: false; field: string } {
+  if (video !== undefined && (typeof video !== 'string' || !VIDEO_ID_RE.test(video))) return { ok: false, field: 'video' };
+  if (force !== undefined && typeof force !== 'boolean') return { ok: false, field: 'force' };
+  if (force === true && video === undefined) return { ok: false, field: 'force' };
+  return { ok: true, choice: video === undefined ? {} : { video, ...(force ? { force: true } : {}) } };
 }
 
 type AppleGet = { ok: true; data: unknown } | { ok: false; detail: string };
@@ -574,20 +594,33 @@ async function handleRuns(env: Env, fetchFn: FetchFn, now: Date, cors: Record<st
   return json(200, { ok: true, runs }, cors);
 }
 
-/** The same workflow inputs the web app's direct-token path sends (an empty length is looked up by the job). */
-export function dispatchBody(song: Song, queue: Song[]): string {
+/**
+ * The same workflow inputs the web app's direct-token path sends (src/platform/github.ts
+ * dispatchRequest; an empty length is looked up by the job). add_video / add_video_force only
+ * when a video was chosen, so a workflow from before them still takes plain adds.
+ */
+export function dispatchBody(song: Song & Choice, queue: (Song & Choice)[]): string {
   const inputs: Record<string, string> = {
     add_artist: song.artist,
     add_title: song.title,
     add_duration: song.durationSec !== undefined ? String(song.durationSec) : '',
   };
-  if (queue.length) inputs.add_queue = JSON.stringify(queue.map((q) => ({ artist: q.artist, title: q.title, duration: q.durationSec })));
+  if (song.video) {
+    inputs.add_video = song.video;
+    if (song.force) inputs.add_video_force = 'true';
+  }
+  if (queue.length) {
+    inputs.add_queue = JSON.stringify(
+      queue.map((q) => ({ artist: q.artist, title: q.title, duration: q.durationSec, ...(q.video ? { video: q.video, ...(q.force ? { force: true } : {}) } : {}) })),
+    );
+  }
   return JSON.stringify({ ref: WORKFLOW_REF, inputs });
 }
 
 interface Wanted {
   trackId: number;
   details?: ClientDetails;
+  choice: Choice;
 }
 
 export async function handle(
@@ -643,7 +676,7 @@ export async function handle(
     return fail(400, 'bad-request', cors, 'body');
   }
   if (text.length > MAX_BODY_BYTES) return fail(413, 'bad-request', cors, 'too-large');
-  let body: { trackId?: unknown; song?: unknown; queue?: unknown };
+  let body: { trackId?: unknown; song?: unknown; queue?: unknown; video?: unknown; force?: unknown };
   try {
     body = JSON.parse(text) as typeof body;
   } catch {
@@ -654,35 +687,43 @@ export async function handle(
   if (!trackId) return fail(400, 'bad-request', cors, 'track-id');
   const main = parseClientDetails(body.song);
   if (!main.ok) return fail(400, 'bad-request', cors, main.field);
+  const mainChoice = parseChoice(body.video, body.force);
+  if (!mainChoice.ok) return fail(400, 'bad-request', cors, mainChoice.field);
   if (body.queue !== undefined && !Array.isArray(body.queue)) return fail(400, 'bad-request', cors, 'queue');
 
   const queued: Wanted[] = [];
   for (const raw of (body.queue as unknown[] | undefined) ?? []) {
     const isObj = !!raw && typeof raw === 'object' && !Array.isArray(raw);
     const id = toTrackId(isObj ? (raw as Record<string, unknown>).trackId : raw);
-    const d = parseClientDetails(isObj ? (raw as Record<string, unknown>).song : undefined);
+    const r = isObj ? (raw as Record<string, unknown>) : {};
+    const d = parseClientDetails(r.song);
     if (!d.ok) return fail(400, 'bad-request', cors, `queue-${d.field}`);
+    const c = parseChoice(r.video, r.force);
+    if (!c.ok) return fail(400, 'bad-request', cors, `queue-${c.field}`);
     if (id === null || id === trackId || queued.some((q) => q.trackId === id)) continue;
-    if (queued.length < MAX_QUEUE) queued.push({ trackId: id, details: d.details });
+    if (queued.length < MAX_QUEUE) queued.push({ trackId: id, details: d.details, choice: c.choice });
   }
 
   const looked = await lookupTracks([trackId, ...queued.map((q) => q.trackId)], fetchFn, timeoutMs);
   let song: Song;
-  let queue: Song[];
+  let queue: (Song & Choice)[];
   let source: 'apple' | 'client';
   let detail: string | undefined;
   if (looked.ok) {
     const s = looked.songs.get(trackId);
     if (!s) return fail(404, 'not-found', cors, looked.reasons.get(trackId) ?? 'apple-not-listed');
     song = s;
-    queue = queued.map((q) => looked.songs.get(q.trackId)).filter((x): x is Song => !!x);
+    queue = queued.flatMap((q) => {
+      const s = looked.songs.get(q.trackId);
+      return s ? [{ ...s, ...q.choice }] : [];
+    });
     source = 'apple';
   } else {
     // Apple gave no usable answer: use what the app found in its own iTunes search.
     if (!main.details) return fail(502, 'lookup-failed', cors, looked.detail);
     const fromClient = (id: number, d: ClientDetails): Song => ({ trackId: id, ...d, artworkUrl: '' });
     song = fromClient(trackId, main.details);
-    queue = queued.filter((q) => q.details).map((q) => fromClient(q.trackId, q.details!));
+    queue = queued.filter((q) => q.details).map((q) => ({ ...fromClient(q.trackId, q.details!), ...q.choice }));
     source = 'client';
     detail = looked.detail;
   }
@@ -699,13 +740,14 @@ export async function handle(
     const res = await fetchFn(`${base}/dispatches`, {
       method: 'POST',
       headers: { ...headers, 'Content-Type': 'application/json' },
-      body: dispatchBody(song, queue),
+      body: dispatchBody({ ...song, ...mainChoice.choice }, queue),
     });
     if (res.status !== 204 && !res.ok) return fail(502, `github-${res.status}`, cors);
   } catch {
     return fail(502, 'github-unreachable', cors);
   }
-  return json(200, { ok: true, source, song, ...(detail ? { detail } : {}) }, cors);
+  const video = mainChoice.choice.video;
+  return json(200, { ok: true, source, song, ...(video ? { video } : {}), ...(detail ? { detail } : {}) }, cors);
 }
 
 export default {

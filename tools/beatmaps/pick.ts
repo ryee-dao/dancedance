@@ -5,7 +5,8 @@
  *
  * Ranking, best first:
  *   1 'official'    official lyric video or official audio on the artist's own,
- *                   VEVO or label channel (verified); lyric before audio
+ *                   VEVO or label channel (verified); lyric before audio, then an
+ *                   upload there tagged only "official" ("Title [OFFICIAL]")
  *   2 'lyric'       third-party lyric video, most views first (>= 300 k views)
  *   3 'topic'       the artist's genuine "Provided to YouTube" art track (>= 10 k views,
  *                   or on the artist's verified channel, or, for a little-known song,
@@ -13,16 +14,20 @@
  *                   label's "- Topic" channel when the art track's "Title · Artist"
  *                   credit names the artist, same conditions)
  *   4 'music-video' fallback: the official music video closest in length
+ *   5 'third-party' last resort: someone else's upload that names the song and the
+ *                   artist, at the official length (-1 .. +2 s); closest length first
  *
- * Within that order, an upload tagged with an era or style the request doesn't
+ * Within tiers 1-4, an upload tagged with an era or style the request doesn't
  * name ("Insane (1920s Style)") goes after the untagged ones, and one tagged
  * with a bare year ("Insane (1920)") after an untagged one with 10x its views.
+ * Tier 5 always comes after all of them.
  *
- * When the two searches (searchQueries) rank nothing, the caller runs the plain
- * "Artist Title" search (fallbackQuery) too and ranks all results again.
+ * When the two searches (searchQueries) rank nothing (or only tier 5), the caller
+ * runs the fallbackQueries one at a time until something better ranks: the plain
+ * "Artist Title" search, then, for a credit naming several artists, "<first artist> Title".
  *
- * Tiers 1-3 must be within -1 .. +6 s of the official length; the fallback
- * within -2 .. +60 s. Live, remix, cover, sped up, slowed, karaoke, "1 hour",
+ * Tiers 1-3 must be within -1 .. +6 s of the official length; the music-video
+ * fallback within -2 .. +60 s; tier 5 within -1 .. +2 s. Live, remix, cover, sped up, slowed, karaoke, "1 hour",
  * extended, other "versions", translations and other artists' songs are
  * rejected unless the request itself asks for them.
  */
@@ -49,7 +54,18 @@ export interface SearchEntry {
   liveStatus: string | null;
 }
 
-export type Tier = 'official' | 'lyric' | 'topic' | 'music-video';
+export type Tier = 'official' | 'lyric' | 'topic' | 'music-video' | 'third-party';
+
+/**
+ * Whether the caller should run the next fallback search: nothing ranks, or only
+ * 'third-party' uploads (a last resort must not stop the searches that find the official one).
+ */
+export function needsMoreSearch(ranked: readonly { tier: Tier }[]): boolean {
+  return ranked.every((r) => r.tier === 'third-party');
+}
+
+/** All tiers, best first. */
+export const TIERS: readonly Tier[] = ['official', 'lyric', 'topic', 'music-video', 'third-party'];
 
 export interface Ranked {
   entry: SearchEntry;
@@ -74,6 +90,15 @@ export const WINDOW: readonly [number, number] = [-1, 6];
  */
 export const ALT_WINDOW: readonly [number, number] = [-3, 6];
 export const MV_WINDOW: readonly [number, number] = [-2, 60];
+/**
+ * The 'third-party' tier's window: a faithful re-upload of the released audio. Of the
+ * official / lyric / art-track uploads the tests' real searches accept, 61 of 70 are within
+ * -1 .. +2 s (lyric videos, themselves third-party uploads of the recording: 33 of 39); the
+ * +3 .. +6 s ones mostly carry a title card or an outro, which an unvetted upload can't be
+ * trusted to keep that small. Sped-up / slowed / pitched edits change the length by far more.
+ * The same for alternates (ALT_WINDOW does not widen it).
+ */
+export const THIRD_PARTY_WINDOW: readonly [number, number] = [-1, 2];
 
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
 
@@ -96,6 +121,27 @@ export function searchQueries(req: Pick<SongRequest, 'artist' | 'title'>): strin
  */
 export function fallbackQuery(req: Pick<SongRequest, 'artist' | 'title'>): string {
   return queryBase(req);
+}
+
+/**
+ * "<first artist> Title" when the credit names several artists ("Nguyễn Đình Vũ, Neko Lê &
+ * flechazowu"), else null: the whole credit can drown the upload in the results.
+ */
+export function primaryArtistQuery(req: Pick<SongRequest, 'artist' | 'title'>): string | null {
+  const parts = splitCredit(req.artist).map((p) => p.trim());
+  if (parts.length < 2 || !parts[0]) return null;
+  const q = queryBase({ artist: parts[0], title: req.title });
+  return q === queryBase(req) ? null : q;
+}
+
+/**
+ * The searches run, one at a time, while the two searchQueries (and the ones before) rank
+ * nothing better than the last resort (needsMoreSearch): fallbackQuery, then
+ * primaryArtistQuery when there is one. Each costs a paced request, so they only run when needed.
+ */
+export function fallbackQueries(req: Pick<SongRequest, 'artist' | 'title'>): string[] {
+  const p = primaryArtistQuery(req);
+  return p ? [fallbackQuery(req), p] : [fallbackQuery(req)];
 }
 
 /** `yt-dlp ytsearchN:... --flat-playlist -J` output -> entries (deduplicated, in order). */
@@ -130,15 +176,22 @@ export function degradedSearch(entries: SearchEntry[]): boolean {
   return entries.length > 0 && entries.every((e) => !e.channel && e.views === null);
 }
 
-/** Union of several result lists; the first occurrence of a video wins. */
+/**
+ * Union of several result lists, in first-seen order; the first occurrence of a video wins,
+ * unless it came stripped (no channel, no view count: YouTube now and then strips single
+ * entries too) and a later one has them.
+ */
 export function mergeSearches(lists: SearchEntry[][]): SearchEntry[] {
-  const seen = new Set<string>();
+  const at = new Map<string, number>();
   const out: SearchEntry[] = [];
+  const stripped = (e: SearchEntry) => !e.channel && e.views === null;
   for (const list of lists) {
     for (const e of list) {
-      if (seen.has(e.id)) continue;
-      seen.add(e.id);
-      out.push(e);
+      const i = at.get(e.id);
+      if (i === undefined) {
+        at.set(e.id, out.length);
+        out.push(e);
+      } else if (stripped(out[i]) && !stripped(e)) out[i] = e;
     }
   }
   return out;
@@ -375,7 +428,7 @@ const BAD: [string, RegExp][] = [
   ['acoustic', /\bacoustic\b|\bunplugged\b|\bstripped\b|\bpiano\b|\bguitar\b|\borchestra(?:l)?\b|\bsymphonic\b|\blofi\b|\blo-fi\b/i],
   ['version', /\bversion\b|\bversi[oó]n\b|\brerecord(?:ed|ing)?\b|\bre-recorded\b/i],
   ['demo', /\bdemo\b|\bsnippet\b|\bpreview\b|\bunreleased\b|\bleak(?:ed)?\b/i],
-  ['other media', /\breversed\b|\b\d{3}\s*hz\b|\bbackwards\b|\bbass\s*boost(?:ed)?\b|\btiktok\b|\bchipmunk\b|\b8\s*-?\s*bit\b|\bshorts?\b|\btutorial\b|\bchoreography\b|\bdance (?:video|practice|cover)\b|\blesson\b|\bfan\s*made\b|\bteaser\b|\btrailer\b|\bbehind the scenes\b|\bmaking of\b|\binterview\b/i],
+  ['other media', /\breversed\b|\b\d{3}\s*hz\b|\bbackwards\b|\bbass\s*boost(?:ed)?\b|\bepicenter\b|\btiktok\b|\bchipmunk\b|\b8\s*-?\s*bit\b|\bshorts?\b|\btutorial\b|\bchoreography\b|\bdance (?:video|practice|cover)\b|\blesson\b|\bfan\s*made\b|\bteaser\b|\btrailer\b|\bbehind the scenes\b|\bmaking of\b|\binterview\b/i],
   ['translation', /\blegendad[oa]\b|\btraduc(?:ida|ido|ción|cion|ao|ão)\b|\btradução\b|\btraduzione\b|\bsub(?:titulado|titulada|s?)?\s*(?:español|espanol|ita|pt|br)\b|\bespañol\b|\bespanol\b|перевод|해석|번역|和訳|中字|中文字幕|\bvietsub\b|\bthaisub\b|\bpolskie\b|\bnapisy\b/i],
 ];
 
@@ -552,7 +605,7 @@ export function rankCandidates(req: SongRequest, entries: SearchEntry[], opts: {
   const window = opts.window ?? WINDOW;
   const variants = artistVariants(req.artist);
   const chanVariants = channelVariants(req.artist);
-  const tiers: Record<Tier, { e: SearchEntry; key: number[] }[]> = { official: [], lyric: [], topic: [], 'music-video': [] };
+  const tiers: Record<Tier, { e: SearchEntry; key: number[] }[]> = { official: [], lyric: [], topic: [], 'music-video': [], 'third-party': [] };
   const rejected: Rejected[] = [];
   const why = new Map(entries.map((e) => [e, mismatch(req, e, variants)]));
   // A song with a popular upload: a genuine art track of it has views too.
@@ -577,6 +630,9 @@ export function rankCandidates(req: SongRequest, entries: SearchEntry[], opts: {
     const inWindow = f.dt >= window[0] && f.dt <= window[1];
     if (inWindow && f.official && (f.lyric || f.audio)) {
       tiers.official.push({ e, key: [f.lyric ? 0 : 1, -views] });
+    } else if (inWindow && f.official && !f.musicVideo && onlyOfficialTags(e.title, req.title)) {
+      // Tagged only "official" ("Title [OFFICIAL]"): after the official lyric and audio uploads.
+      tiers.official.push({ e, key: [2, -views] });
     } else if (inWindow && f.lyric && !f.artTrack && !f.artistChannel && !/topic/i.test(e.channel)) {
       if (views >= LYRIC_MIN_VIEWS) tiers.lyric.push({ e, key: [-views] });
       else reject(`lyric video with only ${views} views`);
@@ -589,6 +645,8 @@ export function rankCandidates(req: SongRequest, entries: SearchEntry[], opts: {
       else reject(knownSong ? 'label art track of a known song' : `label art track ${e.duration} s vs ${req.durationSec} s`);
     } else if (f.official && f.musicVideo && !f.lyric && f.dt >= MV_WINDOW[0] && f.dt <= MV_WINDOW[1]) {
       tiers['music-video'].push({ e, key: [Math.abs(f.dt), -views] });
+    } else if (thirdParty(e, f)) {
+      tiers['third-party'].push({ e, key: [Math.abs(f.dt), -views] });
     } else if (!inWindow) {
       reject(`length ${e.duration} s vs ${req.durationSec} s`);
     } else if (f.artTrack) {
@@ -604,15 +662,75 @@ export function rankCandidates(req: SongRequest, entries: SearchEntry[], opts: {
     return 0;
   };
   const ranked: Ranked[] = [];
-  for (const tier of ['official', 'lyric', 'topic', 'music-video'] as Tier[]) {
+  for (const tier of TIERS) {
     for (const c of tiers[tier].sort((a, b) => cmp(a.key, b.key))) ranked.push({ entry: c.e, tier });
   }
-  const ordered = untaggedFirst(req, ranked);
-  if (!opts.window) return { ranked: ordered, rejected };
-  // Wider window: an upload inside the usual one still goes first.
-  const widened = (r: Ranked) => r.tier !== 'music-video' && r.entry.duration !== null && (r.entry.duration - req.durationSec < WINDOW[0] || r.entry.duration - req.durationSec > WINDOW[1]);
-  return { ranked: [...ordered.filter((r) => !widened(r)), ...ordered.filter(widened)], rejected };
+  // The last resort stays last: the era / style reordering and the wider window only move tiers 1-4.
+  const last = ranked.filter((r) => r.tier === 'third-party');
+  let ordered = untaggedFirst(req, ranked.filter((r) => r.tier !== 'third-party'));
+  if (opts.window) {
+    // Wider window: an upload inside the usual one still goes first.
+    const widened = (r: Ranked) => r.tier !== 'music-video' && r.entry.duration !== null && (r.entry.duration - req.durationSec < WINDOW[0] || r.entry.duration - req.durationSec > WINDOW[1]);
+    ordered = [...ordered.filter((r) => !widened(r)), ...ordered.filter(widened)];
+  }
+  return { ranked: [...ordered, ...last], rejected };
 }
+
+/**
+ * The title's own brackets (those the request lacks) say only "official", with at most
+ * decoration ("[OFFICIAL]", "(Official HD)"): not a session, a performance or another tag.
+ */
+function onlyOfficialTags(title: string, reqTitle: string): boolean {
+  const tags = [...withoutRequestBrackets(title, reqTitle).matchAll(BRACKETS)].map((m) => toks(m[1] ?? m[2] ?? ''));
+  return tags.some((t) => t.some((w) => OFFICIAL_WORDS.has(w))) && tags.every((t) => t.every((w) => OFFICIAL_WORDS.has(w) || NOISE.has(w)));
+}
+const OFFICIAL_WORDS = new Set(['official', 'oficial', 'officiel', 'offiziell', 'ufficiale']);
+
+/** An upload title that says it is official ("(Official Audio)", "| Video Oficial"). */
+const CLAIMS_OFFICIAL = /\b(?:official|oficial|officiel|offiziell|ufficiale)\b/i;
+/** A channel name that passes itself off as a label, VEVO or "- Topic" channel. */
+const LABEL_LIKE = /\b(?:records?|recordings|entertainment|vevo|topic)\b|vevo$/i;
+
+/**
+ * The 'third-party' tier: an upload by someone other than the artist or a label (not
+ * official, not on a channel using the artist's name, not an art track, not a lyric video,
+ * which has its own tier and view bar), that already passed `mismatch` (names the song and
+ * the artist, no version words the request lacks), at the official length (THIRD_PARTY_WINDOW).
+ * Not when it poses as official: an unofficial upload titled "Official ..." or a channel
+ * named like a label / VEVO / Topic that isn't one (verified and known) is how impostors
+ * look ("Dua Lipá Officiall", "gran republica records", "TheStruckFernVEVO", an unverified
+ * "GRM Daily"). Nor when the entry came without its channel.
+ */
+function thirdParty(e: SearchEntry, f: Facts): boolean {
+  // A stripped entry (no channel) can't be told apart from an impostor.
+  if (!e.channel || f.official || f.artistChannel || f.artTrack || f.lyric) return false;
+  if (CLAIMS_OFFICIAL.test(e.title) || LABEL_LIKE.test(e.channel) || LABELS.has(joined(e.channel))) return false;
+  return f.dt >= THIRD_PARTY_WINDOW[0] && f.dt <= THIRD_PARTY_WINDOW[1];
+}
+
+/**
+ * Why nothing ranked, for the person who asked for the song: the furthest any search
+ * result got. `entries` are all the results searched, `rejected` the ranking's reasons.
+ */
+export function notFoundMessage(req: SongRequest, entries: SearchEntry[], rejected: Rejected[]): string {
+  if (!entries.length) return "YouTube's search returned no videos for this song.";
+  const reasons = rejected.map((r) => r.reason);
+  const isLength = (r: string) => r.startsWith('length ') || / \d+ s vs \d+ s$/.test(r);
+  const atLength = reasons.filter((r) => NOT_TRUSTED.some((t) => r.startsWith(t)));
+  if (atLength.length) {
+    return `Found ${atLength.length === 1 ? 'an upload' : `${atLength.length} uploads`} of this song at its official length, but not from a source the picker trusts (the artist's or label's channel, a popular lyric video or an art track).`;
+  }
+  const wrongLength = reasons.filter(isLength);
+  if (wrongLength.length) {
+    return `Found ${wrongLength.length === 1 ? 'a video' : `${wrongLength.length} videos`} of this song, but none at its official length (${mmss(req.durationSec)}).`;
+  }
+  return "Couldn't find a YouTube video of this song: the search results were other songs, other artists or other versions (live, remix, cover and so on).";
+}
+
+/** Rejection reasons of a matching upload at an acceptable length, from a source the ranking doesn't use. */
+const NOT_TRUSTED = ['not official, not a lyric video', 'official upload, but not lyric/audio', 'lyric video with only ', 'art track with only ', 'art track from another channel', "unverified channel using the artist's name", 'label art track of a known song'];
+
+const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s) % 60).padStart(2, '0')}`;
 
 /**
  * An upload tagged with an era or style the request doesn't name goes after
@@ -630,6 +748,125 @@ function untaggedFirst(req: SongRequest, ranked: Ranked[]): Ranked[] {
     return t === 'year' && most > 0 && most >= 10 * (r.entry.views ?? 0);
   };
   return [...ranked.filter((r) => !later(r)), ...ranked.filter(later)];
+}
+
+// ---------------------------------------------------------------------------
+// A video the user chose (pasted a link after "not found")
+
+/**
+ * The length window for a video the user chose: -3 .. +6 s. +6 s is the widest the picker allows
+ * any upload that is not the official music video (tiers 1-3, WINDOW); -3 s is what it allows an
+ * alternate upload (ALT_WINDOW: a slightly trimmed fade). Not the 'third-party' -1 .. +2 s: that
+ * one is for picking among strangers' uploads with nobody looking, while here a person chose the
+ * video and sees a warning when it is off. The artist's own official music video gets MV_WINDOW,
+ * as in the ranking. Anything further off is another cut of the song (or another song), and the
+ * person can still say "Use it anyway".
+ */
+export const CHOSEN_WINDOW: readonly [number, number] = [-3, 6];
+/** Lengths the app takes for a song (the relay's and cleanRequest's 20 .. 900 s; the job's MAX_DURATION_S). */
+export const SONG_MIN_S = 20;
+export const SONG_MAX_S = 15 * 60;
+
+/** One video's metadata (`yt-dlp -J` of the video), reduced to what the checks use. */
+export interface VideoInfo extends SearchEntry {
+  /** yt-dlp `playable_in_embed` (null = not said). */
+  embeddable: boolean | null;
+  /** yt-dlp `availability`: public, unlisted, private, needs_auth, subscriber_only, premium_only. */
+  availability: string | null;
+}
+
+/** `yt-dlp -J <video>` output -> VideoInfo, or null when it isn't a video's metadata. */
+export function parseVideoInfo(json: unknown): VideoInfo | null {
+  const e = (json ?? {}) as Record<string, unknown>;
+  if (typeof e.id !== 'string' || !VIDEO_ID.test(e.id) || typeof e.title !== 'string') return null;
+  const [entry] = parseSearch({ entries: [e] });
+  if (!entry) return null;
+  return {
+    ...entry,
+    embeddable: typeof e.playable_in_embed === 'boolean' ? e.playable_in_embed : null,
+    availability: typeof e.availability === 'string' ? e.availability : null,
+  };
+}
+
+/**
+ * Whether a chosen video is the requested song:
+ *   'match'    passes the picker's own rules (mismatch(): names the song and the artist, no
+ *              version words the request lacks) at a length in CHOSEN_WINDOW (or MV_WINDOW for
+ *              the artist's official music video)
+ *   'mismatch' it may still be added when the person insists (`reason` is mismatch()'s label,
+ *              or 'length'); `message` says why, for the app
+ *   'refuse'   it can never be added: not playable in the app, or not a song's length
+ */
+export type VideoVerdict = { kind: 'match' } | { kind: 'mismatch' | 'refuse'; reason: string; message: string };
+
+/** What a video is not, for the person who chose it ("This looks like a karaoke version."). */
+const LOOKS_LIKE: Record<string, string> = {
+  live: 'a live version',
+  remix: 'a remix',
+  cover: 'a cover',
+  'sped up': 'a sped-up version',
+  slowed: 'a slowed-down version',
+  reverb: 'a reverb edit',
+  nightcore: 'a nightcore edit',
+  '8D': 'an 8D audio edit',
+  karaoke: 'a karaoke version',
+  instrumental: 'an instrumental version',
+  mashup: 'a mashup or medley',
+  '1 hour': 'a looped or hours-long version',
+  extended: 'an extended version',
+  edit: 'an edited version',
+  reaction: 'a reaction or review video',
+  acoustic: 'an acoustic or re-arranged version',
+  version: 'a different version of the song',
+  demo: 'a demo, preview or snippet',
+  'other media': 'not the song itself (a tutorial, teaser, edit or similar)',
+  translation: 'a translated or subtitled upload',
+};
+
+/** The requested title as people say it: without "(feat. X)". */
+function plainTitle(title: string): string {
+  return stripFeat(title.replace(/\s*[([]\s*(?:feat|ft|featuring)\b[^)\]]*[)\]]/gi, '')) || title;
+}
+
+export function judgeVideo(req: SongRequest, v: VideoInfo): VideoVerdict {
+  const refuse = (reason: string, message: string): VideoVerdict => ({ kind: 'refuse', reason, message });
+  if (v.liveStatus === 'is_live' || v.liveStatus === 'is_upcoming' || v.liveStatus === 'post_live') {
+    return refuse('live', 'This is a live stream or a premiere that hasn’t finished, not a video of the song.');
+  }
+  // yt-dlp's answer for a video that doesn't exist (with --ignore-no-formats-error): a "youtube
+  // video #<id>" placeholder with no channel and no length.
+  if (!v.channel && v.duration === null) return refuse('unavailable', 'This video is private, removed or not available.');
+  if (v.availability && !['public', 'unlisted'].includes(v.availability)) {
+    return refuse('unavailable', 'This video is private or needs a sign-in, so it can’t play in the app.');
+  }
+  if (v.embeddable === false) return refuse('embed', 'This video’s owner doesn’t allow it to play on other sites, so it can’t play in the app.');
+  if (v.duration === null) return refuse('length', 'YouTube doesn’t say how long this video is, so it can’t be used.');
+  if (v.duration < SONG_MIN_S || v.duration > SONG_MAX_S) {
+    return refuse('length', `This video is ${mmss(v.duration)} long. Songs need to be between ${mmss(SONG_MIN_S)} and ${mmss(SONG_MAX_S)}.`);
+  }
+  const variants = artistVariants(req.artist);
+  const why = mismatch(req, v, variants);
+  const song = `“${plainTitle(req.title)}”`;
+  if (why) return { kind: 'mismatch', reason: why, message: mismatchMessage(req, v, why, song) };
+  const f = facts(req, v, channelVariants(req.artist));
+  const window = f.official && f.musicVideo && !f.lyric ? MV_WINDOW : CHOSEN_WINDOW;
+  if (f.dt < window[0] || f.dt > window[1]) {
+    return { kind: 'mismatch', reason: 'length', message: `This video is ${mmss(v.duration)} but the song is ${mmss(req.durationSec)}.` };
+  }
+  return { kind: 'match' };
+}
+
+function mismatchMessage(req: SongRequest, v: VideoInfo, why: string, song: string): string {
+  const channel = why.endsWith(' channel');
+  const label = channel ? why.slice(0, -' channel'.length) : why;
+  if (LOOKS_LIKE[label]) return `This looks like ${LOOKS_LIKE[label]}${channel ? ' (going by the channel’s name)' : ''}.`;
+  const q = /^not the requested "(.*)"$/.exec(why);
+  if (q) return `The video’s title doesn’t say “${q[1]}”, which the song’s title does.`;
+  // Does the title name the song at all? Then it is the artist that's missing.
+  const want = requestCore(req.title);
+  const namesSong = want.length > 0 && titleReadings(v.title).some((r) => removeRun(r, want) !== null);
+  if (!namesSong) return `The video’s title doesn’t mention ${song}.`;
+  return `The video doesn’t name ${req.artist} in its title or channel.`;
 }
 
 // ---------------------------------------------------------------------------
@@ -656,8 +893,27 @@ export function splitArtistTitle(s: string): { artist: string; title: string } |
   return m ? { artist: m[1].trim(), title: m[2].trim() } : null;
 }
 
-/** The app's `add_queue` input: a JSON array of {artist, title, duration}. Invalid items are dropped. */
-export function parseQueue(text: string | undefined): { artist: string; title: string; durationSec?: number }[] {
+/** A YouTube video ID as the workflow inputs and the queue carry it (anything else: null). */
+export function cleanVideoId(v: unknown): string | null {
+  return typeof v === 'string' && VIDEO_ID.test(v) ? v : null;
+}
+
+export interface QueuedRequest {
+  artist: string;
+  title: string;
+  durationSec?: number;
+  /** The video the person chose for the song (a pasted link), instead of a search. */
+  videoId?: string;
+  /** Add `videoId` even if it doesn't look like the song ("Use it anyway"). */
+  force?: boolean;
+}
+
+/**
+ * The app's `add_queue` input: a JSON array of {artist, title, duration, video?, force?}.
+ * Invalid items are dropped; an item whose `video` isn't a video ID is dropped too (it must not
+ * fall back to a search the person didn't ask for), and `force` only counts as `true` with a video.
+ */
+export function parseQueue(text: string | undefined): QueuedRequest[] {
   if (!text?.trim()) return [];
   let data: unknown;
   try {
@@ -666,11 +922,18 @@ export function parseQueue(text: string | undefined): { artist: string; title: s
     return [];
   }
   if (!Array.isArray(data)) return [];
-  const out: { artist: string; title: string; durationSec?: number }[] = [];
+  const out: QueuedRequest[] = [];
   for (const raw of data.slice(0, MAX_ADDS)) {
     const r = (raw ?? {}) as Record<string, unknown>;
     const c = cleanRequest(r.artist, r.title, r.duration ?? r.durationSec);
-    if (c) out.push(c);
+    if (!c) continue;
+    if (r.video === undefined || r.video === null || r.video === '') {
+      out.push(c);
+      continue;
+    }
+    const videoId = cleanVideoId(r.video);
+    if (!videoId) continue;
+    out.push({ ...c, videoId, ...(r.force === true ? { force: true } : {}) });
   }
   return out;
 }

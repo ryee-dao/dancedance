@@ -9,6 +9,10 @@
  * sits behind a CDN that caches files for up to 10 minutes, so each poll adds
  * a `?t=` query (rounded to the poll interval) to get a fresh copy.
  *
+ * A request GitHub dropped without the job ever answering for the song (see
+ * `dropped` in reconcile) is sent again by the app itself, the same way "Send
+ * again" does, a few times at most (autoResendAt), and only while the page is visible.
+ *
  * Emits 'change' (re-render) and 'appeared' (CustomEvent<AddedSong>).
  */
 
@@ -23,22 +27,43 @@ import {
 } from '../beat/cloud';
 import { SITE_GRACE_MS, type RunSummary } from '../platform/pipelineHealth';
 import { getPlatform, type Platform } from '../platform/platform';
+import { explainRelayError } from '../platform/relay';
 import { matchRun, songProgress, type Progress } from '../platform/songProgress';
 import { store, type PendingAdd } from '../store';
 
 /**
  * 'site-failed': the beat map was made and committed, but the site didn't
  * publish it (sending again wouldn't help: the fix is on GitHub).
+ * 'check': the video the person chose doesn't look like the song (songs-status.json
+ * 'video-mismatch'); nothing was added, and they may say "Use it anyway".
  */
-export type PendingState = 'waiting' | 'slow' | 'retrying' | 'failed' | 'site-failed';
+export type PendingState = 'waiting' | 'slow' | 'retrying' | 'failed' | 'site-failed' | 'check';
+
+/** States that wait for the person, not the cloud: not polled, not re-sent with other songs. */
+export const WAITING_FOR_PERSON: readonly PendingState[] = ['failed', 'check'];
 
 export interface PendingView extends PendingAdd {
   state: PendingState;
   /** User-facing sentence. */
   message: string;
+  /** The cloud found no usable video: the person may paste a YouTube link instead. */
+  canPaste?: boolean;
+  /** 'check' (and a refused link): the video the cloud checked. */
+  checkedVideo?: string;
   /** Stage, percentage and time left, when the job's progress is known (see songProgress). */
   progress?: Progress;
+  /** GitHub dropped the request without the job answering for this song (see reconcile). */
+  dropped?: DropReason;
+  /** With `dropped`: when the app sends it again by itself (epoch ms); absent once it won't. */
+  autoAt?: number;
 }
+
+/**
+ * Why a request counts as dropped: the run that would have handled it was cancelled (GitHub keeps one
+ * waiting run per group and cancels it for a newer request, maybe another person's), the job failed
+ * before adding it, or the job finished well without adding it or saying why.
+ */
+export type DropReason = 'cancelled' | 'failed' | 'finished';
 
 /**
  * What the cloud says beyond the live site's files (src/ui/songHealth.ts
@@ -54,6 +79,67 @@ export interface CloudFacts {
   inRepoSince: Readonly<Record<string, number>>;
   /** The highest percentage shown so far per pending song. */
   floors?: Readonly<Record<string, number>>;
+  /** When `runs` was fetched (epoch ms); a list from before a send can't show that send's run. */
+  runsAt?: number;
+  /**
+   * Present when this page can send dropped songs again by itself; `stopped`: songs it won't this
+   * session (an automatic send got an answer the person must act on), with that answer.
+   */
+  auto?: { stopped: Readonly<Record<string, string>> };
+}
+
+/**
+ * Automatic resends of one dropped song. Each one can itself cancel someone else's waiting request,
+ * so this stays small: three drops in a row mean something the person should see (a busy evening,
+ * a job that keeps failing), and the manual "Send again" is still there.
+ */
+export const AUTO_RESEND_CAP = 3;
+/**
+ * Wait before automatic resend n (0-based), counted from when the drop became known. At least 2 min:
+ * the new request is then well clear of the dropped run's time window (matchRun allows 90 s), and
+ * the runs list (cached 1-2 min) has time to show it; then longer, as a busy group calms down.
+ */
+export const AUTO_BACKOFF_MS = [2 * 60_000, 5 * 60_000, 10 * 60_000] as const;
+/** Up to this much is added to each wait, different per browser and per song, so people dropped together don't resend together. */
+export const AUTO_JITTER_MS = 60_000;
+/** An automatic send that didn't get through (offline, relay unreachable) is tried again after this, without counting. */
+export const AUTO_RETRY_MS = 2 * 60_000;
+/** The runs list must be this much younger than the send before a drop counts for an automatic resend. */
+const RUNS_SETTLE_MS = 60_000;
+
+const DROP_TEXT: Record<DropReason, string> = {
+  cancelled: 'GitHub dropped this request because another song was sent at about the same time.',
+  failed: 'The song job failed before it could add this song.',
+  finished: 'The song job finished, but this song wasn’t added.',
+};
+const AUTO_TEXT = 'It’s sent again by itself in a few minutes.';
+
+/** Stable 0..AUTO_JITTER_MS-1 per song, send and attempt (sentAt differs per browser; survives reloads). */
+export function autoJitter(p: Pick<PendingAdd, 'key' | 'sentAt'>, attempt: number): number {
+  let h = 0x811c9dc5;
+  for (const c of `${p.key}|${p.sentAt}|${attempt}`) h = Math.imul(h ^ c.charCodeAt(0), 0x01000193) >>> 0;
+  return h % AUTO_JITTER_MS;
+}
+
+/**
+ * Pure: when a song dropped at `droppedAt` is sent again by itself, or null when it isn't any more
+ * (cap reached, or the relay's daily limit). A try that didn't get through waits AUTO_RETRY_MS.
+ */
+export function autoResendAt(p: PendingAdd, droppedAt: number): number | null {
+  const n = p.autoResends ?? 0;
+  if (p.autoStop || n >= AUTO_RESEND_CAP) return null;
+  const due = Math.max(droppedAt, p.sentAt) + AUTO_BACKOFF_MS[Math.min(n, AUTO_BACKOFF_MS.length - 1)] + autoJitter(p, n);
+  return p.autoTriedAt ? Math.max(due, p.autoTriedAt + AUTO_RETRY_MS) : due;
+}
+
+/** What an automatic send's failure means: 'later' (never got through: not counted), 'count' (try again, counted), 'stop'. */
+export function autoFailure(error: string): 'later' | 'count' | 'daily-limit' | 'stop' {
+  if (error === 'network') return 'later';
+  if (error === 'daily-limit') return 'daily-limit';
+  // The relay couldn't look the song up, or the relay or GitHub had a hiccup (token path: GitHub's rate limit or 5xx).
+  if (error === 'lookup-failed' || error === 'server' || error === 'rate-limit') return 'count';
+  // passphrase, not connected, old relay, refused requests: the person has to act.
+  return 'stop';
 }
 
 /** After this long without the song appearing, say so and offer to send again. */
@@ -101,11 +187,43 @@ export function reconcile(
       ? songProgress({ now, sentAt: p.sentAt, run, runsKnown: !!facts.runs, otherRunning: otherRunning(facts.runs, run), inRepoSince, live: false, floor: facts.floors?.[p.key] })
       : undefined;
     const withProgress = progress ? { progress } : {};
-    if (fresh && st.state === 'not-found') {
+    /**
+     * A dropped request: the manual view (today's message and "Send again"), unless the app sends it
+     * again by itself. Only with the repository's songs.json read (so it isn't there already) and a
+     * runs list from after this send (matchRun then saw every run since: none of them is still going,
+     * including any later request from this browser, which carries the song along).
+     */
+    const drop = (reason: DropReason, droppedAt: number, manual: PendingView): PendingView => {
+      const out: PendingView = { ...manual, dropped: reason };
+      if (!facts?.auto) return out;
+      const auto = facts.auto;
+      if (p.autoStop === 'daily-limit') return { ...out, message: explainRelayError('daily-limit').message };
+      const stopped = auto.stopped[p.key];
+      if (stopped) return { ...out, message: stopped };
+      const settled = facts.runsAt === undefined || facts.runsAt >= p.sentAt + RUNS_SETTLE_MS;
+      const at = facts.repoSongs && settled ? autoResendAt(p, droppedAt) : null;
+      if (at === null) return out;
+      return { ...p, state: 'retrying', message: `${DROP_TEXT[reason]} ${AUTO_TEXT}`, dropped: reason, autoAt: at };
+    };
+    const ended = run ? Date.parse(run.updatedAt) || now : now;
+    // An answer about a video counts only for that choice: a link pasted (or "Use it anyway" sent)
+    // a moment after it must not show it again.
+    const sameChoice = !st || (st.videoId ?? undefined) === (p.videoId ?? undefined) || (!p.videoId && st.state === 'not-found');
+    if (fresh && st.state === 'not-found' && sameChoice) {
       views.push({
         ...p,
         state: 'failed',
         message: st.message || 'The cloud couldn’t find a YouTube video of this song that it can use.',
+        canPaste: true,
+        ...(st.videoId ? { checkedVideo: st.videoId } : {}),
+      });
+    } else if (fresh && st.state === 'video-mismatch' && st.videoId && (!p.videoId || p.videoId === st.videoId) && !p.force) {
+      views.push({
+        ...p,
+        state: 'check',
+        message: st.message || 'This video doesn’t look like the song.',
+        canPaste: true,
+        checkedVideo: st.videoId,
       });
     } else if (progress?.failure === 'site' || (inRepoSince !== null && now - inRepoSince > SITE_GRACE_MS)) {
       views.push({
@@ -122,9 +240,12 @@ export function reconcile(
     } else if (fresh && st.state === 'error') {
       views.push({ ...p, state: 'retrying', message: 'Something went wrong in the cloud job. It tries again by itself within a few hours.' });
     } else if (progress?.failure === 'job') {
-      views.push({ ...p, state: 'failed', message: 'The song job failed before it could add this song. Options → Songs says why.', ...withProgress });
+      views.push(drop('failed', ended, { ...p, state: 'failed', message: 'The song job failed before it could add this song. Options → Songs says why.', ...withProgress }));
+    } else if (run && run.status === 'completed' && run.conclusion === 'cancelled' && facts?.repoSongs && !inRepo) {
+      // matchRun picks a finished run only when no run since the send is still going.
+      views.push(drop('cancelled', ended, { ...p, state: 'slow', message: `${DROP_TEXT.cancelled} Send it again to retry.` }));
     } else if (run && run.status === 'completed' && run.conclusion === 'success' && facts?.repoSongs && !inRepo && now - Date.parse(run.updatedAt) > FINISHED_WITHOUT_MS) {
-      views.push({ ...p, state: 'slow', message: 'The song job finished, but this song wasn’t added. Send it again to retry.' });
+      views.push(drop('finished', ended + FINISHED_WITHOUT_MS, { ...p, state: 'slow', message: 'The song job finished, but this song wasn’t added. Send it again to retry.' }));
     } else if (now - p.sentAt > SLOW_AFTER_MS && !inRepo && !(run && run.status !== 'completed')) {
       views.push({
         ...p,
@@ -160,6 +281,11 @@ export function bust(url: string, now: number, stepMs: number): string {
 }
 
 type FetchFn = (url: string, init?: RequestInit) => Promise<Pick<Response, 'ok' | 'text'>>;
+
+/** What sending a song again answers (githubConnect's SendResult). */
+export type AutoSendResult = { ok: true } | { ok: false; error: string; message: string };
+/** Sends a dropped song again, the way "Send again" does (set by githubConnect.ts). */
+export type AutoSender = (p: PendingAdd) => Promise<AutoSendResult>;
 
 /**
  * Android TV: songs added on the device (from the phone page) join the
@@ -204,7 +330,7 @@ export class AddedSongs extends EventTarget {
   private status: Record<string, SongRequestStatus> = {};
   private views: PendingView[] = [];
   /** From songHealth: runs and the repository's files (undefined until it has looked). */
-  private facts: { runs: RunSummary[] | null; repoSongs: AddedSong[] | null; repoRequests: Record<string, SongRequestStatus> | null } | undefined;
+  private facts: { runs: RunSummary[] | null; runsAt?: number; repoSongs: AddedSong[] | null; repoRequests: Record<string, SongRequestStatus> | null } | undefined;
   private seenInRepo: Record<string, number> = {};
   private floors: Record<string, number> = {};
   private ticker: ReturnType<typeof setInterval> | null = null;
@@ -215,6 +341,13 @@ export class AddedSongs extends EventTarget {
   private started = false;
   private lastSig = '';
   private platform: Platform | null = null;
+  private autoSend: AutoSender | null = null;
+  /** Songs not sent again by themselves this session, with the answer that stopped it. */
+  private autoStopped: Record<string, string> = {};
+  private autoTimer: ReturnType<typeof setTimeout> | null = null;
+  private autoBusy = false;
+  /** A few seconds more per tab, so two tabs of one browser don't send the same song at once. */
+  private readonly tabDelay = Math.floor(Math.random() * 10_000);
 
   constructor(private readonly fetchFn: FetchFn = (u, i) => fetch(u, i)) {
     super();
@@ -348,6 +481,7 @@ export class AddedSongs extends EventTarget {
 
   /** Remember a song that was just sent to GitHub, and start polling. */
   addPending(p: PendingAdd): void {
+    delete this.autoStopped[p.key];
     const list = store.pendingAdds().filter((x) => x.key !== p.key);
     list.push(p);
     store.setPendingAdds(list);
@@ -359,13 +493,14 @@ export class AddedSongs extends EventTarget {
   }
 
   removePending(key: string): void {
+    delete this.autoStopped[key];
     store.setPendingAdds(store.pendingAdds().filter((x) => x.key !== key));
     this.recompute(Date.now());
   }
 
   /** Other waiting songs to send along with a new request (so dropped requests are retried). */
   queueFor(key: string): PendingAdd[] {
-    return store.pendingAdds().filter((p) => p.key !== key && this.views.some((v) => v.key === p.key && v.state !== 'failed'));
+    return store.pendingAdds().filter((p) => p.key !== key && this.views.some((v) => v.key === p.key && !WAITING_FOR_PERSON.includes(v.state)));
   }
 
   /** Fetch songs.json (and songs-status.json while waiting). Never rejects. */
@@ -406,7 +541,7 @@ export class AddedSongs extends EventTarget {
    * songHealth's latest look at the cloud: runs (null when GitHub couldn't be
    * asked) and the repository's songs.json / songs-status.json (null when unread).
    */
-  setCloudFacts(f: { runs: RunSummary[] | null; repoSongs: AddedSong[] | null; repoRequests: Record<string, SongRequestStatus> | null }): void {
+  setCloudFacts(f: { runs: RunSummary[] | null; runsAt?: number; repoSongs: AddedSong[] | null; repoRequests: Record<string, SongRequestStatus> | null }): void {
     const now = Date.now();
     if (f.repoSongs) {
       for (const p of store.pendingAdds()) {
@@ -427,7 +562,14 @@ export class AddedSongs extends EventTarget {
     const pending = store.pendingAdds();
     // The repository's songs-status.json is newer than the site's when the site is behind.
     const status = this.facts?.repoRequests ? { ...this.status, ...this.facts.repoRequests } : this.status;
-    const facts: CloudFacts | undefined = this.facts && { runs: this.facts.runs, repoSongs: this.facts.repoSongs, inRepoSince: this.seenInRepo, floors: this.floors };
+    const facts: CloudFacts | undefined = this.facts && {
+      runs: this.facts.runs,
+      repoSongs: this.facts.repoSongs,
+      inRepoSince: this.seenInRepo,
+      floors: this.floors,
+      ...(this.facts.runsAt !== undefined ? { runsAt: this.facts.runsAt } : {}),
+      ...(this.autoSend ? { auto: { stopped: this.autoStopped } } : {}),
+    };
     const { appeared, views } = reconcile(pending, this.published, status, now, facts);
     if (appeared.length) {
       const gone = new Set(appeared.map((a) => a.pending.key));
@@ -444,12 +586,77 @@ export class AddedSongs extends EventTarget {
     }
     this.emit();
     for (const a of appeared) this.dispatchEvent(new CustomEvent('appeared', { detail: a.song }));
+    this.scheduleAuto();
+  }
+
+  /** How dropped songs are sent again (githubConnect.ts); without one they wait for "Send again". */
+  setAutoSend(fn: AutoSender | null): void {
+    this.autoSend = fn;
+    if (this.started) this.recompute(Date.now());
+  }
+
+  /** Wake up when the first dropped song is due to be sent again; a hidden page waits until it is shown. */
+  private scheduleAuto(): void {
+    if (this.autoTimer !== null) clearTimeout(this.autoTimer);
+    this.autoTimer = null;
+    if (!this.autoSend || this.autoBusy) return;
+    const due = this.views.filter((v) => v.autoAt !== undefined).map((v) => v.autoAt!);
+    if (!due.length) return;
+    this.autoTimer = setTimeout(() => {
+      this.autoTimer = null;
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return; // resumes on visibilitychange
+      void this.sendDue();
+    }, Math.max(0, Math.min(...due) - Date.now()) + this.tabDelay);
+  }
+
+  /** Send the most overdue dropped song again (one at a time; it carries the other waiting songs along). */
+  private async sendDue(): Promise<void> {
+    const send = this.autoSend;
+    if (!send || this.autoBusy) return;
+    const now = Date.now();
+    const v = this.views.filter((x) => x.autoAt !== undefined && x.autoAt <= now).sort((a, b) => a.autoAt! - b.autoAt!)[0];
+    if (!v) return this.scheduleAuto();
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      // Offline: look again in a minute (not counted, nothing sent).
+      this.autoTimer = setTimeout(() => this.scheduleAuto(), 60_000);
+      return;
+    }
+    // Read it again: another tab may have sent it (new sentAt) or be sending it (autoTriedAt) meanwhile.
+    const list = store.pendingAdds();
+    const p = list.find((x) => x.key === v.key);
+    if (!p || p.sentAt !== v.sentAt || (p.autoResends ?? 0) !== (v.autoResends ?? 0) || (p.autoTriedAt && now - p.autoTriedAt < AUTO_RETRY_MS)) {
+      return this.recompute(now);
+    }
+    this.patchStored(p, { autoTriedAt: now });
+    this.autoBusy = true;
+    let res: AutoSendResult;
+    try {
+      res = await send({ ...p, autoTriedAt: now });
+    } catch {
+      res = { ok: false, error: 'network', message: '' };
+    }
+    this.autoBusy = false;
+    // On success the sender replaced it (addPending, with a new sentAt and one more autoResends).
+    const still = store.pendingAdds().find((x) => x.key === p.key);
+    if (!res.ok && still && still.sentAt === p.sentAt) {
+      const what = autoFailure(res.error);
+      if (what === 'count') this.patchStored(still, { autoResends: (still.autoResends ?? 0) + 1 });
+      else if (what === 'daily-limit') this.patchStored(still, { autoStop: 'daily-limit' });
+      else if (what === 'stop') this.autoStopped[p.key] = res.message;
+    }
+    this.recompute(Date.now());
+    this.schedule();
+  }
+
+  /** Update one stored pending song (only if it is still that send). */
+  private patchStored(p: PendingAdd, patch: Partial<PendingAdd>): void {
+    store.setPendingAdds(store.pendingAdds().map((x) => (x.key === p.key && x.sentAt === p.sentAt ? { ...x, ...patch } : x)));
   }
 
   private schedule(): void {
     if (this.timer !== null) clearTimeout(this.timer);
     this.timer = null;
-    const active = this.views.filter((v) => v.state !== 'failed');
+    const active = this.views.filter((v) => !WAITING_FOR_PERSON.includes(v.state));
     // The bar and time left move between polls: redraw from what is known every 15 s (no network).
     const ticking = active.some((v) => v.progress && v.state === 'waiting');
     if (ticking && this.ticker === null) {

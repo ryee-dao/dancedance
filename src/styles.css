@@ -1014,6 +1014,52 @@ body {
 .pending-card[data-state='retrying'] .pending-msg {
   color: var(--warn);
 }
+.pending-card[data-state='check'] {
+  border-style: solid;
+  border-color: var(--warn);
+}
+.pending-card[data-state='check'] .pending-msg {
+  color: var(--warn);
+}
+.pending-card[data-state='failed'] .pending-text,
+.pending-card[data-state='check'] .pending-text {
+  flex: 1;
+}
+.pending-watch {
+  font-size: 0.9rem;
+}
+.pending-video {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.7rem;
+}
+.pending-video-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.pending-video-row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+.pending-video-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.95rem;
+}
+.pending-video-msg:not(:empty),
+.pending-video-note {
+  margin: 0;
+  color: var(--warn);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.pending-video-note {
+  margin-top: 0.5rem;
+  color: var(--muted);
+}
 .pending-buttons {
   display: flex;
   flex-wrap: wrap;

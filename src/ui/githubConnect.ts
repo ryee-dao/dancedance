@@ -18,7 +18,7 @@ import {
   type RepoRef,
   type RepoSource,
 } from '../platform/github';
-import { parseRelayUrl, relayAdd, relayHealth } from '../platform/relay';
+import { parseRelayUrl, relayAdd, relayHealth, RELAY_VIDEO_VERSION } from '../platform/relay';
 import { store, type PendingAdd } from '../store';
 import { addedSongs } from './addedSongs';
 import { h } from './dom';
@@ -78,23 +78,80 @@ export type SendResult =
       needs?: 'connect' | 'passphrase';
     };
 
+/** What a relay too old to forward a pasted link should be told. */
+export const OLD_RELAY_MESSAGE =
+  'Your relay is an older version that can’t send a YouTube link. Redeploy it: npx wrangler deploy in cloudflare/add-song-worker.';
+
+/** Relay versions seen this session (GET /health), by address. */
+const relayVersions = new Map<string, number | 'unreachable'>();
+const relayChecks = new Map<string, Promise<number | null>>();
+
+/**
+ * The relay's version (GET /health, once per session per address); null when it couldn't be asked.
+ * A failed look is asked again next time.
+ */
+export function relayVersion(relay: string): Promise<number | null> {
+  let p = relayChecks.get(relay);
+  if (!p) {
+    p = relayHealth(relay).then((hh) => {
+      if (!hh) {
+        relayChecks.delete(relay);
+        relayVersions.set(relay, 'unreachable');
+        return null;
+      }
+      relayVersions.set(relay, hh.version);
+      return hh.version;
+    });
+    relayChecks.set(relay, p);
+  }
+  return p;
+}
+
+/**
+ * Whether a pasted YouTube link can be sent now: 'yes' (a GitHub token, or a relay of version 3+),
+ * 'old-relay' (the relay would drop the link and search instead), or 'unknown' (not connected, or
+ * the relay's version not known yet: relayVersion() finds out).
+ */
+export function videoLinkSupport(c: Connection = githubConnection()): 'yes' | 'old-relay' | 'unknown' {
+  if (!c.relay) return c.repo && c.token ? 'yes' : 'unknown';
+  const v = relayVersions.get(c.relay);
+  if (typeof v !== 'number') return 'unknown';
+  return v >= RELAY_VIDEO_VERSION ? 'yes' : 'old-relay';
+}
+
 /** Start the cloud job for this song; on success it shows as pending on the home screen. */
 export async function sendSong(song: Omit<PendingAdd, 'sentAt'>): Promise<SendResult> {
   const c = githubConnection();
   const others = addedSongs.queueFor(song.key);
   if (c.relay) {
     if (!song.trackId) return { ok: false, error: 'no-track', message: 'Search for this song again to add it through the relay.' };
+    // A relay older than version 3 drops a chosen video and searches instead: never send one there.
+    const needsVideo = !!song.videoId || others.some((p) => p.videoId);
+    const version = needsVideo ? await relayVersion(c.relay) : null;
+    const videoOk = version !== null && version >= RELAY_VIDEO_VERSION;
+    if (song.videoId && !videoOk) {
+      return version === null
+        ? { ok: false, error: 'network', message: 'Couldn’t reach the relay. Check your connection and the relay address.' }
+        : { ok: false, error: 'old-relay', message: OLD_RELAY_MESSAGE };
+    }
     // The details from our own iTunes search ride along; the relay uses them only if its Apple lookup fails.
+    // Waiting songs with a chosen video ride along only when the relay forwards it.
     const queue = others
-      .filter((p): p is PendingAdd & { trackId: number } => !!p.trackId)
-      .map((p) => ({ trackId: p.trackId, artist: p.artist, title: p.title, durationSec: p.durationSec }));
+      .filter((p): p is PendingAdd & { trackId: number } => !!p.trackId && (!p.videoId || videoOk))
+      .map((p) => ({ trackId: p.trackId, artist: p.artist, title: p.title, durationSec: p.durationSec, ...(p.videoId ? { videoId: p.videoId, force: p.force } : {}) }));
     const res = await relayAdd(
       c.relay,
-      { trackId: song.trackId, artist: song.artist, title: song.title, durationSec: song.durationSec },
+      { trackId: song.trackId, artist: song.artist, title: song.title, durationSec: song.durationSec, ...(song.videoId ? { videoId: song.videoId, force: song.force } : {}) },
       queue,
       store.addPassphrase(),
     );
     if (!res.ok) return { ok: false, error: res.error, message: res.message, ...(res.error === 'passphrase' ? { needs: 'passphrase' as const } : {}) };
+    if (song.videoId && res.video !== song.videoId) {
+      // Its /health said version 3+, but it didn't forward the link: the job searches as before.
+      relayVersions.set(c.relay, 1);
+      addedSongs.addPending({ ...song, videoId: undefined, force: undefined, key: songKey(res.song.artist, res.song.title), artist: res.song.artist, title: res.song.title, durationSec: res.song.durationSec ?? song.durationSec, sentAt: Date.now() });
+      return { ok: false, error: 'old-relay', message: `${OLD_RELAY_MESSAGE} It searched for the song again instead.` };
+    }
     // The names the relay sent to the job (Apple's, or ours when it fell back), as the job will write them to songs.json.
     const key = songKey(res.song.artist, res.song.title);
     addedSongs.addPending({
@@ -116,6 +173,34 @@ export async function sendSong(song: Omit<PendingAdd, 'sentAt'>): Promise<SendRe
   addedSongs.addPending({ ...song, sentAt: Date.now() });
   return { ok: true, key: song.key };
 }
+
+/**
+ * What a pending card sends again: the same song, by its iTunes ID, with the person's chosen
+ * video kept ('same': "Send again", and the automatic resend), a new search ('search': "Try
+ * again"), or another video (a pasted link, or "Use it anyway" with force).
+ */
+export function resendRequest(p: PendingAdd, choice: 'search' | 'same' | { videoId: string; force?: boolean }): Omit<PendingAdd, 'sentAt'> {
+  const video =
+    choice === 'search'
+      ? {}
+      : choice === 'same'
+        ? p.videoId
+          ? { videoId: p.videoId, ...(p.force ? { force: true } : {}) }
+          : {}
+        : { videoId: choice.videoId, ...(choice.force ? { force: true } : {}) };
+  return { key: p.key, artist: p.artist, title: p.title, durationSec: p.durationSec, artworkUrl: p.artworkUrl, trackId: p.trackId, ...video };
+}
+
+/**
+ * A dropped song sent again by itself (addedSongs): exactly what "Send again" sends, through
+ * sendSong (relay version check, passphrase, this browser's other waiting songs), counted.
+ */
+export function autoResend(p: PendingAdd): Promise<SendResult> {
+  if (!isConnected()) return Promise.resolve({ ok: false, error: 'not-connected', message: 'Connect to GitHub first.', needs: 'connect' });
+  return sendSong({ ...resendRequest(p, 'same'), autoResends: (p.autoResends ?? 0) + 1 });
+}
+
+addedSongs.setAutoSend(autoResend);
 
 export interface ConnectDialogOptions {
   parent: HTMLElement;

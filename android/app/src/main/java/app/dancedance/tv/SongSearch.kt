@@ -55,14 +55,19 @@ class SongSearch(private val http: OkHttpClient) {
         }
     }
 
-    /** Both searches for the song, merged, ranked; the plain "Artist Title" search too when they rank nothing. */
+    /**
+     * Both searches for the song, merged, ranked; then the fallback searches one at a time (plain
+     * "Artist Title", then "<first artist> Title") while nothing better than the last resort ranks.
+     */
     suspend fun findVideos(hit: SongPicker.Request): SongPicker.Result = coroutineScope {
         val queries = SongPicker.searchQueries(hit.artist, hit.title)
-        val lists = queries.map { q -> async { runInterruptible { youtubeSearch(q) } } }.awaitAll()
+        var lists = queries.map { q -> async { runInterruptible { youtubeSearch(q) } } }.awaitAll()
         var result = SongPicker.rank(hit, SongPicker.merge(lists))
-        if (result.ranked.isEmpty()) {
-            val more = runInterruptible { youtubeSearch(SongPicker.fallbackQuery(hit.artist, hit.title)) }
-            result = SongPicker.rank(hit, SongPicker.merge(lists + listOf(more)))
+        for (q in SongPicker.fallbackQueries(hit.artist, hit.title)) {
+            if (!SongPicker.needsMoreSearch(result.ranked)) break
+            val more = runInterruptible { youtubeSearch(q) }
+            lists = lists + listOf(more)
+            result = SongPicker.rank(hit, SongPicker.merge(lists))
         }
         Log.i(TAG, "Find a song: ${hit.artist} - ${hit.title} (${hit.durationSec} s): " +
             "${result.ranked.size} usable, picked ${result.ranked.firstOrNull()?.let { "${it.tier.label} ${it.entry.id} \"${it.entry.title}\" / ${it.entry.channel} ${it.entry.duration} s" }}")
@@ -125,7 +130,7 @@ class AddedSongsStore(private val file: File) {
         fun toJson(): JSONObject = JSONObject()
             .put("videoId", videoId).put("title", title).put("artist", artist).put("addedAt", addedAt)
             .put("durationSec", durationSec).put("videoTitle", videoTitle).put("channel", channel).put("tier", tier)
-            .apply { if (tier == SongPicker.Tier.MUSIC_VIDEO.label) put("note", "music-video") }
+            .apply { if (tier == SongPicker.Tier.MUSIC_VIDEO.label || tier == SongPicker.Tier.THIRD_PARTY.label) put("note", tier) }
             .apply { if (genre.isNotEmpty()) put("genre", genre) }
             .apply { if (genres.isNotEmpty()) put("genres", JSONArray(genres)) }
             .apply { if (artistGenres.isNotEmpty()) put("artistGenres", JSONArray(artistGenres)) }

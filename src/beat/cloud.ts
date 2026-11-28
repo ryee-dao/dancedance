@@ -144,8 +144,14 @@ export interface AddedSong {
    * listening. Older files have no field, which means true.
    */
   hasMap?: boolean;
-  /** 'music-video': no lyric/audio upload passed, so the official music video was used. */
-  note?: 'music-video';
+  /**
+   * Why a fallback video was used: 'music-video', no lyric/audio upload passed, so the
+   * official music video was; 'third-party', nothing official passed either, so someone
+   * else's upload at the official length was (tools/beatmaps/pick.ts); 'user-video', the person
+   * pasted this video's link and it passed the same rules; 'user-video-forced', they pasted it and
+   * chose "Use it anyway" although it didn't (tools/beatmaps/pick.ts judgeVideo).
+   */
+  note?: SongNote;
   /** iTunes primary genre ("Pop", "Latin", ...), when the cloud job learned it. */
   genre?: string;
   /**
@@ -162,6 +168,9 @@ export interface AddedSong {
    */
   artistGenres?: string[];
 }
+
+export type SongNote = 'music-video' | 'third-party' | 'user-video' | 'user-video-forced';
+const SONG_NOTES: readonly string[] = ['music-video', 'third-party', 'user-video', 'user-video-forced'];
 
 export type GenreLevelName = 'song' | 'album' | 'artist';
 
@@ -193,15 +202,24 @@ export function cleanGenreList(v: unknown): string[] | undefined {
  *   'map-pending' - not a failure: the song is listed in songs.json (videoId)
  *                 but YouTube refused the cloud download, so it has no beat map
  *                 yet; removed once a map exists
+ *   'video-mismatch' - the person pasted a video (videoId) and it doesn't look like
+ *                 the song; `message` says why. Nothing was added. Final until the
+ *                 person sends it again with `force` ("Use it anyway") or another video.
+ *
+ * A request sent with a chosen video keeps it: 'blocked' / 'error' carry `videoId`
+ * (and `force`) so the automatic retry uses that video, not a search; 'not-found'
+ * carries the `videoId` it refused (removed, not embeddable, live, not a song's length).
  */
 export interface SongRequestStatus {
-  state: 'not-found' | 'blocked' | 'error' | 'map-pending';
+  state: 'not-found' | 'blocked' | 'error' | 'map-pending' | 'video-mismatch';
   artist: string;
   title: string;
   /** Official length that was requested (lets later runs retry on their own). */
   durationSec?: number;
-  /** 'map-pending': the listed video. */
+  /** 'map-pending': the listed video; otherwise the video the person chose (see above). */
   videoId?: string;
+  /** With `videoId`: it was sent with "Use it anyway". */
+  force?: boolean;
   message?: string;
   attempts: number;
   /** ISO timestamp. */
@@ -261,7 +279,7 @@ export function parseSongsList(text: string): AddedSong[] {
       addedAt: typeof s.addedAt === 'string' ? s.addedAt : '',
       durationSec,
       ...(s.hasMap === false ? { hasMap: false } : {}),
-      ...(s.note === 'music-video' ? { note: 'music-video' as const } : {}),
+      ...(typeof s.note === 'string' && SONG_NOTES.includes(s.note) ? { note: s.note as SongNote } : {}),
       ...(typeof s.genre === 'string' && s.genre.trim() ? { genre: s.genre.trim().slice(0, 60) } : {}),
       ...(genres ? { genres } : {}),
       ...(genreLevels ? { genreLevels } : {}),
@@ -284,7 +302,7 @@ export function parseSongsStatus(text: string): Record<string, SongRequestStatus
   if (!reqs || typeof reqs !== 'object' || Array.isArray(reqs)) return out;
   for (const [key, raw] of Object.entries(reqs as Record<string, unknown>)) {
     const r = (raw ?? {}) as Record<string, unknown>;
-    if (r.state !== 'not-found' && r.state !== 'blocked' && r.state !== 'error' && r.state !== 'map-pending') continue;
+    if (r.state !== 'not-found' && r.state !== 'blocked' && r.state !== 'error' && r.state !== 'map-pending' && r.state !== 'video-mismatch') continue;
     if (typeof r.artist !== 'string' || typeof r.title !== 'string') continue;
     out[key] = {
       state: r.state,
@@ -292,6 +310,7 @@ export function parseSongsStatus(text: string): Record<string, SongRequestStatus
       title: r.title.slice(0, 200),
       ...(typeof r.durationSec === 'number' && Number.isFinite(r.durationSec) ? { durationSec: Math.round(r.durationSec) } : {}),
       ...(typeof r.videoId === 'string' && VIDEO_ID.test(r.videoId) ? { videoId: r.videoId } : {}),
+      ...(r.force === true && typeof r.videoId === 'string' && VIDEO_ID.test(r.videoId) ? { force: true } : {}),
       ...(typeof r.message === 'string' ? { message: r.message.slice(0, 300) } : {}),
       attempts: typeof r.attempts === 'number' && r.attempts >= 0 ? Math.floor(r.attempts) : 0,
       lastTried: typeof r.lastTried === 'string' ? r.lastTried : '',

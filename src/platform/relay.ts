@@ -12,6 +12,9 @@ export const PASS_HEADER ='X-Add-Passphrase';
 /** The Worker's request size limit (bytes). */
 export const RELAY_MAX_BODY_BYTES = 2048;
 export const RELAY_MAX_QUEUE = 9;
+/** The first relay version that forwards a chosen video (`video` / `force`); older ones drop it and search. */
+export const RELAY_VIDEO_VERSION = 3;
+const VIDEO_ID_RE = /^[A-Za-z0-9_-]{11}$/;
 /** Control characters and line breaks, which the Worker rejects. */
 const CTRL_RE = /[\u0000-\u001f\u007f-\u009f\u2028\u2029]/;
 
@@ -37,6 +40,18 @@ export interface RelaySong {
   artist: string;
   title: string;
   durationSec?: number;
+  /** A YouTube video the person chose for the song (relay version 3+). */
+  videoId?: string;
+  /** With videoId: add it even if it doesn't look like the song. */
+  force?: boolean;
+}
+
+type Item = { trackId: number; song?: RelayDetails; video?: string; force?: true };
+
+/** `video` / `force` for the body (only a well-formed ID; force only with it). */
+function choiceOf(s: RelaySong): { video?: string; force?: true } {
+  if (!s.videoId || !VIDEO_ID_RE.test(s.videoId)) return {};
+  return { video: s.videoId, ...(s.force ? { force: true as const } : {}) };
 }
 
 export interface RelayDetails {
@@ -66,22 +81,27 @@ export function relayDetails(s: { artist: string; title: string; durationSec?: n
 const bytes = (s: string) => new TextEncoder().encode(s).length;
 
 /**
- * The POST /add body: the song (with its details) and as many waiting songs
- * as fit in the Worker's size limit (with details, else by ID only).
+ * The POST /add body: the song (with its details and chosen video) and as many waiting songs
+ * as fit in the Worker's size limit (with details, else by ID only). A waiting song with a chosen
+ * video never goes by ID only (the job would search instead): it goes with its video, or waits.
  */
 export function relayBody(song: RelaySong, queue: RelaySong[]): string {
-  const withSong = (s: RelaySong) => {
+  const withSong = (s: RelaySong): Item => {
     const d = relayDetails(s);
-    return d ? { trackId: s.trackId, song: d } : { trackId: s.trackId };
+    return { trackId: s.trackId, ...(d ? { song: d } : {}), ...choiceOf(s) };
   };
-  const body: { trackId: number; song?: RelayDetails; queue?: (number | { trackId: number; song?: RelayDetails })[] } = withSong(song);
-  const items: (number | { trackId: number; song?: RelayDetails })[] = [];
+  const body: Item & { queue?: (number | Item)[] } = withSong(song);
+  const items: (number | Item)[] = [];
   const fits = (next: typeof items) => bytes(JSON.stringify({ ...body, queue: next })) <= RELAY_MAX_BODY_BYTES;
   for (const q of queue) {
     if (items.length >= RELAY_MAX_QUEUE || q.trackId === song.trackId) continue;
     const full = withSong(q);
+    const choice = choiceOf(q);
     if (fits([...items, full])) items.push(full);
-    else if (fits([...items, q.trackId])) items.push(q.trackId);
+    else if (choice.video) {
+      const bare = { trackId: q.trackId, ...choice };
+      if (fits([...items, bare])) items.push(bare);
+    } else if (fits([...items, q.trackId])) items.push(q.trackId);
   }
   if (items.length) body.queue = items;
   return JSON.stringify(body);
@@ -107,6 +127,8 @@ export type RelayResult =
       /** Why the relay fell back to the app's details, e.g. apple-403. */
       detail?: string;
       song: { trackId: number; artist: string; title: string; durationSec?: number; artworkUrl: string };
+      /** The chosen video the relay forwarded (version 3+); absent when none was sent, or an older relay dropped it. */
+      video?: string;
     }
   | { ok: false; error: RelayError; code: string; detail?: string; message: string };
 
@@ -139,6 +161,9 @@ export function explainRelayError(code: string, detail?: string): { error: Relay
     case 'not-configured':
       return { error: 'not-configured', message: 'The relay isn’t set up yet: it needs GITHUB_REPO and the GITHUB_TOKEN secret.' };
     case 'bad-request':
+      if (detail && /^(?:queue-)?(?:video|force)$/.test(detail)) {
+        return { error: 'bad-request', message: withDetail('The relay didn’t accept the YouTube link. Paste the video’s link again.', detail) };
+      }
       if (detail && /^(?:queue-)?song/.test(detail)) {
         return { error: 'bad-request', message: withDetail('The relay didn’t accept this song’s name or length. Search for the song again and pick it from the results.', detail) };
       }
@@ -182,7 +207,7 @@ export async function relayAdd(
     // Also what a CORS rejection looks like from inside the page.
     return { ok: false, error: 'network', code: 'network', message: 'Couldn’t reach the relay. Check your connection and the relay address.' };
   }
-  let body: { ok?: unknown; error?: unknown; song?: unknown; source?: unknown; detail?: unknown } = {};
+  let body: { ok?: unknown; error?: unknown; song?: unknown; source?: unknown; detail?: unknown; video?: unknown } = {};
   try {
     body = JSON.parse(await res.text()) as typeof body;
   } catch {
@@ -199,6 +224,7 @@ export async function relayAdd(
         // A relay from before the fallback existed sends no source: it always used Apple.
         source: body.source === 'client' ? 'client' : 'apple',
         ...(detail ? { detail } : {}),
+        ...(typeof body.video === 'string' && VIDEO_ID_RE.test(body.video) ? { video: body.video } : {}),
         song: {
           trackId: song.trackId,
           artist: s.artist,

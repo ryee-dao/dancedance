@@ -16,10 +16,10 @@ import type { Classification } from './classify';
 import { classifyYtDlpError } from './classify';
 import { parseFlatPlaylist, parseStatus, renderIndex, renderPlaylist, renderStatus, type GenreMeta, type MapInfo, type PlaylistInfo } from './output';
 import type { OfficialSong } from './itunes';
-import { ALT_WINDOW, degradedSearch, fallbackQuery, mergeSearches, parseSearch, rankCandidates, searchQueries, type Ranked, type SearchEntry } from './pick';
+import { ALT_WINDOW, degradedSearch, fallbackQueries, judgeVideo, mergeSearches, needsMoreSearch, notFoundMessage, parseSearch, parseVideoInfo, rankCandidates, searchQueries, type Ranked, type SearchEntry, type Tier, type VideoVerdict } from './pick';
 import { planWork, preflightSkip, unionCandidates, type Candidate, type StatusReason, type VideoStatus, type WorkItem, type WorkReason } from './select';
 import { mergeRefusals, parseRequests, parseSongsList, planAdds, recentRefusals, renderSongs, renderSongsStatus, songKey, type AddedSong, type AddRequest, type RequestStatus } from './songs';
-import { cleanGenreLevels, cleanGenreList } from '../../src/beat/cloud';
+import { cleanGenreLevels, cleanGenreList, type SongNote } from '../../src/beat/cloud';
 import type { AddResult, Fatal, ResultKind, RunReport, SongResult } from './summary';
 import { attemptsLine, DownloadFailure, PCM_RATE, ToolFailure, type DownloadResult, type EmbedCheck } from './youtube';
 
@@ -57,6 +57,8 @@ export interface Deps {
   searchVideos?(query: string): Promise<unknown>;
   /** oEmbed check (add mode). */
   checkEmbed?(videoId: string): Promise<EmbedCheck>;
+  /** `yt-dlp -J` metadata of one video (add mode, a video the person chose). */
+  videoInfo?(videoId: string): Promise<unknown>;
   /** Official length from iTunes, for requests without one. */
   lookupOfficial?(req: { artist: string; title: string }): Promise<OfficialSong | null>;
   /** Genres from several public sources (src/genre); `previous` is the song's stored lookup, which serves as the cache. */
@@ -230,6 +232,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     addResults.push({ artist: sk.req.artist, title: sk.req.title, kind, ...(song ? { videoId: song.videoId } : {}), message: sk.why });
   }
   if (addPlan.todo.length && (!deps.searchVideos || !deps.checkEmbed)) throw new Error('add requests need searchVideos and checkEmbed');
+  if (addPlan.todo.some((t) => t.req.videoId) && !deps.videoInfo) throw new Error('add requests with a chosen video need videoInfo');
 
 
   // --- Playlist -----------------------------------------------------------
@@ -295,9 +298,12 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     for (const q of searchQueries(req)) await search(q);
     let entries = mergeSearches(lists);
     let ranked = rankCandidates(req, entries);
-    if (!ranked.ranked.length) {
-      // Little-known songs: the plain "Artist Title" search often finds what the other two miss.
-      await search(fallbackQuery(req));
+    // Little-known songs: the plain "Artist Title" search often finds what the other two miss;
+    // for a credit naming several artists, then "<first artist> Title". One at a time, only while
+    // nothing ranks but the last resort (someone else's upload).
+    for (const q of fallbackQueries(req)) {
+      if (!needsMoreSearch(ranked.ranked)) break;
+      await search(q);
       entries = mergeSearches(lists);
       ranked = rankCandidates(req, entries);
     }
@@ -307,7 +313,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     }
     // For alternates only (after YouTube withheld the first choice): the same rules with ALT_WINDOW.
     const alternates = () => rankCandidates(req, entries, { window: ALT_WINDOW }).ranked;
-    return { ...ranked, alternates };
+    return { ...ranked, entries, alternates };
   };
 
   /**
@@ -331,6 +337,23 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     return off;
   };
 
+  /**
+   * A video the person chose: its metadata (yt-dlp), the embed check, and the picker's rules
+   * (pick.ts judgeVideo). Throws what yt-dlp threw (blocked, unavailable, ...).
+   */
+  const checkChosen = async (req: { artist: string; title: string; durationSec: number }, id: string): Promise<{ verdict: VideoVerdict; title?: string; channel?: string; seconds?: number }> => {
+    await pause();
+    const info = parseVideoInfo(await deps.videoInfo!(id));
+    if (!info) throw new ToolFailure({ kind: 'error', summary: 'yt-dlp returned no details for this video', detail: '' }, 'yt-dlp');
+    const embed = await deps.checkEmbed!(id);
+    deps.log(`  chosen video ${id}: "${info.title}" (${info.channel}) ${info.duration ?? '?'} s, ${info.liveStatus ?? 'not live'}, ${info.availability ?? '?'}, embed ${embed}${info.embeddable === false ? ' (not playable in embeds)' : ''}`);
+    const seen = { title: info.title, channel: info.channel, ...(info.duration !== null ? { seconds: info.duration } : {}) };
+    if (embed === 'gone') return { ...seen, verdict: { kind: 'refuse', reason: 'unavailable', message: 'This video is private, removed or not available.' } };
+    const verdict = judgeVideo(req, { ...info, embeddable: embed === 'disabled' ? false : info.embeddable });
+    deps.log(`  chosen video ${id}: ${verdict.kind}${verdict.kind === 'match' ? '' : ` (${verdict.reason}): ${verdict.message}`}`);
+    return { ...seen, verdict };
+  };
+
   if (opts.dryRun) {
     for (const item of addPlan.todo) {
       const base = { artist: item.req.artist, title: item.req.title };
@@ -339,6 +362,16 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
         const req = await resolveRequest(item.req);
         if (!req) {
           addResults.push({ ...base, kind: 'not-found', message: "couldn't find the song's official length on iTunes" });
+          continue;
+        }
+        if (item.req.videoId) {
+          const id = item.req.videoId;
+          const c = await checkChosen(req, id);
+          const seen = { videoId: id, videoTitle: c.title, channel: c.channel, videoSeconds: c.seconds, officialSeconds: req.durationSec };
+          const v = c.verdict;
+          if (v.kind === 'refuse') addResults.push({ ...base, ...seen, kind: 'not-found', message: v.message });
+          else if (v.kind === 'mismatch' && !item.req.force) addResults.push({ ...base, ...seen, kind: 'mismatch', message: v.message });
+          else addResults.push({ ...base, ...seen, kind: 'planned', tier: chosenNote(v).note, message: 'dry run: not downloaded' });
           continue;
         }
         const { ranked } = await searchAndRank(req);
@@ -495,18 +528,21 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
       }
       deps.log(`add [${item.why}] ${label}`);
       const t0 = deps.clock();
-      const fail = (state: 'not-found' | 'blocked' | 'error', message: string, durationSec?: number) => {
+      // A chosen video stays with the request: its retry uses it, and the app shows which one was checked.
+      const chosenFields = item.req.videoId ? { videoId: item.req.videoId, ...(item.req.force ? { force: true } : {}) } : {};
+      const fail = (state: 'not-found' | 'blocked' | 'error' | 'video-mismatch', message: string, durationSec?: number, seen: Partial<AddResult> = {}) => {
         const prev = songsStatus[item.key];
         songsStatus[item.key] = {
           state,
           artist: item.req.artist,
           title: item.req.title,
           ...((durationSec ?? item.req.durationSec) !== undefined ? { durationSec: durationSec ?? item.req.durationSec } : {}),
+          ...chosenFields,
           message: sanitizeMessage(message),
           attempts: (prev?.attempts ?? 0) + 1,
           lastTried: nowIso(),
         };
-        addResults.push({ ...base, kind: state, message, officialSeconds: durationSec, seconds: deps.clock() - t0 });
+        addResults.push({ ...base, ...seen, kind: state === 'video-mismatch' ? 'mismatch' : state, message, officialSeconds: durationSec, seconds: deps.clock() - t0 });
         deps.log(`  ${state}: ${message}`);
       };
       let req: OfficialSong | null;
@@ -526,23 +562,10 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
         delete songsStatus[item.key];
         continue;
       }
-      let found: Awaited<ReturnType<typeof searchAndRank>>;
-      try {
-        found = await searchAndRank(req);
-      } catch (e) {
-        const cl = classify(e);
-        note(cl.kind);
-        fail(cl.kind === 'blocked' ? 'blocked' : 'error', `YouTube search failed: ${cl.summary}`, req.durationSec);
-        continue;
-      }
-      const ranked = found.ranked;
-      let checks = 0;
-      let analyses = 0;
-      let outcome: AddResult | null = null;
       const official = req;
-      type Pick = { videoId: string; tier: Ranked['tier']; videoTitle: string; channel: string; videoSeconds?: number; officialSeconds: number };
+      type Pick = { videoId: string; tier?: string; videoTitle?: string; channel?: string; videoSeconds?: number; officialSeconds: number };
       /** List the song with this video and no map yet (the app finds its beat by listening); later runs retry the map. */
-      const listPending = async (id: string, tier: Ranked['tier'], pick: Pick, res: SongResult, refused: string[]): Promise<AddResult> => {
+      const listPending = async (id: string, note: { note?: SongNote }, pick: Pick, res: SongResult, refused: string[]): Promise<AddResult> => {
         status[id] = toStatus(res.kind, res.kind as StatusReason, res.message, status[id], nowIso());
         const listed: AddedSong = {
           videoId: id,
@@ -551,7 +574,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
           addedAt: nowIso(),
           durationSec: official.durationSec,
           hasMap: false,
-          ...(tier === 'music-video' ? { note: 'music-video' as const } : {}),
+          ...note,
           ...(official.genre ? { genre: official.genre } : {}),
         };
         songs.push(listed);
@@ -572,6 +595,84 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
         const others = refused.length ? `; ${refused.length} other upload(s) withheld too` : '';
         return { ...base, kind: 'listed', ...pick, cause: res.kind, seconds: deps.clock() - t0, message: `listed; beat map pending (${res.kind}: ${res.message ?? ''})${others}` };
       };
+
+      if (item.req.videoId) {
+        // --- A video the person chose (pasted link): check it, then add it like a found one ---
+        const id = item.req.videoId;
+        const force = !!item.req.force;
+        const dup = songs.find((x) => x.videoId === id);
+        if (dup) {
+          fail('not-found', `This video is already in the song list as ${dup.artist} - ${dup.title}.`, req.durationSec, { videoId: id });
+          continue;
+        }
+        let checked: Awaited<ReturnType<typeof checkChosen>>;
+        try {
+          checked = await checkChosen(req, id);
+        } catch (e) {
+          const cl = classify(e);
+          if (cl.kind === 'unavailable') fail('not-found', `YouTube says: ${cl.summary.replace(/\s*\(.*\)$/, '')}. This video can't be used.`, req.durationSec, { videoId: id });
+          else {
+            // As a search YouTube refused: retried automatically later, with this video.
+            note(cl.kind);
+            fail(cl.kind === 'blocked' ? 'blocked' : 'error', `YouTube didn't answer about this video: ${cl.summary}`, req.durationSec, { videoId: id });
+          }
+          continue;
+        }
+        const v = checked.verdict;
+        const pick: Pick = { videoId: id, videoTitle: checked.title, channel: checked.channel, videoSeconds: checked.seconds, officialSeconds: req.durationSec };
+        if (v.kind === 'refuse') {
+          fail('not-found', v.message, req.durationSec, pick);
+          continue;
+        }
+        if (v.kind === 'mismatch' && !force) {
+          fail('video-mismatch', v.message, req.durationSec, pick);
+          continue;
+        }
+        const mark = chosenNote(v);
+        pick.tier = mark.note;
+        let res: SongResult;
+        if (existing.get(id)?.analyzerVersion === ANALYZER_VERSION) {
+          res = { videoId: id, why: 'add', kind: 'ok', message: 'beat map already exists' };
+          deps.log(`    ${id}: beat map already exists`);
+        } else {
+          res = await processVideo({ videoId: id, title: req.title, artist: req.artist, origin: 'added' }, 'add', `  ${id}`, false);
+        }
+        let chosenOutcome: AddResult | null = null;
+        if (res.kind === 'ok') {
+          const song: AddedSong = { videoId: id, title: req.title, artist: req.artist, addedAt: nowIso(), durationSec: req.durationSec, ...mark, ...(req.genre ? { genre: req.genre } : {}) };
+          songs.push(song);
+          delete songsStatus[item.key];
+          await lookupSongGenres(catalogEntry(song));
+          chosenOutcome = { ...base, kind: 'added', ...pick, bpm: res.bpm, seconds: deps.clock() - t0, message: `${res.message ?? ''}; the person chose this video${mark.note === 'user-video-forced' ? ` although it didn't match (${v.kind === 'mismatch' ? v.message : ''})` : ''}` };
+        } else if (res.kind === 'withheld' || res.kind === 'blocked' || res.kind === 'outdated') {
+          // As for a found video: listed now, its map retried by later runs. No other uploads are
+          // tried (tryAlternates skips chosen videos): the person picked this one.
+          chosenOutcome = await listPending(id, mark, pick, res, []);
+        } else if (res.kind === 'skipped' || res.kind === 'unavailable') {
+          fail('not-found', res.kind === 'skipped' ? 'This video is a live stream, a premiere, or longer than 15 minutes, so it can’t be used.' : `YouTube says: ${(res.message ?? 'the video is unavailable').replace(/:.*$/, '')}. This video can't be used.`, req.durationSec, pick);
+          continue;
+        } else {
+          fail('error', `Couldn't make the beat map: ${res.message ?? res.kind}`, req.durationSec, pick);
+          continue;
+        }
+        addResults.push(chosenOutcome);
+        deps.log(`  ${chosenOutcome.kind}: ${id} (${mark.note})`);
+        continue;
+      }
+
+      let found: Awaited<ReturnType<typeof searchAndRank>>;
+      try {
+        found = await searchAndRank(req);
+      } catch (e) {
+        const cl = classify(e);
+        note(cl.kind);
+        fail(cl.kind === 'blocked' ? 'blocked' : 'error', `YouTube search failed: ${cl.summary}`, req.durationSec);
+        continue;
+      }
+      const ranked = found.ranked;
+      let checks = 0;
+      let analyses = 0;
+      let outcome: AddResult | null = null;
       // The first choice YouTube withheld: other uploads that pass the same rules are tried, then it is listed.
       let held: { id: string; tier: Ranked['tier']; pick: Pick; res: SongResult; at: number } | null = null;
       const refused: string[] = [];
@@ -617,7 +718,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
             artist: req.artist,
             addedAt: nowIso(),
             durationSec: req.durationSec,
-            ...(r.tier === 'music-video' ? { note: 'music-video' as const } : {}),
+            ...tierNote(r.tier),
             ...(req.genre ? { genre: req.genre } : {}),
           };
           songs.push(song);
@@ -638,12 +739,12 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
         if (res.kind === 'blocked' || res.kind === 'outdated') {
           // The right video is known; only the download was refused. List the song now with the best
           // video found (the first choice when YouTube withheld it) and keep trying on later runs.
-          outcome = held ? await listPending(held.id, held.tier, held.pick, held.res, refused) : await listPending(id, r.tier, pick, res, []);
+          outcome = held ? await listPending(held.id, tierNote(held.tier), held.pick, held.res, refused) : await listPending(id, tierNote(r.tier), pick, res, []);
           break;
         }
         deps.log(`    ${id}: ${res.kind}, trying the next one`);
       }
-      if (!outcome && held) outcome = await listPending(held.id, held.tier, held.pick, held.res, refused);
+      if (!outcome && held) outcome = await listPending(held.id, tierNote(held.tier), held.pick, held.res, refused);
       if (outcome) {
         addResults.push(outcome);
         deps.log(`  ${outcome.kind}: ${outcome.videoId}${outcome.tier ? ` (${outcome.tier})` : ''}`);
@@ -652,7 +753,7 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
           'not-found',
           ranked.length
             ? "None of the matching YouTube videos could be used (embedding disabled or unavailable)."
-            : "Couldn't find a YouTube video of this song that matches its official length.",
+            : notFoundMessage(req, found.entries, found.rejected),
           req.durationSec,
         );
       }
@@ -669,6 +770,11 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
     const tryAlternates = async (c: Candidate, first: SongResult, prefix: string): Promise<void> => {
       const song = songs.find((s) => s.videoId === c.videoId);
       if (!song || !(song.durationSec > 0) || !deps.searchVideos || !deps.checkEmbed) return;
+      // The person chose this video (a pasted link): it stays the song's video, retried later as it is.
+      if (song.note === 'user-video' || song.note === 'user-video-forced') {
+        deps.log(`${prefix}: YouTube withheld it; the person chose this video, so no other upload is tried; retried later`);
+        return;
+      }
       if (altDownloads >= ALT_DOWNLOADS_PER_RUN || (mustStop() && runKind !== 'withheld')) return;
       const key = songKey(song.artist, song.title);
       const noteNow = songsStatus[key]?.state === 'map-pending' && songsStatus[key].videoId === song.videoId ? songsStatus[key] : undefined;
@@ -705,7 +811,8 @@ export async function runBeatmaps(paths: Paths, opts: RunOptions, deps: Deps): P
           note('ok');
           const old = song.videoId;
           song.videoId = id;
-          if (r.tier === 'music-video') song.note = 'music-video';
+          const n = tierNote(r.tier).note;
+          if (n) song.note = n;
           else delete song.note;
           // The withheld video is no longer anyone's song: its failure would only confuse "Is adding songs working?".
           if (!fixed.has(old)) delete status[old];
@@ -875,6 +982,16 @@ export function songGenres(songs: AddedSong[], prevIndexText?: string): Map<stri
 }
 
 /** songs.json `genres` (+ `genreLevels`, `artistGenres`): each added song gets its lookup's combined lists (when it found any). */
+/** songs.json `note` for a pick from a fallback tier (the official music video, someone else's upload). */
+function tierNote(tier: Tier): { note?: SongNote } {
+  return tier === 'music-video' || tier === 'third-party' ? { note: tier } : {};
+}
+
+/** songs.json `note` for a video the person chose: it passed the rules, or they said "Use it anyway". */
+function chosenNote(v: VideoVerdict): { note: SongNote } {
+  return { note: v.kind === 'match' ? 'user-video' : 'user-video-forced' };
+}
+
 export function applyGenreLists(songs: AddedSong[], records: Readonly<Record<string, GenreRecord>>): void {
   for (const s of songs) {
     const r = records[songKey(s.artist, s.title)];

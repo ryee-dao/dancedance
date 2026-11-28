@@ -9,6 +9,7 @@ import app.dancedance.tv.PickFixtures.hipsDontLie
 import app.dancedance.tv.PickFixtures.homertonB
 import app.dancedance.tv.PickFixtures.impersonator
 import app.dancedance.tv.PickFixtures.insane
+import app.dancedance.tv.PickFixtures.lieuThuoc
 import app.dancedance.tv.PickFixtures.nowThatWeFoundLove
 import app.dancedance.tv.PickFixtures.nullification
 import app.dancedance.tv.PickFixtures.purloin
@@ -19,6 +20,7 @@ import app.dancedance.tv.PickFixtures.runAway
 import app.dancedance.tv.PickFixtures.shakeItOff
 import app.dancedance.tv.PickFixtures.stayinAlive
 import app.dancedance.tv.PickFixtures.takeOnMe
+import app.dancedance.tv.PickFixtures.the808Track
 import app.dancedance.tv.PickFixtures.touTou
 import app.dancedance.tv.PickFixtures.wayoo
 import app.dancedance.tv.PickFixtures.youLie
@@ -46,6 +48,9 @@ class SongPickerTest {
     ) = Entry(id, title, channel, verified, views, duration, description, liveStatus)
 
     private fun ids(req: Request, entries: List<Entry>) = SongPicker.rank(req, entries).ranked.map { "${it.tier.label}:${it.entry.id}" }
+    /** Tiers 1-4 only (the third-party last resort always follows them). */
+    private fun trusted(req: Request, entries: List<Entry>) = ids(req, entries).filterNot { it.startsWith("third-party:") }
+    private fun lastResort(req: Request, entries: List<Entry>) = ids(req, entries).filter { it.startsWith("third-party:") }
     private fun reason(req: Request, entries: List<Entry>, id: String) =
         SongPicker.rank(req, entries).rejected.firstOrNull { it.entry.id == id }?.reason
 
@@ -55,7 +60,8 @@ class SongPickerTest {
         val req = Request("Taylor Swift", "Shake It Off", 219)
         val ranked = ids(req, shakeItOff)
         assertEquals(listOf("lyric:8xG7mH8i-WE", "lyric:Z4A9ZZo_rAE", "lyric:YytmnsOPWyk", "lyric:w9uTc7_FB_0"), ranked.take(4))
-        assertEquals("music-video:nfWlot6h_JM", ranked.last())
+        assertEquals("music-video:nfWlot6h_JM", trusted(req, shakeItOff).last())
+        assertEquals(listOf("third-party:k0TEcUm7lTk"), lastResort(req, shakeItOff))
         // Re-recording ("Taylor's Version"), even on the artist's own channel and in the window.
         assertEquals("version", reason(req, shakeItOff, "mvVBuG4IOW4"))
         assertEquals("version", reason(req, shakeItOff, "H59xVMF4zxE"))
@@ -98,7 +104,8 @@ class SongPickerTest {
         val req = Request("Shakira", "Hips Don't Lie (feat. Wyclef Jean)", 218)
         val ranked = ids(req, hipsDontLie)
         assertEquals("lyric:p3pEe6aAJ4k", ranked[0])
-        assertEquals("music-video:DUT5rEU6pqM", ranked.last())
+        assertEquals("music-video:DUT5rEU6pqM", trusted(req, hipsDontLie).last())
+        assertEquals(listOf("third-party:JDjunuWB3Jo", "third-party:y46mHQA5d0w"), lastResort(req, hipsDontLie))
         assertEquals("version", reason(req, hipsDontLie, "41ZY18JqI2A"))
         assertEquals("live", reason(req, hipsDontLie, "2Ndra-1Pwug"))
         assertEquals("different song", reason(req, hipsDontLie, "Q0zYjFJhd-4"))
@@ -118,13 +125,14 @@ class SongPickerTest {
 
     @Test fun rapSavedMeQuotedTitle() {
         val req = Request("21 Savage, Offset & Metro Boomin", "Rap Saved Me (feat. Quavo)", 258)
-        assertEquals(listOf("official:LK9rgGmrH7I"), ids(req, rapSavedMe))
+        assertEquals(listOf("official:LK9rgGmrH7I"), trusted(req, rapSavedMe))
         assertEquals("unverified channel using the artist's name", reason(req, rapSavedMe, "1u_Fz7opf-M"))
         assertEquals("art track with only 534 views", reason(req, rapSavedMe, "r-sK4jS8w8Y"))
         assertEquals("other media", reason(req, rapSavedMe, "YQbpiY2uXmI"))
         assertEquals("translation", reason(req, rapSavedMe, "ywAJSXADr3w"))
         assertEquals("different song or artist", reason(req, rapSavedMe, "LPTlvQ1Zet0"))
-        assertTrue(reason(req, rapSavedMe, "WQL6zlobUJg")!!.contains("not official"))
+        assertEquals(listOf("third-party:CWtdqDxhKPM", "third-party:LLnyo8Yqx20", "third-party:WQL6zlobUJg"), lastResort(req, rapSavedMe))
+        assertEquals("not official, not a lyric video", reason(req, rapSavedMe, "ickaQIf9AhA")) // "| Official Audio" on "Top Music Archive"
     }
 
     @Test fun quotedText() {
@@ -143,7 +151,7 @@ class SongPickerTest {
 
     @Test fun delilahTitleBrackets() {
         val req = Request("Fred again.. & Delilah Montagu", "Delilah (pull me out of this)", 251)
-        assertEquals(listOf("music-video:Cl6Rz1Uvi2M"), ids(req, delilah))
+        assertEquals(listOf("music-video:Cl6Rz1Uvi2M"), trusted(req, delilah))
         assertEquals("acoustic", reason(req, delilah, "d943B3MUlbg"))
         assertEquals("acoustic", reason(req, delilah, "7ZXRc-tTehE"))
         val session = e("PARISSESSN0", "Fred again.. - Delilah (pull me out of this) (Paris Session)", "Fred again . .", true, duration = 255)
@@ -169,7 +177,7 @@ class SongPickerTest {
 
     @Test fun runAwaySingleVersion() {
         val req = Request("Real McCoy", "Run Away", 245)
-        assertEquals(listOf("topic:arHdOFutc-0"), ids(req, runAway))
+        assertEquals(listOf("topic:arHdOFutc-0"), trusted(req, runAway))
         assertEquals("version", reason(req, runAway, "_dx0qWHL7dc"))
         assertEquals("version", reason(req, runAway, "puR8F4I6E6E"))
         val versions = listOf("Album Version", "Explicit Version", "Single Version").mapIndexed { i, v ->
@@ -289,7 +297,7 @@ class SongPickerTest {
 
     @Test fun nowThatWeFoundLoveAndForAmpersand() {
         val req = Request("Heavy D & The Boyz", "Now That We Found Love (feat. Aaron Hall)", 258)
-        assertEquals(listOf("music-video:NNEgUPKxk7A"), ids(req, nowThatWeFoundLove))
+        assertEquals(listOf("music-video:NNEgUPKxk7A"), trusted(req, nowThatWeFoundLove))
         assertEquals("version", reason(req, nowThatWeFoundLove, "jQtZ2GdD2t0"))
         assertEquals("live", reason(req, nowThatWeFoundLove, "1k1lGGLKvCE"))
         val vevo = nowThatWeFoundLove.first { it.id == "NNEgUPKxk7A" }
@@ -330,7 +338,9 @@ class SongPickerTest {
 
     @Test fun queTeVasChannelBillsTheArtistWithHisBand() {
         val req = Request("Fito Olivares", "Que Te Vas Y Te Vas", 199)
-        assertEquals(listOf("topic:AkLs5ZRRroQ"), ids(req, queTeVas))
+        assertEquals(listOf("topic:AkLs5ZRRroQ"), trusted(req, queTeVas))
+        assertEquals(listOf("third-party:jbgDh1aCe_4", "third-party:Hlv4P5fvzls"), lastResort(req, queTeVas))
+        assertEquals("other media", reason(req, queTeVas, "ycY9d5H6xcM")) // "(EPICENTER+REEVERB)"
         assertEquals("different song", reason(req, queTeVas, "e_pwtPye-nA"))
         assertEquals("remix", reason(req, queTeVas, "zVDY16YDg6g"))
         val art = queTeVas.first { it.id == "AkLs5ZRRroQ" }
@@ -350,7 +360,97 @@ class SongPickerTest {
         val req = Request("Refraction", "Never Since", 361)
         val only = e("NhDi46hdlxo", "Refraction ~ Never Since", "Chris Broomhead", views = 481, duration = 370)
         assertEquals("length 370 s vs 361 s", reason(req, listOf(only), only.id))
-        assertEquals("not official, not a lyric video", reason(req, listOf(only.copy(duration = 361)), only.id))
+        assertEquals(listOf("third-party:NhDi46hdlxo"), ids(req, listOf(only.copy(duration = 361))))
+        assertEquals("not official, not a lyric video", reason(req, listOf(only.copy(duration = 364)), only.id))
+    }
+
+    // --- misses from 2026-11-26 (same as pick.test.ts) ----------------------------------------
+
+    @Test fun the808TrackTaggedOnlyOfficial() {
+        val req = Request("Bassnectar", "The 808 Track (feat. Mighty High Coup)", 271)
+        val ranked = ids(req, the808Track)
+        assertEquals("official:IdnBTJiUVDQ", ranked[0])
+        assertEquals(listOf("third-party:pAMrGHa7ubM", "third-party:ynDKvg1_P1A", "third-party:RUjigR12uvc", "third-party:j1WVuo_LqlQ", "third-party:jg-2WWiHV9Q"), ranked.drop(1))
+        assertEquals("not official, not a lyric video", reason(req, the808Track, "41k1a9wpta0")) // no channel
+        assertEquals("length 314 s vs 271 s", reason(req, the808Track, "3Mq0VpLSnwc"))
+    }
+
+    @Test fun taggedOnlyOfficialRanksAfterOfficialLyricAndAudio() {
+        fun up(id: String, title: String, views: Long = 900_000_000, verified: Boolean = true) = e(id, title, "Dua Lipa", verified, views, 204)
+        val entries = listOf(
+            up("OFFTAGONLY0", "Dua Lipa - Levitating [OFFICIAL]"),
+            up("OFFHDTAG000", "Dua Lipa - Levitating (Official HD)", 1_000_000),
+            up("OFFAUDIO000", "Dua Lipa - Levitating (Official Audio)", 1_000),
+            up("OFFLYRIC000", "Dua Lipa - Levitating (Official Lyric Video)", 1_000),
+            e("LYRIC000000", "Dua Lipa - Levitating (Lyrics)", "ChillTracks", views = 1_000_000_000, duration = 204),
+        )
+        assertEquals(listOf("official:OFFLYRIC000", "official:OFFAUDIO000", "official:OFFTAGONLY0", "official:OFFHDTAG000", "lyric:LYRIC000000"), ids(lev, entries))
+        assertEquals("unverified channel using the artist's name", reason(lev, listOf(up("OFFUNVERIF0", "Dua Lipa - Levitating [OFFICIAL]", verified = false)), "OFFUNVERIF0"))
+        assertEquals("official upload, but not lyric/audio", reason(lev, listOf(up("SESSION0000", "Dua Lipa - Levitating (Official) (Paris Session)")), "SESSION0000"))
+        assertEquals(listOf("music-video:OFFMV000000"), ids(lev, listOf(up("OFFMV000000", "Dua Lipa - Levitating [OFFICIAL VIDEO]"))))
+    }
+
+    @Test fun lieuThuocThirdPartyLastResort() {
+        val req = Request("Nguyễn Đình Vũ, Neko Lê & flechazowu", "Liều Thuốc Cho Trái Tim (Slowed)", 397)
+        assertEquals(listOf("third-party:hLTJD5VmzkM"), ids(req, lieuThuoc))
+        assertEquals("not the requested \"slowed\"", reason(req, lieuThuoc, "Ohe_KqhgdWM"))
+        assertEquals("different artist", reason(req, lieuThuoc, "O9lg-wWqiWU"))
+        assertEquals("Nguyễn Đình Vũ Liều Thuốc Cho Trái Tim (Slowed)", SongPicker.primaryArtistQuery(req.artist, req.title))
+    }
+
+    @Test fun thirdPartyWindowAndPosers() {
+        fun up(id: String, d: Long, title: String = "Dua Lipa - Levitating", channel: String = "Uploader $id", views: Long? = 1_000_000) = e(id, title, channel, views = views, duration = d)
+        val entries = listOf(up("PLUS3000000", 206), up("PLUS2000000", 205, views = 9_000_000_000), up("EXACT000000", 203, views = 10), up("MINUS100000", 202), up("MINUS200000", 201))
+        assertEquals(listOf("third-party:EXACT000000", "third-party:MINUS100000", "third-party:PLUS2000000"), ids(lev, entries))
+        assertEquals("not official, not a lyric video", reason(lev, entries, "PLUS3000000"))
+        assertEquals("length 201 s vs 203 s", reason(lev, entries, "MINUS200000"))
+        for (p in listOf(
+            up("POSER000000", 203, title = "Dua Lipa - Levitating (Official Audio)"),
+            up("POSER000000", 203, channel = "Gran Republica Records"),
+            up("POSER000000", 203, channel = "DuaFanVEVO"),
+            up("POSER000000", 203, channel = "Pop Hits - Topic"),
+            up("POSER000000", 203, channel = "Atlantic Records"),
+            up("POSER000000", 203, channel = "", views = null),
+        )) assertEquals(p.channel, emptyList<String>(), ids(lev, listOf(p)))
+    }
+
+    @Test fun thirdPartyNeverOutranksAnotherTier() {
+        val reqs = listOf(
+            Request("Taylor Swift", "Shake It Off", 219), Request("Shakira", "Hips Don't Lie (feat. Wyclef Jean)", 218),
+            Request("21 Savage, Offset & Metro Boomin", "Rap Saved Me (feat. Quavo)", 258), Request("Real McCoy", "Run Away", 245),
+            Request("Fito Olivares", "Que Te Vas Y Te Vas", 199), Request("Bassnectar", "The 808 Track (feat. Mighty High Coup)", 271),
+        )
+        val lists = listOf(shakeItOff, stayinAlive, hipsDontLie, takeOnMe, rapSavedMe, delilah, quieroSerTuyo, heavyMetal, runAway, purloin, insane, youLie, nullification, dipped, impersonator, touTou, homertonB, nowThatWeFoundLove, bunny, wayoo, queTeVas, the808Track, lieuThuoc)
+        for (req in reqs) for (list in lists) {
+            val tiers = SongPicker.rank(req, list).ranked.map { it.tier }
+            val first = tiers.indexOf(SongPicker.Tier.THIRD_PARTY)
+            if (first >= 0) assertTrue(tiers.drop(first).all { it == SongPicker.Tier.THIRD_PARTY })
+        }
+        val req = Request("a-ha", "Take On Me", 225)
+        val styled = e("STYLETAG000", "Take On Me (1920s Style)", "a-ha", true, duration = 225, description = "Provided to YouTube by Rhino")
+        val fan = e("FANUPLOAD00", "a-ha - Take On Me", "Some Fan", views = 9_000_000_000, duration = 225)
+        assertEquals(listOf("topic:STYLETAG000", "third-party:FANUPLOAD00"), ids(req, listOf(fan, styled)))
+    }
+
+    @Test fun fallbackSearches() {
+        assertEquals(
+            listOf("Nguyễn Đình Vũ, Neko Lê & flechazowu Liều Thuốc Cho Trái Tim (Slowed)", "Nguyễn Đình Vũ Liều Thuốc Cho Trái Tim (Slowed)"),
+            SongPicker.fallbackQueries("Nguyễn Đình Vũ, Neko Lê & flechazowu", "Liều Thuốc Cho Trái Tim (Slowed)"),
+        )
+        assertEquals(null, SongPicker.primaryArtistQuery("Shakira", "Hips Don't Lie (feat. Wyclef Jean)"))
+        assertEquals("Calvin Harris This Is What You Came For", SongPicker.primaryArtistQuery("Calvin Harris feat. Rihanna", "This Is What You Came For"))
+        assertTrue(SongPicker.needsMoreSearch(emptyList()))
+        val fan = e("FANUPLOAD00", "x", "y")
+        assertTrue(SongPicker.needsMoreSearch(listOf(SongPicker.Ranked(fan, SongPicker.Tier.THIRD_PARTY))))
+        assertFalse(SongPicker.needsMoreSearch(listOf(SongPicker.Ranked(fan, SongPicker.Tier.MUSIC_VIDEO), SongPicker.Ranked(fan, SongPicker.Tier.THIRD_PARTY))))
+    }
+
+    @Test fun mergeReplacesAStrippedCopy() {
+        val stripped = e("IdnBTJiUVDQ", "Bassnectar- The 808 Track (feat. Mighty High Coup) [OFFICIAL]", "", views = null, duration = 272)
+        val full = stripped.copy(channel = "Bassnectar", verified = true, views = 3_501_815)
+        val other = e("OTHER000000", "x", "y")
+        assertEquals(listOf(full, other), SongPicker.merge(listOf(listOf(stripped, other), listOf(other, full))))
+        assertEquals(listOf(full), SongPicker.merge(listOf(listOf(full), listOf(full.copy(views = 1)))))
     }
 
     @Test fun fallbackQueryIsPlain() {

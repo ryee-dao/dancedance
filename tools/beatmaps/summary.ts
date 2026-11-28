@@ -28,7 +28,8 @@ export interface AddResult {
   title: string;
   /** 'planned' = dry run; 'skipped' = not attempted this run. */
   /** 'listed': in songs.json without a beat map yet (the download was refused). */
-  kind: 'added' | 'listed' | 'already' | 'not-found' | 'blocked' | 'error' | 'skipped' | 'planned';
+  /** 'mismatch': the video the person chose doesn't look like the song; not added (the app offers "Use it anyway"). */
+  kind: 'added' | 'listed' | 'already' | 'not-found' | 'mismatch' | 'blocked' | 'error' | 'skipped' | 'planned';
   videoId?: string;
   tier?: string;
   videoTitle?: string;
@@ -91,6 +92,7 @@ const ADD_LABEL: Record<AddResult['kind'], string> = {
   listed: 'Listed (beat map pending)',
   already: 'Already added',
   'not-found': 'Not found',
+  mismatch: 'Chosen video doesn’t match',
   blocked: 'Blocked',
   error: 'Error',
   skipped: 'Not tried',
@@ -222,6 +224,7 @@ export function renderAnnotations(r: RunReport): string[] {
   }
   for (const a of r.adds ?? []) {
     if (a.kind === 'not-found' || a.kind === 'error') lines.push(annotation('warning', `Could not add ${a.artist} - ${a.title}`, a.message ?? ''));
+    if (a.kind === 'mismatch') lines.push(annotation('notice', `Chosen video doesn't match ${a.artist} - ${a.title}`, `${a.message ?? ''} Not added; the app offers "Use it anyway".`));
   }
   if (!r.dryRun) for (const name of pendingMaps(r)) lines.push(annotation('warning', `Beat map pending: ${name}`, PENDING_HELP));
   for (const x of r.results) {

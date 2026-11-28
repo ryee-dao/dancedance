@@ -195,7 +195,7 @@ export interface TvAddedSong extends AddedSong {
   /** The YouTube video's own title and channel. */
   videoTitle: string;
   channel: string;
-  /** Which rule picked it: 'official' | 'lyric' | 'topic' | 'music-video'. */
+  /** Which rule picked it: 'official' | 'lyric' | 'topic' | 'music-video' | 'third-party'. */
   tier: string;
   /** v7: the stored multi-source lookup behind `genres` (what each source said; the lookup's cache). */
   genreLookup?: GenreLookup;

@@ -173,6 +173,27 @@ object PickFixtures {
         Entry("eX5lc10Ot6w", "Insane (1920)", "Black Gryph0n", true, 3868247L, 166L, "Provided to YouTube by DistroKid Insane (1920) · Black Gryph0n · Baasik Insane (1920) ℗ Black Gryph0"),
     )
 
+    val lieuThuoc: List<Entry> = listOf(
+        Entry("O9lg-wWqiWU", "Chúng ta sau này - T.R.I × 1 9 6 7 (𝙨𝙡𝙤𝙬𝙚𝙙 + 𝙧𝙚𝙫𝙚𝙧𝙗) /Toxic dope/", "Toxic dope", true, 6494L, 258L, "Chúng ta sau này - T.R.I × 1 9 6 7 (slow"),
+        Entry("mM5Wgo7zCl8", "chiều thứ hai - redt x 1 9 6 7 (𝙨𝙡𝙤𝙬𝙚𝙙 + 𝙧𝙚𝙫𝙚𝙧𝙗) /flechazowu/", "flechazowu", true, 9457L, 276L, "các bạn nên đeo tai nghe để có trải nghi"),
+        Entry("oPytnWkC09Q", "Cảm ơn em đã đến - Quang Hùng MasterD × 1 9 6 7 (𝙨𝙡𝙤𝙬𝙚𝙙 + 𝙧𝙚𝙫𝙚𝙧𝙗) /Toxic dope/", "Toxic dope", true, 37662L, 344L, "Cảm ơn em đã đến - Quang Hùng MasterD × "),
+        Entry("2BoJRI9yxJE", "Khi em lớn - Orange ft. Hoàng Dũng × 1 9 6 7 (𝙨𝙡𝙤𝙬𝙚𝙙 + 𝙧𝙚𝙫𝙚𝙧𝙗) /Toxic dope/", "Toxic dope", true, 7588L, 286L, "Khi em lớn - Orange ft. Hoàng Dũng × 1 9"),
+        Entry("F33_8e8RIWk", "Missing you - Phương Ly ft. Tinle × 1 9 6 7 (𝙨𝙡𝙤𝙬𝙚𝙙 + 𝙧𝙚𝙫𝙚𝙧𝙗) /Toxic dope/", "Toxic dope", true, 11886L, 263L, "Missing you - Phương Ly ft. Tinle × 1 9 "),
+        Entry("fL1VWvJvltw", "Trò đùa ? - Quang Đăng Trần × 1 9 6 7 (𝙨𝙡𝙤𝙬𝙚𝙙 + 𝙧𝙚𝙫𝙚𝙧𝙗) /Toxic dope/", "Toxic dope", true, 16066L, 295L, "Trò đùa ? - Quang Đăng Trần × 1 9 6 7 (s"),
+        Entry("FYhbInI-sKs", "chưa từng mặc váy cưới", "gái hmong Hà Giang", false, 26L, 21L, ""),
+        Entry("SCRcJ1PHxb4", "◉ Playlist 47 ~ vì trái tim anh yêu em nhiều lắm...Tổng hợp những bản slowed gây nghiện!!", "Toxic dope", true, 7990L, 1896L, "Playlist: Vì trái tim anh yêu em nhiều l"),
+        Entry("hLTJD5VmzkM", "Liều thuốc cho trái tim - Nguyễn Đình Vũ ft. Neko × 1 9 6 7 (𝙨𝙡𝙤𝙬𝙚𝙙 +𝙧𝙚𝙫𝙚𝙧𝙗)/Toxic dope/", "Toxic dope", true, 87313L, 397L, "Liều thuốc cho trái tim - Nguyễn Đình Vũ"),
+        Entry("RBH1MnN2ahs", "Liều Thuốc Cho Trái Tim [ Lofi Ver. ]- | Nguyễn Đình Vũ x ft. Neko xMinn |- by Present? Music slowed", "𝗣𝗿𝗲𝘀𝗲𝗻𝘁?", false, 217L, 439L, "Liều Thuốc Cho Trái Tim - Nhạc lofi chil"),
+        Entry("E6jIFSAj3Yk", "lyrics LIỀU THUỐC CHO TRÁI TIM | NGUYỄN ĐÌNH VŨ x NEKO | REMAKE", "Pi OFFICIAL", false, 146L, 223L, "Video Gốc : https://youtu.be/4TMNeEbj0kc"),
+        Entry("Ohe_KqhgdWM", "[ Chill Music ]_Liều Thuốc Cho Trái Tim - Nguyễn Đình Vũ ft. Neko x Minn", "Kể Truyện Hot", false, 348L, 396L, "Chill Music Lyrics Mùa đông như vây kín "),
+        Entry("i9aD-3TNFrA", "Liều Thuốc Cho Trái Tim (Lofi Ver.)", "Đenn - Topic", false, 847L, 261L, "Provided to YouTube by CT Media Liều Thu"),
+        Entry("zsZ-M7N1j3k", "Liều Thuốc Cho Trái Tim | Trọn Đời Bên Em 2 | Part4 | Lý Hải", "Thiên Mệnh", false, 119L, 216L, "Chúc anh chị em cô chú trong cuộc sống l"),
+        Entry("cGRvJ0pESNM", "#PLAYLIST04 - Nhạc slowed lofi chill thất tình hợp tâm trạng - for cafe, relax, chill", "Cố Niệm", false, 12L, 2611L, "00:00 Liều Thuốc Cho Trái Tim - Nguyễn Đ"),
+        Entry("7DkrmNasuHw", "Tình yêu của anh - Phú Quí (𝙨𝙡𝙤𝙬𝙚𝙙 + 𝙧𝙚𝙫𝙚𝙧𝙗) /Toxic dope/", "Toxic dope", true, 3397L, 217L, "Tình yêu của anh - Phú Quí (slowed + rev"),
+        Entry("UkDzoCdZIx0", "Giọt Nước Mắt Mạnh Mẽ (#GNMMM) ‣ NGUYỄN ĐÌNH VŨ「Lyric Video」|| MUSIC CHIA TAY", "ANH.", false, 119L, 219L, "Giúp em đạt 20000 Subscriber với ạ. Em c"),
+        Entry("8CwsfULh28s", "Dối Lừa (Thazh x Đông Remix) - Nguyễn Đình Vũ ♫ Anh Đưa Tay Ra Để Cố Vuốt Ve Khuôn Mặt Em Thật Xinh", "Air Remix", true, 2977998L, 179L, "Dối Lừa (Thazh x Đông Remix) - Nguyễn Đì"),
+    )
+
     val nowThatWeFoundLove: List<Entry> = listOf(
         Entry("wAHOWd2K2o8", "Now That We Found Love- Heavy D and the Boyz Lyrics", "LeaseLeeLeeWhatever", false, 393757L, 270L, "Now that we found love by heavy d and the boyz- lyrics on screen."),
         Entry("NNEgUPKxk7A", "Heavy D & The Boyz - Now That We Found Love (Official Music Video) ft. Aaron Hall", "HeavyDAndTheBoyzVEVO", true, 69999039L, 258L, "REMASTERED IN HD!! Official Music Video for Now That We Found Love performed by Heavy D & The Boyz f"),
@@ -379,6 +400,27 @@ object PickFixtures {
         Entry("X50VeoRaNmY", "a-ha - Take On Me (Symphonic Version) (Official Audio)", "a-ha", true, 1165321L, 232L, "You're listening to the official audio o"),
         Entry("QchhC4yhdhc", "A-ha  Take On Me live 2017", "Our memory", false, 362924L, 325L, "A-ha - MTV Unplugged: Summer Solstice 20"),
         Entry("uAqW9uJi2-g", "A-ha  - Take On Me (Official 1984 Music Video)", "Old But Gold - Musik Nostalgie", false, 76763L, 203L, "The official Video for \"Take On Me\" made"),
+    )
+
+    val the808Track: List<Entry> = listOf(
+        Entry("IdnBTJiUVDQ", "Bassnectar- The 808 Track (feat. Mighty High Coup) [OFFICIAL]", "Bassnectar", true, 3501815L, 272L, "The 808 Track (feat. Mighty High Coup) f"),
+        Entry("3Mq0VpLSnwc", "The 808 Track (Bassnectar)", "PURPLETAC0S69", false, 90L, 314L, "The 808 Track."),
+        Entry("pAMrGHa7ubM", "Bassnectar - 808 Track [HQ]", "The Moon Babies", false, 111974L, 272L, "From Wildstyle."),
+        Entry("vLTT7jGwm_U", "Speakerbox (feat. Lafa Taylor)", "", false, null, 283L, ""),
+        Entry("41k1a9wpta0", "Bassnectar - The 808 Track", "", false, null, 272L, ""),
+        Entry("h5s_0N417rM", "Bassnectar- The 808 Track", "", false, null, 272L, ""),
+        Entry("gww1rBLMnU8", "Bassnectar - Undercover ◈ [Reflective Part 4]", "", false, null, 149L, ""),
+        Entry("nGlIDlOqurA", "Ellie Goulding - Lights (Bassnectar Remix) [FULL OFFICIAL]", "", false, null, 304L, ""),
+        Entry("njqDWNET8Ss", "Bassnectar - The Matrix [HQ] [Lyrics]", "", false, null, 270L, ""),
+        Entry("JRftXCiqfQ8", "Bassnectar - Bass Head (Official)", "Bassnectar", true, 28536481L, 397L, "Just in time for Spring comes Bassnectar"),
+        Entry("ynDKvg1_P1A", "Bassnectar- The 808 Track (feat. Mighty High Coup)", "DubSt3pRadio", false, 11942L, 272L, "Check out the latest Bassnectar @: Faceb"),
+        Entry("jg-2WWiHV9Q", "Bassnectar - The 808 Track (feat. Mighty High Coup)", "sharmanhall1 !", false, 2118L, 273L, "Title: The 808 Track (feat. Mighty High "),
+        Entry("RUjigR12uvc", "Bassnectar & The Mighty High Coup - The 808 Track", "MutilateDub", false, 305L, 272L, ""),
+        Entry("pstwHnVif3s", "Bassnectar   The 808", "Veverythingmedia12", false, 55L, 273L, ""),
+        Entry("j1WVuo_LqlQ", "Bassnectar  - 808 Track", "TheClockWorkStone", false, 121L, 272L, "Hope you enjoy the song :D Like subscrib"),
+        Entry("YnMQFg9_dGc", "Breaking Bad Season 4 (2011) The 808 Track (Soundtrack OST)", "portaps19", false, 254628L, 273L, "01 Main Title 02 Bringing It Back 03 Tru"),
+        Entry("CLSS9Fv1olM", "Bassnectar \"The 808\" track Summer Camp 2011", "4womp2womp0", false, 1245L, 247L, "bassnectar at summer camp 2011."),
+        Entry("_d_YQno_Cuc", "Bassnectar - Don't Hate The 808 Ft. Lafa Taylor", "Bassnectar", true, 809012L, 198L, "OUT NOW! - http://www.bassnectar.net Pre"),
     )
 
     val touTou: List<Entry> = listOf(

@@ -13,22 +13,27 @@ import kotlin.math.roundToInt
  *
  * Ranking, best first:
  *   1 OFFICIAL     official lyric video or official audio on the artist's own, VEVO or label
- *                  channel (verified); lyric before audio
+ *                  channel (verified); lyric before audio, then an upload there tagged only
+ *                  "official" ("Title [OFFICIAL]")
  *   2 LYRIC        third-party lyric video, most views first (>= 300 k views)
  *   3 TOPIC        the artist's genuine "Provided to YouTube" art track (>= 10 k views, or on the
  *                  artist's verified channel, or, for a little-known song, on the artist's
  *                  "- Topic" channel at the official length; or on a label's "- Topic" channel
  *                  when the art track's "Title · Artist" credit names the artist, same conditions)
  *   4 MUSIC_VIDEO  fallback: the official music video closest in length
+ *   5 THIRD_PARTY  last resort: someone else's upload that names the song and the artist, at the
+ *                  official length (-1 .. +2 s); closest length first
  *
- * Within that order, an upload tagged with an era or style the request doesn't name
+ * Within tiers 1-4, an upload tagged with an era or style the request doesn't name
  * ("Insane (1920s Style)") goes after the untagged ones, and one tagged with a bare year
- * ("Insane (1920)") after an untagged one with 10x its views.
+ * ("Insane (1920)") after an untagged one with 10x its views. Tier 5 always comes after them.
  *
- * When the two searches ([searchQueries]) rank nothing, the caller runs the plain "Artist Title"
- * search ([fallbackQuery]) too and ranks all results again.
+ * When the two searches ([searchQueries]) rank nothing (or only tier 5), the caller runs the
+ * [fallbackQueries] one at a time until something better ranks ([needsMoreSearch]): the plain
+ * "Artist Title" search, then, for a credit naming several artists, "<first artist> Title".
  *
- * Tiers 1-3 must be within -1 .. +6 s of the official length; the fallback within -2 .. +60 s.
+ * Tiers 1-3 must be within -1 .. +6 s of the official length; the music-video fallback within
+ * -2 .. +60 s; tier 5 within -1 .. +2 s.
  * Live, remix, cover, sped up, slowed, karaoke, "1 hour", extended, other "versions",
  * translations and other artists' songs are rejected unless the request itself asks for them.
  */
@@ -50,7 +55,7 @@ object SongPicker {
         val liveStatus: String? = null,
     )
 
-    enum class Tier(val label: String) { OFFICIAL("official"), LYRIC("lyric"), TOPIC("topic"), MUSIC_VIDEO("music-video") }
+    enum class Tier(val label: String) { OFFICIAL("official"), LYRIC("lyric"), TOPIC("topic"), MUSIC_VIDEO("music-video"), THIRD_PARTY("third-party") }
 
     data class Ranked(val entry: Entry, val tier: Tier)
     data class Rejected(val entry: Entry, val reason: String)
@@ -62,6 +67,8 @@ object SongPicker {
     const val KNOWN_SONG_VIEWS = 100_000L
     private val WINDOW = -1.0..6.0
     private val MV_WINDOW = -2.0..60.0
+    /** The [Tier.THIRD_PARTY] window: a faithful re-upload of the released audio (see pick.ts THIRD_PARTY_WINDOW). */
+    private val THIRD_PARTY_WINDOW = -1.0..2.0
 
     private val OPTS = setOf(RegexOption.IGNORE_CASE)
     private fun re(p: String) = Regex(p, OPTS)
@@ -114,6 +121,24 @@ object SongPicker {
      * plain search finds the art track or the upload.
      */
     fun fallbackQuery(artist: String, title: String): String = queryBase(artist, title)
+
+    /**
+     * "<first artist> Title" when the credit names several artists ("Nguyễn Đình Vũ, Neko Lê &
+     * flechazowu"), else null: the whole credit can drown the upload in the results.
+     */
+    fun primaryArtistQuery(artist: String, title: String): String? {
+        val parts = splitCredit(artist).map { it.trim() }
+        if (parts.size < 2 || parts[0].isEmpty()) return null
+        val q = queryBase(parts[0], title)
+        return if (q == queryBase(artist, title)) null else q
+    }
+
+    /** The searches run, one at a time, while [needsMoreSearch]: [fallbackQuery], then [primaryArtistQuery] when there is one. */
+    fun fallbackQueries(artist: String, title: String): List<String> =
+        listOfNotNull(fallbackQuery(artist, title), primaryArtistQuery(artist, title))
+
+    /** Nothing ranks, or only [Tier.THIRD_PARTY] uploads: run the next fallback search. */
+    fun needsMoreSearch(ranked: List<Ranked>): Boolean = ranked.all { it.tier == Tier.THIRD_PARTY }
 
     /**
      * Title words without brackets, quotes, features, trailing "| ..." / "// ...", or decoration.
@@ -300,7 +325,7 @@ object SongPicker {
         "version" to re("\\bversion\\b|\\bversi[oó]n\\b|\\brerecord(?:ed|ing)?\\b|\\bre-recorded\\b"),
         "demo" to re("\\bdemo\\b|\\bsnippet\\b|\\bpreview\\b|\\bunreleased\\b|\\bleak(?:ed)?\\b"),
         "other media" to re(
-            "\\breversed\\b|\\b\\d{3}\\s*hz\\b|\\bbackwards\\b|\\bbass\\s*boost(?:ed)?\\b|\\btiktok\\b|\\bchipmunk\\b|\\b8\\s*-?\\s*bit\\b|\\bshorts?\\b|\\btutorial\\b|\\bchoreography\\b|\\bdance (?:video|practice|cover)\\b|\\blesson\\b|\\bfan\\s*made\\b|\\bteaser\\b|\\btrailer\\b|\\bbehind the scenes\\b|\\bmaking of\\b|\\binterview\\b",
+            "\\breversed\\b|\\b\\d{3}\\s*hz\\b|\\bbackwards\\b|\\bbass\\s*boost(?:ed)?\\b|\\bepicenter\\b|\\btiktok\\b|\\bchipmunk\\b|\\b8\\s*-?\\s*bit\\b|\\bshorts?\\b|\\btutorial\\b|\\bchoreography\\b|\\bdance (?:video|practice|cover)\\b|\\blesson\\b|\\bfan\\s*made\\b|\\bteaser\\b|\\btrailer\\b|\\bbehind the scenes\\b|\\bmaking of\\b|\\binterview\\b",
         ),
         "translation" to re(
             "\\blegendad[oa]\\b|\\btraduc(?:ida|ido|ción|cion|ao|ão)\\b|\\btradução\\b|\\btraduzione\\b|\\bsub(?:titulado|titulada|s?)?\\s*(?:español|espanol|ita|pt|br)\\b|\\bespañol\\b|\\bespanol\\b|перевод|해석|번역|和訳|中字|中文字幕|\\bvietsub\\b|\\bthaisub\\b|\\bpolskie\\b|\\bnapisy\\b",
@@ -483,6 +508,33 @@ object SongPicker {
     private fun littleKnownArtTrack(e: Entry, f: Facts, knownSong: Boolean): Boolean =
         !knownSong && PROVIDED.containsMatchIn(e.description) && TOPIC_CHANNEL.containsMatchIn(e.channel) && abs(f.dt) <= 1.0
 
+    private val OFFICIAL_WORDS = setOf("official", "oficial", "officiel", "offiziell", "ufficiale")
+
+    /**
+     * The title's own brackets (those the request lacks) say only "official", with at most
+     * decoration ("[OFFICIAL]", "(Official HD)"): not a session, a performance or another tag.
+     */
+    private fun onlyOfficialTags(title: String, reqTitle: String): Boolean {
+        val tags = BRACKETS.findAll(withoutRequestBrackets(title, reqTitle)).map { toks(it.groups[1]?.value ?: it.groups[2]?.value ?: "") }.toList()
+        return tags.any { t -> t.any { it in OFFICIAL_WORDS } } && tags.all { t -> t.all { it in OFFICIAL_WORDS || it in NOISE } }
+    }
+
+    /** An upload title that says it is official ("(Official Audio)", "| Video Oficial"). */
+    private val CLAIMS_OFFICIAL = re("\\b(?:official|oficial|officiel|offiziell|ufficiale)\\b")
+    /** A channel name that passes itself off as a label, VEVO or "- Topic" channel. */
+    private val LABEL_LIKE = re("\\b(?:records?|recordings|entertainment|vevo|topic)\\b|vevo$")
+
+    /**
+     * The [Tier.THIRD_PARTY] tier (see pick.ts thirdParty): someone else's upload that passed
+     * [mismatch], at the official length; not when it poses as official (title "Official ...",
+     * a label / VEVO / Topic look-alike channel) or came without its channel.
+     */
+    private fun thirdParty(e: Entry, f: Facts): Boolean {
+        if (e.channel.isEmpty() || f.official || f.artistChannel || f.artTrack || f.lyric) return false
+        if (CLAIMS_OFFICIAL.containsMatchIn(e.title) || LABEL_LIKE.containsMatchIn(e.channel) || joined(e.channel) in LABELS) return false
+        return f.dt in THIRD_PARTY_WINDOW
+    }
+
     /** Rank the candidates: `ranked` in the order to offer them, `rejected` explains the rest. */
     fun rank(req: Request, entries: List<Entry>): Result {
         val variants = artistVariants(req.artist)
@@ -509,6 +561,9 @@ object SongPicker {
             val inWindow = f.dt in WINDOW
             if (inWindow && f.official && (f.lyric || f.audio)) {
                 tiers.getValue(Tier.OFFICIAL) += e to listOf(if (f.lyric) 0.0 else 1.0, -views)
+            } else if (inWindow && f.official && !f.musicVideo && onlyOfficialTags(e.title, req.title)) {
+                // Tagged only "official" ("Title [OFFICIAL]"): after the official lyric and audio uploads.
+                tiers.getValue(Tier.OFFICIAL) += e to listOf(2.0, -views)
             } else if (inWindow && f.lyric && !f.artTrack && !f.artistChannel && !e.channel.contains("topic", ignoreCase = true)) {
                 if (views >= LYRIC_MIN_VIEWS) tiers.getValue(Tier.LYRIC) += e to listOf(-views)
                 else reject("lyric video with only ${e.views ?: 0} views")
@@ -521,6 +576,8 @@ object SongPicker {
                 else reject(if (knownSong) "label art track of a known song" else "label art track ${e.duration} s vs ${req.durationSec} s")
             } else if (f.official && f.musicVideo && !f.lyric && f.dt in MV_WINDOW) {
                 tiers.getValue(Tier.MUSIC_VIDEO) += e to listOf(abs(f.dt), -views)
+            } else if (thirdParty(e, f)) {
+                tiers.getValue(Tier.THIRD_PARTY) += e to listOf(abs(f.dt), -views)
             } else if (!inWindow) {
                 reject("length ${e.duration} s vs ${req.durationSec} s")
             } else if (f.artTrack) {
@@ -541,13 +598,25 @@ object SongPicker {
             0
         }
         val ranked = Tier.entries.flatMap { t -> tiers.getValue(t).sortedWith(cmp).map { Ranked(it.first, t) } }
-        return Result(untaggedFirst(req, ranked), rejected)
+        // The last resort stays last: the era / style reordering only moves tiers 1-4.
+        val (last, trusted) = ranked.partition { it.tier == Tier.THIRD_PARTY }
+        return Result(untaggedFirst(req, trusted) + last, rejected)
     }
 
-    /** Union of result lists; the first occurrence of a video wins. */
+    /**
+     * Union of result lists, in first-seen order; the first occurrence of a video wins, unless it
+     * came stripped (no channel, no view count) and a later one has them.
+     */
     fun merge(lists: List<List<Entry>>): List<Entry> {
-        val seen = HashSet<String>()
-        return lists.flatten().filter { seen.add(it.id) }
+        val at = HashMap<String, Int>()
+        val out = ArrayList<Entry>()
+        fun stripped(e: Entry) = e.channel.isEmpty() && e.views == null
+        for (e in lists.flatten()) {
+            val i = at[e.id]
+            if (i == null) { at[e.id] = out.size; out += e }
+            else if (stripped(out[i]) && !stripped(e)) out[i] = e
+        }
+        return out
     }
 
     // --- iTunes ----------------------------------------------------------------------------

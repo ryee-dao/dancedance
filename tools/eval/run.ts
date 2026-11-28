@@ -81,7 +81,7 @@ import { generateRoutine, isHalfTime, styleGenres, tierBeats, type Intensity } f
 import { genreOpenness } from '../../src/core/choreo/genres';
 import { resolveSongStyle, styleLabel } from '../../src/core/choreo/songStyle';
 import { traitsOf } from '../../src/core/choreo/songTraits';
-import { degradedSearch, fallbackQuery, mergeSearches, parseSearch, rankCandidates, searchQueries, type SearchEntry } from '../beatmaps/pick';
+import { degradedSearch, fallbackQueries, mergeSearches, needsMoreSearch, parseSearch, rankCandidates, searchQueries, type SearchEntry } from '../beatmaps/pick';
 import { decodeWithFfmpeg, downloadAudio, PCM_RATE, searchVideos } from '../beatmaps/youtube';
 import { lookupGenres, recombineStored, type GenreLookup } from '../../src/genre';
 import type { RecordedStats } from './stats';
@@ -141,9 +141,11 @@ async function find() {
       let entries = mergeSearches(lists);
       let ranked = rankCandidates(req, entries).ranked;
       let fallback = false;
-      if (!ranked.length) {
+      // As pipeline.ts searchAndRank: the fallback searches one at a time while only the last resort ranks.
+      for (const q of fallbackQueries(req)) {
+        if (!needsMoreSearch(ranked)) break;
         fallback = true;
-        await search(fallbackQuery(req));
+        await search(q);
         entries = mergeSearches(lists);
         ranked = rankCandidates(req, entries).ranked;
       }

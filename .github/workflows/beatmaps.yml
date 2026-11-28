@@ -14,7 +14,11 @@
 # looked up on iTunes when empty). The job finds the best YouTube video for
 # it, makes its beat map and lists it in public/songs.json. Songs it can't
 # find are reported in public/songs-status.json. Such a run skips the
-# playlist; the next hourly run reads it as usual.
+# playlist; the next hourly run reads it as usual. With add_video (a video ID
+# from a link the person pasted after "not found"), the job checks that video
+# against the same rules instead of searching: it is added when it matches;
+# otherwise songs-status.json says why ('video-mismatch') and nothing is added,
+# unless add_video_force is set ("Use it anyway" in the app).
 #
 # "Contributed beat map" (input map_json, sent by the relay's POST /map): a
 # beat map a player's browser made by listening to the song (source 'tab') or
@@ -74,6 +78,16 @@ on:
         type: string
         required: false
         default: ''
+      add_video:
+        description: 'Add a song by search: use this YouTube video ID instead of searching (empty = search)'
+        type: string
+        required: false
+        default: ''
+      add_video_force:
+        description: "Add a song by search: add the video above even if it doesn't look like the song"
+        type: boolean
+        required: false
+        default: false
       add_queue:
         description: Used by the app (other songs it is still waiting for, as JSON); leave empty
         type: string
@@ -110,7 +124,11 @@ jobs:
       changed: ${{ steps.commit.outputs.changed }}
       sha: ${{ steps.commit.outputs.sha }}
     steps:
+      # The branch as it is now, not the commit from when the run was requested: a run that waited
+      # behind another one must start from what that one pushed, or its own push is rejected.
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref_name }}
 
       - uses: actions/setup-node@v6
         with:
@@ -223,6 +241,8 @@ jobs:
           ADD_ARTIST: ${{ inputs.add_artist }}
           ADD_TITLE: ${{ inputs.add_title }}
           ADD_DURATION: ${{ inputs.add_duration }}
+          ADD_VIDEO: ${{ inputs.add_video }}
+          ADD_VIDEO_FORCE: ${{ inputs.add_video_force }}
           ADD_QUEUE: ${{ inputs.add_queue }}
         run: |
           set -euo pipefail
@@ -232,6 +252,11 @@ jobs:
           if [ -n "${ADD_TITLE:-}" ] || [ -n "${ADD_ARTIST:-}" ]; then
             args+=(--add-artist "${ADD_ARTIST:-}" --add-title "${ADD_TITLE:-}")
             if [ -n "${ADD_DURATION:-}" ]; then args+=(--add-duration "$ADD_DURATION"); fi
+            # Checked by the tool (an 11-character video ID, else it stops with an error).
+            if [ -n "${ADD_VIDEO:-}" ]; then
+              args+=(--add-video "$ADD_VIDEO")
+              if [ "${ADD_VIDEO_FORCE:-}" = "true" ]; then args+=(--add-video-force); fi
+            fi
           fi
           if [ -n "${ADD_QUEUE:-}" ]; then args+=(--add-queue "$ADD_QUEUE"); fi
           npm run --silent beatmaps -- "${args[@]}"
@@ -333,6 +358,8 @@ jobs:
       # A contributed map (map_json) is handled here too: it needs no
       # downloads, and if the push races another run it starts again from
       # the newest commit instead of rebasing (the tool is quick and deterministic).
+      # Any other run merges its JSON into the newest commit instead (see below),
+      # since its downloads cannot be redone cheaply.
       - name: Commit beat maps
         id: commit
         if: ${{ !cancelled() }}
@@ -383,10 +410,35 @@ jobs:
             msg="Update beat maps (${count} map file(s) changed)"
             if ! git diff --cached --quiet -- public/songs.json 2>/dev/null; then msg="Add song(s) by search; ${msg}"; fi
             git commit -q -m "$msg"
-            for attempt in 1 2 3; do
+            # Another run (a contributed map, which runs alongside this one) or a person may have
+            # pushed meanwhile. A textual rebase then conflicts on the shared JSON (every file has
+            # a timestamp, and both runs add entries side by side), and this run's downloads would
+            # be thrown away. Instead: start from the new tip and lay this run's changes over it,
+            # merging the shared files entry by entry so neither side's songs, maps or notes are
+            # lost (tools/beatmaps/mergeData.ts). If that cannot be done safely it stops with an
+            # error rather than guess. Each retry merges this run's last commit onto the newest tip.
+            base=$(git rev-parse HEAD~1)
+            for attempt in 1 2 3 4 5; do
               if git push -q origin "HEAD:${BRANCH}"; then break; fi
-              if [ "$attempt" = 3 ]; then exit 1; fi
-              git pull -q --rebase origin "$BRANCH"
+              if [ "$attempt" = 5 ]; then
+                echo "::error title=Could not push::The branch kept moving; gave up after 5 tries. This run's work was not pushed."
+                exit 1
+              fi
+              sleep $((attempt * 2))
+              ours=$(git rev-parse HEAD)
+              git fetch -q origin "$BRANCH"
+              theirs=$(git rev-parse "origin/${BRANCH}")
+              echo "Push rejected: merging this run's changes onto ${theirs:0:7}."
+              git reset -q --hard "$theirs"
+              npx --no-install tsx tools/beatmaps/mergeData.ts --base "$base" --ours "$ours" --theirs "$theirs"
+              stage
+              if git diff --cached --quiet; then
+                echo "The newer commit already has everything this run made; nothing to push."
+                echo "changed=false" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+              git commit -q -m "$msg"
+              base="$theirs"
             done
           fi
           echo "changed=true" >> "$GITHUB_OUTPUT"

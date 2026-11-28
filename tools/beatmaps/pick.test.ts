@@ -12,6 +12,7 @@ import {
   homertonB,
   impersonator,
   insane,
+  lieuThuoc,
   nowThatWeFoundLove,
   nullification,
   purloin,
@@ -22,6 +23,7 @@ import {
   shakeItOff,
   stayinAlive,
   takeOnMe,
+  the808Track,
   touTou,
   wayoo,
   youLie,
@@ -32,16 +34,24 @@ import {
   cleanRequest,
   coreTokens,
   degradedSearch,
+  fallbackQueries,
   fallbackQuery,
+  mergeSearches,
+  needsMoreSearch,
+  notFoundMessage,
   parseQueue,
+  primaryArtistQuery,
   parseSearch,
   rankCandidates,
   searchQueries,
   splitArtistTitle,
   type SearchEntry,
   type SongRequest,
+  THIRD_PARTY_WINDOW,
+  TIERS,
   WINDOW,
 } from './pick';
+import * as allFixtures from './pick.fixtures';
 import { cleanGenre, parseItunes, pickOfficialLength } from './itunes';
 import { embedFromStatus } from './youtube';
 
@@ -55,6 +65,9 @@ const e = (o: Partial<SearchEntry> & Pick<SearchEntry, 'id' | 'title' | 'channel
 });
 
 const ids = (req: SongRequest, entries: SearchEntry[]) => rankCandidates(req, entries).ranked.map((r) => `${r.tier}:${r.entry.id}`);
+/** Tiers 1-4 only (the 'third-party' last resort always follows them). */
+const trusted = (req: SongRequest, entries: SearchEntry[]) => ids(req, entries).filter((x) => !x.startsWith('third-party:'));
+const lastResort = (req: SongRequest, entries: SearchEntry[]) => ids(req, entries).filter((x) => x.startsWith('third-party:'));
 const reasonFor = (req: SongRequest, entries: SearchEntry[], id: string) =>
   rankCandidates(req, entries).rejected.find((r) => r.entry.id === id)?.reason;
 
@@ -64,8 +77,9 @@ describe('rankCandidates on real search results', () => {
     const ranked = ids(req, shakeItOff);
     expect(ranked[0]).toBe('lyric:8xG7mH8i-WE'); // 55 M views, 218 s
     expect(ranked.slice(0, 4)).toEqual(['lyric:8xG7mH8i-WE', 'lyric:Z4A9ZZo_rAE', 'lyric:YytmnsOPWyk', 'lyric:w9uTc7_FB_0']);
-    // Official music video (242 s) is only the last resort.
-    expect(ranked.at(-1)).toBe('music-video:nfWlot6h_JM');
+    // Official music video (242 s) is only the last trusted choice; then someone else's plain re-upload at 220 s.
+    expect(trusted(req, shakeItOff).at(-1)).toBe('music-video:nfWlot6h_JM');
+    expect(lastResort(req, shakeItOff)).toEqual(['third-party:k0TEcUm7lTk']);
     // The re-recording, even on the artist's own channel and inside the length window.
     expect(reasonFor(req, shakeItOff, 'mvVBuG4IOW4')).toBe('version');
     expect(reasonFor(req, shakeItOff, 'H59xVMF4zxE')).toBe('version');
@@ -109,7 +123,9 @@ describe('rankCandidates on real search results', () => {
     const req = { artist: 'Shakira', title: "Hips Don't Lie (feat. Wyclef Jean)", durationSec: 218 };
     const ranked = ids(req, hipsDontLie);
     expect(ranked[0]).toBe('lyric:p3pEe6aAJ4k');
-    expect(ranked.at(-1)).toBe('music-video:DUT5rEU6pqM');
+    expect(trusted(req, hipsDontLie).at(-1)).toBe('music-video:DUT5rEU6pqM');
+    // "Pizza Music" / "musicinthemorning" re-uploads at 220 s, after every trusted tier.
+    expect(lastResort(req, hipsDontLie)).toEqual(['third-party:JDjunuWB3Jo', 'third-party:y46mHQA5d0w']);
     expect(reasonFor(req, hipsDontLie, '41ZY18JqI2A')).toBe('version');
     expect(reasonFor(req, hipsDontLie, '2Ndra-1Pwug')).toBe('live');
     expect(reasonFor(req, hipsDontLie, 'Q0zYjFJhd-4')).toBe('different song'); // "Hips Don't Lie - Bamboo"
@@ -129,14 +145,17 @@ describe('rankCandidates on real search results', () => {
 describe('rankCandidates on real search results: cases that used to be "not found"', () => {
   it('Rap Saved Me: the official upload writes the title in double quotes', () => {
     const req = { artist: '21 Savage, Offset & Metro Boomin', title: 'Rap Saved Me (feat. Quavo)', durationSec: 258 };
-    expect(ids(req, rapSavedMe)).toEqual(['official:LK9rgGmrH7I']);
+    expect(trusted(req, rapSavedMe)).toEqual(['official:LK9rgGmrH7I']);
     // Look-alikes in the same results stay out.
     expect(reasonFor(req, rapSavedMe, '1u_Fz7opf-M')).toBe("unverified channel using the artist's name"); // "21SavageVEVO"
     expect(reasonFor(req, rapSavedMe, 'r-sK4jS8w8Y')).toBe('art track with only 534 views'); // fake "21 Savage - Topic"
     expect(reasonFor(req, rapSavedMe, 'YQbpiY2uXmI')).toBe('other media'); // 432 Hz
     expect(reasonFor(req, rapSavedMe, 'ywAJSXADr3w')).toBe('translation'); // 가사/ 해석
     expect(reasonFor(req, rapSavedMe, 'LPTlvQ1Zet0')).toBe('different song or artist');
-    expect(reasonFor(req, rapSavedMe, 'WQL6zlobUJg')).toMatch(/not official/); // label upload titled with the album
+    // A label upload titled with the album (+2 s), a "Fan Video" (+2 s), another channel's upload: the last resort.
+    expect(lastResort(req, rapSavedMe)).toEqual(['third-party:CWtdqDxhKPM', 'third-party:LLnyo8Yqx20', 'third-party:WQL6zlobUJg']);
+    // Not "| Official Audio" on "Top Music Archive" (672 views): posing as official.
+    expect(reasonFor(req, rapSavedMe, 'ickaQIf9AhA')).toBe('not official, not a lyric video');
   });
 
   it('quoted text: the quoted song title counts; a quoted other song, a longer title or an appended lyric line do not', () => {
@@ -156,7 +175,7 @@ describe('rankCandidates on real search results: cases that used to be "not foun
 
   it("Delilah (pull me out of this): the song title's own brackets don't stop the official upload counting as its video", () => {
     const req = { artist: 'Fred again.. & Delilah Montagu', title: 'Delilah (pull me out of this)', durationSec: 251 };
-    expect(ids(req, delilah)).toEqual(['music-video:Cl6Rz1Uvi2M']);
+    expect(trusted(req, delilah)).toEqual(['music-video:Cl6Rz1Uvi2M']);
     expect(reasonFor(req, delilah, 'd943B3MUlbg')).toBe('acoustic'); // orchestra version
     expect(reasonFor(req, delilah, '7ZXRc-tTehE')).toBe('acoustic');
     // Any other bracket still means "not the plain upload".
@@ -185,7 +204,7 @@ describe('rankCandidates on real search results: cases that used to be "not foun
 
   it('Run Away: "(Single Version)" is the released recording; "(US Version)" is not', () => {
     const req = { artist: 'Real McCoy', title: 'Run Away', durationSec: 245 };
-    expect(ids(req, runAway)).toEqual(['topic:arHdOFutc-0']);
+    expect(trusted(req, runAway)).toEqual(['topic:arHdOFutc-0']);
     expect(reasonFor(req, runAway, '_dx0qWHL7dc')).toBe('version');
     expect(reasonFor(req, runAway, 'puR8F4I6E6E')).toBe('version');
     const versions = ['Album Version', 'Explicit Version', 'Single Version'].map((v, i) =>
@@ -325,7 +344,7 @@ describe('rankCandidates on real search results: misses from the 2026-11-14 rand
 describe('rankCandidates on real search results: channel-name misses from run-20261116', () => {
   it('Now That We Found Love (Heavy D & The Boyz): "HeavyDAndTheBoyzVEVO" spells "&" as "and"', () => {
     const req = { artist: 'Heavy D & The Boyz', title: 'Now That We Found Love (feat. Aaron Hall)', durationSec: 258 };
-    expect(ids(req, nowThatWeFoundLove)).toEqual(['music-video:NNEgUPKxk7A']); // 258 s, 70 M views
+    expect(trusted(req, nowThatWeFoundLove)).toEqual(['music-video:NNEgUPKxk7A']); // 258 s, 70 M views
     expect(reasonFor(req, nowThatWeFoundLove, 'jQtZ2GdD2t0')).toBe('version'); // Club Version, 347 s
     expect(reasonFor(req, nowThatWeFoundLove, '1k1lGGLKvCE')).toBe('live');
     // Unverified, the same channel name is still an impostor.
@@ -374,7 +393,10 @@ describe('rankCandidates on real search results: channel-name misses from run-20
 
   it('Que Te Vas Y Te Vas (Fito Olivares): his verified channel bills him with his band, "Fito Olivares Y La Pura Sabrosura"', () => {
     const req = { artist: 'Fito Olivares', title: 'Que Te Vas Y Te Vas', durationSec: 199 };
-    expect(ids(req, queTeVas)).toEqual(['topic:AkLs5ZRRroQ']); // art track, 200 s, 8.8 M views
+    expect(trusted(req, queTeVas)).toEqual(['topic:AkLs5ZRRroQ']); // art track, 200 s, 8.8 M views
+    // Someone else's uploads at 200-201 s come last; not the "EPICENTER" bass edit.
+    expect(lastResort(req, queTeVas)).toEqual(['third-party:jbgDh1aCe_4', 'third-party:Hlv4P5fvzls']);
+    expect(reasonFor(req, queTeVas, 'ycY9d5H6xcM')).toBe('other media');
     expect(reasonFor(req, queTeVas, 'e_pwtPye-nA')).toBe('different song'); // "Que Te Vas", same channel
     expect(reasonFor(req, queTeVas, 'zVDY16YDg6g')).toBe('remix');
     const art = queTeVas.find((x) => x.id === 'AkLs5ZRRroQ')!;
@@ -398,8 +420,132 @@ describe('rankCandidates on real search results: channel-name misses from run-20
     const req = { artist: 'Refraction', title: 'Never Since', durationSec: 361 };
     const only = e({ id: 'NhDi46hdlxo', title: 'Refraction ~ Never Since', channel: 'Chris Broomhead', views: 481, duration: 370, description: "Melbourne jazz trio Refraction performing 'Never Since' composed by Chris Broomhead and recorded o" });
     expect(reasonFor(req, [only], only.id)).toBe('length 370 s vs 361 s');
-    // Even at the official length it is neither official nor a popular lyric video.
-    expect(reasonFor(req, [{ ...only, duration: 361 }], only.id)).toBe('not official, not a lyric video');
+    // At the official length it would be neither official nor a popular lyric video: only the last resort.
+    expect(ids(req, [{ ...only, duration: 361 }])).toEqual(['third-party:NhDi46hdlxo']);
+    expect(reasonFor(req, [{ ...only, duration: 364 }], only.id)).toBe('not official, not a lyric video');
+  });
+});
+
+describe('rankCandidates on real search results: misses from 2026-11-26', () => {
+  it('The 808 Track (Bassnectar): the official upload tagged only "[OFFICIAL]" is taken; fan re-uploads only as a last resort', () => {
+    const req = { artist: 'Bassnectar', title: 'The 808 Track (feat. Mighty High Coup)', durationSec: 271 };
+    const ranked = ids(req, the808Track);
+    expect(ranked[0]).toBe('official:IdnBTJiUVDQ'); // verified "Bassnectar", 272 s, 3.5 M views
+    // Re-uploads at 272-273 s by other channels, closest length first; none before the official one.
+    expect(ranked.slice(1)).toEqual(['third-party:pAMrGHa7ubM', 'third-party:ynDKvg1_P1A', 'third-party:RUjigR12uvc', 'third-party:j1WVuo_LqlQ', 'third-party:jg-2WWiHV9Q']);
+    // Entries YouTube sent without a channel are never the last resort: who uploaded them is unknown.
+    expect(reasonFor(req, the808Track, '41k1a9wpta0')).toBe('not official, not a lyric video');
+    expect(reasonFor(req, the808Track, '3Mq0VpLSnwc')).toBe('length 314 s vs 271 s');
+  });
+
+  it('an upload tagged only "official" ranks after the official lyric and audio uploads, before third-party lyric videos', () => {
+    const req = { artist: 'Dua Lipa', title: 'Levitating', durationSec: 203 };
+    const up = (id: string, title: string, o: Partial<SearchEntry> = {}) => e({ id, title, channel: 'Dua Lipa', verified: true, duration: 204, views: 9e8, ...o });
+    const entries = [
+      up('OFFTAGONLY0', 'Dua Lipa - Levitating [OFFICIAL]'),
+      up('OFFHDTAG000', 'Dua Lipa - Levitating (Official HD)', { views: 1e6 }),
+      up('OFFAUDIO000', 'Dua Lipa - Levitating (Official Audio)', { views: 1e3 }),
+      up('OFFLYRIC000', 'Dua Lipa - Levitating (Official Lyric Video)', { views: 1e3 }),
+      e({ id: 'LYRIC000000', title: 'Dua Lipa - Levitating (Lyrics)', channel: 'ChillTracks', duration: 204, views: 1e9 }),
+    ];
+    expect(ids(req, entries)).toEqual(['official:OFFLYRIC000', 'official:OFFAUDIO000', 'official:OFFTAGONLY0', 'official:OFFHDTAG000', 'lyric:LYRIC000000']);
+    // Only on the artist's verified channel, and only when "official" is all the tag says.
+    expect(reasonFor(req, [up('OFFUNVERIF0', 'Dua Lipa - Levitating [OFFICIAL]', { verified: false })], 'OFFUNVERIF0')).toBe("unverified channel using the artist's name");
+    expect(reasonFor(req, [up('SESSION0000', 'Dua Lipa - Levitating (Official) (Paris Session)')], 'SESSION0000')).toBe('official upload, but not lyric/audio');
+    // Labelled a music video: still the music-video fallback.
+    expect(ids(req, [up('OFFMV000000', 'Dua Lipa - Levitating [OFFICIAL VIDEO]')])).toEqual(['music-video:OFFMV000000']);
+  });
+
+  it('Liều Thuốc Cho Trái Tim (Slowed): no official upload of this version exists; the third-party upload at the official length is the last resort', () => {
+    const req = { artist: 'Nguyễn Đình Vũ, Neko Lê & flechazowu', title: 'Liều Thuốc Cho Trái Tim (Slowed)', durationSec: 397 };
+    // "Toxic dope", 397 s, 87 k views: names the song and the first artist, and the requested "slowed".
+    expect(ids(req, lieuThuoc)).toEqual(['third-party:hLTJD5VmzkM']);
+    expect(reasonFor(req, lieuThuoc, 'Ohe_KqhgdWM')).toBe('not the requested "slowed"'); // 396 s, not the slowed version
+    expect(reasonFor(req, lieuThuoc, 'O9lg-wWqiWU')).toBe('different artist'); // the same channel's other songs
+    // It was not in the results of the full-credit searches; the first-artist search found it.
+    expect(primaryArtistQuery(req)).toBe('Nguyễn Đình Vũ Liều Thuốc Cho Trái Tim (Slowed)');
+  });
+
+  it('the third-party tier: -1 .. +2 s, closest length first, then views; not when posing as official', () => {
+    expect(THIRD_PARTY_WINDOW).toEqual([-1, 2]);
+    const req = { artist: 'Dua Lipa', title: 'Levitating', durationSec: 203 };
+    const up = (id: string, duration: number, o: Partial<SearchEntry> = {}) => e({ id, title: 'Dua Lipa - Levitating', channel: `Uploader ${id}`, duration, ...o });
+    const entries = [up('PLUS3000000', 206), up('PLUS2000000', 205, { views: 9e9 }), up('EXACT000000', 203, { views: 10 }), up('MINUS100000', 202), up('MINUS200000', 201)];
+    expect(ids(req, entries)).toEqual(['third-party:EXACT000000', 'third-party:MINUS100000', 'third-party:PLUS2000000']);
+    expect(reasonFor(req, entries, 'PLUS3000000')).toBe('not official, not a lyric video');
+    expect(reasonFor(req, entries, 'MINUS200000')).toBe('length 201 s vs 203 s');
+    // The alternates' wider window does not widen it.
+    expect(rankCandidates(req, entries, { window: ALT_WINDOW }).ranked.map((r) => r.entry.id)).toEqual(['EXACT000000', 'MINUS100000', 'PLUS2000000']);
+    // Posing as official, or a label / VEVO / Topic look-alike, or no channel at all: not even the last resort.
+    for (const o of [{ title: 'Dua Lipa - Levitating (Official Audio)' }, { channel: 'Gran Republica Records' }, { channel: 'DuaFanVEVO' }, { channel: 'Pop Hits - Topic' }, { channel: 'Atlantic Records' }, { channel: '', views: null }]) {
+      expect(ids(req, [up('POSER000000', 203, o)])).toEqual([]);
+    }
+  });
+
+  it('the third-party tier never outranks another tier, in every fixture and around era tags', () => {
+    const reqs: SongRequest[] = [
+      { artist: 'Taylor Swift', title: 'Shake It Off', durationSec: 219 },
+      { artist: 'Shakira', title: "Hips Don't Lie (feat. Wyclef Jean)", durationSec: 218 },
+      { artist: '21 Savage, Offset & Metro Boomin', title: 'Rap Saved Me (feat. Quavo)', durationSec: 258 },
+      { artist: 'Real McCoy', title: 'Run Away', durationSec: 245 },
+      { artist: 'Fito Olivares', title: 'Que Te Vas Y Te Vas', durationSec: 199 },
+      { artist: 'Bassnectar', title: 'The 808 Track (feat. Mighty High Coup)', durationSec: 271 },
+    ];
+    const lists = Object.values(allFixtures as Record<string, SearchEntry[]>).filter(Array.isArray);
+    const order = (t: string) => TIERS.indexOf(t as (typeof TIERS)[number]);
+    for (const req of reqs) {
+      for (const list of lists) {
+        for (const opts of [{}, { window: ALT_WINDOW }]) {
+          const tiers = rankCandidates(req, list, opts).ranked.map((r) => r.tier);
+          const firstThird = tiers.indexOf('third-party');
+          if (firstThird >= 0) expect(tiers.slice(firstThird).every((t) => t === 'third-party')).toBe(true);
+          expect(tiers.filter((t) => t !== 'third-party').every((t) => order(t) >= 0)).toBe(true);
+        }
+      }
+    }
+    // A style-tagged art track goes after untagged trusted uploads, but still before the last resort.
+    const req = { artist: 'a-ha', title: 'Take On Me', durationSec: 225 };
+    const styled = e({ id: 'STYLETAG000', title: 'Take On Me (1920s Style)', channel: 'a-ha', verified: true, duration: 225, description: 'Provided to YouTube by Rhino' });
+    const fan = e({ id: 'FANUPLOAD00', title: 'a-ha - Take On Me', channel: 'Some Fan', duration: 225, views: 9e9 });
+    expect(ids(req, [fan, styled])).toEqual(['topic:STYLETAG000', 'third-party:FANUPLOAD00']);
+  });
+});
+
+describe('searches and messages', () => {
+  it('searches the first credited artist last, only when the credit names several', () => {
+    const req = { artist: 'Nguyễn Đình Vũ, Neko Lê & flechazowu', title: 'Liều Thuốc Cho Trái Tim (Slowed)' };
+    expect(fallbackQueries(req)).toEqual(['Nguyễn Đình Vũ, Neko Lê & flechazowu Liều Thuốc Cho Trái Tim (Slowed)', 'Nguyễn Đình Vũ Liều Thuốc Cho Trái Tim (Slowed)']);
+    expect(primaryArtistQuery({ artist: 'Shakira', title: "Hips Don't Lie (feat. Wyclef Jean)" })).toBeNull();
+    expect(fallbackQueries({ artist: 'Shakira', title: "Hips Don't Lie (feat. Wyclef Jean)" })).toEqual(["Shakira Hips Don't Lie"]);
+    expect(primaryArtistQuery({ artist: 'Calvin Harris feat. Rihanna', title: 'This Is What You Came For' })).toBe('Calvin Harris This Is What You Came For');
+    expect(primaryArtistQuery({ artist: 'Simon & Garfunkel', title: 'The Boxer' })).toBe('Simon The Boxer');
+  });
+
+  it('the fallback searches run while nothing better than the last resort ranks', () => {
+    expect(needsMoreSearch([])).toBe(true);
+    expect(needsMoreSearch([{ tier: 'third-party' }])).toBe(true);
+    expect(needsMoreSearch([{ tier: 'music-video' }, { tier: 'third-party' }])).toBe(false);
+  });
+
+  it('a stripped copy of a video is replaced by a later, complete one (first position kept)', () => {
+    const stripped = e({ id: 'IdnBTJiUVDQ', title: 'Bassnectar- The 808 Track (feat. Mighty High Coup) [OFFICIAL]', channel: '', views: null, duration: 272 });
+    const full = { ...stripped, channel: 'Bassnectar', verified: true, views: 3501815 };
+    const other = e({ id: 'OTHER000000', title: 'x', channel: 'y' });
+    expect(mergeSearches([[stripped, other], [other, full]])).toEqual([full, other]);
+    // A complete first copy stays.
+    expect(mergeSearches([[full], [{ ...full, views: 1 }]])).toEqual([full]);
+  });
+
+  it('says why nothing ranked: no results, nothing matching, wrong length, or no trusted source', () => {
+    const req = { artist: 'Dua Lipa', title: 'Levitating', durationSec: 203 };
+    const msg = (entries: SearchEntry[]) => notFoundMessage(req, entries, rankCandidates(req, entries).rejected);
+    expect(msg([])).toBe("YouTube's search returned no videos for this song.");
+    expect(msg([e({ id: 'OTHERSONG00', title: 'Dua Lipa - Physical (Lyrics)', channel: 'Lyrics', duration: 203 })])).toMatch(/^Couldn't find a YouTube video of this song: the search results were other songs/);
+    expect(msg([e({ id: 'TOOLONG0000', title: 'Dua Lipa - Levitating (Lyrics)', channel: 'Lyrics', duration: 240 })])).toBe('Found a video of this song, but none at its official length (3:23).');
+    const few = e({ id: 'FEWVIEWS000', title: 'Dua Lipa - Levitating (Lyrics)', channel: 'Lyrics', duration: 204, views: 50 });
+    expect(msg([few, { ...few, id: 'FEWVIEWS001', duration: 240 }])).toBe(
+      "Found an upload of this song at its official length, but not from a source the picker trusts (the artist's or label's channel, a popular lyric video or an art track).",
+    );
   });
 });
 

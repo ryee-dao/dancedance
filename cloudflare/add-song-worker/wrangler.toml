@@ -9,7 +9,7 @@ compatibility_date = "2026-10-01"
 # Your repository, as owner/name.
 GITHUB_REPO = "ryee-dao/dancedance"
 # Pages origin (no path) plus the local dev server, comma-separated.
-ALLOWED_ORIGINS = "https://ryee-dao.github.io,http://localhost:5173"
+ALLOWED_ORIGINS = "https://ryandao.dev,https://ryee-dao.github.io,http://localhost:5173"
 # Soft cap on songs added per 24 hours (counts the workflow's manual runs).
 DAILY_LIMIT = "30"
 # Soft cap on shared beat maps (POST /map) per 24 hours (counts "Contributed beat map" runs).

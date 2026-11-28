@@ -402,3 +402,54 @@ describe('add-song relay', () => {
     expect((await read(await handle(new Request('https://relay.example/runs'), { ALLOWED_ORIGINS: ORIGIN }, leak, NOW))).body.error).toBe('not-configured');
   });
 });
+
+describe('a chosen video (relay version 3)', () => {
+  const inputsOf = (f: ReturnType<typeof upstream>) => JSON.parse(String(f.calls.find((c) => c.url.endsWith('/dispatches'))!.init!.body)).inputs as Record<string, string>;
+
+  it('forwards video and force as add_video / add_video_force, for queued songs too, and echoes video', async () => {
+    const f = upstream();
+    const r = await read(await handle(add({ trackId: 1440936016, video: '8O7yWgX6--4', force: true, queue: [{ trackId: 7, video: '3Mq0VpLSnwc' }] }), env, f, NOW));
+    expect(r.status).toBe(200);
+    expect(r.body.video).toBe('8O7yWgX6--4');
+    const inputs = inputsOf(f);
+    expect(inputs).toMatchObject({ add_artist: 'Taylor Swift', add_title: 'Shake It Off', add_video: '8O7yWgX6--4', add_video_force: 'true' });
+    expect(JSON.parse(inputs.add_queue)).toEqual([{ artist: 'ABBA', title: 'Waterloo', duration: 165, video: '3Mq0VpLSnwc' }]);
+  });
+
+  it('a plain add sends no video inputs (older workflows still take it) and no video in the answer', async () => {
+    const f = upstream();
+    const r = await read(await handle(add({ trackId: 1440936016, queue: [7] }), env, f, NOW));
+    expect(r.body).not.toHaveProperty('video');
+    expect(Object.keys(inputsOf(f)).sort()).toEqual(['add_artist', 'add_duration', 'add_queue', 'add_title']);
+  });
+
+  it('keeps the video when it falls back to the app’s details', async () => {
+    const f = upstream({ lookupStatus: 503 });
+    const r = await read(await handle(add({ trackId: 1440936016, song: { artist: 'A', title: 'T', durationSec: 200 }, video: '8O7yWgX6--4' }), env, f, NOW));
+    expect(r.body).toMatchObject({ ok: true, source: 'client', video: '8O7yWgX6--4' });
+    expect(inputsOf(f)).toMatchObject({ add_artist: 'A', add_video: '8O7yWgX6--4' });
+    expect(inputsOf(f)).not.toHaveProperty('add_video_force');
+  });
+
+  it('rejects anything but an 11-character ID and a boolean force (with a video), without dispatching', async () => {
+    const bad: [unknown, string][] = [
+      [{ video: 'https://youtu.be/8O7yWgX6--4' }, 'video'],
+      [{ video: '8O7yWgX6--4"; echo' }, 'video'],
+      [{ video: 12345678901 }, 'video'],
+      [{ video: '8O7yWgX6--4', force: 'true' }, 'force'],
+      [{ force: true }, 'force'],
+      [{ queue: [{ trackId: 7, video: 'nope' }] }, 'queue-video'],
+      [{ queue: [{ trackId: 7, force: true }] }, 'queue-force'],
+    ];
+    for (const [extra, detail] of bad) {
+      const f = upstream();
+      const r = await read(await handle(add({ trackId: 1440936016, ...(extra as object) }), env, f, NOW));
+      expect(r, detail).toMatchObject({ status: 400, body: { ok: false, error: 'bad-request', detail } });
+      expect(f.calls).toEqual([]);
+    }
+  });
+
+  it('reports version 3', () => {
+    expect(RELAY_VERSION).toBe(3);
+  });
+});

@@ -9,6 +9,10 @@
  * it and lists it in public/songs.json. The official length comes from iTunes
  * unless given. The workflow passes --add-artist/--add-title/--add-duration
  * (separate values, so no splitting) and --add-queue (JSON from the app).
+ * --add-video <id> uses the video the person chose (a pasted link) instead of
+ * searching: it is checked against the same rules and added when it matches;
+ * otherwise songs-status.json says why ('video-mismatch'), and --add-video-force
+ * ("Use it anyway") adds it regardless.
  *
  * Contributed-map mode (a map a player's browser made, forwarded by the relay):
  *   MAP_JSON='<json>' npm run beatmaps -- --contributed-map
@@ -35,11 +39,11 @@ import { runBeatmaps, type Deps } from './pipeline';
 import { lookupOfficial } from './itunes';
 import { genreHttp } from './genreClient';
 import { lookupGenres } from '../../src/genre';
-import { cleanRequest, MAX_ADDS, parseQueue, splitArtistTitle } from './pick';
+import { cleanRequest, cleanVideoId, MAX_ADDS, parseQueue, splitArtistTitle } from './pick';
 import { VIDEO_ID_RE } from './select';
 import type { AddRequest } from './songs';
 import { renderAnnotations, renderSummary } from './summary';
-import { checkEmbed, decodeWithFfmpeg, downloadAudio, fetchFlatPlaylist, hasCommand, searchVideos, type YtDlpOptions } from './youtube';
+import { checkEmbed, decodeWithFfmpeg, downloadAudio, fetchFlatPlaylist, fetchVideoInfo, hasCommand, searchVideos, type YtDlpOptions } from './youtube';
 
 export const DEFAULT_LIMIT = 25;
 
@@ -64,6 +68,8 @@ export function parseArgs(argv: string[]): CliArgs {
   let addTitle: string | undefined;
   let addDuration: string | undefined;
   let duration: string | undefined;
+  let addVideo: string | undefined;
+  let addVideoForce = false;
   const queue: AddRequest[] = [];
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i];
@@ -119,6 +125,15 @@ export function parseArgs(argv: string[]): CliArgs {
       case '--add-duration':
         addDuration = val();
         break;
+      case '--add-video': {
+        // Empty = search as usual (the workflow passes its input as it is).
+        const v = val().trim();
+        if (v) addVideo = v;
+        break;
+      }
+      case '--add-video-force':
+        addVideoForce = true;
+        break;
       case '--add-queue':
         queue.push(...parseQueue(val()).map((r) => ({ ...r, explicit: false })));
         break;
@@ -140,6 +155,13 @@ export function parseArgs(argv: string[]): CliArgs {
     if (a.adds.length !== 1 || !Number.isFinite(n) || n < 20 || n > 900) throw new Error('--duration is the length in seconds (20-900) of a single --add');
     a.adds[0].durationSec = Math.round(n);
   }
+  if (addVideo !== undefined || addVideoForce) {
+    const id = cleanVideoId(addVideo);
+    if (!id) throw new Error('--add-video needs an 11-character YouTube video ID (and --add-video-force needs --add-video)');
+    if (a.adds.length !== 1) throw new Error('--add-video goes with a single --add (or --add-artist / --add-title)');
+    a.adds[0].videoId = id;
+    if (addVideoForce) a.adds[0].force = true;
+  }
   a.adds.push(...queue);
   if (a.adds.length > MAX_ADDS) a.adds = a.adds.slice(0, MAX_ADDS);
   if (a.adds.length && a.only) throw new Error('--add and --only cannot be combined');
@@ -160,6 +182,9 @@ const USAGE = `Usage: npm run beatmaps -- [--only <videoId>] [--limit <n>] [--fo
 Add a song by search (finds the YouTube video, makes its beat map, lists it in public/songs.json):
   npm run beatmaps -- --add "Artist - Title" [--duration <seconds>] [--dry-run]
   --add "A - T"   repeatable; the official length is looked up on iTunes unless --duration is given
+  --add-video id  with a single --add: use this YouTube video instead of searching; it is added only
+                  if it looks like the song (else songs-status.json says why: 'video-mismatch')
+  --add-video-force  add the --add-video video even if it doesn't look like the song
   --dry-run       search and pick the video, but download and write nothing`;
 
 async function main(): Promise<number> {
@@ -234,6 +259,7 @@ async function main(): Promise<number> {
       fetchPlaylist: (url) => fetchFlatPlaylist(url, ytOpts),
       searchVideos: (q) => searchVideos(q, ytOpts),
       checkEmbed: (id) => checkEmbed(id),
+      videoInfo: (id) => fetchVideoInfo(id, ytOpts),
       lookupOfficial: (req) => lookupOfficial(req),
       lookupGenres: (song, previous) => lookupGenres(song, { http: genres, previous }),
       downloadAudio: (id, dir, o) => downloadAudio(id, dir, o?.light ? { ...ytOpts, lightAttempts: true } : ytOpts),

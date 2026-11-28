@@ -188,6 +188,39 @@ describe('add a song by search', () => {
     expect(out.report.adds?.[0]).toMatchObject({ kind: 'added', videoId: 'lyricvid001' });
   });
 
+  it('searches "<first artist> Title" last for a credit naming several artists; a third-party upload alone does not stop the searches', async () => {
+    const req: AddRequest = { artist: 'Dua Lipa, DaBaby & Friend', title: 'Levitating', durationSec: 203, explicit: true };
+    // Someone else's upload at the official length: the last resort, found by the first searches.
+    const fan = { id: 'fanupload01', title: 'Dua Lipa - Levitating', channel: 'Some Fan', view_count: 5e4, duration: 204 };
+    const search = async (q: string) => (q === 'Dua Lipa Levitating' ? results(LYRIC) : results(fan, REMIX));
+    const out = await runBeatmaps(paths, opts({ adds: [req] }), deps({ search, itunes: null }));
+    expect(searches).toEqual([
+      'Dua Lipa, DaBaby & Friend Levitating lyrics',
+      'Dua Lipa, DaBaby & Friend Levitating official audio',
+      'Dua Lipa, DaBaby & Friend Levitating',
+      'Dua Lipa Levitating',
+    ]);
+    expect(out.report.adds?.[0]).toMatchObject({ kind: 'added', videoId: 'lyricvid001', tier: 'lyric' });
+  });
+
+  it("uses someone else's upload at the official length when nothing else passes, and marks it in songs.json", async () => {
+    const fan = { id: 'fanupload01', title: 'Dua Lipa - Levitating', channel: 'Some Fan', view_count: 5e4, duration: 204 };
+    const out = await runBeatmaps(paths, opts(), deps({ search: async () => results(fan, REMIX) }));
+    // The plain search ran too (third-party alone does not stop the searches); one artist: no fourth search.
+    expect(searches).toEqual(['Dua Lipa Levitating lyrics', 'Dua Lipa Levitating official audio', 'Dua Lipa Levitating']);
+    expect(out.report.adds?.[0]).toMatchObject({ kind: 'added', videoId: 'fanupload01', tier: 'third-party' });
+    expect(await songsOnDisk()).toMatchObject([{ videoId: 'fanupload01', note: 'third-party' }]);
+  });
+
+  it('says why nothing was found: wrong length, or no trusted source at the official length', async () => {
+    const long = { ...LYRIC, duration: 260 };
+    await runBeatmaps(paths, opts(), deps({ search: async () => results(long, REMIX) }));
+    expect((await statusOnDisk())['dua lipa - levitating']?.message).toBe('Found a video of this song, but none at its official length (3:23).');
+    const fewViews = { ...LYRIC, view_count: 1000, duration: 208 };
+    await runBeatmaps(paths, opts(), deps({ search: async () => results(fewViews) }));
+    expect((await statusOnDisk())['dua lipa - levitating']?.message).toMatch(/^Found an upload of this song at its official length, but not from a source the picker trusts/);
+  });
+
   it('records "not found" for the app when nothing matches, and does not retry it by itself', async () => {
     const out = await runBeatmaps(paths, opts(), deps({ search: async () => results(REMIX) }));
     expect(out.exitCode).toBe(0);
@@ -198,7 +231,7 @@ describe('add a song by search', () => {
         artist: 'Dua Lipa',
         title: 'Levitating',
         durationSec: 203,
-        message: "Couldn't find a YouTube video of this song that matches its official length.",
+        message: "Couldn't find a YouTube video of this song: the search results were other songs, other artists or other versions (live, remix, cover and so on).",
         attempts: 1,
         lastTried: NOW.toISOString(),
       },

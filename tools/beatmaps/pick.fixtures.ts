@@ -506,3 +506,52 @@ export const queTeVas = rows([
   ["t7hUnwXJaRU","Que Te vas Y te Vas - Fito Olivares (REVERB)","Dragón_(EPICENTER)",false,2697,201,""],
   ["GA0yfcOhnJ8","Que Te Vas - Fito Olivares","Jose Fernando CL",false,4232,207,"Muy buen ritmo en esta cumbia ..."],
 ]);
+
+/**
+ * Real results of 2026-11-26 (merged as pipeline.ts merges them; "lyrics" came back with
+ * most entries stripped of channel and views, "official audio" had them).
+ * "Bassnectar The 808 Track lyrics" + "Bassnectar The 808 Track official audio" + "Bassnectar The 808 Track" */
+export const the808Track = rows([
+  ["IdnBTJiUVDQ","Bassnectar- The 808 Track (feat. Mighty High Coup) [OFFICIAL]","Bassnectar",true,3501815,272,"The 808 Track (feat. Mighty High Coup) f"],
+  ["3Mq0VpLSnwc","The 808 Track (Bassnectar)","PURPLETAC0S69",false,90,314,"The 808 Track."],
+  ["pAMrGHa7ubM","Bassnectar - 808 Track [HQ]","The Moon Babies",false,111974,272,"From Wildstyle."],
+  ["vLTT7jGwm_U","Speakerbox (feat. Lafa Taylor)","",false,null,283,""],
+  ["41k1a9wpta0","Bassnectar - The 808 Track","",false,null,272,""],
+  ["h5s_0N417rM","Bassnectar- The 808 Track","",false,null,272,""],
+  ["gww1rBLMnU8","Bassnectar - Undercover ◈ [Reflective Part 4]","",false,null,149,""],
+  ["nGlIDlOqurA","Ellie Goulding - Lights (Bassnectar Remix) [FULL OFFICIAL]","",false,null,304,""],
+  ["njqDWNET8Ss","Bassnectar - The Matrix [HQ] [Lyrics]","",false,null,270,""],
+  ["JRftXCiqfQ8","Bassnectar - Bass Head (Official)","Bassnectar",true,28536481,397,"Just in time for Spring comes Bassnectar"],
+  ["ynDKvg1_P1A","Bassnectar- The 808 Track (feat. Mighty High Coup)","DubSt3pRadio",false,11942,272,"Check out the latest Bassnectar @: Faceb"],
+  ["jg-2WWiHV9Q","Bassnectar - The 808 Track (feat. Mighty High Coup)","sharmanhall1 !",false,2118,273,"Title: The 808 Track (feat. Mighty High "],
+  ["RUjigR12uvc","Bassnectar & The Mighty High Coup - The 808 Track","MutilateDub",false,305,272,""],
+  ["pstwHnVif3s","Bassnectar   The 808","Veverythingmedia12",false,55,273,""],
+  ["j1WVuo_LqlQ","Bassnectar  - 808 Track","TheClockWorkStone",false,121,272,"Hope you enjoy the song :D Like subscrib"],
+  ["YnMQFg9_dGc","Breaking Bad Season 4 (2011) The 808 Track (Soundtrack OST)","portaps19",false,254628,273,"01 Main Title 02 Bringing It Back 03 Tru"],
+  ["CLSS9Fv1olM","Bassnectar \"The 808\" track Summer Camp 2011","4womp2womp0",false,1245,247,"bassnectar at summer camp 2011."],
+  ["_d_YQno_Cuc","Bassnectar - Don't Hate The 808 Ft. Lafa Taylor","Bassnectar",true,809012,198,"OUT NOW! - http://www.bassnectar.net Pre"],
+]);
+
+/**
+ * Real results of 2026-11-26: the two searches, the plain one, then the first-artist one.
+ * "Nguyễn Đình Vũ, Neko Lê & flechazowu Liều Thuốc Cho Trái Tim (Slowed) lyrics" + "Nguyễn Đình Vũ, Neko Lê & flechazowu Liều Thuốc Cho Trái Tim (Slowed) official audio" + "Nguyễn Đình Vũ, Neko Lê & flechazowu Liều Thuốc Cho Trái Tim (Slowed)" + "Nguyễn Đình Vũ Liều Thuốc Cho Trái Tim (Slowed)" */
+export const lieuThuoc = rows([
+  ["O9lg-wWqiWU","Chúng ta sau này - T.R.I × 1 9 6 7 (𝙨𝙡𝙤𝙬𝙚𝙙 + 𝙧𝙚𝙫𝙚𝙧𝙗) /Toxic dope/","Toxic dope",true,6494,258,"Chúng ta sau này - T.R.I × 1 9 6 7 (slow"],
+  ["mM5Wgo7zCl8","chiều thứ hai - redt x 1 9 6 7 (𝙨𝙡𝙤𝙬𝙚𝙙 + 𝙧𝙚𝙫𝙚𝙧𝙗) /flechazowu/","flechazowu",true,9457,276,"các bạn nên đeo tai nghe để có trải nghi"],
+  ["oPytnWkC09Q","Cảm ơn em đã đến - Quang Hùng MasterD × 1 9 6 7 (𝙨𝙡𝙤𝙬𝙚𝙙 + 𝙧𝙚𝙫𝙚𝙧𝙗) /Toxic dope/","Toxic dope",true,37662,344,"Cảm ơn em đã đến - Quang Hùng MasterD × "],
+  ["2BoJRI9yxJE","Khi em lớn - Orange ft. Hoàng Dũng × 1 9 6 7 (𝙨𝙡𝙤𝙬𝙚𝙙 + 𝙧𝙚𝙫𝙚𝙧𝙗) /Toxic dope/","Toxic dope",true,7588,286,"Khi em lớn - Orange ft. Hoàng Dũng × 1 9"],
+  ["F33_8e8RIWk","Missing you - Phương Ly ft. Tinle × 1 9 6 7 (𝙨𝙡𝙤𝙬𝙚𝙙 + 𝙧𝙚𝙫𝙚𝙧𝙗) /Toxic dope/","Toxic dope",true,11886,263,"Missing you - Phương Ly ft. Tinle × 1 9 "],
+  ["fL1VWvJvltw","Trò đùa ? - Quang Đăng Trần × 1 9 6 7 (𝙨𝙡𝙤𝙬𝙚𝙙 + 𝙧𝙚𝙫𝙚𝙧𝙗) /Toxic dope/","Toxic dope",true,16066,295,"Trò đùa ? - Quang Đăng Trần × 1 9 6 7 (s"],
+  ["FYhbInI-sKs","chưa từng mặc váy cưới","gái hmong Hà Giang",false,26,21,""],
+  ["SCRcJ1PHxb4","◉ Playlist 47 ~ vì trái tim anh yêu em nhiều lắm...Tổng hợp những bản slowed gây nghiện!!","Toxic dope",true,7990,1896,"Playlist: Vì trái tim anh yêu em nhiều l"],
+  ["hLTJD5VmzkM","Liều thuốc cho trái tim - Nguyễn Đình Vũ ft. Neko × 1 9 6 7 (𝙨𝙡𝙤𝙬𝙚𝙙 +𝙧𝙚𝙫𝙚𝙧𝙗)/Toxic dope/","Toxic dope",true,87313,397,"Liều thuốc cho trái tim - Nguyễn Đình Vũ"],
+  ["RBH1MnN2ahs","Liều Thuốc Cho Trái Tim [ Lofi Ver. ]- | Nguyễn Đình Vũ x ft. Neko xMinn |- by Present? Music slowed","𝗣𝗿𝗲𝘀𝗲𝗻𝘁?",false,217,439,"Liều Thuốc Cho Trái Tim - Nhạc lofi chil"],
+  ["E6jIFSAj3Yk","lyrics LIỀU THUỐC CHO TRÁI TIM | NGUYỄN ĐÌNH VŨ x NEKO | REMAKE","Pi OFFICIAL",false,146,223,"Video Gốc : https://youtu.be/4TMNeEbj0kc"],
+  ["Ohe_KqhgdWM","[ Chill Music ]_Liều Thuốc Cho Trái Tim - Nguyễn Đình Vũ ft. Neko x Minn","Kể Truyện Hot",false,348,396,"Chill Music Lyrics Mùa đông như vây kín "],
+  ["i9aD-3TNFrA","Liều Thuốc Cho Trái Tim (Lofi Ver.)","Đenn - Topic",false,847,261,"Provided to YouTube by CT Media Liều Thu"],
+  ["zsZ-M7N1j3k","Liều Thuốc Cho Trái Tim | Trọn Đời Bên Em 2 | Part4 | Lý Hải","Thiên Mệnh",false,119,216,"Chúc anh chị em cô chú trong cuộc sống l"],
+  ["cGRvJ0pESNM","#PLAYLIST04 - Nhạc slowed lofi chill thất tình hợp tâm trạng - for cafe, relax, chill","Cố Niệm",false,12,2611,"00:00 Liều Thuốc Cho Trái Tim - Nguyễn Đ"],
+  ["7DkrmNasuHw","Tình yêu của anh - Phú Quí (𝙨𝙡𝙤𝙬𝙚𝙙 + 𝙧𝙚𝙫𝙚𝙧𝙗) /Toxic dope/","Toxic dope",true,3397,217,"Tình yêu của anh - Phú Quí (slowed + rev"],
+  ["UkDzoCdZIx0","Giọt Nước Mắt Mạnh Mẽ (#GNMMM) ‣ NGUYỄN ĐÌNH VŨ「Lyric Video」|| MUSIC CHIA TAY","ANH.",false,119,219,"Giúp em đạt 20000 Subscriber với ạ. Em c"],
+  ["8CwsfULh28s","Dối Lừa (Thazh x Đông Remix) - Nguyễn Đình Vũ ♫ Anh Đưa Tay Ra Để Cố Vuốt Ve Khuôn Mặt Em Thật Xinh","Air Remix",true,2977998,179,"Dối Lừa (Thazh x Đông Remix) - Nguyễn Đì"],
+]);

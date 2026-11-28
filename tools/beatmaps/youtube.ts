@@ -361,6 +361,22 @@ export async function searchVideos(query: string, o: YtDlpOptions, count = 10): 
   }
 }
 
+/**
+ * `yt-dlp -J <video>`: one video's metadata (real title, channel, length, live status,
+ * availability, playable_in_embed), no media. `--ignore-no-formats-error`: a video whose audio
+ * YouTube withholds from this machine still answers with its details (the download is tried later).
+ */
+export async function fetchVideoInfo(videoId: string, o: YtDlpOptions): Promise<unknown> {
+  const args = [...baseArgs(o), '-J', '--skip-download', '--no-playlist', '--ignore-no-formats-error', '--', `https://www.youtube.com/watch?v=${videoId}`];
+  const r = await run('yt-dlp', args, { timeoutMs: 120_000, maxStdout: 16 << 20 });
+  if (r.code !== 0) throw new ToolFailure(classifyYtDlpError(r.stderr), 'yt-dlp');
+  try {
+    return JSON.parse(r.stdout.toString('utf8'));
+  } catch {
+    throw new ToolFailure({ kind: 'error', summary: 'yt-dlp returned unreadable video JSON', detail: '' }, 'yt-dlp');
+  }
+}
+
 export type EmbedCheck = 'ok' | 'disabled' | 'gone' | 'unknown';
 
 /** Map an oEmbed HTTP status: 200 ok, 401/403 embedding disabled, 400/404 removed or private. */

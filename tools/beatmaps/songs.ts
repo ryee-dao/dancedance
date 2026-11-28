@@ -5,13 +5,17 @@
  *   songs.json         { updatedAt, songs: [{ videoId, title, artist, addedAt, durationSec, hasMap, note?, genre?, genres?, genreLevels?, artistGenres? }] }
  *                      oldest first; a song is listed as soon as its video is picked,
  *                      `hasMap` says whether beatmaps/<videoId>.json exists yet.
- *   songs-status.json  { updatedAt, requests: { [songKey]: { state, artist, title, durationSec?, videoId?, message?, attempts, lastTried } } }
+ *   songs-status.json  { updatedAt, requests: { [songKey]: { state, artist, title, durationSec?, videoId?, force?, message?, attempts, lastTried } } }
  *                      keys sorted; failed requests ('not-found', or 'blocked'/'error'
  *                      while searching), plus a 'map-pending' note for listed songs
  *                      whose download was refused; removed once the song has a map.
  *                      A map-pending note may carry `refused`: other uploads of the song
  *                      YouTube also withheld (videoId + when), so later runs skip them
  *                      for a while (REFUSED_FOR_MS). The app ignores the field.
+ *                      'video-mismatch': a video the person chose (videoId) that doesn't look
+ *                      like the song; the app offers "Use it anyway" (sent again with force).
+ *                      A request with a chosen video keeps `videoId` / `force` in its
+ *                      'blocked' / 'error' entry, so the automatic retry uses that video.
  */
 import { parseSongsList, parseSongsStatus, songKey, type AddedSong, type SongRequestStatus } from '../../src/beat/cloud';
 import { renderStable, toJsonText } from './output';
@@ -85,6 +89,10 @@ export interface AddRequest {
    * before. Queue entries from the app and automatic retries are not explicit.
    */
   explicit: boolean;
+  /** The video the person chose (a pasted link): checked and used instead of a search. */
+  videoId?: string;
+  /** With `videoId`: add it even if it doesn't look like the song ("Use it anyway"). */
+  force?: boolean;
 }
 
 export interface AddPlanItem {
@@ -96,7 +104,7 @@ export interface AddPlanItem {
 export interface AddSkip {
   key: string;
   req: AddRequest;
-  why: 'already added' | 'not found before' | 'waiting to retry';
+  why: 'already added' | 'not found before' | 'waiting to retry' | 'waiting for the person';
 }
 
 /**
@@ -140,6 +148,7 @@ function normRequest(r: RequestStatus): RequestStatus {
     title: r.title,
     ...(r.durationSec !== undefined ? { durationSec: r.durationSec } : {}),
     ...(r.videoId !== undefined ? { videoId: r.videoId } : {}),
+    ...(r.videoId !== undefined && r.force ? { force: true } : {}),
     ...(r.message !== undefined ? { message: r.message } : {}),
     attempts: r.attempts,
     lastTried: r.lastTried,
@@ -157,7 +166,7 @@ const HOUR = 3600_000;
 
 /** Backoff for automatic retries of blocked/error requests: 1 h, 2 h, 4 h ... capped at 24 h. */
 export function requestRetryDue(s: SongRequestStatus, now: Date): boolean {
-  if (s.state === 'not-found' || s.state === 'map-pending') return false;
+  if (s.state === 'not-found' || s.state === 'map-pending' || s.state === 'video-mismatch') return false;
   const last = Date.parse(s.lastTried);
   if (!Number.isFinite(last)) return true;
   const delay = Math.min(24 * HOUR, HOUR * 2 ** Math.max(0, s.attempts - 1));
@@ -184,25 +193,47 @@ export function planAdds(
     const prev = byKey.get(key);
     if (!prev) byKey.set(key, { ...r });
     else {
+      // The explicit request (this run's own) says which video, if any; else the first that names one.
+      if (r.explicit && !prev.explicit) {
+        if (r.videoId) {
+          prev.videoId = r.videoId;
+          prev.force = r.force;
+        } else {
+          delete prev.videoId;
+          delete prev.force;
+        }
+      } else if (!prev.explicit && !prev.videoId && r.videoId) {
+        prev.videoId = r.videoId;
+        prev.force = r.force;
+      }
       prev.explicit ||= r.explicit;
       prev.durationSec ??= r.durationSec;
     }
   }
+  // A blocked/error entry of a request with a chosen video: retried with that video, not a search.
+  const chosen = (st: SongRequestStatus) =>
+    (st.state === 'blocked' || st.state === 'error') && st.videoId ? { videoId: st.videoId, ...(st.force ? { force: true } : {}) } : {};
   const todo: AddPlanItem[] = [];
   const skipped: AddSkip[] = [];
   for (const [key, req] of byKey) {
     const st = status[key];
+    if (req.videoId === undefined) delete req.force;
     if (added.has(key)) skipped.push({ key, req, why: 'already added' });
     else if (!st) todo.push({ key, req, why: 'new' });
     else if (req.explicit) todo.push({ key, req: { ...req, durationSec: req.durationSec ?? st.durationSec }, why: 'again' });
-    else if (st.state === 'not-found') skipped.push({ key, req, why: 'not found before' });
-    else if (due(st)) todo.push({ key, req: { ...req, durationSec: req.durationSec ?? st.durationSec }, why: 'retry' });
+    else if (st.state === 'not-found' || st.state === 'video-mismatch') {
+      // A queued request (re-sent by the app) asking for what this answer didn't cover: a video
+      // other than the one checked, or the same one with "Use it anyway" (a run GitHub dropped).
+      const unanswered = !!req.videoId && (req.videoId !== st.videoId || (!!req.force && st.state === 'video-mismatch'));
+      if (unanswered) todo.push({ key, req: { ...req, durationSec: req.durationSec ?? st.durationSec }, why: 'new' });
+      else skipped.push({ key, req, why: st.state === 'not-found' ? 'not found before' : 'waiting for the person' });
+    } else if (due(st)) todo.push({ key, req: { ...req, durationSec: req.durationSec ?? st.durationSec, ...(req.videoId ? {} : chosen(st)) }, why: 'retry' });
     else skipped.push({ key, req, why: 'waiting to retry' });
   }
   // Automatic retries of earlier blocked/error requests nobody asked for again.
   for (const [key, st] of Object.entries(status).sort(([a], [b]) => a.localeCompare(b))) {
     if (byKey.has(key) || added.has(key) || !due(st)) continue;
-    todo.push({ key, req: { artist: st.artist, title: st.title, durationSec: st.durationSec, explicit: false }, why: 'retry' });
+    todo.push({ key, req: { artist: st.artist, title: st.title, durationSec: st.durationSec, explicit: false, ...chosen(st) }, why: 'retry' });
   }
   return { todo: todo.slice(0, MAX_ADDS), skipped };
 }

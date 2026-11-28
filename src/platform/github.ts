@@ -87,7 +87,13 @@ export interface SongInput {
   artist: string;
   title: string;
   durationSec: number;
+  /** A YouTube video the person chose (pasted link): the job checks and uses it instead of searching. */
+  videoId?: string;
+  /** With videoId: add it even if it doesn't look like the song ("Use it anyway"). */
+  force?: boolean;
 }
+
+const VIDEO_ID_RE = /^[A-Za-z0-9_-]{11}$/;
 
 export type DispatchError =
   | 'auth' // 401: bad, expired or revoked token
@@ -105,14 +111,27 @@ type FetchFn = (url: string, init: RequestInit) => Promise<Pick<Response, 'statu
 /** At most this many other waiting songs ride along in `add_queue`. */
 export const MAX_QUEUE = 9;
 
-/** The exact request the app sends (exported for tests). */
+/**
+ * The exact request the app sends (exported for tests). The same inputs as the relay's
+ * dispatchBody (cloudflare/add-song-worker): add_video / add_video_force only when a video was
+ * chosen, so an older workflow without them still accepts plain adds.
+ */
 export function dispatchRequest(token: string, repo: RepoRef, song: SongInput, queue: SongInput[]): { url: string; init: RequestInit } {
   const inputs: Record<string, string> = {
     add_artist: song.artist,
     add_title: song.title,
     add_duration: String(Math.round(song.durationSec)),
   };
-  const others = queue.slice(0, MAX_QUEUE).map((q) => ({ artist: q.artist, title: q.title, duration: Math.round(q.durationSec) }));
+  const video = (s: SongInput) => (s.videoId && VIDEO_ID_RE.test(s.videoId) ? s.videoId : undefined);
+  const v = video(song);
+  if (v) {
+    inputs.add_video = v;
+    if (song.force) inputs.add_video_force = 'true';
+  }
+  const others = queue.slice(0, MAX_QUEUE).map((q) => {
+    const qv = video(q);
+    return { artist: q.artist, title: q.title, duration: Math.round(q.durationSec), ...(qv ? { video: qv, ...(q.force ? { force: true } : {}) } : {}) };
+  });
   // Only sent when non-empty, so an older workflow without this input still accepts single adds.
   if (others.length) inputs.add_queue = JSON.stringify(others);
   return {

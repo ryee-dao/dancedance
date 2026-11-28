@@ -397,6 +397,7 @@ ${backHome(base)}"""
         SongPicker.Tier.LYRIC -> "Lyric video"
         SongPicker.Tier.TOPIC -> "Official audio track"
         SongPicker.Tier.MUSIC_VIDEO -> "Official music video (no lyric/audio version matched)"
+        SongPicker.Tier.THIRD_PARTY -> "Someone else's upload (nothing official matched)"
     }
 
     private fun addForm(base: String, req: SongPicker.Request, r: SongPicker.Ranked, label: String) = """

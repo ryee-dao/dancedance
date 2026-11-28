@@ -28,7 +28,7 @@ import { normalizeName } from '../../src/beat/cloud';
 import { deezerUrl, parseDeezer } from '../../src/ui/deezer';
 import { looksCensored, mergeCatalogs } from '../../src/ui/songMerge';
 import { itunesUrl, parseItunesResults, type SongHit } from '../../src/ui/songSearch';
-import { degradedSearch, fallbackQuery, mergeSearches, parseSearch, rankCandidates, requestCore, searchQueries, type SearchEntry, type SongRequest } from '../beatmaps/pick';
+import { degradedSearch, fallbackQueries, mergeSearches, needsMoreSearch, parseSearch, rankCandidates, requestCore, searchQueries, type SearchEntry, type SongRequest } from '../beatmaps/pick';
 import { EXPLICIT_SAMPLE, SAMPLE, type SampleSong } from './pickSample';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -145,8 +145,9 @@ async function pick(req: SongRequest) {
   const lists: SearchEntry[][] = [];
   for (const q of searchQueries(req)) lists.push(await ytSearch(q));
   let res = rankCandidates(req, mergeSearches(lists));
-  if (!res.ranked.length) {
-    lists.push(await ytSearch(fallbackQuery(req)));
+  for (const q of fallbackQueries(req)) {
+    if (!needsMoreSearch(res.ranked)) break;
+    lists.push(await ytSearch(q));
     res = rankCandidates(req, mergeSearches(lists));
   }
   return res;
