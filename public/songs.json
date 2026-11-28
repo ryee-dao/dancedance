@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-27T02:25:55.391Z",
+  "updatedAt": "2026-11-28T01:22:29.323Z",
   "songs": [
     {
       "videoId": "_Vj092UgKwQ",
@@ -726,6 +726,66 @@
       ],
       "artistGenres": [
         "dance"
+      ]
+    },
+    {
+      "videoId": "IdnBTJiUVDQ",
+      "title": "The 808 Track (feat. Mighty High Coup)",
+      "artist": "Bassnectar",
+      "addedAt": "2026-11-28T01:21:09.602Z",
+      "durationSec": 271,
+      "hasMap": true,
+      "genre": "Electronic",
+      "genres": [
+        "dubstep",
+        "breaks",
+        "drum and bass",
+        "electronic",
+        "bass"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "dubstep",
+        "drumstep",
+        "drum and bass",
+        "breakbeat"
+      ]
+    },
+    {
+      "videoId": "Y49iv2VZhCk",
+      "title": "Stereo Love",
+      "artist": "Edward Maya & Vika Jigulina",
+      "addedAt": "2026-11-28T01:21:52.495Z",
+      "durationSec": 248,
+      "hasMap": true,
+      "genre": "Dance",
+      "genres": [
+        "popcorn",
+        "latin house",
+        "Eurodance",
+        "house",
+        "techno",
+        "trance"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "deep house",
+        "house",
+        "progressive house",
+        "electro house"
       ]
     }
   ]

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-27T09:11:27.274Z",
+  "updatedAt": "2026-11-28T01:22:29.323Z",
   "songs": {
     "21 savage offset metro boomin - rap saved me feat quavo": {
       "artist": "21 Savage, Offset & Metro Boomin",
@@ -1716,6 +1716,229 @@
             "Pop"
           ],
           "ref": "artist/217039 (Backstreet Boys)"
+        }
+      }
+    },
+    "bassnectar - the 808 track feat mighty high coup": {
+      "artist": "Bassnectar",
+      "title": "The 808 Track (feat. Mighty High Coup)",
+      "videoIds": [
+        "IdnBTJiUVDQ"
+      ],
+      "genres": [
+        "dubstep",
+        "breaks",
+        "drum and bass",
+        "electronic",
+        "bass"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "dubstep",
+        "drumstep",
+        "drum and bass",
+        "breakbeat"
+      ],
+      "complete": true,
+      "at": "2026-11-28T01:21:18.799Z",
+      "sources": {
+        "wikipedia": {
+          "status": "none",
+          "reason": "no article about this song",
+          "at": "2026-11-28T01:21:11.010Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "none",
+          "reason": "no item with this title",
+          "at": "2026-11-28T01:21:09.865Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "dubstep",
+            "breaks",
+            "electronic",
+            "abstract electronic",
+            "bass",
+            "downtempo",
+            "grime"
+          ],
+          "counts": [
+            3,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "recording/813bc1bb-57cc-4ccf-a1e0-d5f8ff6d0aca",
+          "at": "2026-11-28T01:21:13.796Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "none",
+          "reason": "no track by this artist with this title",
+          "at": "2026-11-28T01:21:09.867Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Electronic"
+          ],
+          "ref": "stored",
+          "at": "2026-11-28T01:21:09.605Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-28T01:21:09.605Z"
+        },
+        "musicbrainz-album": {
+          "status": "found",
+          "genres": [
+            "breaks",
+            "drum and bass",
+            "dubstep",
+            "electronica"
+          ],
+          "counts": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "ref": "release-group/9762b532-be21-4166-a944-4f52d8fa51b7 (Wildstyle; release of the matched recording)",
+          "links": {
+            "mbReleaseGroup": "9762b532-be21-4166-a944-4f52d8fa51b7",
+            "album": "Wildstyle",
+            "wikidata": "Q8001522",
+            "enwiki": "Wildstyle (album)"
+          },
+          "at": "2026-11-28T01:21:15.112Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "found",
+          "genres": [
+            "Dubstep",
+            "electronica"
+          ],
+          "ref": "Wildstyle (album)",
+          "links": {
+            "wikidata": "Q8001522"
+          },
+          "at": "2026-11-28T01:21:15.467Z"
+        },
+        "wikidata-album": {
+          "status": "found",
+          "genres": [
+            "drum and bass",
+            "dubstep",
+            "electronica"
+          ],
+          "ref": "Q8001522",
+          "at": "2026-11-28T01:21:16.452Z"
+        },
+        "discogs-album": {
+          "status": "none",
+          "reason": "no Discogs master linked from the MusicBrainz album",
+          "at": "2026-11-28T01:21:15.113Z"
+        },
+        "itunes-album": {
+          "status": "found",
+          "genres": [
+            "Electronic"
+          ],
+          "ref": "collection/1527162009 (Wildstyle)",
+          "links": {
+            "album": "Wildstyle"
+          },
+          "at": "2026-11-28T01:21:13.089Z"
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "genres": [
+            "dubstep",
+            "breakbeat",
+            "electronic",
+            "downtempo",
+            "drum and bass",
+            "drumstep",
+            "electronica",
+            "idm",
+            "nu skool breaks",
+            "post-dubstep"
+          ],
+          "counts": [
+            6,
+            4,
+            3,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "artist/5d7c4cfc-29e7-4c83-8893-ae02679fc9f4 (Bassnectar; credited on the song)",
+          "links": {
+            "mbArtist": "5d7c4cfc-29e7-4c83-8893-ae02679fc9f4",
+            "wikidata": "Q4868181"
+          },
+          "at": "2026-11-28T01:21:16.509Z"
+        },
+        "wikipedia-artist": {
+          "status": "found",
+          "genres": [
+            "Dubstep",
+            "drum and bass",
+            "drumstep",
+            "electronica",
+            "IDM",
+            "breakbeat",
+            "downtempo",
+            "nu skool breaks"
+          ],
+          "ref": "Bassnectar",
+          "links": {
+            "wikidata": "Q4868181"
+          },
+          "at": "2026-11-28T01:21:17.803Z"
+        },
+        "wikidata-artist": {
+          "status": "found",
+          "genres": [
+            "electronic dance music"
+          ],
+          "ref": "Q4868181",
+          "at": "2026-11-28T01:21:18.799Z"
+        },
+        "theaudiodb-artist": {
+          "status": "found",
+          "genres": [
+            "Dubstep",
+            "Electronic"
+          ],
+          "ref": "artist/113298",
+          "at": "2026-11-28T01:21:12.111Z"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "genres": [
+            "Electronic"
+          ],
+          "ref": "artist/2900657 (Bassnectar)",
+          "at": "2026-11-28T01:21:13.089Z"
         }
       }
     },
@@ -8154,6 +8377,205 @@
             "Pop"
           ],
           "ref": "artist/183313439 (Ed Sheeran)"
+        }
+      }
+    },
+    "edward maya vika jigulina - stereo love": {
+      "artist": "Edward Maya & Vika Jigulina",
+      "title": "Stereo Love",
+      "videoIds": [
+        "Y49iv2VZhCk"
+      ],
+      "genres": [
+        "popcorn",
+        "latin house",
+        "Eurodance",
+        "house",
+        "techno",
+        "trance"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "deep house",
+        "house",
+        "progressive house",
+        "electro house"
+      ],
+      "complete": true,
+      "at": "2026-11-28T01:22:29.318Z",
+      "sources": {
+        "wikipedia": {
+          "status": "found",
+          "genres": [
+            "Eurodance",
+            "techno",
+            "trance",
+            "popcorn"
+          ],
+          "ref": "Stereo Love",
+          "links": {
+            "artistArticle": "Edward Maya"
+          },
+          "at": "2026-11-28T01:21:52.685Z",
+          "v": 3
+        },
+        "wikidata": {
+          "status": "found",
+          "genres": [
+            "Latin house",
+            "popcorn music"
+          ],
+          "ref": "Q2188619",
+          "at": "2026-11-28T01:22:05.138Z",
+          "v": 2
+        },
+        "musicbrainz": {
+          "status": "found",
+          "genres": [
+            "house",
+            "dance",
+            "electro",
+            "electronic",
+            "progressive house"
+          ],
+          "counts": [
+            2,
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "release-group/b40f6db2-2e56-4138-a2b3-adc7545b7152",
+          "at": "2026-11-28T01:21:54.498Z",
+          "v": 2
+        },
+        "theaudiodb": {
+          "status": "found",
+          "genres": [
+            "House"
+          ],
+          "ref": "track/32869920",
+          "at": "2026-11-28T01:21:52.660Z"
+        },
+        "itunes": {
+          "status": "found",
+          "genres": [
+            "Dance"
+          ],
+          "ref": "stored",
+          "at": "2026-11-28T01:21:52.496Z"
+        },
+        "title": {
+          "status": "none",
+          "reason": "the title is not a genre name",
+          "at": "2026-11-28T01:21:52.496Z"
+        },
+        "musicbrainz-album": {
+          "status": "none",
+          "reason": "the recordings are on no album or EP",
+          "at": "2026-11-28T01:21:54.498Z",
+          "v": 2
+        },
+        "wikipedia-album": {
+          "status": "none",
+          "reason": "no album (the song is a single, or the album is unknown)",
+          "at": "2026-11-28T01:21:56.123Z"
+        },
+        "wikidata-album": {
+          "status": "none",
+          "reason": "no Wikidata item linked from MusicBrainz or Wikipedia for the album",
+          "at": "2026-11-28T01:21:56.123Z"
+        },
+        "discogs-album": {
+          "status": "none",
+          "reason": "no Discogs master linked from the MusicBrainz album",
+          "at": "2026-11-28T01:21:54.498Z"
+        },
+        "itunes-album": {
+          "status": "none",
+          "reason": "the release is the song's single",
+          "ref": "Stereo Love - EP",
+          "links": {
+            "album": "Stereo Love - EP"
+          },
+          "at": "2026-11-28T01:21:56.123Z"
+        },
+        "musicbrainz-artist": {
+          "status": "found",
+          "genres": [
+            "dance",
+            "deep house",
+            "romanian",
+            "romanian singer"
+          ],
+          "counts": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "ref": "artist/257891db-1f69-4660-894d-075e355431a8 (Edward Maya; credited on the song)",
+          "links": {
+            "mbArtist": "257891db-1f69-4660-894d-075e355431a8",
+            "wikidata": "Q317169"
+          },
+          "at": "2026-11-28T01:22:26.903Z"
+        },
+        "wikipedia-artist": {
+          "status": "found",
+          "genres": [
+            "Popcorn",
+            "house",
+            "progressive house",
+            "deep house",
+            "EDM",
+            "electro house",
+            "Eurodance",
+            "tropical house"
+          ],
+          "ref": "Edward Maya",
+          "links": {
+            "wikidata": "Q317169"
+          },
+          "at": "2026-11-28T01:22:27.340Z"
+        },
+        "wikidata-artist": {
+          "status": "found",
+          "genres": [
+            "electronic music",
+            "deep house",
+            "electro house",
+            "progressive house",
+            "tech house",
+            "Eurodance",
+            "techno"
+          ],
+          "ref": "Q317169",
+          "at": "2026-11-28T01:22:29.318Z"
+        },
+        "theaudiodb-artist": {
+          "status": "found",
+          "genres": [
+            "House",
+            "Electronic"
+          ],
+          "ref": "artist/112986",
+          "at": "2026-11-28T01:21:54.899Z"
+        },
+        "itunes-artist": {
+          "status": "found",
+          "genres": [
+            "Dance"
+          ],
+          "ref": "artist/318015722 (Edward Maya)",
+          "at": "2026-11-28T01:21:56.123Z"
         }
       }
     },

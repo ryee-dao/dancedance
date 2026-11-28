@@ -1,15 +1,6 @@
 {
-  "updatedAt": "2026-11-27T02:16:48.151Z",
+  "updatedAt": "2026-11-28T01:22:29.323Z",
   "requests": {
-    "bassnectar - the 808 track feat mighty high coup": {
-      "state": "not-found",
-      "artist": "Bassnectar",
-      "title": "The 808 Track (feat. Mighty High Coup)",
-      "durationSec": 271,
-      "message": "Couldn't find a YouTube video of this song that matches its official length.",
-      "attempts": 1,
-      "lastTried": "2026-11-27T01:23:47.676Z"
-    },
     "meek mill - ima boss feat rick ross": {
       "state": "not-found",
       "artist": "Meek Mill",

@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-27T02:25:55.391Z",
+  "generatedAt": "2026-11-28T01:22:29.323Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -37,6 +37,7 @@
     "H8okvjwqHok",
     "HbzZPpWr4MI",
     "HhwTF97OyX8",
+    "IdnBTJiUVDQ",
     "IgCHFfDFivc",
     "IhP3J0j9JmY",
     "JDHoc9qzC5I",
@@ -61,6 +62,7 @@
     "WzsYtW8zyXU",
     "XQG89cwhmJU",
     "XZe_pV2rXuk",
+    "Y49iv2VZhCk",
     "YgCYsJicgEU",
     "_6pz0ef_YH0",
     "_JGGLJMpVks",
@@ -1014,6 +1016,31 @@
         "pop rap"
       ]
     },
+    "IdnBTJiUVDQ": {
+      "bpm": 85,
+      "duration": 271,
+      "genre": "Electronic",
+      "genres": [
+        "dubstep",
+        "breaks",
+        "drum and bass",
+        "electronic",
+        "bass"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "album",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "dubstep",
+        "drumstep",
+        "drum and bass",
+        "breakbeat"
+      ]
+    },
     "IgCHFfDFivc": {
       "bpm": 120,
       "duration": 207,
@@ -1640,6 +1667,33 @@
         "alternative hip hop",
         "electropop",
         "indie pop"
+      ]
+    },
+    "Y49iv2VZhCk": {
+      "bpm": 127,
+      "duration": 254,
+      "genre": "Dance",
+      "genres": [
+        "popcorn",
+        "latin house",
+        "Eurodance",
+        "house",
+        "techno",
+        "trance"
+      ],
+      "genreLevels": [
+        "song",
+        "song",
+        "song",
+        "song",
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "deep house",
+        "house",
+        "progressive house",
+        "electro house"
       ]
     },
     "YgCYsJicgEU": {
