@@ -1,6 +1,6 @@
 {
   "analyzerVersion": "1.4.0",
-  "generatedAt": "2026-11-28T01:22:29.323Z",
+  "generatedAt": "2026-11-28T04:04:03.119Z",
   "ids": [
     "-7XnDlYY9qw",
     "-qZxMY7FZf8",
@@ -106,6 +106,7 @@
     "nx3-XCtnEqU",
     "o6Tf-xcVB_o",
     "o6ytLPKscrU",
+    "o9ysAcGibno",
     "pWQF-ETjzx8",
     "pd1_SxHh2vo",
     "qJ_Tw0w3lLA",
@@ -2833,6 +2834,25 @@
         "R&B",
         "electropop",
         "synth-pop"
+      ]
+    },
+    "o9ysAcGibno": {
+      "bpm": 79,
+      "duration": 252,
+      "genre": "Hip-Hop/Rap",
+      "genres": [
+        "trap",
+        "hip hop"
+      ],
+      "genreLevels": [
+        "song",
+        "song"
+      ],
+      "artistGenres": [
+        "East Coast hip hop",
+        "trap",
+        "gangsta rap",
+        "hardcore hip hop"
       ]
     },
     "pWQF-ETjzx8": {
